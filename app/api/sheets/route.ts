@@ -27,7 +27,11 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
   }
-  const { spreadsheetId, sheetName, year } = body
+  let { spreadsheetId, sheetName, year } = body
+
+  // Accept full Google Sheets URL — extract ID from /d/{id}/
+  const urlMatch = typeof spreadsheetId === 'string' && spreadsheetId.match(/\/d\/([a-zA-Z0-9_-]+)/)
+  if (urlMatch) spreadsheetId = urlMatch[1]
 
   if (!spreadsheetId || !sheetName || !year) {
     return NextResponse.json({ error: '모든 필드를 입력해주세요.' }, { status: 400 })
