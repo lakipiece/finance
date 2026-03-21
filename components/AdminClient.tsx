@@ -130,7 +130,7 @@ export default function AdminClient({ initialYears }: Props) {
             <input
               type="number"
               value={uploadYear}
-              onChange={(e) => setUploadYear(parseInt(e.target.value))}
+              onChange={(e) => setUploadYear(parseInt(e.target.value) || new Date().getFullYear())}
               className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
@@ -194,7 +194,7 @@ export default function AdminClient({ initialYears }: Props) {
               <input
                 type="number"
                 value={sheetYear}
-                onChange={(e) => setSheetYear(parseInt(e.target.value))}
+                onChange={(e) => setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
                 className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
             </div>
