@@ -11,7 +11,7 @@ export async function fetchYearData(year: number): Promise<DashboardData> {
 
   if (error) throw new Error(`Supabase 오류: ${error.message}`)
 
-  const rows: RawExpenseRow[] = (data ?? []).map((e: any) => ({
+  const rows: RawExpenseRow[] = (data ?? []).map((e) => ({
     year: e.year ?? year,
     month: e.month,
     expense_date: e.expense_date ?? '',
