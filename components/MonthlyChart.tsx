@@ -12,7 +12,8 @@ import {
   Cell,
 } from 'recharts'
 import type { MonthlyData } from '@/lib/types'
-import { CAT_COLORS, CATEGORIES, formatWonFull } from '@/lib/utils'
+import { CATEGORIES, formatWonFull } from '@/lib/utils'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface Props {
   monthlyList: MonthlyData[]
@@ -42,6 +43,8 @@ function CustomTooltip({ active, payload, label }: any) {
 }
 
 export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect }: Props) {
+  const { catColors } = useTheme()
+
   function handleClick(data: any, index: number) {
     onMonthSelect(index + 1)
   }
@@ -73,7 +76,7 @@ export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect
             key={cat}
             dataKey={cat}
             stackId="a"
-            fill={CAT_COLORS[cat]}
+            fill={catColors[cat]}
             cursor="pointer"
             onClick={handleClick}
             radius={cat === '여행공연비' ? [4, 4, 0, 0] : [0, 0, 0, 0]}

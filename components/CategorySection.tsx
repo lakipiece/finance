@@ -2,7 +2,8 @@
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import type { DashboardData, ExpenseItem, DetailItem } from '@/lib/types'
-import { CAT_COLORS, CATEGORIES, formatWonFull } from '@/lib/utils'
+import { CATEGORIES, formatWonFull } from '@/lib/utils'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface Props {
   data: DashboardData
@@ -23,6 +24,7 @@ function CustomTooltip({ active, payload }: any) {
 }
 
 export default function CategorySection({ data, selectedCategory, onCategorySelect }: Props) {
+  const { catColors } = useTheme()
   const total = Object.values(data.categoryTotals).reduce((a, b) => a + b, 0)
 
   const pieData = CATEGORIES.map((cat) => ({
@@ -91,7 +93,7 @@ export default function CategorySection({ data, selectedCategory, onCategorySele
                 {pieData.map((entry, index) => (
                   <Cell
                     key={index}
-                    fill={CAT_COLORS[entry.name]}
+                    fill={catColors[entry.name]}
                     stroke={selectedCategory === entry.name ? '#1e3a5f' : '#fff'}
                     strokeWidth={selectedCategory === entry.name ? 3 : 2}
                     opacity={selectedCategory === null || selectedCategory === entry.name ? 1 : 0.4}
@@ -114,7 +116,7 @@ export default function CategorySection({ data, selectedCategory, onCategorySele
           <div className="space-y-2">
             {tableRows.map((row, i) => {
               const pct = tableTotal > 0 ? (row.amount / tableTotal) * 100 : 0
-              const color = selectedCategory ? (CAT_COLORS[selectedCategory] ?? '#3B82F6') : (CAT_COLORS[row.name] ?? '#3B82F6')
+              const color = selectedCategory ? (catColors[selectedCategory] ?? '#3B82F6') : (catColors[row.name] ?? '#3B82F6')
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1">

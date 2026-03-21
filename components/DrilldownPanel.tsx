@@ -1,7 +1,8 @@
 'use client'
 
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
-import { formatWonFull, CAT_COLORS, CAT_BADGE, CATEGORIES } from '@/lib/utils'
+import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface Props {
   monthData: MonthlyData
@@ -10,6 +11,8 @@ interface Props {
 }
 
 export default function DrilldownPanel({ monthData, expenses, onClose }: Props) {
+  const { catColors } = useTheme()
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-violet-100 p-6 animate-in fade-in slide-in-from-top-2 duration-200">
       {/* Header */}
@@ -35,10 +38,10 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
           const amount = monthData[cat]
           if (amount === 0) return null
           return (
-            <div key={cat} className="rounded-xl p-3" style={{ background: `${CAT_COLORS[cat]}14` }}>
+            <div key={cat} className="rounded-xl p-3" style={{ background: `${catColors[cat]}14` }}>
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: CAT_COLORS[cat] }} />
-                <span className="text-xs font-medium" style={{ color: CAT_COLORS[cat] }}>{cat}</span>
+                <span className="w-2 h-2 rounded-full" style={{ background: catColors[cat] }} />
+                <span className="text-xs font-medium" style={{ color: catColors[cat] }}>{cat}</span>
               </div>
               <p className="text-base font-bold text-slate-800">{formatWonFull(amount)}</p>
             </div>
