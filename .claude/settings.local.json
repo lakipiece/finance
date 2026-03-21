@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Bash(python3 -c \":*)",
+      "Bash(where python:*)",
+      "Bash(where node:*)",
+      "Bash(where npm:*)",
+      "Bash(npm --version)",
+      "Bash(python -m pip install openpyxl -q)",
+      "Bash(python -c \"import openpyxl; print\\(openpyxl.__version__\\)\")",
+      "Bash(python:*)",
+      "Bash(where npx:*)",
+      "Bash(npx --version)",
+      "Bash(Get-Command node,npm,npx,bun -ErrorAction SilentlyContinue)",
+      "Bash(npm -v)",
+      "Bash(cmd /c \"where node\")",
+      "Bash(cmd /c \"where node 2>&1 && node -v 2>&1 && npm -v 2>&1\")",
+      "Bash(cmd /c where node)",
+      "Read(//c/Users/PIECE-PC/AppData/Roaming/**)",
+      "Read(//c/Users/PIECE-PC/AppData/Local/**)",
+      "Read(//c/Users/PIECE-PC/scoop/apps/**)",
+      "Read(//c/Users/PIECE-PC/**)",
+      "Bash(python -W ignore -c \"exec\\(open\\(''_run.py''\\).read\\(\\)\\)\")",
+      "Bash(python -W ignore -c \":*)",
+      "Read(//c/Program Files/**)",
+      "Bash(powershell.exe -Command \"Get-Command node -ErrorAction SilentlyContinue | Select-Object Source\")",
+      "Bash(powershell.exe -Command \"node --version\")",
+      "Bash(cmd.exe /c \"node --version\")",
+      "Bash(winget --version)",
+      "Bash(winget install:*)",
+      "Bash(cmd.exe /c \"node --version && npm --version\")",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(npm install:*)",
+      "Bash(npm audit:*)",
+      "Bash(npm run:*)",
+      "Bash(cmd.exe /c \"start http://localhost:3000\")",
+      "Bash(node -e \":*)",
+      "Bash(find g:/Dev/test/app g:/Dev/test/components g:/Dev/test/lib -name *.tsx -o -name *.ts)"
+    ]
+  }
+}

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2022 가계부 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04); }
+    .chart-container { position: relative; }
+    .gradient-bg { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); }
+    .kpi-card { transition: transform 0.2s; }
+    .kpi-card:hover { transform: translateY(-2px); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  </style>
+  <script>
+    const DATA = {"total": 101241330, "monthly_avg": 8436777, "max_month": {"month": "1월", "고정비": 4506461, "대출상환": 7818850, "변동비": 1260453, "여행공연비": 136395, "total": 13722159}, "min_month": {"month": "11월", "고정비": 1860921, "대출상환": 244375, "변동비": 1803864, "여행공연비": 0, "total": 3909160}, "cat_totals": {"고정비": 28373757, "대출상환": 46139924, "변동비": 19103416, "여행공연비": 7624232}, "monthly_list": [{"month": "1월", "고정비": 4506461, "대출상환": 7818850, "변동비": 1260453, "여행공연비": 136395, "total": 13722159}, {"month": "2월", "고정비": 3848972, "대출상환": 3608863, "변동비": 1331739, "여행공연비": 354735, "total": 9144309}, {"month": "3월", "고정비": 1317339, "대출상환": 7603139, "변동비": 1672813, "여행공연비": 128020, "total": 10721311}, {"month": "4월", "고정비": 1222404, "대출상환": 2989451, "변동비": 1607001, "여행공연비": 366670, "total": 6185526}, {"month": "5월", "고정비": 1982624, "대출상환": 5830138, "변동비": 1538870, "여행공연비": 0, "total": 9351632}, {"month": "6월", "고정비": 1372135, "대출상환": 6968858, "변동비": 1326384, "여행공연비": 106000, "total": 9773377}, {"month": "7월", "고정비": 2609321, "대출상환": 5404482, "변동비": 852097, "여행공연비": 3180222, "total": 12046122}, {"month": "8월", "고정비": 1183723, "대출상환": 3000000, "변동비": 1814535, "여행공연비": 44000, "total": 6042258}, {"month": "9월", "고정비": 4519923, "대출상환": 700000, "변동비": 952806, "여행공연비": 1544682, "total": 7717411}, {"month": "10월", "고정비": 2102058, "대출상환": 1726777, "변동비": 2551098, "여행공연비": 0, "total": 6379933}, {"month": "11월", "고정비": 1860921, "대출상환": 244375, "변동비": 1803864, "여행공연비": 0, "total": 3909160}, {"month": "12월", "고정비": 1847876, "대출상환": 244991, "변동비": 2391756, "여행공연비": 1763508, "total": 6248131}], "payment_methods": {"현금": 57511561, "카드": 43694869}, "top_expenses": [{"date": "2022-03-31", "month": 3, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 6200000.0}, {"date": "2022-01-17", "month": 1, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 3700000.0}, {"date": "2022-06-20", "month": 6, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 3000000.0}, {"date": "2022-06-03", "month": 6, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 2800000.0}, {"date": "2022-07-02", "month": 7, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 2400000.0}, {"date": "2022-05-01", "month": 5, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 2350000.0}, {"date": "2022-02-28", "month": 2, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 2200000.0}, {"date": "2022-02-22", "month": 2, "cat": "고정비", "detail": "교육비", "method": "카드", "amt": 2040000.0}, {"date": "2022-01-01", "month": 1, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 2000000.0}, {"date": "2022-01-28", "month": 1, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1800000.0}, {"date": "2022-08-22", "month": 8, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1750014.0}, {"date": "2022-09-14", "month": 9, "cat": "고정비", "detail": "교육비", "method": "카드", "amt": 1580000.0}, {"date": "2022-04-15", "month": 4, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1500000.0}, {"date": "2022-10-09", "month": 10, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1480000.0}, {"date": "2022-05-08", "month": 5, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1200000.0}, {"date": "2022-07-09", "month": 7, "cat": "고정비", "detail": "비품 및 수선유지비", "method": "카드", "amt": 1139720.0}, {"date": "2022-02-23", "month": 2, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1100000.0}, {"date": "2022-03-30", "month": 3, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1100000.0}, {"date": "2022-07-06", "month": 7, "cat": "여행공연비", "detail": "해외여행", "method": "카드", "amt": 1080800.0}, {"date": "2022-07-22", "month": 7, "cat": "대출상환", "detail": "주택담보대출 원금", "method": "현금", "amt": 1007589.0}], "variable_detail": [{"name": "식비", "amt": 6401752}, {"name": "기타구매", "amt": 4730317}, {"name": "외식비", "amt": 3873179}, {"name": "의류", "amt": 1658308}, {"name": "담배", "amt": 908735}, {"name": "모임비", "amt": 881470}, {"name": "커피", "amt": 581655}, {"name": "출근식대", "amt": 68000}], "fixed_detail": [{"name": "주택담보대출 이자", "amt": 4197055}, {"name": "교육비", "amt": 3674260}, {"name": "비품 및 수선유지비", "amt": 3563568}, {"name": "관리비", "amt": 3112360}, {"name": "문경", "amt": 3094695}, {"name": "자동차운행", "amt": 2097640}, {"name": "의료/건강", "amt": 1423081}, {"name": "취미", "amt": 1362198}]};
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="gradient-bg text-white py-8 px-6 mb-8 shadow-lg">
+    <div class="max-w-7xl mx-auto">
+      <p class="text-blue-200 text-sm font-medium tracking-wider mb-1">HOUSEHOLD BUDGET</p>
+      <h1 class="text-3xl font-bold">2022 가계부 대시보드</h1>
+      <p class="text-blue-200 mt-1 text-sm">2022년 1월 ~ 12월 지출 분석</p>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 pb-12">
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="card kpi-card p-5">
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">연간 총 지출</p>
+        <p class="text-2xl font-bold text-slate-800" id="kpi-total"></p>
+        <p class="text-xs text-slate-400 mt-1">2022년 전체</p>
+      </div>
+      <div class="card kpi-card p-5">
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">월 평균 지출</p>
+        <p class="text-2xl font-bold text-blue-600" id="kpi-avg"></p>
+        <p class="text-xs text-slate-400 mt-1">12개월 평균</p>
+      </div>
+      <div class="card kpi-card p-5">
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">최대 지출 월</p>
+        <p class="text-2xl font-bold text-red-500" id="kpi-max-month"></p>
+        <p class="text-xs text-slate-400 mt-1" id="kpi-max-amt"></p>
+      </div>
+      <div class="card kpi-card p-5">
+        <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">대출상환 비율</p>
+        <p class="text-2xl font-bold text-orange-500" id="kpi-debt-ratio"></p>
+        <p class="text-xs text-slate-400 mt-1" id="kpi-debt-amt"></p>
+      </div>
+    </div>
+
+    <!-- Charts Row 1: 월별 지출 (넓게) -->
+    <div class="card p-6 mb-6">
+      <h2 class="text-base font-semibold text-slate-700 mb-4">월별 지출 현황 (분류별 누적)</h2>
+      <div class="chart-container" style="height: 300px;">
+        <canvas id="monthlyStackedChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Charts Row 2: 분류별 도넛 + 결제수단 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="card p-6">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">분류별 지출 비율</h2>
+        <div class="chart-container" style="height: 260px;">
+          <canvas id="categoryDonutChart"></canvas>
+        </div>
+      </div>
+      <div class="card p-6">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">결제수단별 비율</h2>
+        <div class="chart-container" style="height: 260px;">
+          <canvas id="paymentChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 3: 월별 트렌드 + 변동비 상세 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="card p-6">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">월별 순수 생활비 트렌드</h2>
+        <p class="text-xs text-slate-400 mb-3">대출상환 제외 (고정비 + 변동비 + 여행공연비)</p>
+        <div class="chart-container" style="height: 220px;">
+          <canvas id="trendLineChart"></canvas>
+        </div>
+      </div>
+      <div class="card p-6">
+        <h2 class="text-base font-semibold text-slate-700 mb-4">변동비 항목별 현황</h2>
+        <div class="chart-container" style="height: 240px;">
+          <canvas id="variableBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table: 상위 지출 내역 -->
+    <div class="card p-6">
+      <h2 class="text-base font-semibold text-slate-700 mb-4">주요 지출 내역 TOP 20</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100">
+              <th class="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
+              <th class="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
+              <th class="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
+              <th class="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
+              <th class="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
+            </tr>
+          </thead>
+          <tbody id="expenseTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ── 유틸 ──────────────────────────────────────────────────────────────────
+    function won(n) {
+      return (n >= 10000)
+        ? (n % 10000 === 0
+          ? Math.floor(n/10000).toLocaleString() + '만원'
+          : Math.floor(n/10000).toLocaleString() + '.' + String(Math.floor((n%10000)/1000)) + '만원')
+        : n.toLocaleString() + '원';
+    }
+    function wonFull(n) { return n.toLocaleString() + '원'; }
+
+    const CAT_COLORS = {
+      '고정비':   '#3B82F6',
+      '대출상환': '#EF4444',
+      '변동비':   '#10B981',
+      '여행공연비': '#F59E0B',
+    };
+    const CATS = ['고정비', '대출상환', '변동비', '여행공연비'];
+
+    // ── KPI ──────────────────────────────────────────────────────────────────
+    document.getElementById('kpi-total').textContent = won(DATA.total);
+    document.getElementById('kpi-avg').textContent = won(DATA.monthly_avg);
+    document.getElementById('kpi-max-month').textContent = DATA.max_month.month;
+    document.getElementById('kpi-max-amt').textContent = wonFull(DATA.max_month.total);
+    const debtRatio = (DATA.cat_totals['대출상환'] / DATA.total * 100).toFixed(1) + '%';
+    document.getElementById('kpi-debt-ratio').textContent = debtRatio;
+    document.getElementById('kpi-debt-amt').textContent = wonFull(DATA.cat_totals['대출상환']);
+
+    // ── 월별 스택 막대 ────────────────────────────────────────────────────────
+    new Chart(document.getElementById('monthlyStackedChart'), {
+      type: 'bar',
+      data: {
+        labels: DATA.monthly_list.map(d => d.month),
+        datasets: CATS.map(c => ({
+          label: c,
+          data: DATA.monthly_list.map(d => d[c]),
+          backgroundColor: CAT_COLORS[c],
+          borderRadius: 3,
+          borderSkipped: false,
+        }))
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { font: { size: 12 }, padding: 16 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}원`
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: {
+            stacked: true,
+            grid: { color: '#f1f5f9' },
+            ticks: {
+              callback: v => v >= 1000000 ? (v/10000).toFixed(0) + '만' : v
+            }
+          }
+        }
+      }
+    });
+
+    // ── 분류별 도넛 ──────────────────────────────────────────────────────────
+    new Chart(document.getElementById('categoryDonutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: CATS,
+        datasets: [{
+          data: CATS.map(c => DATA.cat_totals[c] || 0),
+          backgroundColor: CATS.map(c => CAT_COLORS[c]),
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 12 }, padding: 12 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()}원 (${(ctx.parsed/DATA.total*100).toFixed(1)}%)`
+            }
+          }
+        }
+      }
+    });
+
+    // ── 결제수단 파이 ─────────────────────────────────────────────────────────
+    const pmKeys = Object.keys(DATA.payment_methods);
+    const pmVals = pmKeys.map(k => DATA.payment_methods[k]);
+    new Chart(document.getElementById('paymentChart'), {
+      type: 'doughnut',
+      data: {
+        labels: pmKeys,
+        datasets: [{
+          data: pmVals,
+          backgroundColor: ['#6366F1', '#EC4899', '#14B8A6', '#F97316'],
+          borderWidth: 2,
+          borderColor: '#fff',
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'right', labels: { font: { size: 12 }, padding: 12 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.label}: ${ctx.parsed.toLocaleString()}원 (${(ctx.parsed/(pmVals.reduce((a,b)=>a+b,0))*100).toFixed(1)}%)`
+            }
+          }
+        }
+      }
+    });
+
+    // ── 월별 트렌드 (대출 제외) ───────────────────────────────────────────────
+    const livingCosts = DATA.monthly_list.map(d => d['고정비'] + d['변동비'] + d['여행공연비']);
+    new Chart(document.getElementById('trendLineChart'), {
+      type: 'line',
+      data: {
+        labels: DATA.monthly_list.map(d => d.month),
+        datasets: [{
+          label: '생활비',
+          data: livingCosts,
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59,130,246,0.08)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#3B82F6',
+          pointRadius: 4,
+          tension: 0.35,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` 생활비: ${ctx.parsed.y.toLocaleString()}원`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: {
+            grid: { color: '#f1f5f9' },
+            ticks: { callback: v => (v/10000).toFixed(0) + '만' }
+          }
+        }
+      }
+    });
+
+    // ── 변동비 항목별 막대 ────────────────────────────────────────────────────
+    new Chart(document.getElementById('variableBarChart'), {
+      type: 'bar',
+      data: {
+        labels: DATA.variable_detail.map(d => d.name.length > 8 ? d.name.slice(0,8)+'…' : d.name),
+        datasets: [{
+          label: '변동비',
+          data: DATA.variable_detail.map(d => d.amt),
+          backgroundColor: 'rgba(16,185,129,0.8)',
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x.toLocaleString()}원`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: '#f1f5f9' },
+            ticks: { callback: v => (v/10000).toFixed(0)+'만' }
+          },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+
+    // ── 지출 테이블 ──────────────────────────────────────────────────────────
+    const CAT_BADGE = {
+      '고정비':   'bg-blue-100 text-blue-700',
+      '대출상환': 'bg-red-100 text-red-700',
+      '변동비':   'bg-emerald-100 text-emerald-700',
+      '여행공연비': 'bg-amber-100 text-amber-700',
+    };
+    const tbody = document.getElementById('expenseTable');
+    DATA.top_expenses.forEach((e, i) => {
+      const badge = CAT_BADGE[e.cat] || 'bg-slate-100 text-slate-600';
+      const row = `
+        <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+          <td class="py-2.5 px-3 text-slate-500">${e.date}</td>
+          <td class="py-2.5 px-3">
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${badge}">${e.cat}</span>
+          </td>
+          <td class="py-2.5 px-3 text-slate-700">${e.detail}</td>
+          <td class="py-2.5 px-3 text-slate-500">${e.method}</td>
+          <td class="py-2.5 px-3 text-right font-semibold text-slate-800">${e.amt.toLocaleString()}원</td>
+        </tr>`;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+  </script>
+</body>
+</html>
