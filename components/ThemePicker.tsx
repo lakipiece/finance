@@ -14,8 +14,15 @@ export default function ThemePicker() {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   return (
@@ -24,10 +31,12 @@ export default function ThemePicker() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-white text-sm"
         title="테마 선택"
+        aria-haspopup="listbox"
+        aria-expanded={open}
       >
         <span className="flex gap-0.5">
-          {palette.colors.map((c, i) => (
-            <span key={i} className="w-3 h-3 rounded-full inline-block" style={{ background: c }} />
+          {palette.colors.map((c) => (
+            <span key={c} className="w-3 h-3 rounded-full inline-block" style={{ background: c }} />
           ))}
         </span>
         <span className="hidden sm:inline text-xs text-white/70">{palette.name}</span>
@@ -46,8 +55,8 @@ export default function ThemePicker() {
                 }`}
               >
                 <span className="flex gap-0.5 flex-shrink-0">
-                  {p.colors.map((c, i) => (
-                    <span key={i} className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: c }} />
+                  {p.colors.map((c) => (
+                    <span key={c} className="w-3.5 h-3.5 rounded-sm inline-block" style={{ background: c }} />
                   ))}
                 </span>
                 <span className="text-xs text-slate-700 font-medium truncate">{p.name}</span>

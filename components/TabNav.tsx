@@ -15,13 +15,14 @@ export default function TabNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex gap-1">
+    <nav className="flex gap-1" aria-label="탭 네비게이션">
       {TABS.map((tab) => {
         const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
         return (
           <Link
             key={tab.href}
             href={tab.href}
+            aria-current={active ? 'page' : undefined}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               active
                 ? 'bg-white/20 text-white'
