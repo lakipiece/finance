@@ -21,4 +21,4 @@ export const PALETTES: Palette[] = [
   { id: 'retro',      name: 'Retro Studio',   colors: ['#E76F51','#264653','#2A9D8F','#E9C46A'], headerGradient: 'linear-gradient(135deg, #264653 0%, #2A9D8F 100%)' },
 ]
 
-export const DEFAULT_PALETTE = PALETTES[9] // Muted Classic
+export const DEFAULT_PALETTE = PALETTES.find(p => p.id === 'muted')!
