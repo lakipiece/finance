@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
+import { ThemeProvider } from '@/lib/ThemeContext'
+import HeaderBar from '@/components/HeaderBar'
 
 const notoSans = Noto_Sans_KR({
   weight: ['300', '400', '500', '600', '700'],
@@ -9,15 +11,18 @@ const notoSans = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
-  title: '2022 가계부 대시보드',
-  description: '2022년 가계부 지출 분석 대시보드',
+  title: '가계부 대시보드',
+  description: '가계부 지출 분석 대시보드',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body className={`${notoSans.className} bg-slate-50 min-h-screen`}>
-        {children}
+        <ThemeProvider>
+          <HeaderBar />
+          <main>{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   )
