@@ -20,10 +20,20 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { spreadsheetId, sheetName, year } = await req.json()
+  let body: { spreadsheetId: string; sheetName: string; year: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
+  }
+  const { spreadsheetId, sheetName, year } = body
 
   if (!spreadsheetId || !sheetName || !year) {
     return NextResponse.json({ error: '모든 필드를 입력해주세요.' }, { status: 400 })
+  }
+
+  if (typeof sheetName !== 'string' || /[!'\\]/.test(sheetName)) {
+    return NextResponse.json({ error: '시트 이름이 올바르지 않습니다.' }, { status: 400 })
   }
 
   const yearNum = parseInt(String(year))
@@ -88,10 +98,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Check duplicates
-  const { data: existing } = await supabase
+  const { data: existing, error: dupError } = await supabase
     .from('expenses')
     .select('expense_date, category, detail, amount')
     .eq('year', yearNum)
+  if (dupError) return NextResponse.json({ error: '중복 확인 중 오류가 발생했습니다.' }, { status: 500 })
 
   const existingSet = new Set(
     (existing ?? []).map((e: any) =>

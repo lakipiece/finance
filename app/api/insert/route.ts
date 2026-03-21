@@ -8,9 +8,21 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { rows, year }: { rows: RawExpenseRow[]; year: number } = await req.json()
+  let rows: RawExpenseRow[], year: number
+  try {
+    const body = await req.json()
+    rows = body.rows
+    year = body.year
+  } catch {
+    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
+  }
 
-  if (!rows || !year) return NextResponse.json({ error: '데이터가 없습니다.' }, { status: 400 })
+  if (!Array.isArray(rows) || rows.length === 0 || !year) {
+    return NextResponse.json({ error: '데이터가 없습니다.' }, { status: 400 })
+  }
+  if (rows.length > 5000) {
+    return NextResponse.json({ error: '한번에 최대 5000건까지 저장 가능합니다.' }, { status: 400 })
+  }
 
   // Re-check duplicates server-side before inserting
   const { data: existing } = await supabase

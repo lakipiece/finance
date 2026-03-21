@@ -5,10 +5,14 @@ export async function GET(req: NextRequest) {
   const yearStr = req.nextUrl.searchParams.get('year')
   const year = yearStr ? parseInt(yearStr) : null
 
-  if (!year || isNaN(year)) {
-    return NextResponse.json({ error: 'year 파라미터가 필요합니다.' }, { status: 400 })
+  if (!year || isNaN(year) || year < 2000 || year > 2100) {
+    return NextResponse.json({ error: 'year 파라미터가 올바르지 않습니다.' }, { status: 400 })
   }
 
-  const data = await fetchYearData(year)
-  return NextResponse.json(data)
+  try {
+    const data = await fetchYearData(year)
+    return NextResponse.json(data)
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
 }
