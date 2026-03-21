@@ -15,6 +15,7 @@ export interface CategoryTotal {
 }
 
 export interface ExpenseItem {
+  year: number
   date: string
   month: number
   category: string

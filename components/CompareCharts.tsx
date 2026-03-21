@@ -9,28 +9,30 @@ import { formatWonFull } from '@/lib/utils'
 
 const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
+type Category = typeof CATEGORIES[number]
 
 interface Props {
   selectedYears: number[]
   yearData: Record<number, DashboardData>
   colorMap: Record<number, string>
   loading: Record<number, boolean>
+  selectedCategory: Category | null
 }
 
-export default function CompareCharts({ selectedYears, yearData, colorMap, loading }: Props) {
+export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory }: Props) {
   const readyYears = selectedYears.filter(y => yearData[y] && !loading[y])
 
-  // Build monthly line chart data: [{month:'1월', 2022:total, 2023:total}, ...]
+  // Monthly line chart: total or category-filtered
   const monthlyData = MONTH_LABELS.map((month, i) => {
     const entry: Record<string, any> = { month }
     for (const year of readyYears) {
       const m = yearData[year].monthlyList[i]
-      entry[year] = m?.total ?? 0
+      entry[year] = selectedCategory ? (m?.[selectedCategory] ?? 0) : (m?.total ?? 0)
     }
     return entry
   })
 
-  // Build category grouped bar data: [{category:'고정비', 2022:amt, 2023:amt}, ...]
+  // Category bar chart (when no category selected)
   const categoryData = CATEGORIES.map((cat) => {
     const entry: Record<string, any> = { category: cat }
     for (const year of readyYears) {
@@ -38,6 +40,30 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
     }
     return entry
   })
+
+  // Sub-detail bar chart (when category selected)
+  const subDetailData = (() => {
+    if (!selectedCategory) return null
+    const allDetails = new Set<string>()
+    for (const year of readyYears) {
+      for (const e of yearData[year].allExpenses) {
+        if (e.category === selectedCategory && e.detail) allDetails.add(e.detail)
+      }
+    }
+    return Array.from(allDetails).map(detail => {
+      const entry: Record<string, any> = { detail }
+      for (const year of readyYears) {
+        entry[year] = yearData[year].allExpenses
+          .filter(e => e.category === selectedCategory && e.detail === detail)
+          .reduce((s, e) => s + e.amount, 0)
+      }
+      return entry
+    }).sort((a, b) => {
+      const sumA = readyYears.reduce((s, y) => s + (a[y] || 0), 0)
+      const sumB = readyYears.reduce((s, y) => s + (b[y] || 0), 0)
+      return sumB - sumA
+    }).slice(0, 20) // top 20
+  })()
 
   if (readyYears.length === 0) {
     return (
@@ -51,7 +77,9 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
     <>
       {/* Monthly line chart */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-700 mb-1">월별 지출 비교</h2>
+        <h2 className="text-base font-semibold text-slate-700 mb-1">
+          월별 지출 비교{selectedCategory ? ` — ${selectedCategory}` : ''}
+        </h2>
         <p className="text-xs text-slate-400 mb-4">선택한 연도별 월간 지출 합계</p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
@@ -84,31 +112,68 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
         </ResponsiveContainer>
       </div>
 
-      {/* Category grouped bar chart */}
+      {/* Category or sub-detail bar chart */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-700 mb-1">카테고리별 연도 비교</h2>
-        <p className="text-xs text-slate-400 mb-4">카테고리별 연간 지출 합계</p>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={categoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <YAxis
-              tickFormatter={(v) => `${Math.round(v / 10000)}만`}
-              tick={{ fontSize: 11, fill: '#94a3b8' }}
-              axisLine={false}
-              tickLine={false}
-              width={48}
-            />
-            <Tooltip
-              formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
-              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }}
-            />
-            <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
-            {readyYears.map((year) => (
-              <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[4, 4, 0, 0]} />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        {subDetailData ? (
+          <>
+            <h2 className="text-base font-semibold text-slate-700 mb-1">{selectedCategory} — 항목별 연도 비교</h2>
+            <p className="text-xs text-slate-400 mb-4">세부 항목별 연간 지출 합계 (상위 20개)</p>
+            <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 40)}>
+              <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis
+                  type="number"
+                  tickFormatter={(v) => `${Math.round(v / 10000)}만`}
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="detail"
+                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={90}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
+                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }}
+                />
+                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                {readyYears.map((year) => (
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[0, 4, 4, 0]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </>
+        ) : (
+          <>
+            <h2 className="text-base font-semibold text-slate-700 mb-1">카테고리별 연도 비교</h2>
+            <p className="text-xs text-slate-400 mb-4">카테고리별 연간 지출 합계</p>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={categoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tickFormatter={(v) => `${Math.round(v / 10000)}만`}
+                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
+                />
+                <Tooltip
+                  formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
+                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }}
+                />
+                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                {readyYears.map((year) => (
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[4, 4, 0, 0]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </>
+        )}
       </div>
     </>
   )

@@ -44,7 +44,7 @@ export function aggregateExpenses(rows: RawExpenseRow[]): DashboardData {
   const maxMonth = monthlyList.reduce((a, b) => a.total > b.total ? a : b)
 
   function toExpenseItem(e: RawExpenseRow): ExpenseItem {
-    return { date: e.expense_date, month: e.month, category: e.category, detail: e.detail, method: e.method, amount: e.amount }
+    return { year: e.year, date: e.expense_date, month: e.month, category: e.category, detail: e.detail, method: e.method, amount: e.amount }
   }
 
   const sorted = [...rows].sort((a, b) => b.amount - a.amount)

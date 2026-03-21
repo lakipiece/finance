@@ -14,17 +14,25 @@ export default function SearchClient({ allExpenses }: Props) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('전체')
   const [month, setMonth] = useState('전체')
+  const [year, setYear] = useState('전체')
+
+  const availableYears = useMemo(() => {
+    const years = [...new Set(allExpenses.map(e => e.year))].sort()
+    return years
+  }, [allExpenses])
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
     const monthNum = month === '전체' ? null : MONTH_OPTIONS.indexOf(month)
+    const yearNum = year === '전체' ? null : Number(year)
     return allExpenses.filter((e) => {
-      if (q && !e.detail.toLowerCase().includes(q)) return false
+      if (q && !e.detail.toLowerCase().includes(q) && !e.category.toLowerCase().includes(q) && !e.method.toLowerCase().includes(q)) return false
       if (category !== '전체' && e.category !== category) return false
       if (monthNum !== null && e.month !== monthNum) return false
+      if (yearNum !== null && e.year !== yearNum) return false
       return true
-    }).sort((a, b) => b.amount - a.amount)
-  }, [allExpenses, query, category, month])
+    }).sort((a, b) => b.date.localeCompare(a.date) || b.amount - a.amount)
+  }, [allExpenses, query, category, month, year])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -35,9 +43,17 @@ export default function SearchClient({ allExpenses }: Props) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="내역 검색..."
+            placeholder="내역 / 분류 / 결제수단 검색..."
             className="flex-1 min-w-48 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
+          <select
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            <option value="전체">전체 연도</option>
+            {availableYears.map((y) => <option key={y} value={y}>{y}년</option>)}
+          </select>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -58,7 +74,7 @@ export default function SearchClient({ allExpenses }: Props) {
 
       {/* Results */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <p className="text-sm text-slate-400 mb-4">검색 결과 {results.length}건</p>
+        <p className="text-sm text-slate-400 mb-4">검색 결과 {results.length.toLocaleString()}건</p>
         {results.length === 0 ? (
           <p className="text-center text-slate-400 py-12">검색 결과가 없습니다</p>
         ) : (
@@ -82,8 +98,8 @@ export default function SearchClient({ allExpenses }: Props) {
                         {e.category}
                       </span>
                     </td>
-                    <td className="py-2 px-3 text-slate-700">{e.detail}</td>
-                    <td className="py-2 px-3 text-slate-400">{e.method}</td>
+                    <td className="py-2 px-3 text-slate-700">{e.detail || <span className="text-slate-300">—</span>}</td>
+                    <td className="py-2 px-3 text-slate-400">{e.method || <span className="text-slate-300">—</span>}</td>
                     <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
                       {formatWonFull(e.amount)}
                     </td>

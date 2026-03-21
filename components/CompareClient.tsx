@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 const CompareCharts = dynamic(() => import('./CompareCharts'), {
   ssr: false,
@@ -11,16 +12,19 @@ const CompareCharts = dynamic(() => import('./CompareCharts'), {
 
 interface YearSummary { year: number; count: number }
 
-const YEAR_COLORS = ['#4E79A7', '#E15759', '#59A14F', '#F28E2B', '#76B7B2']
-
 interface Props {
   availableYears: YearSummary[]
 }
 
+const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
+type Category = typeof CATEGORIES[number]
+
 export default function CompareClient({ availableYears }: Props) {
+  const { palette } = useTheme()
   const [selectedYears, setSelectedYears] = useState<number[]>([])
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
   const [loading, setLoading] = useState<Record<number, boolean>>({})
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
 
   async function fetchYear(year: number) {
     if (yearData[year]) return
@@ -42,7 +46,7 @@ export default function CompareClient({ availableYears }: Props) {
   }
 
   const colorMap = Object.fromEntries(
-    availableYears.map((y, i) => [y.year, YEAR_COLORS[i % YEAR_COLORS.length]])
+    availableYears.map((y, i) => [y.year, palette.colors[i % palette.colors.length]])
   )
 
   if (availableYears.length === 0) {
@@ -88,6 +92,34 @@ export default function CompareClient({ availableYears }: Props) {
         </div>
       </div>
 
+      {/* Category filter */}
+      {selectedYears.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4 flex items-center gap-6 flex-wrap">
+          <span className="text-sm font-semibold text-slate-600">카테고리</span>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}
+            >
+              전체
+            </button>
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(prev => prev === cat ? null : cat)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {selectedYears.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center">
           <p className="text-slate-400 text-sm">위에서 비교할 연도를 선택하세요</p>
@@ -98,6 +130,7 @@ export default function CompareClient({ availableYears }: Props) {
           yearData={yearData}
           colorMap={colorMap}
           loading={loading}
+          selectedCategory={selectedCategory}
         />
       )}
     </div>
