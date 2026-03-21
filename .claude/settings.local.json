@@ -36,7 +36,22 @@
       "Bash(npm run:*)",
       "Bash(cmd.exe /c \"start http://localhost:3000\")",
       "Bash(node -e \":*)",
-      "Bash(find g:/Dev/test/app g:/Dev/test/components g:/Dev/test/lib -name *.tsx -o -name *.ts)"
+      "Bash(find g:/Dev/test/app g:/Dev/test/components g:/Dev/test/lib -name *.tsx -o -name *.ts)",
+      "Bash(npx tsc:*)",
+      "Bash(cmd.exe /c \"npx tsc --noEmit 2>&1\")",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git -C G:/Dev/test log --oneline 452e08c..f5f886d)",
+      "Bash(command -v node)",
+      "Read(//usr/bin/**)",
+      "Bash(echo \"PATH=$PATH\")",
+      "Bash(\"/c/Program Files/nodejs/npx.cmd\" tsc --noEmit)",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(cmd /c \"\"\"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\"\" run build\")",
+      "Bash(cmd /c \"cd /d G:\\\\Dev\\\\test && \"\"C:\\\\Program Files\\\\nodejs\\\\npm.cmd\"\" run build\")",
+      "Bash(powershell -Command \"cd ''G:\\\\Dev\\\\test''; & ''C:\\\\Program Files\\\\nodejs\\\\npm.cmd'' run build 2>&1 | Out-String\")"
     ]
   }
 }

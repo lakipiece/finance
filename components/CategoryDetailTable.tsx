@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function CategoryDetailTable({ allExpenses }: Props) {
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0])
+  const [activeCategory, setActiveCategory] = useState<string>(CATEGORIES[0])
   const { catColors } = useTheme()
 
   const filtered = allExpenses.filter((e) => e.category === activeCategory)
