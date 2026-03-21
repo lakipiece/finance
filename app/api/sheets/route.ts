@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabase } from '@/lib/supabase'
 import { google } from 'googleapis'
+import { readFileSync } from 'fs'
 import type { ParsePreviewResponse, RawExpenseRow } from '@/lib/types'
 
 function toDateString(val: string): string {
@@ -41,7 +42,9 @@ export async function POST(req: NextRequest) {
 
   let credentials: any
   try {
-    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON!)
+    const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON!
+    const jsonStr = raw.trimStart().startsWith('{') ? raw : readFileSync(raw, 'utf-8')
+    credentials = JSON.parse(jsonStr)
   } catch {
     return NextResponse.json({ error: 'Google 서비스 계정 설정이 올바르지 않습니다.' }, { status: 500 })
   }
