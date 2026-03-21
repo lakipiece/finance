@@ -75,9 +75,12 @@ export async function POST(req: NextRequest) {
   const rows: RawExpenseRow[] = []
   for (let i = 1; i < values.length; i++) {
     const row = values[i]
-    if (!row || row.length < 8) continue
+    if (!row || row.length < 5) continue
 
-    const dateStr = row[0] ?? ''
+    // col[0]: "1/1(월)" or "2024-01-01" style date
+    // col[1]: "2024-01" (YYYY-MM) — use this for reliable month extraction
+    const rawDate = String(row[0] ?? '').trim()
+    const rawMonth = String(row[1] ?? '').trim()
     const cat = (row[4] ?? '').trim()
     const detail = (row[5] ?? '').trim()
     const method = (row[6] ?? '').trim()
@@ -85,13 +88,30 @@ export async function POST(req: NextRequest) {
 
     if (!cat || !rawAmt) continue
 
-    const amount = parseFloat(String(rawAmt).replace(/,/g, ''))
+    const amount = parseFloat(String(rawAmt).replace(/,/g, '').trim())
     if (isNaN(amount) || amount <= 0) continue
 
-    // Derive month from the date string in col[0]
-    const expenseDate = toDateString(dateStr)
-    const monthNum = expenseDate ? new Date(expenseDate).getMonth() + 1 : null
-    if (!monthNum) continue
+    // Derive month: prefer col[1] "YYYY-MM" format, fallback to col[0]
+    let monthNum: number | null = null
+    let expenseDate = ''
+
+    if (/^\d{4}-\d{2}/.test(rawMonth)) {
+      // col[1] = "2024-01" → month = 1
+      monthNum = parseInt(rawMonth.split('-')[1])
+      // col[0] = "1/1(월)" → extract day number after first "/"
+      const dayPart = rawDate.split('/')[1] ?? ''
+      const dayNum = parseInt(dayPart)
+      expenseDate = `${yearNum}-${String(monthNum).padStart(2, '0')}-${String(isNaN(dayNum) ? 1 : dayNum).padStart(2, '0')}`
+    } else {
+      // Fallback: try parsing col[0] as a standard date string
+      const parsed = toDateString(rawDate)
+      if (parsed) {
+        monthNum = new Date(parsed).getMonth() + 1
+        expenseDate = parsed
+      }
+    }
+
+    if (!monthNum || isNaN(monthNum)) continue
 
     rows.push({
       year: yearNum,
