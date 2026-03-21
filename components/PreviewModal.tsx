@@ -27,29 +27,51 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
 
         {/* Sample rows table */}
         <div className="overflow-auto flex-1 p-6">
-          <p className="text-xs text-slate-400 mb-3">처음 10행 미리보기</p>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">날짜</th>
-                <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">분류</th>
-                <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">내역</th>
-                <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">결제</th>
-                <th className="text-right py-2 px-2 text-xs text-slate-400 font-medium">금액</th>
-              </tr>
-            </thead>
-            <tbody>
-              {preview.sampleRows.map((row, i) => (
-                <tr key={i} className="border-b border-slate-50">
-                  <td className="py-1.5 px-2 text-slate-400 text-xs">{row.expense_date}</td>
-                  <td className="py-1.5 px-2 text-slate-600">{row.category}</td>
-                  <td className="py-1.5 px-2 text-slate-700 max-w-[160px] truncate">{row.detail || '-'}</td>
-                  <td className="py-1.5 px-2 text-slate-400">{row.method || '-'}</td>
-                  <td className="py-1.5 px-2 text-right font-medium text-slate-800">{formatWonFull(row.amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {preview.totalCount === 0 ? (
+            <div>
+              <p className="text-sm text-amber-600 font-medium mb-3">파싱된 행이 없습니다. 시트 원본 데이터 (처음 3행):</p>
+              {preview.rawSample && preview.rawSample.length > 0 ? (
+                <div className="bg-slate-50 rounded-lg p-3 overflow-x-auto">
+                  {preview.rawSample.map((row, i) => (
+                    <div key={i} className="text-xs font-mono text-slate-600 mb-1">
+                      <span className="text-slate-400 mr-2">행{i}:</span>
+                      {row.map((cell, j) => (
+                        <span key={j} className="mr-3">[{j}]={cell || '(빈값)'}</span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400">시트에 데이터가 없습니다.</p>
+              )}
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-slate-400 mb-3">처음 10행 미리보기</p>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">날짜</th>
+                    <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">분류</th>
+                    <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">내역</th>
+                    <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">결제</th>
+                    <th className="text-right py-2 px-2 text-xs text-slate-400 font-medium">금액</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.sampleRows.map((row, i) => (
+                    <tr key={i} className="border-b border-slate-50">
+                      <td className="py-1.5 px-2 text-slate-400 text-xs">{row.expense_date}</td>
+                      <td className="py-1.5 px-2 text-slate-600">{row.category}</td>
+                      <td className="py-1.5 px-2 text-slate-700 max-w-[160px] truncate">{row.detail || '-'}</td>
+                      <td className="py-1.5 px-2 text-slate-400">{row.method || '-'}</td>
+                      <td className="py-1.5 px-2 text-right font-medium text-slate-800">{formatWonFull(row.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          )}
         </div>
 
         {/* Footer buttons */}

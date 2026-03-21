@@ -31,7 +31,6 @@ export default function AdminClient({ initialYears }: Props) {
   // Preview state (shared)
   const [preview, setPreview] = useState<ParsePreviewResponse | null>(null)
   const [saving, setSaving] = useState(false)
-  const [saveSuccess, setSaveSuccess] = useState('')
 
   // Year summary state
   const [years, setYears] = useState<YearSummary[]>(initialYears)
@@ -54,6 +53,15 @@ export default function AdminClient({ initialYears }: Props) {
 
   async function handleSheetsImport() {
     setSheetsError('')
+
+    // Validate: must be a Google Sheets URL or a raw spreadsheet ID
+    const isGoogleSheetsUrl = sheetId.includes('docs.google.com/spreadsheets')
+    const isRawId = /^[a-zA-Z0-9_-]{20,}$/.test(sheetId.trim())
+    if (!isGoogleSheetsUrl && !isRawId) {
+      setSheetsError('Google Sheets URL 또는 스프레드시트 ID를 입력해주세요.')
+      return
+    }
+
     setSheetsLoading(true)
 
     const res = await fetch('/api/sheets', {
@@ -82,12 +90,11 @@ export default function AdminClient({ initialYears }: Props) {
 
     if (!res.ok) { alert(json.error ?? '저장 실패'); return }
 
-    setSaveSuccess(`${json.inserted}건 저장 완료 (${json.skipped}건 중복 제외)`)
+    const inserted: number = json.inserted ?? 0
+    const skipped: number = json.skipped ?? 0
     setPreview(null)
-
-    // Refresh year summary
-    const yearsRes = await fetch('/api/years')
-    if (yearsRes.ok) setYears(await yearsRes.json())
+    alert(`${inserted}건 저장 완료 (${skipped}건 중복 제외)`)
+    window.location.href = '/admin'
   }
 
   async function handleLogout() {
@@ -113,13 +120,8 @@ export default function AdminClient({ initialYears }: Props) {
         </button>
       </div>
 
-      {saveSuccess && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3">
-          {saveSuccess}
-        </div>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Section A: Excel Upload */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-1">📂 엑셀 업로드</h2>

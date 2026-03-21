@@ -24,17 +24,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '한번에 최대 5000건까지 저장 가능합니다.' }, { status: 400 })
   }
 
-  // Re-check duplicates server-side before inserting
-  const { data: existing } = await supabase
-    .from('expenses')
-    .select('expense_date, category, detail, amount')
-    .eq('year', year)
-
-  const existingSet = new Set(
-    (existing ?? []).map((e: any) =>
-      `${e.expense_date}|${e.category}|${e.detail ?? ''}|${e.amount}`
-    )
-  )
+  // Re-check duplicates server-side before inserting (paginate to avoid 1000-row limit)
+  const existingSet = new Set<string>()
+  const pageSize = 1000
+  let offset = 0
+  while (true) {
+    const { data: page } = await supabase
+      .from('expenses')
+      .select('expense_date, category, detail, amount')
+      .eq('year', year)
+      .range(offset, offset + pageSize - 1)
+    if (!page || page.length === 0) break
+    for (const e of page) {
+      existingSet.add(`${e.expense_date}|${e.category}|${e.detail ?? ''}|${e.amount}`)
+    }
+    if (page.length < pageSize) break
+    offset += pageSize
+  }
 
   const toInsert = rows.filter(r =>
     !existingSet.has(`${r.expense_date}|${r.category}|${r.detail}|${r.amount}`)

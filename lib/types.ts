@@ -57,4 +57,5 @@ export interface ParsePreviewResponse {
   duplicateCount: number
   sampleRows: RawExpenseRow[] // first 10 rows
   year: number
+  rawSample?: string[][] // first 3 raw rows for debugging when totalCount is 0
 }
