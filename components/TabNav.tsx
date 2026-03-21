@@ -9,6 +9,7 @@ const TABS = [
   { label: '월별분석', href: '/monthly' },
   { label: '연도비교', href: '/compare' },
   { label: '검색',     href: '/search' },
+  { label: '관리',     href: '/admin' },
 ]
 
 export default function TabNav() {
