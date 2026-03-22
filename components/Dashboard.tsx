@@ -21,10 +21,12 @@ interface Props {
 
 export default function Dashboard({ data, year }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedDetail, setSelectedDetail] = useState<string | null>(null)
   const sortedExpenses = [...data.allExpenses].sort((a, b) => b.amount - a.amount)
 
   function handleCategorySelect(cat: string) {
     setSelectedCategory((prev) => (prev === cat ? null : cat))
+    setSelectedDetail(null)
   }
 
   return (
@@ -59,15 +61,21 @@ export default function Dashboard({ data, year }: Props) {
           <CategoryDetailChart
             allExpenses={data.allExpenses}
             selectedCategory={selectedCategory}
+            selectedDetail={selectedDetail}
+            onDetailSelect={setSelectedDetail}
           />
         </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <h2 className="text-base font-semibold text-slate-700 mb-4">
-          {selectedCategory ? `${selectedCategory} 주요 지출 내역` : '주요 지출 내역'}
+          {selectedDetail
+            ? `${selectedCategory} > ${selectedDetail} 지출 내역`
+            : selectedCategory
+            ? `${selectedCategory} 주요 지출 내역`
+            : '주요 지출 내역'}
         </h2>
-        <ExpenseTable expenses={sortedExpenses} selectedCategory={selectedCategory} />
+        <ExpenseTable expenses={sortedExpenses} selectedCategory={selectedCategory} selectedDetail={selectedDetail} />
       </div>
     </div>
   )

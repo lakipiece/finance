@@ -10,6 +10,8 @@ import { useTheme } from '@/lib/ThemeContext'
 interface Props {
   allExpenses: ExpenseItem[]
   selectedCategory: string | null
+  selectedDetail: string | null
+  onDetailSelect: (detail: string | null) => void
 }
 
 function CustomTooltip({ active, payload }: any) {
@@ -22,7 +24,7 @@ function CustomTooltip({ active, payload }: any) {
   )
 }
 
-export default function CategoryDetailChart({ allExpenses, selectedCategory }: Props) {
+export default function CategoryDetailChart({ allExpenses, selectedCategory, selectedDetail, onDetailSelect }: Props) {
   const { catColors } = useTheme()
 
   const filtered = selectedCategory
@@ -63,10 +65,20 @@ export default function CategoryDetailChart({ allExpenses, selectedCategory }: P
           tickFormatter={(v: string) => v.length > 10 ? v.slice(0, 10) + '…' : v}
         />
         <Tooltip content={<CustomTooltip />} />
-        <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-          {data.map((_, i) => (
-            <Cell key={i} fill={color} opacity={1 - i * 0.12} />
-          ))}
+        <Bar dataKey="value" radius={[0, 4, 4, 0]} style={{ cursor: 'pointer' }}>
+          {data.map((entry, i) => {
+            const isSelected = selectedDetail === entry.name
+            const isOtherSelected = selectedDetail !== null && !isSelected
+            return (
+              <Cell
+                key={i}
+                fill={color}
+                opacity={isOtherSelected ? 0.4 : (isSelected ? 1 : 1 - i * 0.12)}
+                onClick={() => onDetailSelect(isSelected ? null : entry.name)}
+                style={{ cursor: 'pointer' }}
+              />
+            )
+          })}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
