@@ -8,7 +8,7 @@ import ExpenseTable from './ExpenseTable'
 
 const MonthlyChart = dynamic(() => import('./MonthlyChart'), { ssr: false, loading: () => <ChartPlaceholder h={300} /> })
 const CategorySection = dynamic(() => import('./CategorySection'), { ssr: false, loading: () => <ChartPlaceholder h={260} /> })
-const CategoryDetailChart = dynamic(() => import('./CategoryDetailChart'), { ssr: false, loading: () => <ChartPlaceholder h={220} /> })
+const CategoryDetailChart = dynamic(() => import('./CategoryDetailChart'), { ssr: false, loading: () => <ChartPlaceholder h={300} /> })
 
 function ChartPlaceholder({ h }: { h: number }) {
   return <div className="animate-pulse bg-slate-100 rounded-xl" style={{ height: h }} />
@@ -50,10 +50,10 @@ export default function Dashboard({ data, year }: Props) {
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-1">
-            {selectedCategory ? `${selectedCategory} 내역 TOP 5` : '전체 내역 TOP 5'}
+            {selectedCategory ? `${selectedCategory} 내역 TOP 10` : '전체 내역 TOP 10'}
           </h2>
           <p className="text-xs text-slate-400 mb-4">
-            {selectedCategory ? '좌측 도넛 분류 클릭으로 필터' : '좌측 도넛 클릭시 분류별 TOP5'}
+            {selectedCategory ? '좌측 도넛 분류 클릭으로 필터' : '좌측 도넛 클릭시 분류별 TOP10'}
           </p>
           <CategoryDetailChart
             allExpenses={data.allExpenses}

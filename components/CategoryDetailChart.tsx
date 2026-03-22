@@ -38,12 +38,12 @@ export default function CategoryDetailChart({ allExpenses, selectedCategory }: P
   const data = Object.entries(agg)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 5)
+    .slice(0, 10)
 
   const color = selectedCategory ? (catColors[selectedCategory] ?? '#6B8CAE') : '#6B8CAE'
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
         <XAxis
@@ -56,7 +56,7 @@ export default function CategoryDetailChart({ allExpenses, selectedCategory }: P
         <YAxis
           type="category"
           dataKey="name"
-          width={90}
+          width={100}
           tick={{ fontSize: 11, fill: '#64748b' }}
           axisLine={false}
           tickLine={false}
