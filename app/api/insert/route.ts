@@ -24,25 +24,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '한번에 최대 5000건까지 저장 가능합니다.' }, { status: 400 })
   }
 
-  // Delete all existing rows for this year, then insert fresh data
+  // Ensure all rows belong to the declared year to prevent cross-year corruption
+  const invalidRows = rows.filter(r => r.year !== year)
+  if (invalidRows.length > 0) {
+    return NextResponse.json({ error: `연도가 일치하지 않는 행이 ${invalidRows.length}건 있습니다.` }, { status: 400 })
+  }
+
+  // Prepare insert payload before deleting — validates data is complete before destructive op
+  const toInsert = rows.map(r => ({
+    year: r.year,
+    month: r.month,
+    expense_date: r.expense_date,
+    category: r.category,
+    detail: r.detail || null,
+    method: r.method || null,
+    amount: r.amount,
+  }))
+
+  // Delete all existing rows for this year, then insert fresh data.
+  // These are two separate operations (no DB transaction via JS client).
+  // Input validation above minimises the risk of insert failure after delete.
   const { error: deleteError } = await supabase
     .from('expenses')
     .delete()
     .eq('year', year)
-  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
+  if (deleteError) return NextResponse.json({ error: `삭제 실패: ${deleteError.message}` }, { status: 500 })
 
-  const { error } = await supabase.from('expenses').insert(
-    rows.map(r => ({
-      year: r.year,
-      month: r.month,
-      expense_date: r.expense_date,
-      category: r.category,
-      detail: r.detail || null,
-      method: r.method || null,
-      amount: r.amount,
-    }))
-  )
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const { error: insertError } = await supabase.from('expenses').insert(toInsert)
+  if (insertError) {
+    return NextResponse.json({
+      error: `데이터 삽입 실패: ${insertError.message}. ${year}년 데이터가 삭제된 상태입니다. 다시 시도해주세요.`,
+    }, { status: 500 })
+  }
 
   return NextResponse.json({ inserted: rows.length })
 }

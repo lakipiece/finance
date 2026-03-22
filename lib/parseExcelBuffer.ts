@@ -53,7 +53,7 @@ export function parseExcelBuffer(buffer: Buffer, year: number): RawExpenseRow[] 
     if (isNaN(amount) || amount <= 0) continue
 
     const monthNum = monthFromMolCol(monthVal)
-    if (!monthNum) continue
+    if (!monthNum || monthNum < 1 || monthNum > 12) continue
 
     result.push({
       year,

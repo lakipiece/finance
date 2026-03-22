@@ -3,7 +3,7 @@ import { supabase } from './supabase'
 import { aggregateExpenses } from './aggregateExpenses'
 import type { DashboardData, RawExpenseRow } from './types'
 
-export async function fetchData(year?: number): Promise<DashboardData> {
+export async function fetchData(year?: number): Promise<DashboardData | null> {
   const allRows: any[] = []
   const pageSize = 1000
   let offset = 0
@@ -18,7 +18,7 @@ export async function fetchData(year?: number): Promise<DashboardData> {
     offset += pageSize
   }
 
-  if (allRows.length === 0) throw new Error('데이터가 없습니다.')
+  if (allRows.length === 0) return null
 
   const rows: RawExpenseRow[] = allRows.map((e: any) => ({
     year: e.year ?? 0,

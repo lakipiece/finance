@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
@@ -69,9 +69,8 @@ export default function CategoryDetailTable({ allExpenses }: Props) {
               const pct = total > 0 ? ((row.amount / total) * 100).toFixed(1) : '0'
               const isSelected = selectedDetail === row.name
               return (
-                <>
+                <Fragment key={i}>
                   <tr
-                    key={i}
                     onClick={() => setSelectedDetail(prev => prev === row.name ? null : row.name)}
                     className={`border-b border-slate-50 cursor-pointer transition-colors ${isSelected ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
                   >
@@ -94,7 +93,7 @@ export default function CategoryDetailTable({ allExpenses }: Props) {
                       <td className="py-1.5 px-3 text-right text-xs text-slate-400">{e.method || '—'}</td>
                     </tr>
                   ))}
-                </>
+                </Fragment>
               )
             })}
           </tbody>

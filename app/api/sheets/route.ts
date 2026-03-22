@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '모든 필드를 입력해주세요.' }, { status: 400 })
   }
 
-  if (typeof sheetName !== 'string' || /[!'\\]/.test(sheetName)) {
+  // Allowlist: alphanumeric, spaces, Korean, hyphens, underscores, parentheses
+  if (typeof sheetName !== 'string' || !/^[\w\s가-힣\-()\[\]]+$/.test(sheetName)) {
     return NextResponse.json({ error: '시트 이름이 올바르지 않습니다.' }, { status: 400 })
   }
 

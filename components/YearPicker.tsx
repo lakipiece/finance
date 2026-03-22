@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 function YearPickerInner() {
-  const [years, setYears] = useState<number[]>([])
+  const [years, setYears] = useState<number[] | null>(null) // null = loading
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -13,14 +13,17 @@ function YearPickerInner() {
 
   useEffect(() => {
     fetch('/api/years')
-      .then(r => r.ok ? r.json() : null)
-      .then((data: { year: number }[] | null) => {
-        if (Array.isArray(data)) {
-          setYears(data.map(d => d.year).sort((a, b) => b - a))
-        }
+      .then(r => r.ok ? r.json() : [])
+      .then((data: { year: number }[]) => {
+        setYears(Array.isArray(data) ? data.map(d => d.year).sort((a, b) => b - a) : [])
       })
-      .catch(() => {})
+      .catch(() => setYears([]))
   }, [])
+
+  // Loading skeleton — same width as the select to prevent layout shift
+  if (years === null) {
+    return <div className="h-8 w-20 rounded-lg bg-white/20 animate-pulse" />
+  }
 
   if (years.length === 0) return null
 
@@ -39,7 +42,7 @@ function YearPickerInner() {
 
 export default function YearPicker() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="h-8 w-20 rounded-lg bg-white/20 animate-pulse" />}>
       <YearPickerInner />
     </Suspense>
   )

@@ -23,7 +23,8 @@ export default function SearchClient({ allExpenses }: Props) {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const monthNum = month === '전체' ? null : MONTH_OPTIONS.indexOf(month)
+    // parseInt('1월') === 1, parseInt('12월') === 12 — reliable regardless of array order
+    const monthNum = month === '전체' ? null : parseInt(month)
     const yearNum = year === '전체' ? null : Number(year)
     return allExpenses.filter((e) => {
       if (q && !e.detail.toLowerCase().includes(q) && !e.category.toLowerCase().includes(q) && !e.method.toLowerCase().includes(q)) return false

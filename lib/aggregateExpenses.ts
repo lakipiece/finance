@@ -43,6 +43,10 @@ export function aggregateExpenses(rows: RawExpenseRow[]): DashboardData {
 
   const maxMonth = monthlyList.reduce((a, b) => a.total > b.total ? a : b)
 
+  // Divide by months that actually have data, not always 12
+  const activeMonths = monthlyList.filter(m => m.total > 0).length
+  const monthlyAvg = activeMonths > 0 ? Math.round(total / activeMonths) : 0
+
   function toExpenseItem(e: RawExpenseRow): ExpenseItem {
     return { year: e.year, date: e.expense_date, month: e.month, category: e.category, detail: e.detail, method: e.method, amount: e.amount }
   }
@@ -60,7 +64,7 @@ export function aggregateExpenses(rows: RawExpenseRow[]): DashboardData {
 
   return {
     total,
-    monthlyAvg: Math.round(total / 12),
+    monthlyAvg,
     maxMonth,
     categoryTotals,
     monthlyList,
