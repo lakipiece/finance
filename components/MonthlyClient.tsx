@@ -58,6 +58,8 @@ export default function MonthlyClient({ data, year }: Props) {
         key={selectedMonth ?? 'all'}
         monthData={displayMonthData}
         expenses={displayExpenses}
+        allExpenses={data.allExpenses}
+        monthlyList={data.monthlyList}
         onClose={selectedMonth !== null ? () => setSelectedMonth(null) : null}
       />
     </div>

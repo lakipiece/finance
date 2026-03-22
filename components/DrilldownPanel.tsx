@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
@@ -8,13 +9,16 @@ import { useTheme } from '@/lib/ThemeContext'
 interface Props {
   monthData: MonthlyData
   expenses: ExpenseItem[]
+  allExpenses: ExpenseItem[]
+  monthlyList: MonthlyData[]
   onClose: (() => void) | null
 }
 
-export default function DrilldownPanel({ monthData, expenses, onClose }: Props) {
+export default function DrilldownPanel({ monthData, expenses, allExpenses, monthlyList, onClose }: Props) {
   const { catColors } = useTheme()
   const [selectedCat, setSelectedCat] = useState<string | null>(null)
   const [detailSearch, setDetailSearch] = useState('')
+  const [selectedTrendDetail, setSelectedTrendDetail] = useState<string | null>(null)
 
   const filteredExpenses = selectedCat
     ? expenses.filter(e => e.category === selectedCat)
@@ -33,6 +37,19 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
         .filter(([detail]) =>
           detailSearch === '' || detail.toLowerCase().includes(detailSearch.toLowerCase())
         )
+    : null
+
+  const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+
+  const trendData = selectedCat
+    ? MONTH_LABELS.map((label, i) => {
+        const value = selectedTrendDetail
+          ? allExpenses
+              .filter(e => e.category === selectedCat && e.detail === selectedTrendDetail && e.month === i + 1)
+              .reduce((s, e) => s + e.amount, 0)
+          : (monthlyList[i]?.[selectedCat as keyof MonthlyData] as number) ?? 0
+        return { month: label, value }
+      })
     : null
 
   return (
@@ -68,6 +85,7 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
               onClick={() => {
                 setSelectedCat(prev => prev === cat ? null : cat)
                 setDetailSearch('')
+                setSelectedTrendDetail(null)
               }}
               className="text-left rounded-xl p-3 transition-all"
               style={{
@@ -99,18 +117,51 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
               className="flex-1 max-w-48 text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
+          {/* Monthly trend chart */}
+          {selectedCat && trendData && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-slate-500 mb-2">
+                {selectedTrendDetail ?? selectedCat} 월별 추이
+              </p>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={trendData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fontSize: 10, fill: '#94a3b8' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis hide />
+                  <Tooltip
+                    formatter={(value: number) => [formatWonFull(value), '']}
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                  />
+                  <Bar dataKey="value" radius={[3, 3, 0, 0]}>
+                    {trendData.map((_, i) => (
+                      <Cell key={i} fill={catColors[selectedCat] ?? '#6B8CAE'} opacity={0.8} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
           {/* Fixed height scroll area */}
           <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
             {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount]) => {
               const total = monthData[selectedCat as keyof MonthlyData] as number
               const pct = total > 0 ? Math.round(amount / total * 100) : 0
               const isLong = detail.length > 18
+              const isDetailSelected = selectedTrendDetail === detail
               return (
-                <div key={detail} className="flex items-center gap-3">
+                <div
+                  key={detail}
+                  className={`flex items-center gap-3 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+                  onClick={() => setSelectedTrendDetail(prev => prev === detail ? null : detail)}
+                >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between text-xs mb-0.5">
                       <span
-                        className="text-slate-600 truncate max-w-[160px]"
+                        className={`truncate max-w-[160px] ${isDetailSelected ? 'text-slate-800 font-bold' : 'text-slate-600'}`}
                         title={isLong ? detail : undefined}
                       >
                         {detail}
@@ -158,6 +209,7 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
                 <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
                 <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
                 <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
+                <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
                 <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
                 <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
               </tr>
@@ -180,6 +232,15 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
                       >
                         {e.detail || <span className="text-slate-300">—</span>}
                       </span>
+                    </td>
+                    <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
+                      {e.memo ? (
+                        <span className="block truncate" title={e.memo.length > 20 ? e.memo : undefined}>
+                          {e.memo}
+                        </span>
+                      ) : (
+                        <span className="text-slate-200">—</span>
+                      )}
                     </td>
                     <td className="py-2 px-3 text-slate-400">{e.method || <span className="text-slate-300">—</span>}</td>
                     <td className="py-2 px-3 text-right font-semibold text-slate-800">{formatWonFull(e.amount)}</td>
