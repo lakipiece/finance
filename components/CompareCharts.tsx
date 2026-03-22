@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar,
@@ -21,6 +22,12 @@ interface Props {
 }
 
 export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory, cumulative }: Props) {
+  const [detailSearch, setDetailSearch] = useState('')
+
+  useEffect(() => {
+    setDetailSearch('')
+  }, [selectedCategory])
+
   const readyYears = selectedYears.filter(y => yearData[y] && !loading[y])
 
   // Monthly line chart: total or category-filtered, with optional cumulative running sum
@@ -69,7 +76,10 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
       const sumA = readyYears.reduce((s, y) => s + (a[y] || 0), 0)
       const sumB = readyYears.reduce((s, y) => s + (b[y] || 0), 0)
       return sumB - sumA
-    }).slice(0, 20) // top 20
+    }).filter(item =>
+      detailSearch === '' ||
+      item.detail.toLowerCase().includes(detailSearch.toLowerCase())
+    ).slice(0, 20) // top 20
   })()
 
   if (readyYears.length === 0) {
@@ -125,6 +135,15 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
           <>
             <h2 className="text-base font-semibold text-slate-700 mb-1">{selectedCategory} — 항목별 연도 비교</h2>
             <p className="text-xs text-slate-400 mb-4">세부 항목별 연간 지출 합계 (상위 20개)</p>
+            <div className="mb-3">
+              <input
+                type="text"
+                value={detailSearch}
+                onChange={e => setDetailSearch(e.target.value)}
+                placeholder="내역 검색 (예: 스타벅스)..."
+                className="w-full max-w-sm text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
             <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 40)}>
               <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
