@@ -10,9 +10,10 @@ const MonthlyChart = dynamic(() => import('./MonthlyChart'), { ssr: false, loadi
 
 interface Props {
   data: DashboardData
+  year: number
 }
 
-export default function MonthlyClient({ data }: Props) {
+export default function MonthlyClient({ data, year }: Props) {
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
 
   function handleMonthSelect(month: number) {
