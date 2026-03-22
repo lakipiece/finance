@@ -55,6 +55,7 @@ export default function MonthlyClient({ data, year }: Props) {
       </div>
 
       <DrilldownPanel
+        key={selectedMonth ?? 'all'}
         monthData={displayMonthData}
         expenses={displayExpenses}
         onClose={selectedMonth !== null ? () => setSelectedMonth(null) : null}

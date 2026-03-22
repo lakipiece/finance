@@ -163,7 +163,7 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
               </tr>
             </thead>
             <tbody>
-              {filteredExpenses
+              {[...filteredExpenses]
                 .sort((a, b) => b.amount - a.amount)
                 .map((e, i) => (
                   <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
