@@ -17,17 +17,24 @@ interface Props {
   colorMap: Record<number, string>
   loading: Record<number, boolean>
   selectedCategory: Category | null
+  cumulative: boolean
 }
 
-export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory }: Props) {
+export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory, cumulative }: Props) {
   const readyYears = selectedYears.filter(y => yearData[y] && !loading[y])
 
-  // Monthly line chart: total or category-filtered
+  // Monthly line chart: total or category-filtered, with optional cumulative running sum
   const monthlyData = MONTH_LABELS.map((month, i) => {
-    const entry: Record<string, any> = { month }
+    const entry: Record<string, number | string> = { month }
     for (const year of readyYears) {
-      const m = yearData[year].monthlyList[i]
-      entry[year] = selectedCategory ? (m?.[selectedCategory] ?? 0) : (m?.total ?? 0)
+      if (cumulative) {
+        entry[year] = yearData[year].monthlyList
+          .slice(0, i + 1)
+          .reduce((s, m) => s + (selectedCategory ? (m?.[selectedCategory] ?? 0) : (m?.total ?? 0)), 0)
+      } else {
+        const m = yearData[year].monthlyList[i]
+        entry[year] = selectedCategory ? (m?.[selectedCategory] ?? 0) : (m?.total ?? 0)
+      }
     }
     return entry
   })
@@ -78,9 +85,9 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
       {/* Monthly line chart */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <h2 className="text-base font-semibold text-slate-700 mb-1">
-          월별 지출 비교{selectedCategory ? ` — ${selectedCategory}` : ''}
+          월별 지출 {cumulative ? '누적' : '비교'}{selectedCategory ? ` — ${selectedCategory}` : ''}
         </h2>
-        <p className="text-xs text-slate-400 mb-4">선택한 연도별 월간 지출 합계</p>
+        <p className="text-xs text-slate-400 mb-4">{cumulative ? '연초부터 해당 월까지 누적 지출' : '선택한 연도별 월간 지출 합계'}</p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

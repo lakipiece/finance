@@ -25,6 +25,7 @@ export default function CompareClient({ availableYears }: Props) {
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
   const [loading, setLoading] = useState<Record<number, boolean>>({})
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [cumulative, setCumulative] = useState(false)
 
   async function fetchYear(year: number) {
     if (yearData[year]) return
@@ -117,6 +118,14 @@ export default function CompareClient({ availableYears }: Props) {
               </button>
             ))}
           </div>
+          <button
+            onClick={() => setCumulative(prev => !prev)}
+            className={`ml-auto px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+            }`}
+          >
+            {cumulative ? '누적 보기' : '월별 보기'}
+          </button>
         </div>
       )}
 
@@ -131,6 +140,7 @@ export default function CompareClient({ availableYears }: Props) {
           colorMap={colorMap}
           loading={loading}
           selectedCategory={selectedCategory}
+          cumulative={cumulative}
         />
       )}
     </div>
