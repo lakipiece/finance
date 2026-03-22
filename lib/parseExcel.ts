@@ -54,6 +54,7 @@ export function parseExcel(): DashboardData {
     const detail = row[5] != null ? String(row[5]).trim() : ''
     const method = row[6] != null ? String(row[6]).trim() : ''
     const rawAmt = row[7]
+    const memo = row[9] != null ? String(row[9]).trim() : ''
 
     if (!cat || rawAmt == null) continue
 
@@ -76,7 +77,7 @@ export function parseExcel(): DashboardData {
     const key = detail || '기타'
     detailByCat[cat][key] = (detailByCat[cat][key] ?? 0) + amount
 
-    allExpenses.push({ year: 2022, date: dateStr, month: monthNum, category: cat, detail, method, amount })
+    allExpenses.push({ year: 2022, date: dateStr, month: monthNum, category: cat, detail, method, amount, memo })
   }
 
   const monthlyList: MonthlyData[] = MONTH_NAMES.map((name, i) => {
