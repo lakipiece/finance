@@ -11,6 +11,8 @@ interface Props {
 }
 
 export default function PreviewModal({ preview, onConfirm, onCancel, loading }: Props) {
+  const hasExisting = preview.existingCount > 0
+
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
@@ -19,8 +21,7 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
           <h2 className="text-lg font-bold text-slate-800">파싱 결과 미리보기</h2>
           <div className="flex gap-4 mt-2 text-sm flex-wrap">
             <span className="text-slate-500">연도: <strong className="text-slate-700">{preview.year}</strong></span>
-            <span className="text-slate-500">기존 데이터: <strong className="text-amber-600">{preview.existingCount}건 삭제</strong></span>
-            <span className="text-slate-500">새 데이터: <strong className="text-green-600">{preview.totalCount}건으로 교체</strong></span>
+            <span className="text-slate-500">파싱된 데이터: <strong className="text-slate-700">{preview.totalCount}건</strong></span>
           </div>
         </div>
 
@@ -73,6 +74,18 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
           )}
         </div>
 
+        {/* Overwrite warning */}
+        {hasExisting && preview.totalCount > 0 && (
+          <div className="mx-6 mb-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-sm font-semibold text-amber-700">
+              {preview.year}년 기존 데이터 {preview.existingCount.toLocaleString()}건이 있습니다.
+            </p>
+            <p className="text-xs text-amber-600 mt-0.5">
+              저장하면 기존 데이터가 모두 삭제되고 새 데이터 {preview.totalCount.toLocaleString()}건으로 교체됩니다.
+            </p>
+          </div>
+        )}
+
         {/* Footer buttons */}
         <div className="p-6 border-t border-slate-100 flex justify-end gap-3">
           <button
@@ -84,9 +97,14 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
           <button
             onClick={onConfirm}
             disabled={loading || preview.totalCount === 0}
-            className="px-4 py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50"
+            className={`px-4 py-2 rounded-xl text-white text-sm font-semibold transition-colors disabled:opacity-50 ${
+              hasExisting ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-800 hover:bg-slate-700'
+            }`}
           >
-            {loading ? '저장 중...' : `저장 (${preview.totalCount}건)`}
+            {loading ? '저장 중...' : hasExisting
+              ? `덮어쓰기 (${preview.totalCount.toLocaleString()}건)`
+              : `저장 (${preview.totalCount.toLocaleString()}건)`
+            }
           </button>
         </div>
       </div>
