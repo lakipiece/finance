@@ -45,7 +45,7 @@ export default function ExpenseTable({ expenses, selectedCategory }: Props) {
           <tbody>
             {slice.map((e, i) => (
               <tr
-                key={i}
+                key={`${e.date}-${e.detail}-${e.amount}-${i}`}
                 className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}
               >
                 <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
