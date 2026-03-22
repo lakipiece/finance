@@ -27,7 +27,7 @@ export default function MonthlyClient({ data, year }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-700 mb-1">월별 지출 현황</h2>
+        <h2 className="text-base font-semibold text-slate-700 mb-1">{year}년 월별 지출 현황</h2>
         <p className="text-xs text-slate-400 mb-4">막대를 클릭하면 해당 월 상세 내역을 볼 수 있습니다</p>
         <MonthlyChart
           monthlyList={data.monthlyList}
