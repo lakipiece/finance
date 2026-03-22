@@ -1,7 +1,7 @@
 'use client'
 
 import type { DashboardData } from '@/lib/types'
-import { formatWon } from '@/lib/utils'
+import { formatWon, CAT_COLORS } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 
 interface Props {
@@ -36,7 +36,7 @@ export default function KpiCards({ data, year }: Props) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <KpiCard
-        label="연간 총 지출"
+        label="연간 총지출"
         value={formatWon(data.total)}
         sub={`${year}년 전체`}
         color="#6B8CAE"
@@ -45,19 +45,19 @@ export default function KpiCards({ data, year }: Props) {
         label="연간 고정비"
         value={formatWon(data.categoryTotals.고정비)}
         sub={`비율 ${pct(data.categoryTotals.고정비)}`}
-        color={catColors['고정비'] ?? '#6B8CAE'}
+        color={catColors['고정비'] ?? CAT_COLORS['고정비']}
       />
       <KpiCard
         label="연간 변동비"
         value={formatWon(data.categoryTotals.변동비)}
         sub={`비율 ${pct(data.categoryTotals.변동비)}`}
-        color={catColors['변동비'] ?? '#6DAE8C'}
+        color={catColors['변동비'] ?? CAT_COLORS['변동비']}
       />
       <KpiCard
         label="연간 여행공연비"
         value={formatWon(data.categoryTotals.여행공연비)}
         sub={`비율 ${pct(data.categoryTotals.여행공연비)}`}
-        color={catColors['여행공연비'] ?? '#C4A96D'}
+        color={catColors['여행공연비'] ?? CAT_COLORS['여행공연비']}
       />
     </div>
   )
