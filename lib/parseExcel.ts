@@ -76,7 +76,7 @@ export function parseExcel(): DashboardData {
     const key = detail || '기타'
     detailByCat[cat][key] = (detailByCat[cat][key] ?? 0) + amount
 
-    allExpenses.push({ date: dateStr, month: monthNum, category: cat, detail, method, amount })
+    allExpenses.push({ year: 2022, date: dateStr, month: monthNum, category: cat, detail, method, amount })
   }
 
   const monthlyList: MonthlyData[] = MONTH_NAMES.map((name, i) => {
