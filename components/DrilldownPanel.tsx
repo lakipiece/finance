@@ -62,7 +62,6 @@ export default function DrilldownPanel({ monthData, expenses, onClose }: Props) 
               className="text-left rounded-xl p-3 transition-all ring-2"
               style={{
                 background: `${catColors[cat]}${isSelected ? '28' : '14'}`,
-                ringColor: isSelected ? catColors[cat] : 'transparent',
                 outline: isSelected ? `2px solid ${catColors[cat]}` : '2px solid transparent',
               }}
             >
