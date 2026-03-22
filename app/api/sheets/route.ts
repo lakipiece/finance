@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
-      range: `${sheetName}!A:H`,
+      range: `${sheetName}!A:J`,
       valueRenderOption: 'FORMATTED_VALUE',
     })
     values = (response.data.values ?? []) as string[][]
@@ -86,6 +86,7 @@ export async function POST(req: NextRequest) {
     const detail = (row[5] ?? '').trim()
     const method = (row[6] ?? '').trim()
     const rawAmt = row[7] ?? ''
+    const memo = (row[9] ?? '').trim()
 
     if (!cat || !rawAmt) continue
 
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
       category: cat,
       detail,
       method,
+      memo,
       amount: Math.round(amount),
     })
   }

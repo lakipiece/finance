@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     category: r.category,
     detail: r.detail || null,
     method: r.method || null,
+    memo: r.memo ?? '',
     amount: r.amount,
   }))
 
