@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
 import { useTheme } from '@/lib/ThemeContext'
@@ -21,10 +21,12 @@ type Category = typeof CATEGORIES[number]
 
 export default function CompareClient({ availableYears }: Props) {
   const { palette } = useTheme()
-  const [selectedYears, setSelectedYears] = useState<number[]>([])
+  const defaultYears = availableYears.slice(0, 3).map(y => y.year)
+  const [selectedYears, setSelectedYears] = useState<number[]>(defaultYears)
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
   const [loading, setLoading] = useState<Record<number, boolean>>({})
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [selectedDetail, setSelectedDetail] = useState<string | null>(null)
   const [cumulative, setCumulative] = useState(false)
 
   async function fetchYear(year: number) {
@@ -37,6 +39,11 @@ export default function CompareClient({ availableYears }: Props) {
     }
     setLoading(prev => ({ ...prev, [year]: false }))
   }
+
+  // Fetch default years on mount
+  useEffect(() => {
+    defaultYears.forEach(y => fetchYear(y))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleYear(year: number) {
     setSelectedYears(prev => {
@@ -99,7 +106,7 @@ export default function CompareClient({ availableYears }: Props) {
           <span className="text-sm font-semibold text-slate-600">카테고리</span>
           <div className="flex gap-2 flex-wrap">
             <button
-              onClick={() => setSelectedCategory(null)}
+              onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                 selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
               }`}
@@ -109,7 +116,7 @@ export default function CompareClient({ availableYears }: Props) {
             {CATEGORIES.map(cat => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(prev => prev === cat ? null : cat)}
+                onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                 }`}
@@ -140,6 +147,8 @@ export default function CompareClient({ availableYears }: Props) {
           colorMap={colorMap}
           loading={loading}
           selectedCategory={selectedCategory}
+          selectedDetail={selectedDetail}
+          onDetailSelect={setSelectedDetail}
           cumulative={cumulative}
         />
       )}

@@ -53,10 +53,10 @@ export default function Dashboard({ data, year }: Props) {
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-1">
-            {selectedCategory ? `${selectedCategory} 내역 TOP 10` : '전체 내역 TOP 10'}
+            {selectedCategory ? `${selectedCategory} 전체 내역` : '전체 내역 TOP 10'}
           </h2>
           <p className="text-xs text-slate-400 mb-4">
-            {selectedCategory ? '좌측 도넛 분류 클릭으로 필터' : '좌측 도넛 클릭시 분류별 TOP10'}
+            {selectedCategory ? '좌측 도넛 분류 클릭으로 필터' : '좌측 도넛 클릭시 분류별 전체 내역'}
           </p>
           <CategoryDetailChart
             allExpenses={data.allExpenses}

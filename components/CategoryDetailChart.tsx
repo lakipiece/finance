@@ -37,15 +37,16 @@ export default function CategoryDetailChart({ allExpenses, selectedCategory, sel
     agg[key] = (agg[key] ?? 0) + e.amount
   }
 
-  const data = Object.entries(agg)
+  const sorted = Object.entries(agg)
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 10)
+
+  const data = selectedCategory ? sorted : sorted.slice(0, 10)
 
   const color = selectedCategory ? (catColors[selectedCategory] ?? '#6B8CAE') : '#6B8CAE'
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
+    <ResponsiveContainer width="100%" height={Math.max(300, data.length * 30)}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
         <XAxis

@@ -18,23 +18,40 @@ interface Props {
   colorMap: Record<number, string>
   loading: Record<number, boolean>
   selectedCategory: Category | null
+  selectedDetail: string | null
+  onDetailSelect: (detail: string | null) => void
   cumulative: boolean
 }
 
-export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory, cumulative }: Props) {
+export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory, selectedDetail, onDetailSelect, cumulative }: Props) {
   const [detailSearch, setDetailSearch] = useState('')
 
   useEffect(() => {
     setDetailSearch('')
-  }, [selectedCategory])
+    onDetailSelect(null)
+  }, [selectedCategory]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const readyYears = selectedYears.filter(y => yearData[y] && !loading[y])
 
-  // Monthly line chart: total or category-filtered, with optional cumulative running sum
+  // Monthly line chart: total, category-filtered, or detail-filtered
   const monthlyData = MONTH_LABELS.map((month, i) => {
     const entry: Record<string, number | string> = { month }
     for (const year of readyYears) {
-      if (cumulative) {
+      if (selectedDetail && selectedCategory) {
+        // Detail-level: sum from allExpenses for this specific detail
+        const monthVal = yearData[year].allExpenses
+          .filter(e => e.category === selectedCategory && e.detail === selectedDetail && e.month === i + 1)
+          .reduce((s, e) => s + e.amount, 0)
+        if (cumulative) {
+          const cumVal = MONTH_LABELS.slice(0, i + 1).reduce((s, _, j) =>
+            s + yearData[year].allExpenses
+              .filter(e => e.category === selectedCategory && e.detail === selectedDetail && e.month === j + 1)
+              .reduce((ss, e) => ss + e.amount, 0), 0)
+          entry[year] = cumVal
+        } else {
+          entry[year] = monthVal
+        }
+      } else if (cumulative) {
         entry[year] = yearData[year].monthlyList
           .slice(0, i + 1)
           .reduce((s, m) => s + (selectedCategory ? (m?.[selectedCategory] ?? 0) : (m?.total ?? 0)), 0)
@@ -95,9 +112,15 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
       {/* Monthly line chart */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <h2 className="text-base font-semibold text-slate-700 mb-1">
-          월별 지출 {cumulative ? '누적' : '비교'}{selectedCategory ? ` — ${selectedCategory}` : ''}
+          월별 지출 {cumulative ? '누적' : '비교'}
+          {selectedCategory ? ` — ${selectedCategory}` : ''}
+          {selectedDetail ? ` > ${selectedDetail}` : ''}
         </h2>
-        <p className="text-xs text-slate-400 mb-4">{cumulative ? '연초부터 해당 월까지 누적 지출' : '선택한 연도별 월간 지출 합계'}</p>
+        <p className="text-xs text-slate-400 mb-4">
+          {selectedDetail ? (
+            <>항목별 월간 비교 <button onClick={() => onDetailSelect(null)} className="text-blue-400 hover:text-blue-600 ml-1">전체보기</button></>
+          ) : cumulative ? '연초부터 해당 월까지 누적 지출' : '선택한 연도별 월간 지출 합계'}
+        </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -145,7 +168,10 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
               />
             </div>
             <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 40)}>
-              <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+              <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
+                onClick={(e) => { if (e?.activeLabel) onDetailSelect(selectedDetail === e.activeLabel ? null : e.activeLabel) }}
+                style={{ cursor: 'pointer' }}
+              >
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
                 <XAxis
                   type="number"
@@ -157,7 +183,14 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
                 <YAxis
                   type="category"
                   dataKey="detail"
-                  tick={{ fontSize: 12, fill: '#64748b' }}
+                  tick={({ x, y, payload }: any) => (
+                    <text x={x} y={y} dy={4} textAnchor="end" fontSize={12}
+                      fill={selectedDetail === payload.value ? '#1e293b' : '#64748b'}
+                      fontWeight={selectedDetail === payload.value ? 700 : 400}
+                    >
+                      {payload.value.length > 10 ? payload.value.slice(0, 10) + '…' : payload.value}
+                    </text>
+                  )}
                   axisLine={false}
                   tickLine={false}
                   width={90}
