@@ -27,7 +27,9 @@ export default function CategorySection({ data, selectedCategory, onCategorySele
   const { catColors } = useTheme()
   const total = Object.values(data.categoryTotals).reduce((a, b) => a + b, 0)
 
-  const pieData = CATEGORIES.map((cat) => ({
+  const activeCategories = CATEGORIES.filter(cat => data.categoryTotals[cat] > 0)
+
+  const pieData = activeCategories.map((cat) => ({
     name: cat,
     value: data.categoryTotals[cat],
     pct: ((data.categoryTotals[cat] / total) * 100).toFixed(1),
@@ -36,7 +38,7 @@ export default function CategorySection({ data, selectedCategory, onCategorySele
   // Determine table rows based on selected category
   function getTableRows(): { name: string; amount: number }[] {
     if (!selectedCategory) {
-      return CATEGORIES.map((cat) => ({ name: cat, amount: data.categoryTotals[cat] }))
+      return activeCategories.map((cat) => ({ name: cat, amount: data.categoryTotals[cat] }))
     }
     if (selectedCategory === '변동비') return data.variableDetail
     if (selectedCategory === '고정비') return data.fixedDetail

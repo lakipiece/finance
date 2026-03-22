@@ -71,7 +71,7 @@ export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect
           wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
           formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>}
         />
-        {CATEGORIES.map((cat) => (
+        {CATEGORIES.filter(cat => monthlyList.some(m => (m[cat as keyof MonthlyData] as number) > 0)).map((cat) => (
           <Bar
             key={cat}
             dataKey={cat}

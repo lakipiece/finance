@@ -238,19 +238,19 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
                           {e.category}
                         </span>
                       </td>
-                      <td className="py-2 px-3 text-slate-700 max-w-[180px]">
-                        <span className="block truncate" title={e.detail && e.detail.length > 16 ? e.detail : undefined}>
-                          {e.detail || <span className="text-slate-300">—</span>}
-                        </span>
+                      <td className="py-2 px-3">
+                        {e.detail ? (
+                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>
+                        ) : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
                         {e.memo ? (
-                          <span className="block truncate" title={e.memo.length > 20 ? e.memo : undefined}>{e.memo}</span>
+                          <span className="block truncate" title={e.memo}>{e.memo}</span>
                         ) : (
                           <span className="text-slate-200">—</span>
                         )}
                       </td>
-                      <td className="py-2 px-3 text-slate-400">{e.method || <span className="text-slate-300">—</span>}</td>
+                      <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
                       <td className="py-2 px-3 text-right font-semibold text-slate-800">{formatWonFull(e.amount)}</td>
                     </tr>
                   ))}

@@ -221,7 +221,7 @@ export default function AdminClient({ initialYears }: Props) {
             {years.map((y) => {
               const isSheets = y.source === 'googlesheet'
               return (
-                <div key={y.year} className="relative group bg-slate-50 rounded-xl px-6 py-4 text-center min-w-24">
+                <div key={y.year} className="bg-slate-50 rounded-xl px-6 py-4 text-center min-w-24">
                   <div className="text-2xl font-bold text-slate-800">{y.year}</div>
                   <div className="text-xs text-slate-400 mt-1">{y.count.toLocaleString()}건</div>
                   <div className="flex items-center justify-center gap-1 mt-1.5">
@@ -232,7 +232,6 @@ export default function AdminClient({ initialYears }: Props) {
                       <button
                         onClick={() => { navigator.clipboard.writeText(y.source_url!); alert('URL이 클립보드에 복사되었습니다.') }}
                         className="text-slate-400 hover:text-slate-600 transition-colors"
-                        title={y.source_url}
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -240,13 +239,6 @@ export default function AdminClient({ initialYears }: Props) {
                       </button>
                     )}
                   </div>
-                  {isSheets && y.source_url && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                      <div className="bg-slate-800 text-white text-xs rounded-lg px-3 py-1.5 whitespace-nowrap max-w-xs truncate">
-                        {y.source_url}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )
             })}
