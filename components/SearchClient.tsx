@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull, CAT_BADGE } from '@/lib/utils'
 
@@ -15,6 +15,15 @@ export default function SearchClient({ allExpenses }: Props) {
   const [category, setCategory] = useState('전체')
   const [month, setMonth] = useState('전체')
   const [year, setYear] = useState('전체')
+
+  const initializedRef = useRef(false)
+
+  useEffect(() => {
+    if (!initializedRef.current && availableYears.length > 0) {
+      initializedRef.current = true
+      setYear(String(availableYears[availableYears.length - 1]))
+    }
+  }, [availableYears])
 
   const availableYears = useMemo(() => {
     const years = [...new Set(allExpenses.map(e => e.year))].sort()
@@ -86,6 +95,7 @@ export default function SearchClient({ allExpenses }: Props) {
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
+                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
                   <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
                 </tr>
@@ -100,6 +110,18 @@ export default function SearchClient({ allExpenses }: Props) {
                       </span>
                     </td>
                     <td className="py-2 px-3 text-slate-700">{e.detail || <span className="text-slate-300">—</span>}</td>
+                    <td className="py-2 px-3 text-slate-400 text-xs max-w-[200px]">
+                      {e.memo ? (
+                        <span
+                          className="block truncate"
+                          title={e.memo.length > 20 ? e.memo : undefined}
+                        >
+                          {e.memo}
+                        </span>
+                      ) : (
+                        <span className="text-slate-200">—</span>
+                      )}
+                    </td>
                     <td className="py-2 px-3 text-slate-400">{e.method || <span className="text-slate-300">—</span>}</td>
                     <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
                       {formatWonFull(e.amount)}
