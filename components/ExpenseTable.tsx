@@ -1,23 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { formatWonFull, CAT_BADGE } from '@/lib/utils'
 
 interface Props {
   expenses: ExpenseItem[]
   selectedCategory: string | null
+  selectedDetail: string | null
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
 
-export default function ExpenseTable({ expenses, selectedCategory }: Props) {
+export default function ExpenseTable({ expenses, selectedCategory, selectedDetail }: Props) {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
-  const filtered = selectedCategory
-    ? expenses.filter(e => e.category === selectedCategory)
-    : expenses
+  useEffect(() => { setPage(1) }, [selectedDetail, selectedCategory])
+
+  const filtered = expenses.filter(e => {
+    if (selectedCategory && e.category !== selectedCategory) return false
+    if (selectedDetail && e.detail !== selectedDetail) return false
+    return true
+  })
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -38,6 +43,7 @@ export default function ExpenseTable({ expenses, selectedCategory }: Props) {
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
+              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
             </tr>
@@ -56,6 +62,18 @@ export default function ExpenseTable({ expenses, selectedCategory }: Props) {
                   </span>
                 </td>
                 <td className="py-2.5 px-3 text-slate-700">{e.detail || <span className="text-slate-300">—</span>}</td>
+                <td className="py-2.5 px-3 text-slate-400 text-xs max-w-[200px]">
+                  {e.memo ? (
+                    <span
+                      className="block truncate"
+                      title={e.memo.length > 20 ? e.memo : undefined}
+                    >
+                      {e.memo}
+                    </span>
+                  ) : (
+                    <span className="text-slate-200">—</span>
+                  )}
+                </td>
                 <td className="py-2.5 px-3 text-slate-400">{e.method || <span className="text-slate-300">—</span>}</td>
                 <td className="py-2.5 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
                   {formatWonFull(e.amount)}
