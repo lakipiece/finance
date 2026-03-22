@@ -19,5 +19,5 @@ export default async function Page({ searchParams }: { searchParams: { year?: st
     )
   }
 
-  return <Dashboard data={data} />
+  return <Dashboard data={data} year={year} />
 }

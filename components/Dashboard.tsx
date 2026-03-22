@@ -16,9 +16,10 @@ function ChartPlaceholder({ h }: { h: number }) {
 
 interface Props {
   data: DashboardData
+  year: number
 }
 
-export default function Dashboard({ data }: Props) {
+export default function Dashboard({ data, year }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   function handleCategorySelect(cat: string) {
@@ -27,7 +28,7 @@ export default function Dashboard({ data }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <KpiCards data={data} />
+      <KpiCards data={data} year={year} />
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <h2 className="text-base font-semibold text-slate-700 mb-1">월별 지출 현황</h2>
