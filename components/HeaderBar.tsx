@@ -2,6 +2,7 @@
 
 import TabNav from './TabNav'
 import ThemePicker from './ThemePicker'
+import YearPicker from './YearPicker'
 import { useTheme } from '@/lib/ThemeContext'
 
 export default function HeaderBar() {
@@ -17,7 +18,10 @@ export default function HeaderBar() {
             <p className="text-white/60 text-xs font-medium tracking-widest mb-0.5">HOUSEHOLD BUDGET</p>
             <h1 className="text-2xl font-bold">가계부 대시보드</h1>
           </div>
-          <ThemePicker />
+          <div className="flex items-center gap-2">
+            <YearPicker />
+            <ThemePicker />
+          </div>
         </div>
         <TabNav />
       </div>

@@ -17,11 +17,10 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
         {/* Header */}
         <div className="p-6 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-800">파싱 결과 미리보기</h2>
-          <div className="flex gap-4 mt-2 text-sm">
+          <div className="flex gap-4 mt-2 text-sm flex-wrap">
             <span className="text-slate-500">연도: <strong className="text-slate-700">{preview.year}</strong></span>
-            <span className="text-slate-500">총 행수: <strong className="text-slate-700">{preview.totalCount}건</strong></span>
-            <span className="text-slate-500">중복: <strong className="text-amber-600">{preview.duplicateCount}건 제외</strong></span>
-            <span className="text-slate-500">저장 예정: <strong className="text-green-600">{preview.totalCount - preview.duplicateCount}건</strong></span>
+            <span className="text-slate-500">기존 데이터: <strong className="text-amber-600">{preview.existingCount}건 삭제</strong></span>
+            <span className="text-slate-500">새 데이터: <strong className="text-green-600">{preview.totalCount}건으로 교체</strong></span>
           </div>
         </div>
 
@@ -84,10 +83,10 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
           </button>
           <button
             onClick={onConfirm}
-            disabled={loading || preview.totalCount - preview.duplicateCount === 0}
+            disabled={loading || preview.totalCount === 0}
             className="px-4 py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50"
           >
-            {loading ? '저장 중...' : `저장 (${preview.totalCount - preview.duplicateCount}건)`}
+            {loading ? '저장 중...' : `저장 (${preview.totalCount}건)`}
           </button>
         </div>
       </div>

@@ -91,9 +91,8 @@ export default function AdminClient({ initialYears }: Props) {
     if (!res.ok) { alert(json.error ?? '저장 실패'); return }
 
     const inserted: number = json.inserted ?? 0
-    const skipped: number = json.skipped ?? 0
     setPreview(null)
-    alert(`${inserted}건 저장 완료 (${skipped}건 중복 제외)`)
+    alert(`${inserted}건 저장 완료`)
     window.location.href = '/admin'
   }
 

@@ -55,7 +55,7 @@ export interface RawExpenseRow {
 export interface ParsePreviewResponse {
   rows: RawExpenseRow[]
   totalCount: number
-  duplicateCount: number
+  existingCount: number
   sampleRows: RawExpenseRow[] // first 10 rows
   year: number
   rawSample?: string[][] // first 3 raw rows for debugging when totalCount is 0

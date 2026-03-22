@@ -42,27 +42,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 422 })
   }
 
-  // Check duplicates against existing Supabase rows
-  const { data: existing, error: dupError } = await supabase
+  const { count } = await supabase
     .from('expenses')
-    .select('expense_date, category, detail, amount')
+    .select('*', { count: 'exact', head: true })
     .eq('year', year)
-  if (dupError) return NextResponse.json({ error: '중복 확인 중 오류가 발생했습니다.' }, { status: 500 })
-
-  const existingSet = new Set(
-    (existing ?? []).map((e: any) =>
-      `${e.expense_date}|${e.category}|${e.detail ?? ''}|${e.amount}`
-    )
-  )
-
-  const duplicateCount = rows.filter(r =>
-    existingSet.has(`${r.expense_date}|${r.category}|${r.detail}|${r.amount}`)
-  ).length
+  const existingCount = count ?? 0
 
   const response: ParsePreviewResponse = {
     rows,
     totalCount: rows.length,
-    duplicateCount,
+    existingCount,
     sampleRows: rows.slice(0, 10),
     year,
   }
