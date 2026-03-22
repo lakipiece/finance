@@ -16,6 +16,11 @@ export default function SearchClient({ allExpenses }: Props) {
   const [month, setMonth] = useState('전체')
   const [year, setYear] = useState('전체')
 
+  const availableYears = useMemo(() => {
+    const years = [...new Set(allExpenses.map(e => e.year))].sort()
+    return years
+  }, [allExpenses])
+
   const initializedRef = useRef(false)
 
   useEffect(() => {
@@ -24,11 +29,6 @@ export default function SearchClient({ allExpenses }: Props) {
       setYear(String(availableYears[availableYears.length - 1]))
     }
   }, [availableYears])
-
-  const availableYears = useMemo(() => {
-    const years = [...new Set(allExpenses.map(e => e.year))].sort()
-    return years
-  }, [allExpenses])
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
