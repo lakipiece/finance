@@ -29,6 +29,7 @@ export async function fetchYearData(year: number): Promise<DashboardData | null>
     expense_date: e.expense_date ?? '',
     category: e.category ?? '',
     detail: e.detail ?? '',
+    memo: e.memo ?? '',
     method: e.method ?? '',
     amount: e.amount ?? 0,
   }))
