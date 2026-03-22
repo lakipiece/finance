@@ -20,6 +20,7 @@ export interface ExpenseItem {
   month: number
   category: string
   detail: string
+  memo: string
   method: string
   amount: number
 }
@@ -48,6 +49,7 @@ export interface RawExpenseRow {
   expense_date: string // 'YYYY-MM-DD'
   category: string     // '고정비' | '대출상환' | '변동비' | '여행공연비'
   detail: string       // '' if absent (never null)
+  memo: string         // '' if absent (never null)
   method: string       // '' if absent (never null)
   amount: number       // positive integer (won)
 }
