@@ -60,5 +60,7 @@ export interface ParsePreviewResponse {
   existingCount: number
   sampleRows: RawExpenseRow[] // first 10 rows
   year: number
+  source?: 'excel' | 'googlesheet'
+  source_url?: string
   rawSample?: string[][] // first 3 raw rows for debugging when totalCount is 0
 }

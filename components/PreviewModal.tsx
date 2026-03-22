@@ -55,6 +55,7 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
                     <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">분류</th>
                     <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">내역</th>
                     <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">결제</th>
+                    <th className="text-left py-2 px-2 text-xs text-slate-400 font-medium">비고</th>
                     <th className="text-right py-2 px-2 text-xs text-slate-400 font-medium">금액</th>
                   </tr>
                 </thead>
@@ -65,6 +66,7 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
                       <td className="py-1.5 px-2 text-slate-600">{row.category}</td>
                       <td className="py-1.5 px-2 text-slate-700 max-w-[160px] truncate">{row.detail || '-'}</td>
                       <td className="py-1.5 px-2 text-slate-400">{row.method || '-'}</td>
+                      <td className="py-1.5 px-2 text-slate-400 text-xs max-w-[120px] truncate" title={row.memo || undefined}>{row.memo || '-'}</td>
                       <td className="py-1.5 px-2 text-right font-medium text-slate-800">{formatWonFull(row.amount)}</td>
                     </tr>
                   ))}

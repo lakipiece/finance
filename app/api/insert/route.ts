@@ -8,11 +8,13 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let rows: RawExpenseRow[], year: number
+  let rows: RawExpenseRow[], year: number, source: string, source_url: string
   try {
     const body = await req.json()
     rows = body.rows
     year = body.year
+    source = body.source ?? 'excel'
+    source_url = body.source_url ?? ''
   } catch {
     return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
   }
@@ -40,6 +42,8 @@ export async function POST(req: NextRequest) {
     method: r.method || null,
     memo: r.memo ?? '',
     amount: r.amount,
+    source,
+    source_url,
   }))
 
   // Delete all existing rows for this year, then insert fresh data.

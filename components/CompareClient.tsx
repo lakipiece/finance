@@ -3,14 +3,13 @@
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
+import type { YearSummary } from '@/lib/fetchYears'
 import { useTheme } from '@/lib/ThemeContext'
 
 const CompareCharts = dynamic(() => import('./CompareCharts'), {
   ssr: false,
   loading: () => <div className="animate-pulse bg-slate-100 rounded-xl h-64" />,
 })
-
-interface YearSummary { year: number; count: number }
 
 interface Props {
   availableYears: YearSummary[]
