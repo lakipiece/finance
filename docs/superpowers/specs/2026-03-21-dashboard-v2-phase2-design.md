@@ -5,7 +5,7 @@
 
 ## Goal
 
-Phase 2 adds three capabilities to the household budget dashboard:
+Phase 2 adds three capabilities to the household ledger dashboard:
 
 1. **Excel upload UI** — drag-and-drop xlsx upload with parse preview → Supabase insert
 2. **Google Sheets sync** — Sheets API-based import with preview → Supabase insert

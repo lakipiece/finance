@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add Supabase Auth-gated Excel/Google Sheets upload UI and multi-year comparison charts to the existing Next.js 14 household budget dashboard.
+**Goal:** Add Supabase Auth-gated Excel/Google Sheets upload UI and multi-year comparison charts to the existing Next.js 14 household ledger dashboard.
 
 **Architecture:** A shared `aggregateExpenses()` function is extracted from `fetchData.ts`; `fetchYearData()` and `fetchYears()` are added alongside it. Auth uses `@supabase/ssr` with a `middleware.ts` session refresher. The `/admin` page (server-gated) handles xlsx upload and Google Sheets sync via API routes. The `/compare` page (public) fetches per-year `DashboardData` from `/api/year-data` and overlays them on shared Recharts charts.
 

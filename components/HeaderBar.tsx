@@ -15,7 +15,7 @@ export default function HeaderBar() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-white/60 text-xs font-medium tracking-widest mb-0.5">HOUSEHOLD BUDGET</p>
+            <p className="text-white/60 text-xs font-medium tracking-widest mb-0.5">HOUSEHOLD LEDGER</p>
             <h1 className="text-2xl font-bold">가계부 대시보드</h1>
           </div>
           <div className="flex items-center gap-2">

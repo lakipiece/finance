@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add tab navigation, theme picker, chart improvements, and search to the existing Next.js household budget dashboard.
+**Goal:** Add tab navigation, theme picker, chart improvements, and search to the existing Next.js household ledger dashboard.
 
 **Architecture:** Split the monolithic Dashboard component into per-tab pages under the Next.js App Router. A ThemeContext provides palette state globally; all chart components read colors from it. The existing Supabase data layer stays unchanged.
 
@@ -324,7 +324,7 @@ export default function HeaderBar() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-white/60 text-xs font-medium tracking-widest mb-0.5">HOUSEHOLD BUDGET</p>
+            <p className="text-white/60 text-xs font-medium tracking-widest mb-0.5">HOUSEHOLD LEDGER</p>
             <h1 className="text-2xl font-bold">가계부 대시보드</h1>
           </div>
           <ThemePicker />
