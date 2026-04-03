@@ -1,5 +1,5 @@
 import { fetchData } from '@/lib/fetchData'
-import Dashboard from '@/components/Dashboard'
+import MonthlyClient from '@/components/MonthlyClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,5 +19,5 @@ export default async function Page({ searchParams }: { searchParams: { year?: st
     )
   }
 
-  return <Dashboard data={data} year={year} />
+  return <MonthlyClient data={data} year={year} />
 }
