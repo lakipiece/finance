@@ -40,7 +40,7 @@ export default function CategoryDetailTable({ allExpenses }: Props) {
     <div>
       {/* Category tabs */}
       <div className="flex gap-2 mb-4 flex-wrap">
-        {CATEGORIES.map((cat) => (
+        {CATEGORIES.filter(cat => allExpenses.some(e => e.category === cat)).map((cat) => (
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
@@ -76,7 +76,7 @@ export default function CategoryDetailTable({ allExpenses }: Props) {
                   >
                     <td className="py-2 px-3 text-slate-700 flex items-center gap-1.5">
                       <span className={`transition-transform text-slate-400 text-xs ${isSelected ? 'rotate-90' : ''}`}>▶</span>
-                      {row.name}
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{row.name}</span>
                     </td>
                     <td className="py-2 px-3 text-right font-medium text-slate-800">{formatWonFull(row.amount)}</td>
                     <td className="py-2 px-3 text-right">
