@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import type { DashboardData } from '@/lib/types'
+import type { DashboardData, MonthlyData, CategoryTotal } from '@/lib/types'
+import { useFilter } from '@/lib/FilterContext'
 import KpiCards from './KpiCards'
 import ExpenseTable from './ExpenseTable'
 
@@ -20,23 +21,53 @@ interface Props {
 }
 
 export default function Dashboard({ data, year }: Props) {
+  const { excludeLoan } = useFilter()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null)
   const [chartCategory, setChartCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
-  const sortedExpenses = [...data.allExpenses].sort((a, b) => b.amount - a.amount)
+  // Apply excludeLoan filter to data
+  const filteredData = useMemo((): DashboardData => {
+    if (!excludeLoan) return data
+    const expenses = data.allExpenses.filter(e => e.category !== '대출상환')
+    const total = expenses.reduce((s, e) => s + e.amount, 0)
+    const catTotals = { ...data.categoryTotals, 대출상환: 0 } as CategoryTotal
+    const monthlyList = data.monthlyList.map(m => ({ ...m, 대출상환: 0, total: m.total - m.대출상환 })) as MonthlyData[]
+    return {
+      ...data,
+      allExpenses: expenses,
+      total,
+      categoryTotals: catTotals,
+      monthlyAvg: Math.round(total / 12),
+      monthlyList,
+    }
+  }, [data, excludeLoan])
+
+  // Apply chartCategory (KPI card filter) to expenses for table/sections
+  const activeCategory = chartCategory ?? selectedCategory
+
+  const sortedExpenses = useMemo(() =>
+    [...filteredData.allExpenses].sort((a, b) => b.amount - a.amount),
+    [filteredData.allExpenses]
+  )
 
   const filteredExpenses = useMemo(() => {
-    if (!searchQuery.trim()) return sortedExpenses
-    const q = searchQuery.trim().toLowerCase()
-    return sortedExpenses.filter(e =>
-      e.detail.toLowerCase().includes(q) ||
-      e.category.toLowerCase().includes(q) ||
-      e.method.toLowerCase().includes(q) ||
-      e.memo.toLowerCase().includes(q)
-    )
-  }, [sortedExpenses, searchQuery])
+    let result = sortedExpenses
+    if (chartCategory) {
+      result = result.filter(e => e.category === chartCategory)
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      result = result.filter(e =>
+        e.detail.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q) ||
+        e.method.toLowerCase().includes(q) ||
+        e.memo.toLowerCase().includes(q)
+      )
+    }
+    return result
+  }, [sortedExpenses, searchQuery, chartCategory])
 
   function handleCategorySelect(cat: string) {
     setSelectedCategory((prev) => (prev === cat ? null : cat))
@@ -44,19 +75,25 @@ export default function Dashboard({ data, year }: Props) {
   }
 
   function handleChartCategoryToggle(cat: string) {
-    setChartCategory(prev => prev === cat ? null : cat)
+    setChartCategory(prev => {
+      const next = prev === cat ? null : cat
+      // Sync selectedCategory with chartCategory for sections below
+      setSelectedCategory(next)
+      setSelectedDetail(null)
+      return next
+    })
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <KpiCards data={data} year={year} activeCategory={chartCategory} onCategoryClick={handleChartCategoryToggle} />
+      <KpiCards data={filteredData} year={year} activeCategory={chartCategory} onCategoryClick={handleChartCategoryToggle} />
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-base font-semibold text-slate-700">월별 지출 현황</h2>
           {chartCategory && (
             <button
-              onClick={() => setChartCategory(null)}
+              onClick={() => { setChartCategory(null); setSelectedCategory(null); setSelectedDetail(null) }}
               className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,7 +107,7 @@ export default function Dashboard({ data, year }: Props) {
           <p className="text-xs text-slate-400 mb-2">{chartCategory} 필터 적용 중</p>
         )}
         <MonthlyChart
-          monthlyList={data.monthlyList}
+          monthlyList={filteredData.monthlyList}
           selectedMonth={null}
           onMonthSelect={() => {}}
           highlightCategory={chartCategory}
@@ -81,7 +118,7 @@ export default function Dashboard({ data, year }: Props) {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-4">분류별 지출</h2>
           <CategorySection
-            data={data}
+            data={filteredData}
             selectedCategory={selectedCategory}
             onCategorySelect={handleCategorySelect}
           />
@@ -94,7 +131,7 @@ export default function Dashboard({ data, year }: Props) {
             {selectedCategory ? '좌측 도넛 분류 클릭으로 필터' : '좌측 도넛 클릭시 분류별 전체 내역'}
           </p>
           <CategoryDetailChart
-            allExpenses={data.allExpenses}
+            allExpenses={filteredData.allExpenses}
             selectedCategory={selectedCategory}
             selectedDetail={selectedDetail}
             onDetailSelect={setSelectedDetail}

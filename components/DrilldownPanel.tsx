@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
+import { useFilter } from '@/lib/FilterContext'
 
 interface Props {
   monthData: MonthlyData
@@ -18,6 +19,17 @@ const PAGE_SIZES = [20, 50, 100] as const
 
 export default function DrilldownPanel({ monthData, expenses, allExpenses, monthlyList, onClose }: Props) {
   const { catColors } = useTheme()
+  const { excludeLoan } = useFilter()
+
+  // Filter out 대출상환 if excluded
+  const baseExpenses = useMemo(() =>
+    excludeLoan ? expenses.filter(e => e.category !== '대출상환') : expenses,
+    [expenses, excludeLoan]
+  )
+  const baseMonthData = useMemo((): MonthlyData =>
+    excludeLoan ? { ...monthData, 대출상환: 0, total: monthData.total - monthData.대출상환 } : monthData,
+    [monthData, excludeLoan]
+  )
   const [selectedCat, setSelectedCat] = useState<string | null>(null)
   const [detailSearch, setDetailSearch] = useState('')
   const [selectedTrendDetail, setSelectedTrendDetail] = useState<string | null>(null)
@@ -25,7 +37,7 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
   const filteredExpenses = (() => {
-    let result = selectedCat ? expenses.filter(e => e.category === selectedCat) : expenses
+    let result = selectedCat ? baseExpenses.filter(e => e.category === selectedCat) : baseExpenses
     if (selectedTrendDetail) result = result.filter(e => e.detail === selectedTrendDetail)
     return result
   })()
@@ -63,8 +75,8 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">{monthData.month} 상세 내역</h2>
-          <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(monthData.total)}</p>
+          <h2 className="text-lg font-bold text-slate-800">{baseMonthData.month} 상세 내역</h2>
+          <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(baseMonthData.total)}</p>
         </div>
         {onClose && (
           <button
@@ -82,7 +94,7 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
       {/* Category Summary — clickable drilldown */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {CATEGORIES.map((cat) => {
-          const amount = monthData[cat as keyof MonthlyData] as number
+          const amount = baseMonthData[cat as keyof MonthlyData] as number
           if (amount === 0) return null
           const isSelected = selectedCat === cat
           return (
@@ -155,7 +167,7 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
           {/* Fixed height scroll area */}
           <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
             {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount]) => {
-              const total = monthData[selectedCat as keyof MonthlyData] as number
+              const total = baseMonthData[selectedCat as keyof MonthlyData] as number
               const pct = total > 0 ? Math.round(amount / total * 100) : 0
               const isLong = detail.length > 18
               const isDetailSelected = selectedTrendDetail === detail

@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull, CAT_BADGE } from '@/lib/utils'
+import { useFilter } from '@/lib/FilterContext'
 
 interface Props {
   allExpenses: ExpenseItem[]
@@ -15,6 +16,15 @@ type SortKey = 'date' | 'category' | 'detail' | 'memo' | 'method' | 'amount'
 type SortDir = 'asc' | 'desc'
 
 export default function SearchClient({ allExpenses }: Props) {
+  const { excludeLoan } = useFilter()
+  const baseExpenses = useMemo(() =>
+    excludeLoan ? allExpenses.filter(e => e.category !== '대출상환') : allExpenses,
+    [allExpenses, excludeLoan]
+  )
+  const activeCategories = useMemo(() =>
+    excludeLoan ? CATEGORIES.filter(c => c !== '대출상환') : CATEGORIES,
+    [excludeLoan]
+  )
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('전체')
   const [month, setMonth] = useState('전체')
@@ -25,9 +35,9 @@ export default function SearchClient({ allExpenses }: Props) {
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
   const availableYears = useMemo(() => {
-    const years = [...new Set(allExpenses.map(e => e.year))].sort()
+    const years = [...new Set(baseExpenses.map(e => e.year))].sort()
     return years
-  }, [allExpenses])
+  }, [baseExpenses])
 
   const initializedRef = useRef(false)
 
@@ -52,7 +62,7 @@ export default function SearchClient({ allExpenses }: Props) {
     const q = query.trim().toLowerCase()
     const monthNum = month === '전체' ? null : parseInt(month)
     const yearNum = year === '전체' ? null : Number(year)
-    const filtered = allExpenses.filter((e) => {
+    const filtered = baseExpenses.filter((e) => {
       if (q && !e.detail.toLowerCase().includes(q) && !e.category.toLowerCase().includes(q) && !e.method.toLowerCase().includes(q) && !e.memo.toLowerCase().includes(q)) return false
       if (category !== '전체' && e.category !== category) return false
       if (monthNum !== null && e.month !== monthNum) return false
@@ -114,7 +124,7 @@ export default function SearchClient({ allExpenses }: Props) {
             className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
             <option>전체</option>
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            {activeCategories.map((c) => <option key={c}>{c}</option>)}
           </select>
           <select
             value={month}

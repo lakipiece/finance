@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/ThemeContext'
+import { FilterProvider } from '@/lib/FilterContext'
 import HeaderBar from '@/components/HeaderBar'
 
 const notoSans = Noto_Sans_KR({
@@ -20,8 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className={`${notoSans.className} bg-slate-50 min-h-screen`}>
         <ThemeProvider>
-          <HeaderBar />
-          <main>{children}</main>
+          <FilterProvider>
+            <HeaderBar />
+            <main>{children}</main>
+          </FilterProvider>
         </ThemeProvider>
       </body>
     </html>

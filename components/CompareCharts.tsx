@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar,
 } from 'recharts'
 import type { DashboardData } from '@/lib/types'
 import { formatWonFull } from '@/lib/utils'
+import { useFilter } from '@/lib/FilterContext'
 
 const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
-const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
-type Category = typeof CATEGORIES[number]
+const ALL_CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
+type Category = typeof ALL_CATEGORIES[number]
 
 interface Props {
   selectedYears: number[]
@@ -24,6 +25,11 @@ interface Props {
 }
 
 export default function CompareCharts({ selectedYears, yearData, colorMap, loading, selectedCategory, selectedDetail, onDetailSelect, cumulative }: Props) {
+  const { excludeLoan } = useFilter()
+  const CATEGORIES = useMemo(() =>
+    excludeLoan ? ALL_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_CATEGORIES],
+    [excludeLoan]
+  )
   const [detailSearch, setDetailSearch] = useState('')
 
   useEffect(() => {

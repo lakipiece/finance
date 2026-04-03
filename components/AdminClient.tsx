@@ -6,6 +6,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase-client'
 import PreviewModal from './PreviewModal'
 import type { ParsePreviewResponse } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
+import { useFilter } from '@/lib/FilterContext'
 
 interface Props {
   initialYears: YearSummary[]
@@ -13,6 +14,7 @@ interface Props {
 
 export default function AdminClient({ initialYears }: Props) {
   const router = useRouter()
+  const { excludeLoan, setExcludeLoan } = useFilter()
 
   // Excel upload state
   const [uploadYear, setUploadYear] = useState(new Date().getFullYear())
@@ -139,6 +141,22 @@ export default function AdminClient({ initialYears }: Props) {
         >
           로그아웃
         </button>
+      </div>
+
+      {/* Settings */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-700">대출상환 항목 제외</p>
+            <p className="text-xs text-slate-400 mt-0.5">활성화하면 모든 화면에서 대출상환 카테고리가 제외됩니다</p>
+          </div>
+          <button
+            onClick={() => setExcludeLoan(!excludeLoan)}
+            className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? 'bg-slate-800' : 'bg-slate-200'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Section A: Stored data summary (top) */}

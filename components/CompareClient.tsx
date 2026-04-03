@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useTheme } from '@/lib/ThemeContext'
+import { useFilter } from '@/lib/FilterContext'
 
 const CompareCharts = dynamic(() => import('./CompareCharts'), {
   ssr: false,
@@ -15,11 +16,16 @@ interface Props {
   availableYears: YearSummary[]
 }
 
-const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
-type Category = typeof CATEGORIES[number]
+const ALL_CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
+type Category = typeof ALL_CATEGORIES[number]
 
 export default function CompareClient({ availableYears }: Props) {
   const { palette } = useTheme()
+  const { excludeLoan } = useFilter()
+  const CATEGORIES = useMemo(() =>
+    excludeLoan ? ALL_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_CATEGORIES],
+    [excludeLoan]
+  )
   const defaultYears = availableYears.slice(0, 3).map(y => y.year)
   const [selectedYears, setSelectedYears] = useState<number[]>(defaultYears)
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
