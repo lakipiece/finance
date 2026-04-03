@@ -34,6 +34,9 @@ export default function AdminClient({ initialYears }: Props) {
   // Year summary state
   const [years, setYears] = useState<YearSummary[]>(initialYears)
 
+  // Sync loading state per year
+  const [syncingYear, setSyncingYear] = useState<number | null>(null)
+
   async function handleFileUpload(file: File) {
     setUploadError('')
     setUploading(true)
@@ -50,30 +53,49 @@ export default function AdminClient({ initialYears }: Props) {
     setPreview({ ...json, source: 'excel' })
   }
 
-  async function handleSheetsImport() {
+  async function handleSheetsImport(overrideId?: string, overrideYear?: number) {
+    const targetId = overrideId ?? sheetId
+    const targetYear = overrideYear ?? sheetYear
     setSheetsError('')
 
-    // Validate: must be a Google Sheets URL or a raw spreadsheet ID
-    const isGoogleSheetsUrl = sheetId.includes('docs.google.com/spreadsheets')
-    const isRawId = /^[a-zA-Z0-9_-]{20,}$/.test(sheetId.trim())
+    const isGoogleSheetsUrl = targetId.includes('docs.google.com/spreadsheets')
+    const isRawId = /^[a-zA-Z0-9_-]{20,}$/.test(targetId.trim())
     if (!isGoogleSheetsUrl && !isRawId) {
       setSheetsError('Google Sheets URL 또는 스프레드시트 ID를 입력해주세요.')
       return
     }
 
-    setSheetsLoading(true)
+    if (overrideId) {
+      setSyncingYear(targetYear)
+    } else {
+      setSheetsLoading(true)
+    }
 
     const res = await fetch('/api/sheets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ spreadsheetId: sheetId, sheetName, year: sheetYear }),
+      body: JSON.stringify({ spreadsheetId: targetId, sheetName, year: targetYear }),
     })
     const json = await res.json()
-    setSheetsLoading(false)
 
-    if (!res.ok) { setSheetsError(json.error ?? '가져오기 실패'); return }
-    const sheetsUrl = sheetId.includes('docs.google.com') ? sheetId : `https://docs.google.com/spreadsheets/d/${sheetId}`
+    if (overrideId) {
+      setSyncingYear(null)
+    } else {
+      setSheetsLoading(false)
+    }
+
+    if (!res.ok) {
+      if (overrideId) { alert(json.error ?? '동기화 실패'); return }
+      setSheetsError(json.error ?? '가져오기 실패')
+      return
+    }
+    const sheetsUrl = targetId.includes('docs.google.com') ? targetId : `https://docs.google.com/spreadsheets/d/${targetId}`
     setPreview({ ...json, source: 'googlesheet', source_url: sheetsUrl })
+  }
+
+  async function handleYearSync(y: YearSummary) {
+    if (!y.source_url) return
+    await handleSheetsImport(y.source_url, y.year)
   }
 
   async function handleConfirmSave() {
@@ -119,11 +141,92 @@ export default function AdminClient({ initialYears }: Props) {
         </button>
       </div>
 
+      {/* Section A: Stored data summary (top) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
+        <h2 className="text-base font-semibold text-slate-700 mb-4">저장된 데이터</h2>
+        {years.length === 0 ? (
+          <p className="text-sm text-slate-400">아직 저장된 데이터가 없습니다.</p>
+        ) : (
+          <div className="flex gap-4 flex-wrap">
+            {years.map((y) => {
+              const isSheets = y.source === 'googlesheet'
+              const isSyncing = syncingYear === y.year
+              return (
+                <div
+                  key={y.year}
+                  className={`bg-slate-50 rounded-xl px-6 py-4 text-center min-w-24 transition-all ${
+                    isSheets && y.source_url ? 'cursor-pointer hover:bg-slate-100 hover:-translate-y-0.5' : ''
+                  } ${isSyncing ? 'animate-pulse' : ''}`}
+                  onClick={isSheets && y.source_url && !isSyncing ? () => handleYearSync(y) : undefined}
+                >
+                  <div className="text-2xl font-bold text-slate-800">{y.year}</div>
+                  <div className="text-xs text-slate-400 mt-1">{y.count.toLocaleString()}건</div>
+                  <div className="flex items-center justify-center gap-1 mt-1.5">
+                    <span className={`text-xs px-1.5 py-0.5 rounded ${isSheets ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {isSheets ? 'Sheets' : 'Excel'}
+                    </span>
+                  </div>
+                  {isSheets && y.source_url && (
+                    <p className="text-[10px] text-slate-300 mt-1.5">
+                      {isSyncing ? '동기화 중...' : '클릭하여 동기화'}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Section A: Excel Upload */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Section B: Google Sheets */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <h2 className="text-base font-semibold text-slate-700 mb-1">📂 엑셀 업로드</h2>
+          <h2 className="text-base font-semibold text-slate-700 mb-1">Google Sheets 연동</h2>
+          <p className="text-xs text-slate-400 mb-4">서비스 계정으로 시트 데이터를 가져옵니다</p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">스프레드시트 URL 또는 ID</label>
+              <input
+                type="text"
+                value={sheetId}
+                onChange={(e) => setSheetId(e.target.value)}
+                placeholder="Google Sheets URL 또는 ID"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">시트 이름</label>
+              <input
+                type="text"
+                value={sheetName}
+                onChange={(e) => setSheetName(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-slate-500 mb-1">연도</label>
+              <input
+                type="number"
+                value={sheetYear}
+                onChange={(e) => setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
+                className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <button
+              onClick={() => handleSheetsImport()}
+              disabled={sheetsLoading || !sheetId}
+              className="w-full py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50"
+            >
+              {sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
+            </button>
+            {sheetsError && <p className="text-xs text-red-500">{sheetsError}</p>}
+          </div>
+        </div>
+
+        {/* Section C: Excel Upload */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h2 className="text-base font-semibold text-slate-700 mb-1">엑셀 업로드</h2>
           <p className="text-xs text-slate-400 mb-4">xlsx 파일 업로드 후 미리보기에서 확인</p>
 
           <div className="mb-4">
@@ -164,86 +267,6 @@ export default function AdminClient({ initialYears }: Props) {
           />
           {uploadError && <p className="text-xs text-red-500 mt-2">{uploadError}</p>}
         </div>
-
-        {/* Section B: Google Sheets */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <h2 className="text-base font-semibold text-slate-700 mb-1">🔗 Google Sheets 연동</h2>
-          <p className="text-xs text-slate-400 mb-4">서비스 계정으로 시트 데이터를 가져옵니다</p>
-
-          <div className="space-y-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">스프레드시트 ID</label>
-              <input
-                type="text"
-                value={sheetId}
-                onChange={(e) => setSheetId(e.target.value)}
-                placeholder="URL에서 /d/ 뒤의 ID"
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">시트 이름</label>
-              <input
-                type="text"
-                value={sheetName}
-                onChange={(e) => setSheetName(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1">연도</label>
-              <input
-                type="number"
-                value={sheetYear}
-                onChange={(e) => setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
-                className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <button
-              onClick={handleSheetsImport}
-              disabled={sheetsLoading || !sheetId}
-              className="w-full py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50"
-            >
-              {sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
-            </button>
-            {sheetsError && <p className="text-xs text-red-500">{sheetsError}</p>}
-          </div>
-        </div>
-      </div>
-
-      {/* Section C: Stored data summary */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-700 mb-4">📊 저장된 데이터</h2>
-        {years.length === 0 ? (
-          <p className="text-sm text-slate-400">아직 저장된 데이터가 없습니다.</p>
-        ) : (
-          <div className="flex gap-4 flex-wrap">
-            {years.map((y) => {
-              const isSheets = y.source === 'googlesheet'
-              return (
-                <div key={y.year} className="bg-slate-50 rounded-xl px-6 py-4 text-center min-w-24">
-                  <div className="text-2xl font-bold text-slate-800">{y.year}</div>
-                  <div className="text-xs text-slate-400 mt-1">{y.count.toLocaleString()}건</div>
-                  <div className="flex items-center justify-center gap-1 mt-1.5">
-                    <span className={`text-xs px-1.5 py-0.5 rounded ${isSheets ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {isSheets ? 'Google Sheets' : 'Excel'}
-                    </span>
-                    {isSheets && y.source_url && (
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(y.source_url!); alert('URL이 클립보드에 복사되었습니다.') }}
-                        className="text-slate-400 hover:text-slate-600 transition-colors"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
       </div>
 
       {/* Preview Modal */}

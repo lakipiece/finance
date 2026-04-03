@@ -19,6 +19,7 @@ interface Props {
   monthlyList: MonthlyData[]
   selectedMonth: number | null
   onMonthSelect: (month: number) => void
+  highlightCategory?: string | null
 }
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -42,12 +43,14 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect }: Props) {
+export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect, highlightCategory }: Props) {
   const { catColors } = useTheme()
 
   function handleClick(data: any, index: number) {
     onMonthSelect(index + 1)
   }
+
+  const activeCategories = CATEGORIES.filter(cat => monthlyList.some(m => (m[cat as keyof MonthlyData] as number) > 0))
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -71,7 +74,7 @@ export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect
           wrapperStyle={{ fontSize: 12, paddingTop: 12 }}
           formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>}
         />
-        {CATEGORIES.filter(cat => monthlyList.some(m => (m[cat as keyof MonthlyData] as number) > 0)).map((cat) => (
+        {activeCategories.map((cat) => (
           <Bar
             key={cat}
             dataKey={cat}
@@ -79,12 +82,17 @@ export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect
             fill={catColors[cat]}
             cursor="pointer"
             onClick={handleClick}
-            radius={cat === '여행공연비' ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+            radius={cat === activeCategories[activeCategories.length - 1] ? [4, 4, 0, 0] : [0, 0, 0, 0]}
           >
             {monthlyList.map((_, index) => (
               <Cell
                 key={index}
-                opacity={selectedMonth === null || selectedMonth === index + 1 ? 1 : 0.4}
+                opacity={
+                  (selectedMonth === null || selectedMonth === index + 1) &&
+                  (!highlightCategory || highlightCategory === cat)
+                    ? 1
+                    : 0.15
+                }
               />
             ))}
           </Bar>
