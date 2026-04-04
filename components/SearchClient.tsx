@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull, CAT_BADGE } from '@/lib/utils'
 import { useFilter } from '@/lib/FilterContext'
 
 interface Props {
-  allExpenses: ExpenseItem[]
+  initialExpenses: ExpenseItem[]
+  initialYear: number
+  availableYears: number[]
 }
 
 const MONTH_OPTIONS = ['전체', '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
@@ -15,38 +17,54 @@ const PAGE_SIZES = [20, 50, 100] as const
 type SortKey = 'date' | 'category' | 'detail' | 'memo' | 'method' | 'amount'
 type SortDir = 'asc' | 'desc'
 
-export default function SearchClient({ allExpenses }: Props) {
+export default function SearchClient({ initialExpenses, initialYear, availableYears }: Props) {
   const { excludeLoan } = useFilter()
-  const baseExpenses = useMemo(() =>
-    excludeLoan ? allExpenses.filter(e => e.category !== '대출상환') : allExpenses,
-    [allExpenses, excludeLoan]
-  )
-  const activeCategories = useMemo(() =>
-    excludeLoan ? CATEGORIES.filter(c => c !== '대출상환') : CATEGORIES,
-    [excludeLoan]
-  )
+
+  // Cache fetched year data
+  const [yearCache, setYearCache] = useState<Record<number, ExpenseItem[]>>({ [initialYear]: initialExpenses })
+  const [selectedYear, setSelectedYear] = useState(initialYear)
+  const [loading, setLoading] = useState(false)
+
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('전체')
   const [month, setMonth] = useState('전체')
-  const [year, setYear] = useState('전체')
   const [sortKey, setSortKey] = useState<SortKey>('date')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
-  const availableYears = useMemo(() => {
-    const years = [...new Set(baseExpenses.map(e => e.year))].sort()
-    return years
-  }, [baseExpenses])
-
-  const initializedRef = useRef(false)
-
-  useEffect(() => {
-    if (!initializedRef.current && availableYears.length > 0) {
-      initializedRef.current = true
-      setYear(String(availableYears[availableYears.length - 1]))
+  const fetchYear = useCallback(async (year: number) => {
+    if (yearCache[year]) return
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/year-data?year=${year}`)
+      if (res.ok) {
+        const data = await res.json()
+        setYearCache(prev => ({ ...prev, [year]: data?.allExpenses ?? [] }))
+      }
+    } finally {
+      setLoading(false)
     }
-  }, [availableYears])
+  }, [yearCache])
+
+  function handleYearChange(year: string) {
+    const y = Number(year)
+    setSelectedYear(y)
+    setPage(1)
+    fetchYear(y)
+  }
+
+  const allExpenses = yearCache[selectedYear] ?? []
+
+  const activeCategories = useMemo(() =>
+    excludeLoan ? CATEGORIES.filter(c => c !== '대출상환') : CATEGORIES,
+    [excludeLoan]
+  )
+
+  const baseExpenses = useMemo(() =>
+    excludeLoan ? allExpenses.filter(e => e.category !== '대출상환') : allExpenses,
+    [allExpenses, excludeLoan]
+  )
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -61,41 +79,38 @@ export default function SearchClient({ allExpenses }: Props) {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
     const monthNum = month === '전체' ? null : parseInt(month)
-    const yearNum = year === '전체' ? null : Number(year)
     const filtered = baseExpenses.filter((e) => {
       if (q && !e.detail.toLowerCase().includes(q) && !e.category.toLowerCase().includes(q) && !e.method.toLowerCase().includes(q) && !e.memo.toLowerCase().includes(q)) return false
       if (category !== '전체' && e.category !== category) return false
       if (monthNum !== null && e.month !== monthNum) return false
-      if (yearNum !== null && e.year !== yearNum) return false
       return true
     })
 
     const dir = sortDir === 'asc' ? 1 : -1
     filtered.sort((a, b) => {
+      let cmp = 0
       switch (sortKey) {
-        case 'date': return dir * a.date.localeCompare(b.date)
-        case 'category': return dir * a.category.localeCompare(b.category)
-        case 'detail': return dir * a.detail.localeCompare(b.detail)
-        case 'memo': return dir * a.memo.localeCompare(b.memo)
-        case 'method': return dir * a.method.localeCompare(b.method)
-        case 'amount': return dir * (a.amount - b.amount)
-        default: return 0
+        case 'date': cmp = a.date.localeCompare(b.date); break
+        case 'category': cmp = a.category.localeCompare(b.category); break
+        case 'detail': cmp = a.detail.localeCompare(b.detail); break
+        case 'memo': cmp = a.memo.localeCompare(b.memo); break
+        case 'method': cmp = a.method.localeCompare(b.method); break
+        case 'amount': cmp = a.amount - b.amount; break
       }
+      if (cmp !== 0) return dir * cmp
+      const dateCmp = b.date.localeCompare(a.date)
+      return dateCmp !== 0 ? dateCmp : b.amount - a.amount
     })
     return filtered
-  }, [allExpenses, query, category, month, year, sortKey, sortDir])
+  }, [baseExpenses, query, category, month, sortKey, sortDir])
 
-  useEffect(() => { setPage(1) }, [query, category, month, year])
+  useEffect(() => { setPage(1) }, [query, category, month, selectedYear])
 
   const totalPages = Math.max(1, Math.ceil(results.length / pageSize))
   const safePage = Math.min(page, totalPages)
   const slice = results.slice((safePage - 1) * pageSize, safePage * pageSize)
 
-  const sortIcon = (key: SortKey) => {
-    if (sortKey !== key) return ' ↕'
-    return sortDir === 'asc' ? ' ↑' : ' ↓'
-  }
-
+  const sortIcon = (key: SortKey) => sortKey !== key ? ' ↕' : sortDir === 'asc' ? ' ↑' : ' ↓'
   const thClass = 'text-left py-2 px-3 text-xs text-slate-400 font-medium cursor-pointer hover:text-slate-600 select-none'
 
   return (
@@ -111,11 +126,10 @@ export default function SearchClient({ allExpenses }: Props) {
             className="flex-1 min-w-48 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
           />
           <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
+            value={selectedYear}
+            onChange={(e) => handleYearChange(e.target.value)}
             className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
-            <option value="전체">전체 연도</option>
             {availableYears.map((y) => <option key={y} value={y}>{y}년</option>)}
           </select>
           <select
@@ -138,8 +152,14 @@ export default function SearchClient({ allExpenses }: Props) {
 
       {/* Results */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <p className="text-sm text-slate-400 mb-4">검색 결과 {results.length.toLocaleString()}건</p>
-        {results.length === 0 ? (
+        <p className="text-sm text-slate-400 mb-4">
+          {loading ? '로딩 중...' : `검색 결과 ${results.length.toLocaleString()}건`}
+        </p>
+        {loading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse" />)}
+          </div>
+        ) : results.length === 0 ? (
           <p className="text-center text-slate-400 py-12">검색 결과가 없습니다</p>
         ) : (
           <>
@@ -160,9 +180,7 @@ export default function SearchClient({ allExpenses }: Props) {
                     <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
                       <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
                       <td className="py-2 px-3">
-                        <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
-                          {e.category}
-                        </span>
+                        <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>{e.category}</span>
                       </td>
                       <td className="py-2 px-3">
                         {e.detail ? (
@@ -170,16 +188,10 @@ export default function SearchClient({ allExpenses }: Props) {
                         ) : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-400 text-xs max-w-[200px]">
-                        {e.memo ? (
-                          <span className="block truncate" title={e.memo}>{e.memo}</span>
-                        ) : (
-                          <span className="text-slate-200">—</span>
-                        )}
+                        {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-slate-200">—</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
-                      <td className="py-2 px-3 text-right font-semibold text-slate-800 text-xs whitespace-nowrap">
-                        {formatWonFull(e.amount)}
-                      </td>
+                      <td className="py-2 px-3 text-right font-semibold text-slate-800 text-xs whitespace-nowrap">{formatWonFull(e.amount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -197,13 +209,9 @@ export default function SearchClient({ allExpenses }: Props) {
                     key={size}
                     onClick={() => { setPageSize(size); setPage(1) }}
                     className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                      pageSize === size
-                        ? 'bg-slate-700 text-white font-semibold'
-                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                     }`}
-                  >
-                    {size}
-                  </button>
+                  >{size}</button>
                 ))}
               </div>
               <div className="flex items-center gap-1">
