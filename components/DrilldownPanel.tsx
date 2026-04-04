@@ -292,22 +292,11 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
       {/* Detail summary for selected category — 3 columns */}
       {isCategory && (
         <div className="mb-5">
-          <div className="flex items-center justify-between mb-2 gap-3">
-            <h3 className="text-sm font-semibold text-slate-600 shrink-0">{selectedCat} 항목별 집계</h3>
-            <input
-              type="text"
-              value={detailSearch}
-              onChange={e => setDetailSearch(e.target.value)}
-              placeholder="내역 검색..."
-              className="flex-1 max-w-48 text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            />
-          </div>
-          <div
-            className="grid gap-x-6 gap-y-1.5"
+          <h3 className="text-sm font-semibold text-slate-600 mb-2">{selectedCat} 항목별 집계</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1.5 md:[grid-auto-flow:column]"
             style={{
-              gridTemplateColumns: detailSummary && detailSummary.length > 3 ? 'repeat(3, 1fr)' : `repeat(${detailSummary?.length || 1}, 1fr)`,
-              gridAutoFlow: 'column',
-              gridTemplateRows: detailSummary ? `repeat(${Math.ceil(detailSummary.length / 3)}, auto)` : 'auto',
+              gridTemplateRows: detailSummary && detailSummary.length > 3
+                ? `repeat(${Math.ceil(detailSummary.length / 3)}, auto)` : undefined,
             }}
           >
             {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount], rank) => {

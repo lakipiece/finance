@@ -7,6 +7,7 @@ import PreviewModal from './PreviewModal'
 import type { ParsePreviewResponse } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
+import ThemePicker from './ThemePicker'
 
 interface Props {
   initialYears: YearSummary[]
@@ -145,7 +146,7 @@ export default function AdminClient({ initialYears }: Props) {
 
       {/* Settings */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm font-medium text-slate-700">대출상환 항목 제외</p>
             <p className="text-xs text-slate-400 mt-0.5">활성화하면 모든 화면에서 대출상환 카테고리가 제외됩니다</p>
@@ -156,6 +157,13 @@ export default function AdminClient({ initialYears }: Props) {
           >
             <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
           </button>
+        </div>
+        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+          <div>
+            <p className="text-sm font-medium text-slate-700">테마</p>
+            <p className="text-xs text-slate-400 mt-0.5">대시보드 색상 테마를 변경합니다</p>
+          </div>
+          <ThemePicker />
         </div>
       </div>
 
