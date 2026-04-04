@@ -30,7 +30,11 @@ function YearPickerInner() {
   return (
     <select
       value={selectedYear}
-      onChange={(e) => router.push(`/?year=${e.target.value}`)}
+      onChange={(e) => {
+        const params = new URLSearchParams(window.location.search)
+        params.set('year', e.target.value)
+        router.push(`${window.location.pathname}?${params.toString()}`)
+      }}
       className="bg-white/20 text-white text-sm font-semibold rounded-lg px-3 py-1.5 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
     >
       {years.map(y => (
