@@ -160,13 +160,13 @@ export default function SearchClient({ allExpenses }: Props) {
                     <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
                       <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
                       <td className="py-2 px-3">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
+                        <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
                           {e.category}
                         </span>
                       </td>
                       <td className="py-2 px-3">
                         {e.detail ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>
+                          <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">{e.detail}</span>
                         ) : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="py-2 px-3 text-slate-400 text-xs max-w-[200px]">
@@ -177,7 +177,7 @@ export default function SearchClient({ allExpenses }: Props) {
                         )}
                       </td>
                       <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
-                      <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
+                      <td className="py-2 px-3 text-right font-semibold text-slate-800 text-xs whitespace-nowrap">
                         {formatWonFull(e.amount)}
                       </td>
                     </tr>

@@ -146,24 +146,20 @@ export default function AdminClient({ initialYears }: Props) {
 
       {/* Settings */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm font-medium text-slate-700">대출상환 항목 제외</p>
-            <p className="text-xs text-slate-400 mt-0.5">활성화하면 모든 화면에서 대출상환 카테고리가 제외됩니다</p>
+        <div className="flex items-center gap-8 flex-wrap">
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-slate-700">대출상환 제외</p>
+            <button
+              onClick={() => setExcludeLoan(!excludeLoan)}
+              className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? 'bg-slate-800' : 'bg-slate-200'}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
+            </button>
           </div>
-          <button
-            onClick={() => setExcludeLoan(!excludeLoan)}
-            className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? 'bg-slate-800' : 'bg-slate-200'}`}
-          >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
-          </button>
-        </div>
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-          <div>
-            <p className="text-sm font-medium text-slate-700">테마</p>
-            <p className="text-xs text-slate-400 mt-0.5">대시보드 색상 테마를 변경합니다</p>
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-slate-700">테마</p>
+            <ThemePicker />
           </div>
-          <ThemePicker />
         </div>
       </div>
 
@@ -180,7 +176,7 @@ export default function AdminClient({ initialYears }: Props) {
               return (
                 <div
                   key={y.year}
-                  className={`bg-slate-50 rounded-xl px-6 py-4 text-center min-w-24 transition-all ${
+                  className={`bg-slate-50 rounded-xl px-6 py-4 text-center min-w-28 min-h-[100px] transition-all ${
                     isSheets && y.source_url ? 'cursor-pointer hover:bg-slate-100 hover:-translate-y-0.5' : ''
                   } ${isSyncing ? 'animate-pulse' : ''}`}
                   onClick={isSheets && y.source_url && !isSyncing ? () => handleYearSync(y) : undefined}

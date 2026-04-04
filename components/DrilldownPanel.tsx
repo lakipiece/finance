@@ -424,7 +424,7 @@ function ExpenseTableCard({
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="내역 / 분류 / 결제수단 / 비고 검색..."
-          className="border border-slate-200 rounded-xl px-3 py-1.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-64"
+          className="border border-slate-200 rounded-xl px-3 py-1.5 text-[10px] text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-52"
         />
       </div>
       {/* Mobile: card list */}
