@@ -18,7 +18,17 @@ interface Props {
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
-const DETAIL_COLORS = ['#6366f1','#8b5cf6','#a78bfa','#c4b5fd','#7c3aed','#4f46e5','#818cf8','#a5b4fc','#6d28d9','#5b21b6']
+// Generate shades from a base color — darkest first (highest amount)
+function generateShades(hex: string, count: number): string[] {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return Array.from({ length: count }, (_, i) => {
+    const t = count <= 1 ? 0 : i / (count - 1) // 0 = darkest, 1 = lightest
+    const mix = (c: number) => Math.round(c + (255 - c) * t * 0.6)
+    return `rgb(${mix(r)},${mix(g)},${mix(b)})`
+  })
+}
 
 export default function DrilldownPanel({ monthData, expenses, allExpenses, monthlyList, onClose, onMonthSelect, selectedMonth }: Props) {
   const { catColors } = useTheme()
@@ -112,7 +122,11 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
     : activeCategories
 
   const chartColors = isCategory
-    ? Object.fromEntries(chartKeys.map((k, i) => [k, DETAIL_COLORS[i % DETAIL_COLORS.length]]))
+    ? (() => {
+        const baseColor = catColors[selectedCat!] ?? '#6B8CAE'
+        const shades = generateShades(baseColor, chartKeys.length)
+        return Object.fromEntries(chartKeys.map((k, i) => [k, shades[i]]))
+      })()
     : catColors
 
   function handleChartClick(_: any, index: number) {
@@ -222,7 +236,7 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
                 key={key}
                 dataKey={key}
                 stackId="a"
-                fill={chartColors[key] ?? DETAIL_COLORS[idx % DETAIL_COLORS.length]}
+                fill={chartColors[key] ?? '#6B8CAE'}
                 radius={idx === chartKeys.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                 cursor="pointer"
                 onClick={handleChartClick}
@@ -273,32 +287,33 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
               className="flex-1 max-w-48 text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1.5">
-            {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount]) => {
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-x-4 gap-y-1.5">
+            {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount], rank) => {
               const total = baseMonthData[selectedCat as keyof MonthlyData] as number
               const pct = total > 0 ? Math.round(amount / total * 100) : 0
               const isDetailSelected = selectedTrendDetail === detail
               return (
                 <div
                   key={detail}
-                  className={`flex items-center gap-3 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+                  className={`flex items-center gap-2 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
                   onClick={() => { setSelectedTrendDetail(prev => prev === detail ? null : detail); setPage(1) }}
                 >
+                  <span className="text-[10px] text-slate-300 w-4 shrink-0 text-right">{rank + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between text-xs mb-0.5">
                       <span
-                        className={`truncate max-w-[140px] ${isDetailSelected ? 'text-slate-800 font-bold' : 'text-slate-600'}`}
+                        className={`truncate max-w-[100px] ${isDetailSelected ? 'text-slate-800 font-bold' : 'text-slate-600'}`}
                         title={detail}
                       >
                         {detail}
                       </span>
-                      <span className="text-slate-400 ml-2 shrink-0">{pct}%</span>
+                      <span className="text-slate-400 ml-1 shrink-0">{pct}%</span>
                     </div>
-                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
                       <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: catColors[selectedCat!] }} />
                     </div>
                   </div>
-                  <span className="text-xs font-semibold text-slate-800 shrink-0 w-20 text-right">{formatWonFull(amount)}</span>
+                  <span className="text-[11px] font-semibold text-slate-800 shrink-0 w-16 text-right">{formatWonFull(amount)}</span>
                 </div>
               )
             }) : (
