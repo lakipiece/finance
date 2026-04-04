@@ -8,6 +8,7 @@ const TABS = [
   { label: '대시보드', href: '/' },
   { label: '연도비교', href: '/compare' },
   { label: '검색',     href: '/search' },
+  { label: '포트폴리오', href: '/portfolio' },
   { label: '관리',     href: '/admin' },
 ]
 
