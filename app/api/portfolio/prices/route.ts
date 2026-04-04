@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPrices } from '@/lib/portfolio/prices'
 
-export const dynamic = 'force-dynamic'
-
 export async function GET(req: NextRequest) {
   const raw = req.nextUrl.searchParams.get('tickers') ?? ''
   const tickers = raw.split(',').map(t => t.trim()).filter(Boolean)
@@ -14,8 +12,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: '한 번에 최대 50개까지 조회 가능합니다.' }, { status: 400 })
   }
 
-  const prices = await getPrices(tickers)
-  return NextResponse.json(prices, {
-    headers: { 'Cache-Control': 'public, max-age=3600' },
-  })
+  try {
+    const prices = await getPrices(tickers)
+    return NextResponse.json(prices, {
+      headers: { 'Cache-Control': 'public, max-age=3600' },
+    })
+  } catch {
+    return NextResponse.json({ error: '가격 조회 중 오류가 발생했습니다.' }, { status: 500 })
+  }
 }

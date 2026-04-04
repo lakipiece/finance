@@ -33,9 +33,10 @@ export async function getPrices(tickers: string[]): Promise<Record<string, { pri
   await Promise.allSettled(
     stale.map(async (ticker) => {
       try {
+        // @ts-ignore
         const quote = await yahooFinance.quote(ticker) as Quote
-        const price = (quote as { regularMarketPrice?: number }).regularMarketPrice ?? 0
-        const currency = (quote as { currency?: string }).currency ?? 'USD'
+        const price = quote.regularMarketPrice ?? 0
+        const currency = quote.currency ?? 'USD'
         result[ticker] = { price, currency }
         updates.push({ ticker, price, currency, fetched_at: new Date().toISOString() })
       } catch {
