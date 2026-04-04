@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { supabase } from '@/lib/supabase'
+import { invalidateCache } from '@/lib/cache'
 import type { RawExpenseRow } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -62,5 +63,6 @@ export async function POST(req: NextRequest) {
     }, { status: 500 })
   }
 
+  invalidateCache()
   return NextResponse.json({ inserted: rows.length })
 }

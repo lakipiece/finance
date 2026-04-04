@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = await fetchYearData(year)
-    return NextResponse.json(data)
+    const res = NextResponse.json(data)
+    res.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=300')
+    return res
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
