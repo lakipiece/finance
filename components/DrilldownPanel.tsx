@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
@@ -30,6 +30,11 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
     excludeLoan ? { ...monthData, 대출상환: 0, total: monthData.total - monthData.대출상환 } : monthData,
     [monthData, excludeLoan]
   )
+  const activeCategories = CATEGORIES.filter(c => {
+    if (excludeLoan && c === '대출상환') return false
+    return (baseMonthData[c as keyof MonthlyData] as number) > 0
+  })
+
   const [selectedCat, setSelectedCat] = useState<string | null>(null)
   const [detailSearch, setDetailSearch] = useState('')
   const [selectedTrendDetail, setSelectedTrendDetail] = useState<string | null>(null)
@@ -37,13 +42,13 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
   const filteredExpenses = (() => {
-    let result = selectedCat ? baseExpenses.filter(e => e.category === selectedCat) : baseExpenses
+    let result = (selectedCat && selectedCat !== '__all__') ? baseExpenses.filter(e => e.category === selectedCat) : baseExpenses
     if (selectedTrendDetail) result = result.filter(e => e.detail === selectedTrendDetail)
     return result
   })()
 
   // Group by detail for selected category
-  const detailSummary = selectedCat
+  const detailSummary = (selectedCat && selectedCat !== '__all__')
     ? Object.entries(
         filteredExpenses.reduce<Record<string, number>>((acc, e) => {
           const key = e.detail || '기타'
@@ -59,7 +64,15 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
 
   const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 
-  const trendData = selectedCat
+  // Stacked chart data for "전체" view
+  const stackedData = selectedCat === '__all__'
+    ? MONTH_LABELS.map((label, i) => ({
+        month: label,
+        ...Object.fromEntries(activeCategories.map(cat => [cat, (monthlyList[i]?.[cat as keyof MonthlyData] as number) ?? 0])),
+      }))
+    : null
+
+  const trendData = (selectedCat && selectedCat !== '__all__')
     ? MONTH_LABELS.map((label, i) => {
         const value = selectedTrendDetail
           ? allExpenses
@@ -93,9 +106,28 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
 
       {/* Category Summary — clickable drilldown */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        {CATEGORIES.map((cat) => {
+        {/* 전체 카드 */}
+        <button
+          onClick={() => {
+            setSelectedCat(prev => prev === '__all__' ? null : '__all__')
+            setDetailSearch('')
+            setSelectedTrendDetail(null)
+            setPage(1)
+          }}
+          className="text-left rounded-xl p-3 transition-all"
+          style={{
+            background: selectedCat === '__all__' ? 'rgba(100,116,139,0.16)' : 'rgba(100,116,139,0.08)',
+            outline: selectedCat === '__all__' ? '2px solid #64748b' : '2px solid transparent',
+          }}
+        >
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="w-2 h-2 rounded-full bg-slate-500" />
+            <span className="text-xs font-medium text-slate-500">전체</span>
+          </div>
+          <p className="text-base font-bold text-slate-800">{formatWonFull(baseMonthData.total)}</p>
+        </button>
+        {activeCategories.map((cat) => {
           const amount = baseMonthData[cat as keyof MonthlyData] as number
-          if (amount === 0) return null
           const isSelected = selectedCat === cat
           return (
             <button
@@ -122,8 +154,52 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
         })}
       </div>
 
+      {/* 전체 선택 시 — 스택바 차트 + 카테고리 요약 */}
+      {selectedCat === '__all__' && stackedData && (
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-slate-500 mb-2">전체 월별 추이</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={stackedData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <Tooltip
+                formatter={(value: number, name: string) => [formatWonFull(value), name]}
+                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              {activeCategories.map((cat, idx) => (
+                <Bar key={cat} dataKey={cat} stackId="a" fill={catColors[cat]} radius={idx === activeCategories.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]} />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+
+          {/* 카테고리별 요약 */}
+          <div className="mt-4 space-y-2">
+            {activeCategories.map(cat => {
+              const amount = baseMonthData[cat as keyof MonthlyData] as number
+              const pct = baseMonthData.total > 0 ? Math.round(amount / baseMonthData.total * 100) : 0
+              return (
+                <div key={cat} className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between text-xs mb-0.5">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[cat] ?? 'bg-slate-100 text-slate-700'}`}>{cat}</span>
+                      <span className="text-slate-400 ml-2 shrink-0">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: catColors[cat] }} />
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold text-slate-800 shrink-0 w-28 text-right">{formatWonFull(amount)}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Detail summary for selected category */}
-      {selectedCat && (
+      {(selectedCat && selectedCat !== '__all__') && (
         <div className="mb-5">
           <div className="flex items-center justify-between mb-2 gap-3">
             <h3 className="text-sm font-semibold text-slate-600 shrink-0">{selectedCat} 항목별 집계</h3>
