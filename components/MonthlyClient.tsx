@@ -41,6 +41,10 @@ export default function MonthlyClient({ data, year }: Props) {
     ? filteredData.monthlyList[selectedMonth - 1]
     : cumulativeMonthData
 
+  function handleMonthSelect(month: number) {
+    setSelectedMonth(prev => prev === month ? null : month)
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <DrilldownPanel
@@ -50,6 +54,8 @@ export default function MonthlyClient({ data, year }: Props) {
         allExpenses={filteredData.allExpenses}
         monthlyList={filteredData.monthlyList}
         onClose={selectedMonth !== null ? () => setSelectedMonth(null) : null}
+        onMonthSelect={handleMonthSelect}
+        selectedMonth={selectedMonth}
       />
     </div>
   )
