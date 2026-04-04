@@ -148,7 +148,8 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+  <>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
@@ -337,90 +338,150 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
         </div>
       )}
 
-      {/* Expenses Table */}
-      {(() => {
-        const sorted = [...filteredExpenses].sort((a, b) => b.amount - a.amount)
-        const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
-        const safePage = Math.min(page, totalPages)
-        const slice = sorted.slice((safePage - 1) * pageSize, safePage * pageSize)
-        return (
-          <div>
-            <h3 className="text-sm font-semibold text-slate-600 mb-2">
-              {selectedTrendDetail ? `${selectedCat} > ${selectedTrendDetail} 내역` : isCategory ? `${selectedCat} 내역` : '전체 내역'}
-              {(selectedCat || selectedTrendDetail) && (
-                <button
-                  onClick={() => { setSelectedCat(null); setDetailSearch(''); setSelectedTrendDetail(null); setPage(1) }}
-                  className="ml-2 text-xs text-slate-400 hover:text-slate-600 font-normal"
-                >
-                  전체보기
-                </button>
-              )}
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">#</th>
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
-                    <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
-                    <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {slice.map((e, i) => (
-                    <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
-                      <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
-                      <td className="py-2 px-3 text-slate-400 text-xs">{e.date}</td>
-                      <td className="py-2 px-3">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
-                          {e.category}
-                        </span>
-                      </td>
-                      <td className="py-2 px-3">
-                        {e.detail ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>
-                        ) : <span className="text-slate-300">—</span>}
-                      </td>
-                      <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
-                        {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-slate-200">—</span>}
-                      </td>
-                      <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
-                      <td className="py-2 px-3 text-right font-semibold text-slate-800">{formatWonFull(e.amount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {/* Pagination */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 flex-wrap gap-3">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <span>총 {sorted.length.toLocaleString()}건</span>
-                <span className="text-slate-200">|</span>
-                <span>페이지당</span>
-                {PAGE_SIZES.map(size => (
-                  <button
-                    key={size}
-                    onClick={() => { setPageSize(size); setPage(1) }}
-                    className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                      pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                  >{size}</button>
-                ))}
-              </div>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">처음</button>
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">이전</button>
-                <span className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">다음</button>
-                <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">끝</button>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
+    </div>
+
+    {/* Expense Table — separate card */}
+    <ExpenseTableCard
+      expenses={filteredExpenses}
+      selectedCat={selectedCat}
+      selectedTrendDetail={selectedTrendDetail}
+      isCategory={!!isCategory}
+      onReset={() => { setSelectedCat(null); setDetailSearch(''); setSelectedTrendDetail(null); setPage(1) }}
+    />
+  </>
+  )
+}
+
+/* ── Expense Table (separate card) ── */
+function ExpenseTableCard({
+  expenses, selectedCat, selectedTrendDetail, isCategory,
+  onReset,
+}: {
+  expenses: ExpenseItem[]
+  selectedCat: string | null
+  selectedTrendDetail: string | null
+  isCategory: boolean
+  onReset: () => void
+}) {
+  const [sortKey, setSortKey] = useState<'date' | 'category' | 'detail' | 'amount'>('amount')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
+
+  function handleSort(key: 'date' | 'category' | 'detail' | 'amount') {
+    if (sortKey === key) {
+      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir(key === 'amount' ? 'desc' : 'asc')
+    }
+    setPage(1)
+  }
+
+  const sortIcon = (key: string) => sortKey !== key ? ' ↕' : sortDir === 'asc' ? ' ↑' : ' ↓'
+  const thSort = 'text-left py-2 px-3 text-xs text-slate-400 font-medium cursor-pointer hover:text-slate-600 select-none'
+
+  const tableData = useMemo(() => {
+    let result = [...expenses]
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      result = result.filter(e =>
+        e.detail.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q) ||
+        e.method.toLowerCase().includes(q) ||
+        e.memo.toLowerCase().includes(q)
+      )
+    }
+    const dir = sortDir === 'asc' ? 1 : -1
+    result.sort((a, b) => {
+      switch (sortKey) {
+        case 'date': return dir * a.date.localeCompare(b.date)
+        case 'category': return dir * a.category.localeCompare(b.category)
+        case 'detail': return dir * a.detail.localeCompare(b.detail)
+        case 'amount': return dir * (a.amount - b.amount)
+        default: return 0
+      }
+    })
+    return result
+  }, [expenses, searchQuery, sortKey, sortDir])
+
+  const totalPages = Math.max(1, Math.ceil(tableData.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const slice = tableData.slice((safePage - 1) * pageSize, safePage * pageSize)
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <h3 className="text-base font-semibold text-slate-700">
+          {selectedTrendDetail ? `${selectedCat} > ${selectedTrendDetail} 내역` : isCategory ? `${selectedCat} 내역` : '지출 내역'}
+          {(selectedCat || selectedTrendDetail) && (
+            <button onClick={onReset} className="ml-2 text-xs text-slate-400 hover:text-slate-600 font-normal">전체보기</button>
+          )}
+        </h3>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
+          placeholder="내역 / 분류 / 결제수단 / 비고 검색..."
+          className="border border-slate-200 rounded-xl px-3 py-1.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-64"
+        />
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-100">
+              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">#</th>
+              <th className={thSort} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
+              <th className={thSort} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
+              <th className={thSort} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
+              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
+              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
+              <th className={`${thSort} text-right`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {slice.map((e, i) => (
+              <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
+                <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
+                <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
+                <td className="py-2 px-3">
+                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>{e.category}</span>
+                </td>
+                <td className="py-2 px-3">
+                  {e.detail ? <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span> : <span className="text-slate-300">—</span>}
+                </td>
+                <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
+                  {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-slate-200">—</span>}
+                </td>
+                <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
+                <td className="py-2 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">{formatWonFull(e.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 flex-wrap gap-3">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span>총 {tableData.length.toLocaleString()}건</span>
+          <span className="text-slate-200">|</span>
+          <span>페이지당</span>
+          {PAGE_SIZES.map(size => (
+            <button
+              key={size}
+              onClick={() => { setPageSize(size); setPage(1) }}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+            >{size}</button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">처음</button>
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">이전</button>
+          <span className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">다음</button>
+          <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">끝</button>
+        </div>
+      </div>
     </div>
   )
 }
