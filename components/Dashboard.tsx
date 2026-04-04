@@ -74,9 +74,9 @@ export default function Dashboard({ data, year }: Props) {
     setSelectedDetail(null)
   }
 
-  function handleChartCategoryToggle(cat: string) {
+  function handleChartCategoryToggle(cat: string | null) {
     setChartCategory(prev => {
-      const next = prev === cat ? null : cat
+      const next = cat === null ? null : (prev === cat ? null : cat)
       // Sync selectedCategory with chartCategory for sections below
       setSelectedCategory(next)
       setSelectedDetail(null)
@@ -86,7 +86,7 @@ export default function Dashboard({ data, year }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <KpiCards data={filteredData} year={year} activeCategory={chartCategory} onCategoryClick={handleChartCategoryToggle} />
+      <KpiCards data={filteredData} year={year} selectedCategory={chartCategory} selectedMonth={null} onCategoryClick={handleChartCategoryToggle} />
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         <div className="flex items-center justify-between mb-1">
