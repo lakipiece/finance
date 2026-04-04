@@ -302,7 +302,14 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
               className="flex-1 max-w-48 text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1.5">
+          <div
+            className="grid gap-x-6 gap-y-1.5"
+            style={{
+              gridTemplateColumns: detailSummary && detailSummary.length > 3 ? 'repeat(3, 1fr)' : `repeat(${detailSummary?.length || 1}, 1fr)`,
+              gridAutoFlow: 'column',
+              gridTemplateRows: detailSummary ? `repeat(${Math.ceil(detailSummary.length / 3)}, auto)` : 'auto',
+            }}
+          >
             {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount], rank) => {
               const total = baseMonthData[selectedCat as keyof MonthlyData] as number
               const pct = total > 0 ? Math.round(amount / total * 100) : 0
@@ -363,7 +370,7 @@ function ExpenseTableCard({
   isCategory: boolean
   onReset: () => void
 }) {
-  const [sortKey, setSortKey] = useState<'date' | 'category' | 'detail' | 'amount'>('amount')
+  const [sortKey, setSortKey] = useState<'date' | 'category' | 'detail' | 'amount'>('date')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [searchQuery, setSearchQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -395,13 +402,17 @@ function ExpenseTableCard({
     }
     const dir = sortDir === 'asc' ? 1 : -1
     result.sort((a, b) => {
+      let cmp = 0
       switch (sortKey) {
-        case 'date': return dir * a.date.localeCompare(b.date)
-        case 'category': return dir * a.category.localeCompare(b.category)
-        case 'detail': return dir * a.detail.localeCompare(b.detail)
-        case 'amount': return dir * (a.amount - b.amount)
-        default: return 0
+        case 'date': cmp = a.date.localeCompare(b.date); break
+        case 'category': cmp = a.category.localeCompare(b.category); break
+        case 'detail': cmp = a.detail.localeCompare(b.detail); break
+        case 'amount': cmp = a.amount - b.amount; break
       }
+      if (cmp !== 0) return dir * cmp
+      // Secondary: date desc then amount desc
+      const dateCmp = b.date.localeCompare(a.date)
+      return dateCmp !== 0 ? dateCmp : b.amount - a.amount
     })
     return result
   }, [expenses, searchQuery, sortKey, sortDir])
