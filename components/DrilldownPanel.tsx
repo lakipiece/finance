@@ -92,6 +92,15 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
 
   // Chart data — always computed
   const chartData = useMemo(() => {
+    if (isCategory && selectedTrendDetail) {
+      // Single detail selected — show only that item
+      return MONTH_LABELS.map((label, i) => ({
+        month: label,
+        [selectedTrendDetail]: allExpenses
+          .filter(e => e.category === selectedCat && e.detail === selectedTrendDetail && e.month === i + 1)
+          .reduce((s, e) => s + e.amount, 0),
+      }))
+    }
     if (isCategory) {
       // Stacked by top details
       return MONTH_LABELS.map((label, i) => {
@@ -115,14 +124,19 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
       month: label,
       ...Object.fromEntries(activeCategories.map(cat => [cat, (monthlyList[i]?.[cat as keyof MonthlyData] as number) ?? 0])),
     }))
-  }, [isCategory, selectedCat, allExpenses, topDetails, activeCategories, monthlyList])
+  }, [isCategory, selectedCat, selectedTrendDetail, allExpenses, topDetails, activeCategories, monthlyList])
 
   const chartKeys = isCategory
-    ? [...topDetails, ...(chartData.some((d: any) => d['기타']) ? ['기타'] : [])]
+    ? (selectedTrendDetail
+        ? [selectedTrendDetail]
+        : [...topDetails, ...(chartData.some((d: any) => d['기타']) ? ['기타'] : [])])
     : activeCategories
 
   const chartColors = isCategory
     ? (() => {
+        if (selectedTrendDetail) {
+          return { [selectedTrendDetail]: catColors[selectedCat!] ?? '#6B8CAE' }
+        }
         const baseColor = catColors[selectedCat!] ?? '#6B8CAE'
         const shades = generateShades(baseColor, chartKeys.length)
         return Object.fromEntries(chartKeys.map((k, i) => [k, shades[i]]))
