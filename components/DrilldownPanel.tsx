@@ -427,7 +427,39 @@ function ExpenseTableCard({
           className="border border-slate-200 rounded-xl px-3 py-1.5 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-64"
         />
       </div>
-      <div className="overflow-x-auto">
+      {/* Mobile: card list */}
+      <div className="md:hidden space-y-2">
+        <div className="flex gap-2 mb-3 flex-wrap">
+          {(['date', 'category', 'detail', 'amount'] as const).map(key => (
+            <button
+              key={key}
+              onClick={() => handleSort(key)}
+              className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey === key ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500'}`}
+            >
+              {{ date: '날짜', category: '분류', detail: '내역', amount: '금액' }[key]}{sortIcon(key)}
+            </button>
+          ))}
+        </div>
+        {slice.map((e, i) => (
+          <div key={`${e.date}-${e.detail}-${e.amount}-${i}`} className="border border-slate-100 rounded-xl p-3">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>{e.category}</span>
+                {e.detail && <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>}
+              </div>
+              <span className="font-semibold text-slate-800 text-sm">{formatWonFull(e.amount)}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>{e.date}</span>
+              <span>{e.method}</span>
+            </div>
+            {e.memo && <p className="text-xs text-slate-400 mt-1 truncate">{e.memo}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">
