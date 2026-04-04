@@ -48,7 +48,6 @@ export default function MonthlyClient({ data, year }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <DrilldownPanel
-        key={selectedMonth ?? 'all'}
         monthData={displayMonthData}
         expenses={displayExpenses}
         allExpenses={filteredData.allExpenses}

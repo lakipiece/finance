@@ -287,7 +287,7 @@ export default function DrilldownPanel({ monthData, expenses, allExpenses, month
               className="flex-1 max-w-48 text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-x-4 gap-y-1.5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-1.5">
             {detailSummary && detailSummary.length > 0 ? detailSummary.map(([detail, amount], rank) => {
               const total = baseMonthData[selectedCat as keyof MonthlyData] as number
               const pct = total > 0 ? Math.round(amount / total * 100) : 0
