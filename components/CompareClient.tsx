@@ -26,8 +26,8 @@ export default function CompareClient({ availableYears }: Props) {
     excludeLoan ? ALL_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_CATEGORIES],
     [excludeLoan]
   )
-  const defaultYears = availableYears.slice(0, 3).map(y => y.year)
-  const [selectedYears, setSelectedYears] = useState<number[]>(defaultYears)
+  const defaultYear = availableYears[0]?.year
+  const [selectedYears, setSelectedYears] = useState<number[]>(defaultYear ? [defaultYear] : [])
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
   const [loading, setLoading] = useState<Record<number, boolean>>({})
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
@@ -45,9 +45,9 @@ export default function CompareClient({ availableYears }: Props) {
     setLoading(prev => ({ ...prev, [year]: false }))
   }
 
-  // Fetch default years on mount
+  // Fetch initial year on mount
   useEffect(() => {
-    defaultYears.forEach(y => fetchYear(y))
+    if (defaultYear) fetchYear(defaultYear)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleYear(year: number) {
