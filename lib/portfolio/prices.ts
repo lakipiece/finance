@@ -1,6 +1,7 @@
 import 'server-only'
-import yahooFinance from 'yahoo-finance2'
-import type { Quote } from 'yahoo-finance2/modules/quote'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const YahooFinance = require('yahoo-finance2').default
+const yahooFinance = new YahooFinance()
 import { supabase } from '@/lib/supabase'
 
 const CACHE_TTL_MS = 60 * 60 * 1000 // 1시간
@@ -33,10 +34,9 @@ export async function getPrices(tickers: string[]): Promise<Record<string, { pri
   await Promise.allSettled(
     stale.map(async (ticker) => {
       try {
-        // @ts-ignore
-        const quote = await yahooFinance.quote(ticker) as Quote
-        const price = quote.regularMarketPrice ?? 0
-        const currency = quote.currency ?? 'USD'
+        const quote = await yahooFinance.quote(ticker)
+        const price = (quote as any).regularMarketPrice ?? 0
+        const currency = (quote as any).currency ?? 'USD'
         result[ticker] = { price, currency }
         updates.push({ ticker, price, currency, fetched_at: new Date().toISOString() })
       } catch {

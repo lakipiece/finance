@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import yahooFinance from 'yahoo-finance2'
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const YahooFinance = require('yahoo-finance2').default
+const yahooFinance = new YahooFinance()
 
 export const dynamic = 'force-dynamic'
 
