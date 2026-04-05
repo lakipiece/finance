@@ -209,7 +209,7 @@ export default function PositionsTable({ positions }: Props) {
           <h3 className="text-sm font-semibold text-slate-600">종목별 보유 현황</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-xs">
             <thead>
               <tr className="bg-slate-50 text-xs text-slate-400 uppercase tracking-wider">
                 <th className="text-left px-4 py-3">종목</th>
@@ -267,25 +267,25 @@ export default function PositionsTable({ positions }: Props) {
                           onClick={() => setModal(p)}>
                           <td className="px-4 py-3 pl-8">
                             <p className="font-semibold text-slate-800">{ticker}</p>
-                            <p className="text-xs text-slate-400">{p.security.name}</p>
+                            <p className="text-[10px] text-slate-400">{p.security.name}</p>
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-slate-600">{p.quantity.toLocaleString()}</td>
                           <td className="px-4 py-3 text-right text-slate-600">
                             {fmt(p.avg_price)}원
                             {p.avg_price_usd != null && (
-                              <p className="text-xs text-slate-400">${p.avg_price_usd.toFixed(2)}</p>
+                              <p className="text-[10px] text-slate-400">${p.avg_price_usd.toFixed(2)}</p>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-600">
                             {fmt(p.current_price)}원
                             {p.current_price_usd != null && (
-                              <p className="text-xs text-slate-400">${p.current_price_usd.toFixed(2)}</p>
+                              <p className="text-[10px] text-slate-400">${p.current_price_usd.toFixed(2)}</p>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-800">{fmt(p.market_value)}원</td>
                           <td className={`px-4 py-3 text-right font-semibold ${pnlColor}`}>
                             {p.unrealized_pnl >= 0 ? '+' : ''}{fmt(p.unrealized_pnl)}원
-                            <p className="text-xs">{(p.unrealized_pct * 100).toFixed(2)}%</p>
+                            <p className="text-[10px]">{(p.unrealized_pct * 100).toFixed(2)}%</p>
                           </td>
                           <td className="px-4 py-3 text-right text-slate-500">{weight}%</td>
                           <td className="px-4 py-3 text-center">

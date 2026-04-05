@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Sell, Dividend, Security, Account } from '@/lib/portfolio/types'
 
+interface AccountSecurity { account_id: string; security_id: string }
+
 interface Props {
   sells: (Sell & { security: Pick<Security, 'ticker' | 'name'>; account: Pick<Account, 'name' | 'broker'> })[]
   dividends: (Dividend & { security: Pick<Security, 'ticker' | 'name'>; account: Pick<Account, 'name' | 'broker'> })[]
   securities: Pick<Security, 'id' | 'ticker' | 'name'>[]
   accounts: Pick<Account, 'id' | 'name' | 'broker'>[]
+  accountSecurities: AccountSecurity[]
 }
 
 const FALLBACK_EXCHANGE_RATE = 1350
@@ -29,7 +32,7 @@ function groupByMonth(items: { date: string; value: number }[]) {
   return Object.entries(map).sort().map(([month, value]) => ({ month, value }))
 }
 
-export default function IncomeDashboard({ sells, dividends, securities, accounts }: Props) {
+export default function IncomeDashboard({ sells, dividends, securities, accounts, accountSecurities }: Props) {
   const [tab, setTab] = useState<'sells' | 'dividends'>('sells')
 
   const totalPnl = sells.reduce((s, r) => s + (r.realized_pnl_krw ?? 0), 0)
@@ -80,24 +83,31 @@ export default function IncomeDashboard({ sells, dividends, securities, accounts
         </ResponsiveContainer>
       </div>
 
-      {/* Table */}
       {tab === 'sells'
-        ? <SellsTable sells={sells} securities={securities} accounts={accounts} />
-        : <DividendsTable dividends={dividends} securities={securities} accounts={accounts} />
+        ? <SellsTable sells={sells} securities={securities} accounts={accounts} accountSecurities={accountSecurities} />
+        : <DividendsTable dividends={dividends} securities={securities} accounts={accounts} accountSecurities={accountSecurities} />
       }
     </div>
   )
 }
 
-function SellsTable({ sells, securities, accounts }: {
+function SellsTable({ sells, securities, accounts, accountSecurities }: {
   sells: Props['sells']
   securities: Props['securities']
   accounts: Props['accounts']
+  accountSecurities: AccountSecurity[]
 }) {
   const router = useRouter()
   const [form, setForm] = useState({ security_id: '', account_id: '', sold_at: '', quantity: '', avg_cost_krw: '', sell_price_krw: '', realized_pnl_krw: '', memo: '' })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+
+  const linkedSecurities = form.account_id
+    ? (() => {
+        const ids = new Set(accountSecurities.filter(l => l.account_id === form.account_id).map(l => l.security_id))
+        return securities.filter(s => ids.has(s.id))
+      })()
+    : []
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -118,33 +128,41 @@ function SellsTable({ sells, securities, accounts }: {
     if (res.ok) router.refresh()
   }
 
+  const sel = 'border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300'
+  const inp = 'border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300'
+
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 p-4">
         <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">매도 기록 추가</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <select required value={form.security_id} onChange={e => setForm(p => ({ ...p, security_id: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-            <option value="">종목 선택</option>
-            {securities.map(s => <option key={s.id} value={s.id}>{s.ticker} {s.name}</option>)}
-          </select>
-          <select required value={form.account_id} onChange={e => setForm(p => ({ ...p, account_id: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
+          {/* Account first */}
+          <select required value={form.account_id}
+            onChange={e => setForm(p => ({ ...p, account_id: e.target.value, security_id: '' }))}
+            className={sel}>
             <option value="">계좌 선택</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.broker} {a.name}</option>)}
           </select>
-          <input type="date" required value={form.sold_at} onChange={e => setForm(p => ({ ...p, sold_at: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="number" step="any" required placeholder="수량" value={form.quantity} onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="number" step="any" placeholder="평균매입단가(원)" value={form.avg_cost_krw} onChange={e => setForm(p => ({ ...p, avg_cost_krw: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="number" step="any" placeholder="매도가(원)" value={form.sell_price_krw} onChange={e => setForm(p => ({ ...p, sell_price_krw: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="number" step="any" placeholder="실현손익(원)" value={form.realized_pnl_krw} onChange={e => setForm(p => ({ ...p, realized_pnl_krw: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="text" placeholder="메모" value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+          {/* Then security filtered by account */}
+          <select required value={form.security_id}
+            onChange={e => setForm(p => ({ ...p, security_id: e.target.value }))}
+            disabled={!form.account_id}
+            className={`${sel} disabled:opacity-50`}>
+            <option value="">{form.account_id ? '종목 선택' : '계좌 먼저 선택'}</option>
+            {linkedSecurities.map(s => <option key={s.id} value={s.id}>{s.ticker} {s.name}</option>)}
+          </select>
+          <input type="date" required value={form.sold_at}
+            onChange={e => setForm(p => ({ ...p, sold_at: e.target.value }))} className={inp} />
+          <input type="number" step="any" required placeholder="수량" value={form.quantity}
+            onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))} className={inp} />
+          <input type="number" step="any" placeholder="평균매입단가(원)" value={form.avg_cost_krw}
+            onChange={e => setForm(p => ({ ...p, avg_cost_krw: e.target.value }))} className={inp} />
+          <input type="number" step="any" placeholder="매도가(원)" value={form.sell_price_krw}
+            onChange={e => setForm(p => ({ ...p, sell_price_krw: e.target.value }))} className={inp} />
+          <input type="number" step="any" placeholder="실현손익(원)" value={form.realized_pnl_krw}
+            onChange={e => setForm(p => ({ ...p, realized_pnl_krw: e.target.value }))} className={inp} />
+          <input type="text" placeholder="메모" value={form.memo}
+            onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={inp} />
         </div>
         <div className="flex items-center gap-3 mt-3">
           <button type="submit" disabled={saving}
@@ -192,15 +210,23 @@ function SellsTable({ sells, securities, accounts }: {
   )
 }
 
-function DividendsTable({ dividends, securities, accounts }: {
+function DividendsTable({ dividends, securities, accounts, accountSecurities }: {
   dividends: Props['dividends']
   securities: Props['securities']
   accounts: Props['accounts']
+  accountSecurities: AccountSecurity[]
 }) {
   const router = useRouter()
   const [form, setForm] = useState({ security_id: '', account_id: '', paid_at: '', amount: '', currency: 'USD', tax: '', memo: '' })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+
+  const linkedSecurities = form.account_id
+    ? (() => {
+        const ids = new Set(accountSecurities.filter(l => l.account_id === form.account_id).map(l => l.security_id))
+        return securities.filter(s => ids.has(s.id))
+      })()
+    : []
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -219,34 +245,42 @@ function DividendsTable({ dividends, securities, accounts }: {
     if (res.ok) router.refresh()
   }
 
+  const sel = 'border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300'
+  const inp = 'border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300'
+
   return (
     <div className="space-y-4">
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 p-4">
         <p className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">배당/분배금 추가</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <select required value={form.security_id} onChange={e => setForm(p => ({ ...p, security_id: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-            <option value="">종목 선택</option>
-            {securities.map(s => <option key={s.id} value={s.id}>{s.ticker} {s.name}</option>)}
-          </select>
-          <select required value={form.account_id} onChange={e => setForm(p => ({ ...p, account_id: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
+          {/* Account first */}
+          <select required value={form.account_id}
+            onChange={e => setForm(p => ({ ...p, account_id: e.target.value, security_id: '' }))}
+            className={sel}>
             <option value="">계좌 선택</option>
             {accounts.map(a => <option key={a.id} value={a.id}>{a.broker} {a.name}</option>)}
           </select>
-          <input type="date" required value={form.paid_at} onChange={e => setForm(p => ({ ...p, paid_at: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="number" step="any" required placeholder="금액" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
+          {/* Then security filtered by account */}
+          <select required value={form.security_id}
+            onChange={e => setForm(p => ({ ...p, security_id: e.target.value }))}
+            disabled={!form.account_id}
+            className={`${sel} disabled:opacity-50`}>
+            <option value="">{form.account_id ? '종목 선택' : '계좌 먼저 선택'}</option>
+            {linkedSecurities.map(s => <option key={s.id} value={s.id}>{s.ticker} {s.name}</option>)}
+          </select>
+          <input type="date" required value={form.paid_at}
+            onChange={e => setForm(p => ({ ...p, paid_at: e.target.value }))} className={inp} />
+          <input type="number" step="any" required placeholder="금액" value={form.amount}
+            onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} className={inp} />
+          <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={sel}>
             <option value="USD">USD</option>
             <option value="KRW">KRW</option>
           </select>
-          <input type="number" step="any" placeholder="세금" value={form.tax} onChange={e => setForm(p => ({ ...p, tax: e.target.value }))}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-          <input type="text" placeholder="메모" value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
-            className="col-span-2 border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+          <input type="number" step="any" placeholder="세금" value={form.tax}
+            onChange={e => setForm(p => ({ ...p, tax: e.target.value }))} className={inp} />
+          <input type="text" placeholder="메모" value={form.memo}
+            onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
+            className={`col-span-2 ${inp}`} />
         </div>
         <div className="flex items-center gap-3 mt-3">
           <button type="submit" disabled={saving}

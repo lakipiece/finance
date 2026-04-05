@@ -2,7 +2,6 @@
 
 import TabNav from './TabNav'
 import TopModeToggle from './TopModeToggle'
-import YearPicker from './YearPicker'
 import { useTheme } from '@/lib/ThemeContext'
 import { usePathname } from 'next/navigation'
 
@@ -30,7 +29,6 @@ export default function HeaderBar() {
           </div>
           <div className="flex items-center gap-3">
             <TopModeToggle />
-            {!isPortfolio && <YearPicker />}
           </div>
         </div>
         <TabNav />

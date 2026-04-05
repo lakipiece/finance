@@ -18,6 +18,8 @@ export interface Security {
   style: string | null
   sector: string | null
   currency: string
+  url: string | null
+  memo: string | null
 }
 
 export interface Holding {

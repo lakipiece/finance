@@ -7,6 +7,7 @@ import type { CategoryDetailsData } from './DashboardClient'
 import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
+import YearPicker from './YearPicker'
 
 interface Props {
   monthData: MonthlyData
@@ -141,17 +142,20 @@ export default function DrilldownPanel({
           <h2 className="text-lg font-bold text-slate-800">{monthData.month} 상세 내역</h2>
           <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(monthData.total)}</p>
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-100"
-            aria-label="닫기"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <YearPicker variant="light" />
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-100"
+              aria-label="닫기"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}

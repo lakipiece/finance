@@ -48,21 +48,22 @@ export default function SnapshotList({ snapshots }: Props) {
           아직 스냅샷이 없습니다. 첫 번째 스냅샷을 만들어보세요.
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {snapshots.map((snap, i) => (
             <div
               key={snap.id}
               onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-              className="bg-white rounded-xl border border-slate-100 px-5 py-4 flex items-center justify-between cursor-pointer hover:shadow-sm transition-shadow"
+              className="bg-white rounded-2xl border border-slate-100 p-4 aspect-square flex flex-col justify-between cursor-pointer hover:shadow-md hover:border-slate-200 transition-all"
             >
               <div>
-                <p className="font-semibold text-slate-800">{snap.date}</p>
-                {snap.memo && <p className="text-xs text-slate-400 mt-0.5">{snap.memo}</p>}
-              </div>
-              <div className="text-right">
                 {i === 0 && (
-                  <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">최신</span>
+                  <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">최신</span>
                 )}
+              </div>
+              <div>
+                <p className="text-xl font-bold text-slate-800 leading-tight">{snap.date.slice(0, 7)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{snap.date.slice(8, 10)}일</p>
+                {snap.memo && <p className="text-xs text-slate-400 mt-2 line-clamp-2">{snap.memo}</p>}
               </div>
             </div>
           ))}

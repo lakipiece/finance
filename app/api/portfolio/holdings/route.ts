@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         source: 'manual',
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'account_id,security_id' }
+      { onConflict: 'account_id,security_id,snapshot_id' }
     )
     .select()
     .single()
