@@ -132,41 +132,98 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
       )}
 
       {tab === 'securities' && (
-        <form onSubmit={addSecurity} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
-          <h2 className="font-semibold text-slate-700">종목 추가/수정</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div><label className={labelCls}>티커 *</label><input name="ticker" required className={inputCls} placeholder="SCHD" /></div>
-            <div><label className={labelCls}>종목명 *</label><input name="name" required className={inputCls} placeholder="슈왑 배당 ETF" /></div>
-            <div><label className={labelCls}>자산군</label>
-              <select name="asset_class" className={inputCls}>
-                <option value="주식">주식</option>
-                <option value="채권">채권</option>
-                <option value="대체자산">대체자산</option>
-              </select>
+        <div className="space-y-4">
+          <form onSubmit={addSecurity} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-4">
+            <h2 className="font-semibold text-slate-700">종목 추가/수정</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div><label className={labelCls}>티커 *</label><input name="ticker" required className={inputCls} placeholder="SCHD" /></div>
+              <div><label className={labelCls}>종목명 *</label><input name="name" required className={inputCls} placeholder="슈왑 배당 ETF" /></div>
+              <div><label className={labelCls}>자산군</label>
+                <select name="asset_class" className={inputCls}>
+                  <option value="주식">주식</option>
+                  <option value="채권">채권</option>
+                  <option value="대체자산">대체자산</option>
+                </select>
+              </div>
+              <div><label className={labelCls}>국가</label>
+                <select name="country" className={inputCls}>
+                  <option value="미국">미국</option>
+                  <option value="국내">국내</option>
+                  <option value="글로벌">글로벌</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              <div><label className={labelCls}>스타일</label>
+                <select name="style" className={inputCls}>
+                  <option value="성장">성장</option>
+                  <option value="인컴">인컴</option>
+                  <option value="안전">안전</option>
+                </select>
+              </div>
+              <div><label className={labelCls}>섹터</label><input name="sector" className={inputCls} placeholder="테크" /></div>
+              <div><label className={labelCls}>통화</label>
+                <select name="currency" className={inputCls}>
+                  <option value="USD">USD</option>
+                  <option value="KRW">KRW</option>
+                </select>
+              </div>
             </div>
-            <div><label className={labelCls}>국가</label>
-              <select name="country" className={inputCls}>
-                <option value="US">US</option>
-                <option value="KR">KR</option>
-              </select>
+            <button type="submit" className={btnCls}>추가/업데이트</button>
+          </form>
+
+          {/* 기존 종목 목록 — currency 인라인 편집 */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="px-5 py-3 border-b border-slate-100 text-sm font-semibold text-slate-600">
+              등록된 종목 ({securities.length})
             </div>
-            <div><label className={labelCls}>스타일</label>
-              <select name="style" className={inputCls}>
-                <option value="성장">성장</option>
-                <option value="인컴">인컴</option>
-                <option value="안전">안전</option>
-              </select>
-            </div>
-            <div><label className={labelCls}>섹터</label><input name="sector" className={inputCls} placeholder="테크" /></div>
-            <div><label className={labelCls}>통화</label>
-              <select name="currency" className={inputCls}>
-                <option value="USD">USD</option>
-                <option value="KRW">KRW</option>
-              </select>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 text-xs text-slate-400 uppercase tracking-wider">
+                    <th className="text-left px-4 py-2">티커</th>
+                    <th className="text-left px-4 py-2">종목명</th>
+                    <th className="text-left px-4 py-2">국가</th>
+                    <th className="text-left px-4 py-2">통화</th>
+                    <th className="text-left px-4 py-2">섹터</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {[...securities].sort((a, b) => a.ticker.localeCompare(b.ticker)).map(s => (
+                    <tr key={s.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-2 font-mono font-semibold text-slate-800">{s.ticker}</td>
+                      <td className="px-4 py-2 text-slate-600 text-xs">{s.name}</td>
+                      <td className="px-4 py-2 text-slate-500 text-xs">{s.country}</td>
+                      <td className="px-4 py-2">
+                        <select
+                          value={s.currency}
+                          onChange={async (e) => {
+                            const newCurrency = e.target.value
+                            try {
+                              await post('/api/portfolio/securities', {
+                                ticker: s.ticker, name: s.name,
+                                asset_class: s.asset_class, country: s.country,
+                                style: s.style, sector: s.sector, currency: newCurrency,
+                              })
+                              setSecurities(prev => prev.map(x => x.id === s.id ? { ...x, currency: newCurrency } : x))
+                              setMsg(`${s.ticker} → ${newCurrency} 저장 완료`)
+                            } catch (err: unknown) {
+                              setMsg(err instanceof Error ? err.message : '오류')
+                            }
+                          }}
+                          className="border border-slate-200 rounded px-2 py-1 text-xs"
+                        >
+                          <option value="USD">USD</option>
+                          <option value="KRW">KRW</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-2 text-slate-500 text-xs">{s.sector}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
-          <button type="submit" className={btnCls}>추가/업데이트</button>
-        </form>
+        </div>
       )}
 
       {tab === 'holdings' && (
