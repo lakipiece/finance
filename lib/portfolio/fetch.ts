@@ -1,7 +1,7 @@
 // lib/portfolio/fetch.ts
 import 'server-only'
 import { supabase } from '@/lib/supabase'
-import { getPrices } from './prices'
+import { getPrices, isKrxTicker, toYahooTicker } from './prices'
 import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation } from './types'
 
 export async function fetchAccounts(): Promise<Account[]> {
@@ -49,21 +49,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     }
   }
 
-  // 한국 종목 판별 (DB에 한글 또는 영문 코드 혼재)
-  function isKorean(country: string | null): boolean {
-    return country === 'KR' || country === '국내' || country === '한국'
-  }
-
-  // Yahoo Finance 티커 정규화
-  // KRX:XXXXXX → XXXXXX.KS, 6자리 한국 코드 → XXXXXX.KS
-  function toYahooTicker(ticker: string, country: string | null): string {
-    if (!isKorean(country)) return ticker
-    const clean = ticker.startsWith('KRX:') ? ticker.slice(4) : ticker
-    if (!clean.includes('.')) return `${clean}.KS`
-    return clean
-  }
-
-  const tickers = holdings.map(h => toYahooTicker(h.security.ticker, h.security.country))
+  const tickers = holdings.map(h => toYahooTicker(h.security.ticker))
   tickers.push('KRW=X')
 
   const uniqueTickers = [...new Set(tickers)]
@@ -80,16 +66,18 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     .select('security_id, account_id, amount, currency, exchange_rate')
 
   const positions: PortfolioPosition[] = holdings.map(h => {
-    const yahooTicker = toYahooTicker(h.security.ticker, h.security.country)
-
+    const yahooTicker = toYahooTicker(h.security.ticker)
     const rawPrice = prices[yahooTicker]?.price ?? 0
-    // currency 필드 오류 가능성 있으므로 country로 우선 판단
-    const isUSD = !isKorean(h.security.country) && h.security.currency === 'USD'
+
+    // KRX 6자리 숫자 티커 = 한국 상장 → KRW, 그 외 currency 필드 따름
+    const isKrw = isKrxTicker(h.security.ticker) || h.security.currency === 'KRW'
+    const isUSD = !isKrw
     const currentPriceKRW = isUSD ? rawPrice * exchangeRate : rawPrice
 
     const quantity = h.quantity
 
     // avg_price: USD 종목은 USD로 저장됨 → KRW 환산
+    // avg_price: KRX 종목은 KRW, 해외 종목은 USD → KRW 환산
     const avgPriceRaw = h.avg_price ?? 0
     const avgPriceKRW = isUSD ? avgPriceRaw * exchangeRate : avgPriceRaw
 
