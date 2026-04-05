@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Sell, Dividend, Security, Account } from '@/lib/portfolio/types'
 
@@ -10,6 +11,8 @@ interface Props {
   securities: Pick<Security, 'id' | 'ticker' | 'name'>[]
   accounts: Pick<Account, 'id' | 'name' | 'broker'>[]
 }
+
+const FALLBACK_EXCHANGE_RATE = 1350
 
 function fmt(n: number) {
   if (Math.abs(n) >= 100_000_000) return `${(n / 100_000_000).toFixed(1)}억`
@@ -30,10 +33,10 @@ export default function IncomeDashboard({ sells, dividends, securities, accounts
   const [tab, setTab] = useState<'sells' | 'dividends'>('sells')
 
   const totalPnl = sells.reduce((s, r) => s + (r.realized_pnl_krw ?? 0), 0)
-  const totalDiv = dividends.reduce((s, d) => s + (d.currency === 'USD' ? d.amount * 1350 : d.amount), 0)
+  const totalDiv = dividends.reduce((s, d) => s + (d.currency === 'USD' ? d.amount * FALLBACK_EXCHANGE_RATE : d.amount), 0)
 
   const sellChartData = groupByMonth(sells.map(s => ({ date: s.sold_at, value: s.realized_pnl_krw ?? 0 })))
-  const divChartData = groupByMonth(dividends.map(d => ({ date: d.paid_at, value: d.currency === 'USD' ? d.amount * 1350 : d.amount })))
+  const divChartData = groupByMonth(dividends.map(d => ({ date: d.paid_at, value: d.currency === 'USD' ? d.amount * FALLBACK_EXCHANGE_RATE : d.amount })))
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -91,6 +94,7 @@ function SellsTable({ sells, securities, accounts }: {
   securities: Props['securities']
   accounts: Props['accounts']
 }) {
+  const router = useRouter()
   const [form, setForm] = useState({ security_id: '', account_id: '', sold_at: '', quantity: '', avg_cost_krw: '', sell_price_krw: '', realized_pnl_krw: '', memo: '' })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
@@ -111,7 +115,7 @@ function SellsTable({ sells, securities, accounts }: {
     })
     setMsg(res.ok ? '저장 완료' : '저장 실패')
     setSaving(false)
-    if (res.ok) window.location.reload()
+    if (res.ok) router.refresh()
   }
 
   return (
@@ -193,6 +197,7 @@ function DividendsTable({ dividends, securities, accounts }: {
   securities: Props['securities']
   accounts: Props['accounts']
 }) {
+  const router = useRouter()
   const [form, setForm] = useState({ security_id: '', account_id: '', paid_at: '', amount: '', currency: 'USD', tax: '', memo: '' })
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
@@ -211,7 +216,7 @@ function DividendsTable({ dividends, securities, accounts }: {
     })
     setMsg(res.ok ? '저장 완료' : '저장 실패')
     setSaving(false)
-    if (res.ok) window.location.reload()
+    if (res.ok) router.refresh()
   }
 
   return (

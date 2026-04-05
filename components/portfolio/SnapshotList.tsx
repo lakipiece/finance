@@ -21,6 +21,10 @@ export default function SnapshotList({ snapshots }: Props) {
         clone_from: latest?.id ?? null,
       }),
     })
+    if (!res.ok) {
+      setCreating(false)
+      return
+    }
     const snap = await res.json()
     setCreating(false)
     router.push(`/portfolio/snapshots/${snap.id}`)
