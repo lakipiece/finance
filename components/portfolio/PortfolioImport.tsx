@@ -6,19 +6,36 @@ export default function PortfolioImport() {
   const [spreadsheetId, setSpreadsheetId] = useState('')
   const [sheetName, setSheetName] = useState('포트폴리오')
   const [result, setResult] = useState<{ imported: number; errors: string[] } | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleImport(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setResult(null)
+    setError(null)
     try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 55000)
       const res = await fetch('/api/portfolio/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ spreadsheetId, sheetName }),
+        signal: controller.signal,
       })
-      setResult(await res.json())
+      clearTimeout(timeout)
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error ?? `오류 (${res.status})`)
+      } else {
+        setResult(json)
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('요청 시간이 초과됐습니다. 시트 행 수가 너무 많을 수 있어요.')
+      } else {
+        setError(err instanceof Error ? err.message : '알 수 없는 오류')
+      }
     } finally {
       setLoading(false)
     }
@@ -63,6 +80,12 @@ export default function PortfolioImport() {
             {loading ? 'Import 중...' : 'Import 시작'}
           </button>
         </form>
+        {error && (
+          <div className="rounded-lg p-4 text-sm bg-red-50 text-red-700">
+            <p className="font-semibold">오류</p>
+            <p className="text-xs mt-1">{error}</p>
+          </div>
+        )}
         {result && (
           <div className={`rounded-lg p-4 text-sm ${result.errors.length === 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
             <p className="font-semibold">{result.imported}개 종목 import 완료</p>

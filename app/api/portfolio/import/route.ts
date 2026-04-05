@@ -55,88 +55,89 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Google Sheets 오류: ${msg}` }, { status: 422 })
   }
 
-  const rows = values.slice(1).filter(r => r[3] && r[4])
-  let imported = 0
+  const dataRows = values.slice(1).filter(r => r[3] && r[4])
+  if (dataRows.length === 0) {
+    return NextResponse.json({ imported: 0, errors: ['데이터 행을 찾을 수 없습니다. 컬럼 순서를 확인해주세요.'] })
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
   const errors: string[] = []
 
-  for (const row of rows) {
-    const ticker = (row[3] ?? '').trim().toUpperCase()
-    const name = (row[4] ?? '').trim()
-    if (!ticker || !name) continue
+  // 1. securities 배치 upsert
+  const securitiesPayload = dataRows.map(row => ({
+    ticker: (row[3] ?? '').trim().toUpperCase(),
+    name: (row[4] ?? '').trim(),
+    asset_class: (row[5] ?? '').trim() || null,
+    country: (row[6] ?? '').trim() || null,
+    style: (row[7] ?? '').trim() || null,
+    sector: (row[8] ?? '').trim() || null,
+    currency: (row[6] ?? '').trim() === 'KR' ? 'KRW' : 'USD',
+  })).filter(s => s.ticker && s.name)
 
-    try {
-      const { data: sec } = await supabase
-        .from('securities')
-        .upsert(
-          {
-            ticker,
-            name,
-            asset_class: (row[5] ?? '').trim() || null,
-            country: (row[6] ?? '').trim() || null,
-            style: (row[7] ?? '').trim() || null,
-            sector: (row[8] ?? '').trim() || null,
-            currency: (row[6] ?? '').trim() === 'KR' ? 'KRW' : 'USD',
-          },
-          { onConflict: 'ticker' }
-        )
-        .select()
-        .single()
+  const { data: upsertedSecurities, error: secErr } = await supabase
+    .from('securities')
+    .upsert(securitiesPayload, { onConflict: 'ticker' })
+    .select('id, ticker')
 
-      if (!sec) continue
+  if (secErr) return NextResponse.json({ error: `종목 저장 오류: ${secErr.message}` }, { status: 500 })
 
-      const broker = (row[1] ?? '').trim()
-      const accType = (row[2] ?? '').trim()
-      const owner = (row[0] ?? '').trim()
-      let account: { id: string } | null = null
+  const secMap = Object.fromEntries((upsertedSecurities ?? []).map(s => [s.ticker, s.id]))
 
-      if (broker) {
-        const { data: existing } = await supabase
-          .from('accounts')
-          .select('*')
-          .eq('broker', broker)
-          .eq('type', accType)
-          .maybeSingle()
+  // 2. accounts: 중복 없이 find-or-create
+  const accountKeys = [...new Set(dataRows.map(row => `${(row[1] ?? '').trim()}||${(row[2] ?? '').trim()}`))]
+  const accountMap: Record<string, string> = {}
 
-        if (existing) {
-          account = existing
-        } else {
-          const { data: created } = await supabase
-            .from('accounts')
-            .insert({ name: `${broker} ${accType}`, broker, owner, type: accType })
-            .select()
-            .single()
-          account = created
-        }
-      }
+  for (const key of accountKeys) {
+    const [broker, accType] = key.split('||')
+    if (!broker) continue
+    const owner = dataRows.find(r => (r[1] ?? '').trim() === broker)?.[0]?.trim() ?? ''
 
-      if (!account) continue
+    const { data: existing } = await supabase
+      .from('accounts').select('id').eq('broker', broker).eq('type', accType).maybeSingle()
 
-      const qty = parseFloat((row[9] ?? '0').replace(/,/g, ''))
-      const avgPrice = parseFloat((row[10] ?? '0').replace(/,/g, ''))
-      const totalInvested = parseFloat((row[12] ?? '0').replace(/,/g, ''))
-
-      if (isNaN(qty) || qty <= 0) continue
-
-      await supabase.from('holdings').upsert(
-        {
-          account_id: account.id,
-          security_id: sec.id,
-          quantity: qty,
-          avg_price: isNaN(avgPrice) ? null : avgPrice,
-          total_invested: isNaN(totalInvested) ? null : totalInvested,
-          snapshot_date: new Date().toISOString().slice(0, 10),
-          source: 'import',
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'account_id,security_id' }
-      )
-
-      imported++
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      errors.push(`${ticker}: ${msg}`)
+    if (existing) {
+      accountMap[key] = existing.id
+    } else {
+      const { data: created } = await supabase
+        .from('accounts')
+        .insert({ name: `${broker} ${accType}`, broker, owner, type: accType })
+        .select('id').single()
+      if (created) accountMap[key] = created.id
     }
   }
 
-  return NextResponse.json({ imported, errors })
+  // 3. holdings 배치 upsert
+  const holdingsPayload = dataRows.flatMap(row => {
+    const ticker = (row[3] ?? '').trim().toUpperCase()
+    const broker = (row[1] ?? '').trim()
+    const accType = (row[2] ?? '').trim()
+    const secId = secMap[ticker]
+    const accId = accountMap[`${broker}||${accType}`]
+    if (!secId || !accId) { errors.push(`${ticker}: 계좌 또는 종목 ID 없음`); return [] }
+
+    const qty = parseFloat((row[9] ?? '0').replace(/,/g, ''))
+    if (isNaN(qty) || qty <= 0) return []
+
+    const avgPrice = parseFloat((row[10] ?? '0').replace(/,/g, ''))
+    const totalInvested = parseFloat((row[12] ?? '0').replace(/,/g, ''))
+
+    return [{
+      account_id: accId,
+      security_id: secId,
+      quantity: qty,
+      avg_price: isNaN(avgPrice) || avgPrice === 0 ? null : avgPrice,
+      total_invested: isNaN(totalInvested) || totalInvested === 0 ? null : totalInvested,
+      snapshot_date: today,
+      source: 'import',
+      updated_at: new Date().toISOString(),
+    }]
+  })
+
+  const { error: holdErr } = await supabase
+    .from('holdings')
+    .upsert(holdingsPayload, { onConflict: 'account_id,security_id' })
+
+  if (holdErr) return NextResponse.json({ error: `포지션 저장 오류: ${holdErr.message}` }, { status: 500 })
+
+  return NextResponse.json({ imported: holdingsPayload.length, errors })
 }
