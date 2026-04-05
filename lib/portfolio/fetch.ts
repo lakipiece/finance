@@ -22,7 +22,21 @@ export async function fetchTargetAllocations(): Promise<TargetAllocation[]> {
 export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   // 조인 대신 별도 쿼리 후 코드에서 합침 (PostgREST 스키마 캐시 의존성 제거)
   const [{ data: holdingsRaw }, { data: accountsRaw }, { data: securitiesRaw }] = await Promise.all([
-    supabase.from('holdings').select('*').gt('quantity', 0),
+    (async () => {
+      const { data: latestSnap } = await supabase
+        .from('snapshots')
+        .select('id')
+        .order('date', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (!latestSnap) return { data: [] }
+      return supabase
+        .from('holdings')
+        .select('*')
+        .eq('snapshot_id', latestSnap.id)
+        .gt('quantity', 0)
+    })(),
     supabase.from('accounts').select('*'),
     supabase.from('securities').select('*'),
   ])
@@ -46,6 +60,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       total_unrealized_pct: 0,
       total_dividends: 0,
       positions: [],
+      last_price_updated_at: null,
     }
   }
 
@@ -118,6 +133,13 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   const total_unrealized_pct = total_invested > 0 ? total_unrealized_pnl / total_invested : 0
   const total_dividends = positions.reduce((s, p) => s + p.total_dividends, 0)
 
+  const { data: latestPrice } = await supabase
+    .from('price_history')
+    .select('date')
+    .order('date', { ascending: false })
+    .limit(1)
+    .single()
+
   return {
     total_market_value,
     total_invested,
@@ -125,5 +147,6 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     total_unrealized_pct,
     total_dividends,
     positions,
+    last_price_updated_at: latestPrice?.date ?? null,
   }
 }
