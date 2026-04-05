@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import type { PortfolioSummary, TargetAllocation } from '@/lib/portfolio/types'
 import PortfolioKpiCards from './PortfolioKpiCards'
 import AllocationCharts from './AllocationCharts'
@@ -15,7 +14,7 @@ interface Props {
 export default function PortfolioDashboard({ summary }: Props) {
   const [refreshing, setRefreshing] = useState(false)
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
-  const router = useRouter()
+  const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
 
   async function handleRefresh() {
     setRefreshing(true)
@@ -26,9 +25,9 @@ export default function PortfolioDashboard({ summary }: Props) {
       if (!res.ok) {
         setRefreshMsg(`오류: ${json.error}`)
       } else {
-        const failedMsg = json.failed?.length > 0 ? `\n실패: ${json.failed.join(', ')}` : ''
+        const failedMsg = json.failed?.length > 0 ? ` (${json.failed.length}개 실패)` : ''
         setRefreshMsg(`${json.saved}개 저장 완료${failedMsg}`)
-        router.refresh()
+        setLastUpdated(new Date().toISOString().slice(0, 10))
       }
     } catch {
       setRefreshMsg('새로고침 실패')
@@ -57,17 +56,22 @@ export default function PortfolioDashboard({ summary }: Props) {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="flex items-center justify-between">
         <div />
-        <div className="flex items-center gap-3">
-          {refreshMsg && (
-            <span className="text-xs text-slate-500">{refreshMsg}</span>
+        <div className="flex flex-col items-end gap-1">
+          <div className="flex items-center gap-3">
+            {refreshMsg && (
+              <span className="text-xs text-slate-500">{refreshMsg}</span>
+            )}
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-slate-800 disabled:opacity-50 transition-colors"
+            >
+              {refreshing ? '수집 중...' : '가격 새로고침'}
+            </button>
+          </div>
+          {lastUpdated && (
+            <span className="text-xs text-slate-400">최근 수집: {lastUpdated}</span>
           )}
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-slate-800 disabled:opacity-50 transition-colors"
-          >
-            {refreshing ? '수집 중...' : '가격 새로고침'}
-          </button>
         </div>
       </div>
       <PortfolioKpiCards summary={summary} />

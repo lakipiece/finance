@@ -3,19 +3,8 @@ import 'server-only'
 const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
 import { supabase } from '@/lib/supabase'
-
-// 6자리 숫자 티커 = 한국 상장 종목 (KRX)
-export function isKrxTicker(ticker: string): boolean {
-  const clean = ticker.startsWith('KRX:') ? ticker.slice(4) : ticker
-  return /^\d{6}$/.test(clean.split('.')[0])
-}
-
-// Yahoo Finance용 티커 변환
-export function toYahooTicker(ticker: string): string {
-  const clean = ticker.startsWith('KRX:') ? ticker.slice(4) : ticker
-  if (isKrxTicker(ticker) && !clean.includes('.')) return `${clean}.KS`
-  return clean
-}
+import { toYahooTicker } from './ticker-utils'
+export { isKrxTicker, toYahooTicker } from './ticker-utils'
 
 // price_history에서 최신 가격 조회 (오늘 or 가장 최근 날짜)
 export async function getPricesFromHistory(
