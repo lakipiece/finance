@@ -45,8 +45,18 @@ export default function PositionsTable({ positions }: Props) {
                   </td>
                   <td className="px-4 py-3 text-slate-500 text-xs">{p.account.name}</td>
                   <td className="px-4 py-3 text-right font-mono">{p.quantity.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{fmt(p.avg_price)}원</td>
-                  <td className="px-4 py-3 text-right text-slate-600">{fmt(p.current_price)}원</td>
+                  <td className="px-4 py-3 text-right text-slate-600">
+                    {fmt(p.avg_price)}원
+                    {p.avg_price_usd != null && (
+                      <p className="text-xs text-slate-400">${p.avg_price_usd.toFixed(2)}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right text-slate-600">
+                    {fmt(p.current_price)}원
+                    {p.current_price_usd != null && (
+                      <p className="text-xs text-slate-400">${p.current_price_usd.toFixed(2)}</p>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-right font-semibold">{fmt(p.market_value)}원</td>
                   <td className={`px-4 py-3 text-right font-semibold ${pnlColor}`}>
                     {p.unrealized_pnl >= 0 ? '+' : ''}{fmt(p.unrealized_pnl)}원

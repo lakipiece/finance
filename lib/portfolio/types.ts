@@ -69,9 +69,11 @@ export interface PortfolioPosition {
   security: Security
   account: Account
   quantity: number
-  avg_price: number
-  total_invested: number
-  current_price: number
+  avg_price: number        // KRW 환산
+  avg_price_usd: number | null  // USD 원본 (US 종목만)
+  current_price_usd: number | null  // USD 현재가 (US 종목만)
+  total_invested: number   // KRW
+  current_price: number    // KRW 환산
   market_value: number
   unrealized_pnl: number
   unrealized_pct: number

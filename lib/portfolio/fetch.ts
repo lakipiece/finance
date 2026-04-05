@@ -49,11 +49,17 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     }
   }
 
-  const tickers = holdings.map(h => {
-    const ticker = h.security.ticker
-    if (h.security.country === 'KR' && !ticker.includes('.')) return `${ticker}.KS`
-    return ticker
-  })
+  // Yahoo Finance 티커 정규화
+  // KRX:XXXXXX → XXXXXX.KS, 6자리 한국 코드 → XXXXXX.KS
+  function toYahooTicker(ticker: string, country: string | null): string {
+    if (country !== 'KR') return ticker
+    // KRX:XXXXXX 형식 제거
+    const clean = ticker.startsWith('KRX:') ? ticker.slice(4) : ticker
+    if (!clean.includes('.')) return `${clean}.KS`
+    return clean
+  }
+
+  const tickers = holdings.map(h => toYahooTicker(h.security.ticker, h.security.country))
   tickers.push('KRW=X')
 
   const uniqueTickers = [...new Set(tickers)]
@@ -70,15 +76,19 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     .select('security_id, account_id, amount, currency, exchange_rate')
 
   const positions: PortfolioPosition[] = holdings.map(h => {
-    const yahooTicker = h.security.country === 'KR' && !h.security.ticker.includes('.')
-      ? `${h.security.ticker}.KS`
-      : h.security.ticker
+    const yahooTicker = toYahooTicker(h.security.ticker, h.security.country)
 
     const rawPrice = prices[yahooTicker]?.price ?? 0
-    const currentPriceKRW = h.security.currency === 'USD' ? rawPrice * exchangeRate : rawPrice
+    const isUSD = h.security.currency === 'USD'
+    const currentPriceKRW = isUSD ? rawPrice * exchangeRate : rawPrice
 
     const quantity = h.quantity
-    const avgPriceKRW = h.avg_price ?? 0
+
+    // avg_price: USD 종목은 USD로 저장됨 → KRW 환산
+    const avgPriceRaw = h.avg_price ?? 0
+    const avgPriceKRW = isUSD ? avgPriceRaw * exchangeRate : avgPriceRaw
+
+    // total_invested: 항상 KRW 기준 (import 시 M열 = 총매수금액(KRW))
     const totalInvested = h.total_invested ?? avgPriceKRW * quantity
 
     const marketValue = currentPriceKRW * quantity
@@ -98,6 +108,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       account: h.account,
       quantity,
       avg_price: avgPriceKRW,
+      avg_price_usd: isUSD ? avgPriceRaw : null,
+      current_price_usd: isUSD ? rawPrice : null,
       total_invested: totalInvested,
       current_price: currentPriceKRW,
       market_value: marketValue,
