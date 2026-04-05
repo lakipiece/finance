@@ -49,11 +49,15 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     }
   }
 
+  // 한국 종목 판별 (DB에 한글 또는 영문 코드 혼재)
+  function isKorean(country: string | null): boolean {
+    return country === 'KR' || country === '국내' || country === '한국'
+  }
+
   // Yahoo Finance 티커 정규화
   // KRX:XXXXXX → XXXXXX.KS, 6자리 한국 코드 → XXXXXX.KS
   function toYahooTicker(ticker: string, country: string | null): string {
-    if (country !== 'KR') return ticker
-    // KRX:XXXXXX 형식 제거
+    if (!isKorean(country)) return ticker
     const clean = ticker.startsWith('KRX:') ? ticker.slice(4) : ticker
     if (!clean.includes('.')) return `${clean}.KS`
     return clean
@@ -79,7 +83,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     const yahooTicker = toYahooTicker(h.security.ticker, h.security.country)
 
     const rawPrice = prices[yahooTicker]?.price ?? 0
-    const isUSD = h.security.currency === 'USD'
+    // currency 필드 오류 가능성 있으므로 country로 우선 판단
+    const isUSD = !isKorean(h.security.country) && h.security.currency === 'USD'
     const currentPriceKRW = isUSD ? rawPrice * exchangeRate : rawPrice
 
     const quantity = h.quantity

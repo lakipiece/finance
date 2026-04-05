@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     country: (row[6] ?? '').trim() || null,
     style: (row[7] ?? '').trim() || null,
     sector: (row[8] ?? '').trim() || null,
-    currency: (row[6] ?? '').trim() === 'KR' ? 'KRW' : 'USD',
+    currency: ['KR', '국내', '한국'].includes((row[6] ?? '').trim()) ? 'KRW' : 'USD',
   })).filter(s => s.ticker && s.name)
 
   const { data: upsertedSecurities, error: secErr } = await supabase
