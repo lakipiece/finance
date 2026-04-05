@@ -20,16 +20,23 @@ export async function fetchTargetAllocations(): Promise<TargetAllocation[]> {
 }
 
 export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
-  const { data: holdingsRaw } = await supabase
-    .from('holdings')
-    .select(`
-      *,
-      account:accounts(*),
-      security:securities(*)
-    `)
-    .gt('quantity', 0)
+  // 조인 대신 별도 쿼리 후 코드에서 합침 (PostgREST 스키마 캐시 의존성 제거)
+  const [{ data: holdingsRaw }, { data: accountsRaw }, { data: securitiesRaw }] = await Promise.all([
+    supabase.from('holdings').select('*').gt('quantity', 0),
+    supabase.from('accounts').select('*'),
+    supabase.from('securities').select('*'),
+  ])
 
-  const holdings = (holdingsRaw ?? []) as (Holding & { account: Account; security: Security })[]
+  const accountMap = Object.fromEntries((accountsRaw ?? []).map(a => [a.id, a as Account]))
+  const securityMap = Object.fromEntries((securitiesRaw ?? []).map(s => [s.id, s as Security]))
+
+  const holdings = (holdingsRaw ?? [])
+    .map(h => ({
+      ...h,
+      account: accountMap[h.account_id],
+      security: securityMap[h.security_id],
+    }))
+    .filter(h => h.account && h.security) as (Holding & { account: Account; security: Security })[]
 
   if (holdings.length === 0) {
     return {
