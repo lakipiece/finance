@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { account_id, security_id, quantity, avg_price, total_invested, snapshot_date } = body
+  const { account_id, security_id, quantity, avg_price, total_invested, snapshot_date, snapshot_id } = body
   if (!account_id || !security_id || quantity == null) {
     return NextResponse.json({ error: 'account_id, security_id, quantity 필수' }, { status: 400 })
   }
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
         avg_price,
         total_invested,
         snapshot_date: snapshot_date ?? new Date().toISOString().slice(0, 10),
+        snapshot_id: snapshot_id ?? undefined,
         source: 'manual',
         updated_at: new Date().toISOString(),
       },
