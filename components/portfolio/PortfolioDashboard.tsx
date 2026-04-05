@@ -26,7 +26,8 @@ export default function PortfolioDashboard({ summary }: Props) {
       if (!res.ok) {
         setRefreshMsg(`오류: ${json.error}`)
       } else {
-        setRefreshMsg(`${json.saved}개 종목 가격 저장 완료${json.failed?.length > 0 ? ` (${json.failed.length}개 실패)` : ''}`)
+        const failedMsg = json.failed?.length > 0 ? `\n실패: ${json.failed.join(', ')}` : ''
+        setRefreshMsg(`${json.saved}개 저장 완료${failedMsg}`)
         router.refresh()
       }
     } catch {
