@@ -173,7 +173,7 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
                 className="w-full max-w-sm text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
             </div>
-            <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 40)}>
+            <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 44)}>
               <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
                 onClick={(e) => { if (e?.activeLabel) onDetailSelect(selectedDetail === e.activeLabel ? null : e.activeLabel) }}
                 style={{ cursor: 'pointer' }}
@@ -182,7 +182,7 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
                 <XAxis
                   type="number"
                   tickFormatter={(v) => `${Math.round(v / 10000)}만`}
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tick={{ fontSize: 10, fill: '#94a3b8' }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -190,16 +190,16 @@ export default function CompareCharts({ selectedYears, yearData, colorMap, loadi
                   type="category"
                   dataKey="detail"
                   tick={({ x, y, payload }: any) => (
-                    <text x={x} y={y} dy={4} textAnchor="end" fontSize={12}
+                    <text x={x} y={y} dy={4} textAnchor="end" fontSize={11}
                       fill={selectedDetail === payload.value ? '#1e293b' : '#64748b'}
                       fontWeight={selectedDetail === payload.value ? 700 : 400}
                     >
-                      {payload.value.length > 10 ? payload.value.slice(0, 10) + '…' : payload.value}
+                      {payload.value.length > 8 ? payload.value.slice(0, 8) + '…' : payload.value}
                     </text>
                   )}
                   axisLine={false}
                   tickLine={false}
-                  width={90}
+                  width={72}
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
