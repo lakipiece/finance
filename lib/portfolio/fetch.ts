@@ -50,7 +50,12 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   tickers.push('KRW=X')
 
   const uniqueTickers = [...new Set(tickers)]
-  const prices = await getPrices(uniqueTickers)
+  let prices: Record<string, { price: number; currency: string }> = {}
+  try {
+    prices = await getPrices(uniqueTickers)
+  } catch {
+    // 가격 조회 실패 시 투자원금 기준으로만 표시
+  }
   const exchangeRate = prices['KRW=X']?.price ?? 1350
 
   const { data: dividendRows } = await supabase
