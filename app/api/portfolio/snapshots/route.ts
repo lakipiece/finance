@@ -41,7 +41,11 @@ export async function POST(req: Request) {
         snapshot_date: snapshot.date,
         updated_at: new Date().toISOString(),
       }))
-      await supabase.from('holdings').insert(cloned)
+      const { error: cloneError } = await supabase.from('holdings').insert(cloned)
+      if (cloneError) {
+        await supabase.from('snapshots').delete().eq('id', snapshot.id)
+        return NextResponse.json({ error: cloneError.message }, { status: 500 })
+      }
     }
   }
 

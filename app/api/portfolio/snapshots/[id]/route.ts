@@ -19,7 +19,11 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  await supabase.from('holdings').delete().eq('snapshot_id', params.id)
-  await supabase.from('snapshots').delete().eq('id', params.id)
+  const { error: holdingsError } = await supabase.from('holdings').delete().eq('snapshot_id', params.id)
+  if (holdingsError) return NextResponse.json({ error: holdingsError.message }, { status: 500 })
+
+  const { error: snapshotError } = await supabase.from('snapshots').delete().eq('id', params.id)
+  if (snapshotError) return NextResponse.json({ error: snapshotError.message }, { status: 500 })
+
   return NextResponse.json({ ok: true })
 }
