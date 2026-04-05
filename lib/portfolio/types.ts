@@ -29,6 +29,7 @@ export interface Holding {
   total_invested: number | null
   snapshot_date: string
   source: string
+  snapshot_id?: string | null
   account?: Account
   security?: Security
 }
@@ -49,13 +50,15 @@ export interface PortfolioTransaction {
 
 export interface Dividend {
   id: string
-  account_id: string
   security_id: string
-  date: string
+  account_id: string
+  paid_at: string
   amount: number
   currency: string
-  exchange_rate: number
-  notes: string | null
+  tax: number
+  memo: string | null
+  security?: Security
+  account?: Account
 }
 
 export interface TargetAllocation {
@@ -87,4 +90,33 @@ export interface PortfolioSummary {
   total_unrealized_pct: number
   total_dividends: number
   positions: PortfolioPosition[]
+  last_price_updated_at: string | null  // price_history 최신 레코드의 date
+}
+
+export interface Snapshot {
+  id: string
+  date: string
+  memo: string | null
+  created_at: string
+}
+
+export interface Sell {
+  id: string
+  snapshot_id: string | null
+  security_id: string
+  account_id: string
+  sold_at: string
+  quantity: number
+  avg_cost_krw: number | null
+  sell_price_krw: number | null
+  realized_pnl_krw: number | null
+  memo: string | null
+  security?: Security
+  account?: Account
+}
+
+export interface SnapshotWithStats {
+  snapshot: Snapshot
+  total_market_value: number
+  prev_market_value: number | null
 }
