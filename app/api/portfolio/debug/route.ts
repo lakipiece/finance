@@ -4,35 +4,29 @@ import { supabase } from '@/lib/supabase'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  // securities currency 현황
   const { data: secs } = await supabase
     .from('securities')
     .select('ticker, name, country, currency')
-    .order('country')
+    .order('ticker')
 
-  // KR 종목 중 currency=USD 잘못된 것들
-  const wrongCurrency = (secs ?? []).filter(s => s.country === 'KR' && s.currency === 'USD')
-
-  // Yahoo Finance 한국 ETF 샘플 테스트
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const YahooFinance = require('yahoo-finance2').default
-  const yf = new YahooFinance()
-  const testTickers = ['453650.KS', '360200.KS', '005930.KS']
-  const priceResults: Record<string, unknown> = {}
-  for (const t of testTickers) {
-    try {
-      // @ts-ignore
-      const q = await yf.quote(t)
-      priceResults[t] = { ok: true, price: (q as any).regularMarketPrice }
-    } catch (e: unknown) {
-      priceResults[t] = { ok: false, error: e instanceof Error ? e.message : String(e) }
-    }
+  // country 값별 통계
+  const countryStats: Record<string, number> = {}
+  for (const s of secs ?? []) {
+    const c = s.country ?? 'null'
+    countryStats[c] = (countryStats[c] ?? 0) + 1
   }
 
-  return NextResponse.json({
-    totalSecurities: secs?.length,
-    wrongCurrencyCount: wrongCurrency.length,
-    wrongCurrencySample: wrongCurrency.slice(0, 5).map(s => ({ ticker: s.ticker, name: s.name })),
-    priceResults,
-  })
+  // currency 값별 통계
+  const currencyStats: Record<string, number> = {}
+  for (const s of secs ?? []) {
+    const c = s.currency ?? 'null'
+    currencyStats[c] = (currencyStats[c] ?? 0) + 1
+  }
+
+  // 453650 등 특정 종목 확인
+  const sample = (secs ?? []).filter(s =>
+    ['453650', '360200', 'SCHD', 'NVDA'].includes(s.ticker)
+  )
+
+  return NextResponse.json({ countryStats, currencyStats, sample })
 }
