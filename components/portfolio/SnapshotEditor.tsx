@@ -93,38 +93,59 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {rows.map((row, idx) => {
-              const sec = secMap[row.security_id]
-              const acc = accMap[row.account_id]
-              const isUSD = sec?.currency === 'USD'
-              return (
-                <tr key={idx} className="hover:bg-slate-50">
-                  <td className="px-4 py-2 text-xs text-slate-500">{acc?.broker} · {acc?.name}</td>
-                  <td className="px-4 py-2">
-                    <p className="font-semibold text-slate-800">{sec?.ticker}</p>
-                    <p className="text-xs text-slate-400">{sec?.name}</p>
-                  </td>
-                  <td className="px-4 py-2">
-                    <input type="number" step="any" value={row.quantity}
-                      onChange={e => updateRow(idx, 'quantity', parseFloat(e.target.value))}
-                      className="w-24 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300 ml-auto block" />
-                  </td>
-                  <td className="px-4 py-2">
-                    <div className="flex items-center justify-end gap-1">
-                      <input type="number" step="any" value={row.avg_price ?? ''}
-                        onChange={e => updateRow(idx, 'avg_price', e.target.value ? parseFloat(e.target.value) : null)}
-                        className="w-28 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
-                      <span className="text-xs text-slate-400">{isUSD ? 'USD' : '원'}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2">
-                    <input type="number" step="any" value={row.total_invested ?? ''}
-                      onChange={e => updateRow(idx, 'total_invested', e.target.value ? parseFloat(e.target.value) : null)}
-                      className="w-32 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300 block ml-auto" />
-                  </td>
-                </tr>
-              )
-            })}
+            {(() => {
+              let globalIdx = 0
+              const accountGroups = Object.entries(grouped).map(([accountId, accountRows]) => {
+                const acc = accMap[accountId]
+                const startIdx = globalIdx
+                globalIdx += accountRows.length
+                return { acc, accountRows, startIdx }
+              })
+              return accountGroups.map(({ acc, accountRows, startIdx }) => (
+                <>
+                  <tr key={`header-${acc?.id}`} className="bg-slate-50/70">
+                    <td colSpan={5} className="px-4 py-2">
+                      <span className="text-xs font-semibold text-slate-600">
+                        {acc?.broker} · {acc?.name}
+                      </span>
+                      <span className="text-xs text-slate-400 ml-2">{accountRows.length}종목</span>
+                    </td>
+                  </tr>
+                  {accountRows.map((row, i) => {
+                    const idx = startIdx + i
+                    const sec = secMap[row.security_id]
+                    const isUSD = sec?.currency === 'USD'
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="px-4 py-2 text-xs text-slate-400 pl-8">—</td>
+                        <td className="px-4 py-2">
+                          <p className="font-semibold text-slate-800">{sec?.ticker}</p>
+                          <p className="text-xs text-slate-400">{sec?.name}</p>
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="number" step="any" value={row.quantity}
+                            onChange={e => updateRow(idx, 'quantity', parseFloat(e.target.value))}
+                            className="w-24 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300 ml-auto block" />
+                        </td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center justify-end gap-1">
+                            <input type="number" step="any" value={row.avg_price ?? ''}
+                              onChange={e => updateRow(idx, 'avg_price', e.target.value ? parseFloat(e.target.value) : null)}
+                              className="w-28 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+                            <span className="text-xs text-slate-400">{isUSD ? 'USD' : '원'}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-2">
+                          <input type="number" step="any" value={row.total_invested ?? ''}
+                            onChange={e => updateRow(idx, 'total_invested', e.target.value ? parseFloat(e.target.value) : null)}
+                            className="w-32 text-right border border-slate-200 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300 block ml-auto" />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </>
+              ))
+            })()}
           </tbody>
         </table>
       </div>
