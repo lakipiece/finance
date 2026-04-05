@@ -1,24 +1,33 @@
-// components/TabNav.tsx
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const TABS = [
+const LEDGER_TABS = [
   { label: '대시보드', href: '/' },
   { label: '연도비교', href: '/compare' },
-  { label: '검색',     href: '/search' },
-  { label: '포트폴리오', href: '/portfolio' },
-  { label: '관리',     href: '/admin' },
+  { label: '검색', href: '/search' },
+  { label: '관리', href: '/admin' },
+]
+
+const PORTFOLIO_TABS = [
+  { label: '대시보드', href: '/portfolio' },
+  { label: '스냅샷', href: '/portfolio/snapshots' },
+  { label: '수익', href: '/portfolio/income' },
+  { label: '관리', href: '/portfolio/settings' },
 ]
 
 export default function TabNav() {
   const pathname = usePathname()
+  const isPortfolio = pathname.startsWith('/portfolio')
+  const tabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
 
   return (
     <nav className="flex gap-1" aria-label="탭 네비게이션">
-      {TABS.map((tab) => {
-        const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href)
+      {tabs.map((tab) => {
+        const active = tab.href === '/' || tab.href === '/portfolio'
+          ? pathname === tab.href
+          : pathname.startsWith(tab.href)
         return (
           <Link
             key={tab.href}
