@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ledger
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://ledger:${DB_PASSWORD}@db:5432/ledger
+      AUTH_SECRET: ${AUTH_SECRET}
+      NEXTAUTH_URL: https://fin.lakipiece.com
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
