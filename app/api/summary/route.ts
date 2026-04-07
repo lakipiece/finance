@@ -32,7 +32,7 @@ async function fetchSummary(year: number) {
     ORDER BY month, category
   `
 
-  for (const r of rows as { month: number; category: string; total: any }[]) {
+  for (const r of rows as unknown as { month: number; category: string; total: any }[]) {
     if (!monthly[r.month]) monthly[r.month] = {}
     monthly[r.month][r.category] = Number(r.total)
   }

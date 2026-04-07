@@ -9,7 +9,7 @@ export default async function AccountsPage() {
   const [accounts, securities, accountSecurities] = await Promise.all([
     fetchAccounts(),
     fetchSecurities(),
-    sql`SELECT * FROM account_securities`,
+    sql`SELECT * FROM account_securities` as unknown as Promise<{ account_id: string; security_id: string }[]>,
   ])
   return (
     <AccountsManager

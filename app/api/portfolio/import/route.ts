@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   if (!securitiesResult) return NextResponse.json({ error: '종목 저장 오류' }, { status: 500 })
 
-  const secMap = Object.fromEntries(securitiesResult.map((s: { id: string; ticker: string }) => [s.ticker, s.id]))
+  const secMap = Object.fromEntries((securitiesResult as unknown as { id: string; ticker: string }[]).map((s) => [s.ticker, s.id]))
 
   // 2. accounts: 중복 없이 find-or-create
   const accountKeys = [...new Set(dataRows.map(row => `${(row[1] ?? '').trim()}||${(row[2] ?? '').trim()}`))]

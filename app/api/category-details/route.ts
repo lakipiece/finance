@@ -31,7 +31,7 @@ async function fetchCategoryDetails(year: number, category: string) {
     ORDER BY month, detail
   `
 
-  for (const r of rows as { month: number; detail: string; total: any }[]) {
+  for (const r of rows as unknown as { month: number; detail: string; total: any }[]) {
     const key = r.detail || '기타'
     detailTotals[key] = (detailTotals[key] ?? 0) + Number(r.total)
     if (!detailMonthly[key]) detailMonthly[key] = Array(12).fill(0)

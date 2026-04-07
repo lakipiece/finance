@@ -106,7 +106,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     const unrealizedPct = totalInvested > 0 ? unrealizedPnl / totalInvested : 0
 
     const divs = (dividendRows ?? []).filter(
-      d => d.security_id === h.security_id && d.account_id === h.account_id
+      d => String(d.security_id) === h.security_id && String(d.account_id) === h.account_id
     )
     const totalDividends = divs.reduce((sum, d) => {
       const amt = d.currency === 'USD' ? d.amount * (d.exchange_rate ?? exchangeRate) : d.amount
