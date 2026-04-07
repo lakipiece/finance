@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { createSupabaseBrowserClient } from '@/lib/supabase-client'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -16,10 +16,13 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
 
-    if (error) {
+    if (result?.error) {
       setError('이메일 또는 비밀번호가 올바르지 않습니다.')
       setLoading(false)
     } else {
