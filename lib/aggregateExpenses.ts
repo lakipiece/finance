@@ -48,7 +48,7 @@ export function aggregateExpenses(rows: RawExpenseRow[]): DashboardData {
   const monthlyAvg = activeMonths > 0 ? Math.round(total / activeMonths) : 0
 
   function toExpenseItem(e: RawExpenseRow): ExpenseItem {
-    return { year: e.year, date: e.expense_date, month: e.month, category: e.category, detail: e.detail, memo: e.memo ?? '', method: e.method, amount: e.amount }
+    return { year: e.year, date: e.expense_date, month: e.month, category: e.category, detail: e.detail, memo: e.memo ?? '', method: e.method, amount: e.amount, member: null }
   }
 
   const sorted = [...rows].sort((a, b) => b.amount - a.amount)
