@@ -19,7 +19,7 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       DATABASE_URL: postgresql://finance:${DB_PASSWORD}@db:5432/finance
       AUTH_SECRET: ${AUTH_SECRET}
