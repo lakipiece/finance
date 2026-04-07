@@ -1,45 +1,46 @@
 // lib/portfolio/fetch.ts
 import 'server-only'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import { getPrices, isKrxTicker, toYahooTicker } from './prices'
 import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation } from './types'
 
 export async function fetchAccounts(): Promise<Account[]> {
-  const { data } = await supabase.from('accounts').select('*').order('name')
+  const sql = getSql()
+  const data = await sql<Account[]>`SELECT * FROM accounts ORDER BY name`
   return data ?? []
 }
 
 export async function fetchSecurities(): Promise<Security[]> {
-  const { data } = await supabase.from('securities').select('*').order('ticker')
+  const sql = getSql()
+  const data = await sql<Security[]>`SELECT * FROM securities ORDER BY ticker`
   return data ?? []
 }
 
 export async function fetchTargetAllocations(): Promise<TargetAllocation[]> {
-  const { data } = await supabase.from('target_allocations').select('*')
+  const sql = getSql()
+  const data = await sql<TargetAllocation[]>`SELECT * FROM target_allocations`
   return data ?? []
 }
 
 export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
-  // 조인 대신 별도 쿼리 후 코드에서 합침 (PostgREST 스키마 캐시 의존성 제거)
-  const [{ data: holdingsRaw }, { data: accountsRaw }, { data: securitiesRaw }] = await Promise.all([
-    (async () => {
-      const { data: latestSnap } = await supabase
-        .from('snapshots')
-        .select('id')
-        .order('date', { ascending: false })
-        .limit(1)
-        .single()
+  const sql = getSql()
 
-      if (!latestSnap) return { data: [] }
-      return supabase
-        .from('holdings')
-        .select('*')
-        .eq('snapshot_id', latestSnap.id)
-        .gt('quantity', 0)
-    })(),
-    supabase.from('accounts').select('*'),
-    supabase.from('securities').select('*'),
+  // 조인 대신 별도 쿼리 후 코드에서 합침
+  const [latestSnaps, accountsRaw, securitiesRaw] = await Promise.all([
+    sql<{ id: number }[]>`SELECT id FROM snapshots ORDER BY date DESC LIMIT 1`,
+    sql<Account[]>`SELECT * FROM accounts`,
+    sql<Security[]>`SELECT * FROM securities`,
   ])
+
+  const latestSnap = latestSnaps[0] ?? null
+
+  const holdingsRaw = latestSnap
+    ? await sql<Holding[]>`
+        SELECT * FROM holdings
+        WHERE snapshot_id = ${latestSnap.id}
+          AND quantity > 0
+      `
+    : []
 
   const accountMap = Object.fromEntries((accountsRaw ?? []).map(a => [a.id, a as Account]))
   const securityMap = Object.fromEntries((securitiesRaw ?? []).map(s => [s.id, s as Security]))
@@ -76,9 +77,10 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   }
   const exchangeRate = prices['KRW=X']?.price ?? 1350
 
-  const { data: dividendRows } = await supabase
-    .from('dividends')
-    .select('security_id, account_id, amount, currency, exchange_rate')
+  const dividendRows = await sql<{ security_id: number; account_id: number; amount: number; currency: string; exchange_rate: number | null }[]>`
+    SELECT security_id, account_id, amount, currency, exchange_rate
+    FROM dividends
+  `
 
   const positions: PortfolioPosition[] = holdings.map(h => {
     const yahooTicker = toYahooTicker(h.security.ticker)
@@ -133,12 +135,10 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   const total_unrealized_pct = total_invested > 0 ? total_unrealized_pnl / total_invested : 0
   const total_dividends = positions.reduce((s, p) => s + p.total_dividends, 0)
 
-  const { data: latestPrice } = await supabase
-    .from('price_history')
-    .select('date')
-    .order('date', { ascending: false })
-    .limit(1)
-    .single()
+  const latestPrices = await sql<{ date: string }[]>`
+    SELECT date FROM price_history ORDER BY date DESC LIMIT 1
+  `
+  const latestPrice = latestPrices[0] ?? null
 
   return {
     total_market_value,

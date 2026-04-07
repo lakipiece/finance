@@ -1,5 +1,5 @@
 import 'server-only'
-import { supabase } from './supabase'
+import { getSql } from './db'
 import { aggregateExpenses } from './aggregateExpenses'
 import { cached } from './cache'
 import type { DashboardData, RawExpenseRow } from './types'
@@ -9,26 +9,16 @@ export async function fetchYearData(year: number): Promise<DashboardData | null>
 }
 
 async function fetchYearDataUncached(year: number): Promise<DashboardData | null> {
-  const allRows: any[] = []
-  const pageSize = 1000
-  let offset = 0
+  const sql = getSql()
+  const data = await sql<RawExpenseRow[]>`
+    SELECT year, month, expense_date, category, detail, memo, method, amount, member
+    FROM expenses
+    WHERE year = ${year}
+  `
 
-  while (true) {
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('year,month,expense_date,category,detail,memo,method,amount')
-      .eq('year', year)
-      .range(offset, offset + pageSize - 1)
-    if (error) throw new Error(`Supabase 오류: ${error.message}`)
-    if (!data || data.length === 0) break
-    allRows.push(...data)
-    if (data.length < pageSize) break
-    offset += pageSize
-  }
+  if (!data || data.length === 0) return null
 
-  if (allRows.length === 0) return null
-
-  const rows: RawExpenseRow[] = allRows.map((e: any) => ({
+  const rows: RawExpenseRow[] = data.map((e: any) => ({
     year: e.year ?? year,
     month: e.month,
     expense_date: e.expense_date ?? '',

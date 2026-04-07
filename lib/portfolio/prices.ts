@@ -2,7 +2,7 @@ import 'server-only'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import { toYahooTicker } from './ticker-utils'
 export { isKrxTicker, toYahooTicker } from './ticker-utils'
 
@@ -12,14 +12,16 @@ export async function getPricesFromHistory(
 ): Promise<Record<string, { price: number; currency: string }>> {
   if (tickers.length === 0) return {}
 
-  const { data } = await supabase
-    .from('price_history')
-    .select('ticker, price, currency, date')
-    .in('ticker', tickers)
-    .order('date', { ascending: false })
+  const sql = getSql()
+  const rows = await sql<{ ticker: string; price: number; currency: string; date: string }[]>`
+    SELECT ticker, price, currency, date
+    FROM price_history
+    WHERE ticker = ANY(${tickers})
+    ORDER BY date DESC
+  `
 
   const result: Record<string, { price: number; currency: string }> = {}
-  for (const row of data ?? []) {
+  for (const row of rows ?? []) {
     if (!result[row.ticker]) {
       result[row.ticker] = { price: row.price, currency: row.currency }
     }
@@ -33,9 +35,8 @@ export async function refreshAllPrices(): Promise<{
   failed: string[]
   results: Record<string, number>
 }> {
-  const { data: securities } = await supabase
-    .from('securities')
-    .select('ticker')
+  const sql = getSql()
+  const securities = await sql<{ ticker: string }[]>`SELECT ticker FROM securities`
 
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
 
@@ -67,9 +68,12 @@ export async function refreshAllPrices(): Promise<{
   )
 
   if (saved.length > 0) {
-    await supabase
-      .from('price_history')
-      .upsert(saved, { onConflict: 'ticker,date' })
+    await sql`
+      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency')}
+      ON CONFLICT (ticker, date) DO UPDATE
+        SET price = EXCLUDED.price,
+            currency = EXCLUDED.currency
+    `
   }
 
   return { saved: saved.length, failed, results }

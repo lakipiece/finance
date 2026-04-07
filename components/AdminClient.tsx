@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createSupabaseBrowserClient } from '@/lib/supabase-client'
+import { signOut } from 'next-auth/react'
 import PreviewModal from './PreviewModal'
 import type { ParsePreviewResponse } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
@@ -122,10 +122,7 @@ export default function AdminClient({ initialYears }: Props) {
   }
 
   async function handleLogout() {
-    const supabase = createSupabaseBrowserClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    await signOut({ callbackUrl: '/login' })
   }
 
   return (
