@@ -341,7 +341,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                 ].map(f => (
                   <div key={f.key}>
                     <label className={labelCls}>{f.label}</label>
-                    <input value={(accountForm as any)[f.key]}
+                    <input value={accountForm[f.key as keyof typeof accountForm]}
                       onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
                       placeholder={f.placeholder} className={inputCls} />
                   </div>
@@ -373,7 +373,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                 <div className="grid grid-cols-2 gap-3">
                   {[{key:'name',label:'계좌명 *'},{key:'broker',label:'금융사 *'},{key:'owner',label:'소유자'}].map(f => (
                     <div key={f.key}><label className={labelCls}>{f.label}</label>
-                      <input value={(accountForm as any)[f.key]} onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))} className={inputCls} /></div>
+                      <input value={accountForm[f.key as keyof typeof accountForm]} onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))} className={inputCls} /></div>
                   ))}
                   <div><label className={labelCls}>유형</label>
                     <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
@@ -487,7 +487,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
               <option value="KRW">KRW</option>
               <option value="USD">USD</option>
             </select>
-            <select value={secSort} onChange={e => setSecSort(e.target.value as any)}
+            <select value={secSort} onChange={e => setSecSort(e.target.value as 'ticker' | 'name' | 'country')}
               className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
               <option value="ticker">티커순</option>
               <option value="name">이름순</option>

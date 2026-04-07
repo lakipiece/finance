@@ -26,14 +26,21 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   const { account_id, security_ids } = await req.json()
+
+  const client = createSupabaseServerClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   if (!account_id) return NextResponse.json({ error: 'account_id 필수' }, { status: 400 })
 
   // DELETE all for account, then INSERT fresh
-  await supabase.from('account_securities').delete().eq('account_id', account_id)
+  const { error: deleteError } = await supabase.from('account_securities').delete().eq('account_id', account_id)
+  if (deleteError) return NextResponse.json({ error: deleteError.message }, { status: 500 })
 
   if (security_ids?.length > 0) {
     const rows = security_ids.map((sid: string) => ({ account_id, security_id: sid }))
-    await supabase.from('account_securities').insert(rows)
+    const { error: insertError } = await supabase.from('account_securities').insert(rows)
+    if (insertError) return NextResponse.json({ error: insertError.message }, { status: 500 })
   }
   return NextResponse.json({ ok: true })
 }
