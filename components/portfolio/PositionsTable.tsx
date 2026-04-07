@@ -7,9 +7,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 interface Props { positions: PortfolioPosition[] }
 
 function fmt(n: number) {
-  if (Math.abs(n) >= 100_000_000) return `${(n / 100_000_000).toFixed(1)}억`
-  if (Math.abs(n) >= 10_000) return `${Math.floor(n / 10_000).toLocaleString()}만`
-  return n.toLocaleString()
+  return Math.round(n).toLocaleString()
 }
 
 function SyncIcon({ spinning }: { spinning: boolean }) {
@@ -266,8 +264,12 @@ export default function PositionsTable({ positions }: Props) {
                           className="border-t border-slate-50 hover:bg-blue-50/40 cursor-pointer transition-colors"
                           onClick={() => setModal(p)}>
                           <td className="px-4 py-3 pl-8">
-                            <p className="font-semibold text-slate-800">{ticker}</p>
-                            <p className="text-[10px] text-slate-400">{p.security.name}</p>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="bg-slate-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-mono leading-none">
+                                {ticker}
+                              </span>
+                            </div>
+                            <p className="text-xs font-medium text-slate-700">{p.security.name}</p>
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-slate-600">{p.quantity.toLocaleString()}</td>
                           <td className="px-4 py-3 text-right text-slate-600">
