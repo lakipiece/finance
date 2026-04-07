@@ -4,11 +4,11 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ledger
-      POSTGRES_USER: ledger
+      POSTGRES_DB: finance
+      POSTGRES_USER: finance
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ledger"]
+      test: ["CMD-SHELL", "pg_isready -U finance"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,7 +19,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://ledger:${DB_PASSWORD}@db:5432/ledger
+      DATABASE_URL: postgresql://finance:${DB_PASSWORD}@db:5432/finance
       AUTH_SECRET: ${AUTH_SECRET}
       NEXTAUTH_URL: https://fin.lakipiece.com
     depends_on:
