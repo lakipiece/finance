@@ -58,13 +58,6 @@ ADMIN_EMAIL=your@email.com ADMIN_PASSWORD=yourpassword \
   npx tsx scripts/setup-auth.ts
 ```
 
-> DB 포트를 로컬에 노출하려면 `docker compose up db -d` 후 아래로 직접 실행하거나,  
-> DB 컨테이너 안에서 실행:
-> ```bash
-> docker compose exec db psql -U finance finance -c \
->   "INSERT INTO users (email, password_hash) VALUES ('your@email.com', 'bcrypt_hash');"
-> ```
-
 ### 6. 앱 실행
 
 ```bash
