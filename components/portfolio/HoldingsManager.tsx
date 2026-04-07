@@ -187,16 +187,13 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
     if (!selectedAccountId) return
     setSavingLinks(true)
     try {
-      const saved = new Set(links.filter(l => l.account_id === selectedAccountId).map(l => l.security_id))
-      const toAdd = [...pendingIds].filter(id => !saved.has(id))
-      const toRemove = [...saved].filter(id => !pendingIds.has(id))
-      await Promise.all([
-        ...toAdd.map(sid => apiFetch('/api/portfolio/account-securities', 'POST', { account_id: selectedAccountId, security_id: sid })),
-        ...toRemove.map(sid => apiFetch(`/api/portfolio/account-securities?account_id=${selectedAccountId}&security_id=${sid}`, 'DELETE')),
-      ])
+      await apiFetch('/api/portfolio/account-securities', 'PUT', {
+        account_id: selectedAccountId,
+        security_ids: [...pendingIds],
+      })
       setLinks(prev => {
         const withoutAccount = prev.filter(l => l.account_id !== selectedAccountId)
-        return [...withoutAccount, ...[...pendingIds].map(sid => ({ account_id: selectedAccountId, security_id: sid }))]
+        return [...withoutAccount, ...[...pendingIds].map(sid => ({ account_id: selectedAccountId!, security_id: sid }))]
       })
       notify(`저장 완료 (${pendingIds.size}종목 연결됨)`)
     } catch (e: unknown) { notify(e instanceof Error ? e.message : '오류', false) }
@@ -259,14 +256,21 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
 
   // --- Filtered securities for the link checklist ---
   const filteredLinkSecurities = useMemo(() => {
-    if (!linkSearch.trim()) return [...securities].sort((a, b) => a.ticker.localeCompare(b.ticker))
-    const q = linkSearch.toLowerCase()
-    return [...securities]
-      .filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
-      .sort((a, b) => a.ticker.localeCompare(b.ticker))
-  }, [securities, linkSearch])
+    let list = [...securities]
+    if (linkSearch.trim()) {
+      const q = linkSearch.toLowerCase()
+      list = list.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
+    }
+    // 연결된 종목 먼저, 그다음 ticker 순
+    return list.sort((a, b) => {
+      const aLinked = pendingIds.has(a.id) ? 0 : 1
+      const bLinked = pendingIds.has(b.id) ? 0 : 1
+      if (aLinked !== bLinked) return aLinked - bLinked
+      return a.ticker.localeCompare(b.ticker)
+    })
+  }, [securities, linkSearch, pendingIds])
 
-  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300'
+  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
   const labelCls = 'block text-xs text-slate-500 mb-1'
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
 
@@ -344,7 +348,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                 ))}
                 <div><label className={labelCls}>유형</label>
                   <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                    {['종합위탁','연금저축','ISA','IRP'].map(t => <option key={t}>{t}</option>)}
+                    {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
                   </select></div>
                 <div className="flex gap-1.5">
                   <button onClick={saveAccount} className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800">추가</button>
@@ -373,7 +377,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                   ))}
                   <div><label className={labelCls}>유형</label>
                     <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                      {['종합위탁','연금저축','ISA','IRP'].map(t => <option key={t}>{t}</option>)}
+                      {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
                     </select></div>
                 </div>
                 <div className="flex gap-2">
