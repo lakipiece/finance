@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "import-data": "tsx --env-file=.env.local scripts/import-to-supabase.ts"
+    "import-data": "tsx --env-file=.env.local scripts/import-to-supabase.ts",
+    "setup-auth": "tsx --env-file=.env.local scripts/setup-auth.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
