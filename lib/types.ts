@@ -23,6 +23,7 @@ export interface ExpenseItem {
   memo: string
   method: string
   amount: number
+  member: string | null  // L or P
 }
 
 export interface DetailItem {

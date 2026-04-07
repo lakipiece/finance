@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('expenses')
-    .select('year,month,expense_date,category,detail,memo,method,amount')
+    .select('year,month,expense_date,category,detail,memo,method,amount,member')
     .eq('year', year)
 
   if (category) query = query.eq('category', category)
@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
     memo: e.memo ?? '',
     method: e.method ?? '',
     amount: e.amount ?? 0,
+    member: e.member ?? null,
   }))
 
   return NextResponse.json({ expenses })

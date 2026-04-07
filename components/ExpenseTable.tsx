@@ -50,6 +50,7 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
+              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
             </tr>
           </thead>
@@ -84,6 +85,15 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
                   )}
                 </td>
                 <td className="py-2.5 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
+                <td className="py-2 px-3">
+                  {e.member ? (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      e.member === 'L' ? 'bg-blue-50 text-blue-600' :
+                      e.member === 'P' ? 'bg-pink-50 text-pink-600' :
+                      'bg-slate-100 text-slate-500'
+                    }`}>{e.member}</span>
+                  ) : <span className="text-slate-300 text-xs">-</span>}
+                </td>
                 <td className="py-2.5 px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
                   {formatWonFull(e.amount)}
                 </td>
