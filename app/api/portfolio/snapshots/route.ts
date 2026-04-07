@@ -1,50 +1,46 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const { data } = await supabase
-    .from('snapshots')
-    .select('*')
-    .order('date', { ascending: false })
-  return NextResponse.json(data ?? [])
+  const sql = getSql()
+  const data = await sql`SELECT * FROM snapshots ORDER BY date DESC`
+  return NextResponse.json(data)
 }
 
 export async function POST(req: Request) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await req.json()
-  const { date, memo, clone_from } = body
+  const { date, memo, clone_from } = await req.json()
+  const sql = getSql()
 
-  const { data: snapshot, error } = await supabase
-    .from('snapshots')
-    .insert({ date: date ?? new Date().toISOString().slice(0, 10), memo })
-    .select()
-    .single()
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const [snapshot] = await sql`
+    INSERT INTO snapshots (date, memo)
+    VALUES (${date ?? new Date().toISOString().slice(0, 10)}, ${memo ?? null})
+    RETURNING *
+  `
 
   if (clone_from) {
-    const { data: sourceHoldings } = await supabase
-      .from('holdings')
-      .select('account_id, security_id, quantity, avg_price, total_invested, source')
-      .eq('snapshot_id', clone_from)
-      .gt('quantity', 0)
-
-    if (sourceHoldings && sourceHoldings.length > 0) {
-      const cloned = sourceHoldings.map(h => ({
+    const sourceHoldings = await sql`
+      SELECT account_id, security_id, quantity, avg_price, total_invested, source
+      FROM holdings
+      WHERE snapshot_id = ${clone_from} AND quantity > 0
+    `
+    if (sourceHoldings.length > 0) {
+      const cloned = sourceHoldings.map((h: any) => ({
         ...h,
         snapshot_id: snapshot.id,
         snapshot_date: snapshot.date,
         updated_at: new Date().toISOString(),
       }))
-      const { error: cloneError } = await supabase.from('holdings').insert(cloned)
-      if (cloneError) {
-        await supabase.from('snapshots').delete().eq('id', snapshot.id)
-        return NextResponse.json({ error: cloneError.message }, { status: 500 })
+      try {
+        await sql`INSERT INTO holdings ${sql(cloned)}`
+      } catch {
+        await sql`DELETE FROM snapshots WHERE id = ${snapshot.id}`
+        return NextResponse.json({ error: 'clone failed' }, { status: 500 })
       }
     }
   }

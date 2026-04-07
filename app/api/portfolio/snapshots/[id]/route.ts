@@ -1,29 +1,28 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
-
-export const dynamic = 'force-dynamic'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const { data: holdings } = await supabase
-    .from('holdings')
-    .select('*, security:securities(*), account:accounts(*)')
-    .eq('snapshot_id', params.id)
-    .gt('quantity', 0)
-    .order('account_id')
-  return NextResponse.json(holdings ?? [])
+  const sql = getSql()
+  const data = await sql`
+    SELECT h.*,
+      row_to_json(s) as security,
+      row_to_json(a) as account
+    FROM holdings h
+    JOIN securities s ON s.id = h.security_id
+    JOIN accounts a ON a.id = h.account_id
+    WHERE h.snapshot_id = ${params.id} AND h.quantity > 0
+    ORDER BY h.account_id
+  `
+  return NextResponse.json(data)
 }
 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { error: holdingsError } = await supabase.from('holdings').delete().eq('snapshot_id', params.id)
-  if (holdingsError) return NextResponse.json({ error: holdingsError.message }, { status: 500 })
-
-  const { error: snapshotError } = await supabase.from('snapshots').delete().eq('id', params.id)
-  if (snapshotError) return NextResponse.json({ error: snapshotError.message }, { status: 500 })
-
+  const sql = getSql()
+  await sql`DELETE FROM holdings WHERE snapshot_id = ${params.id}`
+  await sql`DELETE FROM snapshots WHERE id = ${params.id}`
   return NextResponse.json({ ok: true })
 }
