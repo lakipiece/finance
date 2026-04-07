@@ -1,13 +1,8 @@
 import { NextResponse } from 'next/server'
-import { fetchAvailableYears } from '@/lib/fetchYears'
-
-export const dynamic = 'force-dynamic'
+import { getSql } from '@/lib/db'
 
 export async function GET() {
-  try {
-    const years = await fetchAvailableYears()
-    return NextResponse.json(years)
-  } catch {
-    return NextResponse.json([], { status: 500 })
-  }
+  const sql = getSql()
+  const rows = await sql`SELECT DISTINCT year FROM expenses ORDER BY year DESC`
+  return NextResponse.json({ years: rows.map((r: any) => r.year) })
 }

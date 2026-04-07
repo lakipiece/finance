@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import { cached } from '@/lib/cache'
 
 export async function GET(req: NextRequest) {
@@ -21,34 +21,20 @@ async function fetchSummary(year: number) {
   const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
   const CATS = ['고정비', '대출상환', '변동비', '여행공연비']
 
-  // Try RPC first, fall back to row-level query
+  const sql = getSql()
   const monthly: Record<number, Record<string, number>> = {}
 
-  const { data: rpcData, error: rpcError } = await supabase.rpc('get_summary', { p_year: year })
+  const rows = await sql`
+    SELECT month, category, SUM(amount)::int as total
+    FROM expenses
+    WHERE year = ${year}
+    GROUP BY month, category
+    ORDER BY month, category
+  `
 
-  if (!rpcError && rpcData) {
-    for (const r of rpcData as { month: number; category: string; total: any }[]) {
-      if (!monthly[r.month]) monthly[r.month] = {}
-      monthly[r.month][r.category] = Number(r.total)
-    }
-  } else {
-    // Fallback: fetch rows and aggregate in JS
-    let offset = 0
-    const pageSize = 1000
-    while (true) {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('month,category,amount')
-        .eq('year', year)
-        .range(offset, offset + pageSize - 1)
-      if (error || !data || data.length === 0) break
-      for (const r of data) {
-        if (!monthly[r.month]) monthly[r.month] = {}
-        monthly[r.month][r.category] = (monthly[r.month][r.category] ?? 0) + r.amount
-      }
-      if (data.length < pageSize) break
-      offset += pageSize
-    }
+  for (const r of rows as { month: number; category: string; total: any }[]) {
+    if (!monthly[r.month]) monthly[r.month] = {}
+    monthly[r.month][r.category] = Number(r.total)
   }
 
   const monthlyList = MONTHS.map((name, i) => {

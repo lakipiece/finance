@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 
-// Returns individual expense items with optional filters
 export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams
   const yearStr = params.get('year')
@@ -12,27 +11,19 @@ export async function GET(req: NextRequest) {
   const year = yearStr ? parseInt(yearStr) : null
   if (!year) return NextResponse.json({ error: 'year required' }, { status: 400 })
 
-  let query = supabase
-    .from('expenses')
-    .select('year,month,expense_date,category,detail,memo,method,amount,member')
-    .eq('year', year)
+  const sql = getSql()
 
-  if (category) query = query.eq('category', category)
-  if (detail) query = query.eq('detail', detail)
-  if (month) query = query.eq('month', parseInt(month))
+  const rows = await sql`
+    SELECT year, month, expense_date, category, detail, memo, method, amount, member
+    FROM expenses
+    WHERE year = ${year}
+    ${category ? sql`AND category = ${category}` : sql``}
+    ${detail ? sql`AND detail = ${detail}` : sql``}
+    ${month ? sql`AND month = ${parseInt(month)}` : sql``}
+    ORDER BY expense_date
+  `
 
-  const allRows: any[] = []
-  let offset = 0
-  const pageSize = 1000
-  while (true) {
-    const { data, error } = await query.range(offset, offset + pageSize - 1)
-    if (error || !data || data.length === 0) break
-    allRows.push(...data)
-    if (data.length < pageSize) break
-    offset += pageSize
-  }
-
-  const expenses = allRows.map((e: any) => ({
+  const expenses = rows.map((e: any) => ({
     year: e.year,
     date: e.expense_date ?? '',
     month: e.month,

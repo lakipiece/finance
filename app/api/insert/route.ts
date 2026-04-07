@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 import type { RawExpenseRow } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let rows: RawExpenseRow[], year: number, source: string, source_url: string
   try {
@@ -48,19 +47,22 @@ export async function POST(req: NextRequest) {
     source_url,
   }))
 
+  const sql = getSql()
+
   // Delete all existing rows for this year, then insert fresh data.
   // These are two separate operations (no DB transaction via JS client).
   // Input validation above minimises the risk of insert failure after delete.
-  const { error: deleteError } = await supabase
-    .from('expenses')
-    .delete()
-    .eq('year', year)
-  if (deleteError) return NextResponse.json({ error: `삭제 실패: ${deleteError.message}` }, { status: 500 })
+  try {
+    await sql`DELETE FROM expenses WHERE year = ${year}`
+  } catch (e: any) {
+    return NextResponse.json({ error: `삭제 실패: ${e?.message}` }, { status: 500 })
+  }
 
-  const { error: insertError } = await supabase.from('expenses').insert(toInsert)
-  if (insertError) {
+  try {
+    await sql`INSERT INTO expenses ${sql(toInsert)}`
+  } catch (e: any) {
     return NextResponse.json({
-      error: `데이터 삽입 실패: ${insertError.message}. ${year}년 데이터가 삭제된 상태입니다. 다시 시도해주세요.`,
+      error: `데이터 삽입 실패: ${e?.message}. ${year}년 데이터가 삭제된 상태입니다. 다시 시도해주세요.`,
     }, { status: 500 })
   }
 

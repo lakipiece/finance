@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import { cached } from '@/lib/cache'
 
 export async function GET(req: NextRequest) {
@@ -19,42 +19,23 @@ export async function GET(req: NextRequest) {
 }
 
 async function fetchCategoryDetails(year: number, category: string) {
+  const sql = getSql()
   const detailTotals: Record<string, number> = {}
   const detailMonthly: Record<string, number[]> = {}
 
-  const { data: rpcData, error: rpcError } = await supabase.rpc('get_category_details', { p_year: year, p_category: category })
+  const rows = await sql`
+    SELECT month, detail, SUM(amount)::int as total
+    FROM expenses
+    WHERE year = ${year} AND category = ${category}
+    GROUP BY month, detail
+    ORDER BY month, detail
+  `
 
-  const rows: { month: number; detail: string; amount: number }[] = []
-
-  if (!rpcError && rpcData) {
-    for (const r of rpcData as { month: number; detail: string; total: any }[]) {
-      rows.push({ month: r.month, detail: r.detail, amount: Number(r.total) })
-    }
-  } else {
-    // Fallback: row-level query
-    let offset = 0
-    const pageSize = 1000
-    while (true) {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('month,detail,amount')
-        .eq('year', year)
-        .eq('category', category)
-        .range(offset, offset + pageSize - 1)
-      if (error || !data || data.length === 0) break
-      for (const r of data) {
-        rows.push({ month: r.month, detail: r.detail || '기타', amount: r.amount })
-      }
-      if (data.length < pageSize) break
-      offset += pageSize
-    }
-  }
-
-  for (const r of rows) {
+  for (const r of rows as { month: number; detail: string; total: any }[]) {
     const key = r.detail || '기타'
-    detailTotals[key] = (detailTotals[key] ?? 0) + r.amount
+    detailTotals[key] = (detailTotals[key] ?? 0) + Number(r.total)
     if (!detailMonthly[key]) detailMonthly[key] = Array(12).fill(0)
-    detailMonthly[key][r.month - 1] += r.amount
+    detailMonthly[key][r.month - 1] += Number(r.total)
   }
 
   const details = Object.entries(detailTotals)

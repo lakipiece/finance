@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
+import { auth } from '@/lib/auth'
+import { getSql } from '@/lib/db'
 import { google } from 'googleapis'
 import { readFileSync } from 'fs'
 import type { ParsePreviewResponse, RawExpenseRow } from '@/lib/types'
@@ -17,9 +17,8 @@ function toDateString(val: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: { spreadsheetId: string; sheetName: string; year: unknown }
   try {
@@ -54,12 +53,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Google 서비스 계정 설정이 올바르지 않습니다.' }, { status: 500 })
   }
 
-  const auth = new google.auth.GoogleAuth({
+  const googleAuth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   })
 
-  const sheets = google.sheets({ version: 'v4', auth })
+  const sheets = google.sheets({ version: 'v4', auth: googleAuth })
 
   let values: string[][]
   try {
@@ -128,10 +127,8 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const { count } = await supabase
-    .from('expenses')
-    .select('*', { count: 'exact', head: true })
-    .eq('year', yearNum)
+  const sql = getSql()
+  const [{ count }] = await sql`SELECT COUNT(*)::int as count FROM expenses WHERE year = ${yearNum}`
   const existingCount = count ?? 0
 
   const response: ParsePreviewResponse = {
