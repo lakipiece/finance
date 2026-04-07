@@ -96,8 +96,9 @@ export default function PortfolioDashboard({ summary }: Props) {
           <p className={`text-sm font-bold ${selectedAccountId === 'all' ? 'text-white' : 'text-slate-800'}`}>
             {summary.total_market_value.toLocaleString()}원
           </p>
-          <p className={`text-xs ${(summary.total_unrealized_pnl ?? 0) >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
-            {(summary.total_unrealized_pnl ?? 0) >= 0 ? '+' : ''}{(summary.total_unrealized_pnl ?? 0).toLocaleString()}원
+          <p className={`text-xs ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+            {summary.total_unrealized_pnl >= 0 ? '+' : ''}{summary.total_unrealized_pnl.toLocaleString()}원
+            <span className="ml-1 text-[10px] opacity-70">{summary.positions.length}종목</span>
           </p>
         </button>
 

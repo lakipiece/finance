@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import type { PortfolioPosition } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
@@ -230,9 +230,9 @@ export default function PositionsTable({ positions }: Props) {
                 const sorted = [...acctPositions].sort((a, b) => b.market_value - a.market_value)
 
                 return (
-                  <>
+                  <React.Fragment key={accountId}>
                     {/* 계좌 헤더 행 */}
-                    <tr key={`acct-${accountId}`}
+                    <tr
                       className="bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors select-none"
                       onClick={() => toggleAccount(accountId)}>
                       <td className="px-4 py-2.5" colSpan={5}>
@@ -302,7 +302,7 @@ export default function PositionsTable({ positions }: Props) {
                         </tr>
                       )
                     })}
-                  </>
+                  </React.Fragment>
                 )
               })}
             </tbody>
