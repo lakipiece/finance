@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
     method: r.method || null,
     memo: r.memo ?? '',
     amount: r.amount,
+    member: r.member ?? null,
     source,
     source_url,
   }))

@@ -124,6 +124,7 @@ export async function POST(req: NextRequest) {
       method,
       memo,
       amount: Math.round(amount),
+      member: null,
     })
   }
 

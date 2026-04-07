@@ -34,6 +34,7 @@ async function fetchDataUncached(year?: number): Promise<DashboardData | null> {
     memo: e.memo ?? '',
     method: e.method ?? '',
     amount: e.amount ?? 0,
+    member: e.member ?? null,
   }))
 
   return aggregateExpenses(rows)

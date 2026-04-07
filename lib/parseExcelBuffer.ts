@@ -46,6 +46,7 @@ export function parseExcelBuffer(buffer: Buffer, year: number): RawExpenseRow[] 
     const detail = row[5] != null ? String(row[5]).trim() : ''
     const method = row[6] != null ? String(row[6]).trim() : ''
     const rawAmt = row[7]
+    const member = row[8] != null ? String(row[8]).trim() || null : null
     const memo = row[9] != null ? String(row[9]).trim() : ''
 
     if (!cat || rawAmt == null) continue
@@ -65,6 +66,7 @@ export function parseExcelBuffer(buffer: Buffer, year: number): RawExpenseRow[] 
       method,
       amount: Math.round(amount),
       memo,
+      member,
     })
   }
 

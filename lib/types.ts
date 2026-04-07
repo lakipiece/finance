@@ -53,6 +53,7 @@ export interface RawExpenseRow {
   memo: string         // '' if absent (never null)
   method: string       // '' if absent (never null)
   amount: number       // positive integer (won)
+  member: string | null // L or P
 }
 
 export interface ParsePreviewResponse {
