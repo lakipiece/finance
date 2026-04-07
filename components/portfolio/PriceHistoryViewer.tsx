@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 
@@ -13,9 +13,26 @@ interface Props {
 export default function PriceHistoryViewer({ securities, history }: Props) {
   const [selectedTicker, setSelectedTicker] = useState(securities[0]?.ticker ?? '')
 
-  const rows = history.filter(h => h.ticker === selectedTicker)
+  const rows = useMemo(
+    () => history.filter(h => h.ticker === selectedTicker),
+    [history, selectedTicker]
+  )
   const isUSD = rows[0]?.currency === 'USD'
-  const chartData = rows.map(r => ({ date: r.date.slice(5), price: r.price })) // MM-DD format
+  const chartData = useMemo(
+    () => rows.map(r => ({ date: r.date.slice(5), price: r.price })),
+    [rows]
+  )
+  const reversedRows = useMemo(() => [...rows].reverse(), [rows])
+
+  if (securities.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-sm text-slate-400">
+          등록된 종목이 없습니다
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
@@ -71,8 +88,8 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
             </tr>
           </thead>
           <tbody>
-            {[...rows].reverse().map((r, i) => (
-              <tr key={i} className="border-t border-slate-50 hover:bg-slate-50">
+            {reversedRows.map(r => (
+              <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
                 <td className="px-4 py-2 text-slate-600">{r.date}</td>
                 <td className="px-4 py-2 text-right font-mono text-slate-700">
                   {r.currency === 'USD' ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
