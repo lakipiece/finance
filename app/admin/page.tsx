@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
+import { auth } from '@/lib/auth'
 import { fetchAvailableYears } from '@/lib/fetchYears'
 import AdminClient from '@/components/AdminClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
-  const supabase = createSupabaseServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const session = await auth()
+  const user = session?.user
 
   if (!user) redirect('/login')
 

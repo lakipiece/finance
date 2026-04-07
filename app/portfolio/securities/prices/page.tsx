@@ -1,16 +1,16 @@
 import { fetchSecurities } from '@/lib/portfolio/fetch'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import PriceHistoryViewer from '@/components/portfolio/PriceHistoryViewer'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PriceHistoryPage() {
-  const [securities, { data: history }] = await Promise.all([
+  const sql = getSql()
+  const [securities, history] = await Promise.all([
     fetchSecurities(),
-    supabase
-      .from('price_history')
-      .select('ticker, date, price, currency')
-      .order('date', { ascending: true }),
+    sql<{ ticker: string; date: string; price: number; currency: string }[]>`
+      SELECT ticker, date, price, currency FROM price_history ORDER BY date ASC
+    `,
   ])
-  return <PriceHistoryViewer securities={securities} history={history ?? []} />
+  return <PriceHistoryViewer securities={securities} history={history} />
 }

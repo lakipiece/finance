@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
 import SnapshotList from '@/components/portfolio/SnapshotList'
 import SnapshotCharts from '@/components/portfolio/SnapshotCharts'
 import type { Snapshot } from '@/lib/portfolio/types'
@@ -6,12 +6,9 @@ import type { Snapshot } from '@/lib/portfolio/types'
 export const dynamic = 'force-dynamic'
 
 export default async function SnapshotsPage() {
-  const { data: snapshotsData } = await supabase
-    .from('snapshots')
-    .select('*')
-    .order('date', { ascending: false })
-
-  const snapshots = (snapshotsData ?? []) as Snapshot[]
+  const sql = getSql()
+  const snapshotsData = await sql<Snapshot[]>`SELECT * FROM snapshots ORDER BY date DESC`
+  const snapshots = snapshotsData
 
   // Chart data: compute for latest 5 snapshots
   const chartSnapshots = snapshots.slice(0, 5).reverse() // oldest first for chart
@@ -19,11 +16,10 @@ export default async function SnapshotsPage() {
   const chartPoints = await Promise.all(
     chartSnapshots.map(async (snap) => {
       // Get holdings for this snapshot
-      const { data: holdings } = await supabase
-        .from('holdings')
-        .select('security_id, quantity, avg_price')
-        .eq('snapshot_id', snap.id)
-        .gt('quantity', 0)
+      const holdings = await sql<{ security_id: string; quantity: number; avg_price: number }[]>`
+        SELECT security_id, quantity, avg_price FROM holdings
+        WHERE snapshot_id = ${snap.id} AND quantity > 0
+      `
 
       if (!holdings || holdings.length === 0) {
         return { date: snap.date, total_market_value: 0, breakdown: {} }
@@ -31,29 +27,27 @@ export default async function SnapshotsPage() {
 
       // Get securities for asset_class info
       const secIds = [...new Set(holdings.map(h => h.security_id))]
-      const { data: securities } = await supabase
-        .from('securities')
-        .select('id, ticker, asset_class, currency')
-        .in('id', secIds)
-      const secMap = Object.fromEntries((securities ?? []).map(s => [s.id, s]))
+      const securities = await sql<{ id: string; ticker: string; asset_class: string | null; currency: string }[]>`
+        SELECT id, ticker, asset_class, currency FROM securities WHERE id = ANY(${secIds})
+      `
+      const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
 
       // Get prices closest to snapshot date
-      const tickers = (securities ?? []).map(s => {
+      const tickers = securities.map(s => {
         const clean = s.ticker.startsWith('KRX:') ? s.ticker.slice(4) : s.ticker
         return /^\d{6}$/.test(clean.split('.')[0]) ? `${clean}.KS` : clean
       })
       tickers.push('KRW=X')
 
-      const { data: prices } = await supabase
-        .from('price_history')
-        .select('ticker, price, currency, date')
-        .in('ticker', tickers)
-        .lte('date', snap.date)
-        .order('date', { ascending: false })
+      const prices = await sql<{ ticker: string; price: number; currency: string; date: string }[]>`
+        SELECT ticker, price, currency, date FROM price_history
+        WHERE ticker = ANY(${tickers}) AND date <= ${snap.date}
+        ORDER BY date DESC
+      `
 
       // Latest price per ticker up to snapshot date
       const priceMap: Record<string, number> = {}
-      for (const p of prices ?? []) {
+      for (const p of prices) {
         if (!priceMap[p.ticker]) priceMap[p.ticker] = p.price
       }
       const exchangeRate = priceMap['KRW=X'] ?? 1350
