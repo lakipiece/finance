@@ -9,7 +9,8 @@ export default async function SecuritiesPage() {
     fetchSecurities(),
     supabase.from('price_history')
       .select('ticker, price, currency, date')
-      .order('date', { ascending: false }),
+      .order('date', { ascending: false })
+      .limit(500),
   ])
 
   const latestPrices: Record<string, { price: number; currency: string; date: string }> = {}

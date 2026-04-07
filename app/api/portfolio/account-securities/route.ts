@@ -25,11 +25,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const { account_id, security_ids } = await req.json()
-
   const client = createSupabaseServerClient()
   const { data: { user } } = await client.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { account_id, security_ids } = await req.json()
 
   if (!account_id) return NextResponse.json({ error: 'account_id 필수' }, { status: 400 })
 
