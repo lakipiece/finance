@@ -446,7 +446,16 @@ function ExpenseTableCard({
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>{e.date}</span>
-                  <span>{e.method}</span>
+                  <div className="flex items-center gap-1.5">
+                    {e.member && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        e.member === 'L' ? 'bg-blue-50 text-blue-600' :
+                        e.member === 'P' ? 'bg-pink-50 text-pink-600' :
+                        'bg-slate-100 text-slate-500'
+                      }`}>{e.member}</span>
+                    )}
+                    <span>{e.method}</span>
+                  </div>
                 </div>
                 {e.memo && <p className="text-xs text-slate-400 mt-1 truncate">{e.memo}</p>}
               </div>
@@ -462,6 +471,7 @@ function ExpenseTableCard({
                   <th className={thSort} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
                   <th className={thSort} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
                   <th className={thSort} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
+                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
                   <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
                   <th className={`${thSort} text-right`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
@@ -477,6 +487,15 @@ function ExpenseTableCard({
                     </td>
                     <td className="py-2 px-3">
                       {e.detail ? <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">{e.detail}</span> : <span className="text-slate-300">—</span>}
+                    </td>
+                    <td className="py-2 px-3">
+                      {e.member ? (
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          e.member === 'L' ? 'bg-blue-50 text-blue-600' :
+                          e.member === 'P' ? 'bg-pink-50 text-pink-600' :
+                          'bg-slate-100 text-slate-500'
+                        }`}>{e.member}</span>
+                      ) : <span className="text-slate-300 text-xs">-</span>}
                     </td>
                     <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
                       {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-slate-200">—</span>}
