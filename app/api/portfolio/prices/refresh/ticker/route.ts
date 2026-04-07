@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
@@ -8,9 +8,8 @@ const yahooFinance = new YahooFinance()
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { ticker } = await req.json()
   if (!ticker) return NextResponse.json({ error: 'ticker required' }, { status: 400 })
@@ -26,9 +25,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `가격 조회 실패: price=0` }, { status: 422 })
     }
 
-    await supabase
-      .from('price_history')
-      .upsert({ ticker, date: today, price, currency }, { onConflict: 'ticker,date' })
+    const sql = getSql()
+    await sql`
+      INSERT INTO price_history (ticker, date, price, currency)
+      VALUES (${ticker}, ${today}, ${price}, ${currency})
+      ON CONFLICT (ticker, date) DO UPDATE SET price = EXCLUDED.price, currency = EXCLUDED.currency
+    `
 
     return NextResponse.json({ ticker, price, currency })
   } catch (err: unknown) {

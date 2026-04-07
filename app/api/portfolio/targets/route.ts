@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
-
-export const dynamic = 'force-dynamic'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 
 export async function GET() {
-  const { data } = await supabase
-    .from('target_allocations')
-    .select('*')
-    .order('level')
-    .order('key')
-  return NextResponse.json(data ?? [])
+  const sql = getSql()
+  const data = await sql`SELECT * FROM target_allocations ORDER BY level, key`
+  return NextResponse.json(data)
 }
 
 export async function PUT(req: NextRequest) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body: { level: string; key: string; target_pct: number }[] = await req.json()
-
-  const { error } = await supabase
-    .from('target_allocations')
-    .upsert(body, { onConflict: 'level,key' })
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  const body = await req.json()
+  const sql = getSql()
+  await sql`
+    INSERT INTO target_allocations ${sql(body)}
+    ON CONFLICT (level, key) DO UPDATE SET target_pct = EXCLUDED.target_pct
+  `
   return NextResponse.json({ ok: true })
 }

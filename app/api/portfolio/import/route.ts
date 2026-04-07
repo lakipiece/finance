@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase-server'
-import { supabase } from '@/lib/supabase'
+import { getSql } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { google } from 'googleapis'
 import { readFileSync } from 'fs'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const client = createSupabaseServerClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let body: { spreadsheetId: string; sheetName: string }
   try {
@@ -36,11 +35,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Google 서비스 계정 설정 오류' }, { status: 500 })
   }
 
-  const auth = new google.auth.GoogleAuth({
+  const googleAuth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   })
-  const sheets = google.sheets({ version: 'v4', auth })
+  const sheets = google.sheets({ version: 'v4', auth: googleAuth })
 
   let values: string[][]
   try {
@@ -62,6 +61,7 @@ export async function POST(req: NextRequest) {
 
   const today = new Date().toISOString().slice(0, 10)
   const errors: string[] = []
+  const sql = getSql()
 
   // 1. securities 배치 upsert
   const securitiesPayload = dataRows.map(row => ({
@@ -74,14 +74,19 @@ export async function POST(req: NextRequest) {
     currency: ['KR', '국내', '한국'].includes((row[6] ?? '').trim()) ? 'KRW' : 'USD',
   })).filter(s => s.ticker && s.name)
 
-  const { data: upsertedSecurities, error: secErr } = await supabase
-    .from('securities')
-    .upsert(securitiesPayload, { onConflict: 'ticker' })
-    .select('id, ticker')
+  const securitiesResult = await sql`
+    INSERT INTO securities ${sql(securitiesPayload)}
+    ON CONFLICT (ticker) DO UPDATE SET
+      name = EXCLUDED.name,
+      asset_class = EXCLUDED.asset_class,
+      country = EXCLUDED.country,
+      currency = EXCLUDED.currency
+    RETURNING id, ticker
+  `
 
-  if (secErr) return NextResponse.json({ error: `종목 저장 오류: ${secErr.message}` }, { status: 500 })
+  if (!securitiesResult) return NextResponse.json({ error: '종목 저장 오류' }, { status: 500 })
 
-  const secMap = Object.fromEntries((upsertedSecurities ?? []).map(s => [s.ticker, s.id]))
+  const secMap = Object.fromEntries(securitiesResult.map((s: { id: string; ticker: string }) => [s.ticker, s.id]))
 
   // 2. accounts: 중복 없이 find-or-create
   const accountKeys = [...new Set(dataRows.map(row => `${(row[1] ?? '').trim()}||${(row[2] ?? '').trim()}`))]
@@ -92,17 +97,14 @@ export async function POST(req: NextRequest) {
     if (!broker) continue
     const owner = dataRows.find(r => (r[1] ?? '').trim() === broker)?.[0]?.trim() ?? ''
 
-    const { data: existing } = await supabase
-      .from('accounts').select('id').eq('broker', broker).eq('type', accType).maybeSingle()
+    const [existing] = await sql`SELECT id FROM accounts WHERE broker = ${broker} AND type = ${accType}`
 
     if (existing) {
       accountMap[key] = existing.id
     } else {
-      const { data: created } = await supabase
-        .from('accounts')
-        .insert({ name: `${broker} ${accType}`, broker, owner, type: accType })
-        .select('id').single()
-      if (created) accountMap[key] = created.id
+      const name = `${broker} ${accType}`
+      const [newAccount] = await sql`INSERT INTO accounts (name, broker, owner, type) VALUES (${name}, ${broker}, ${owner}, ${accType}) RETURNING id`
+      if (newAccount) accountMap[key] = newAccount.id
     }
   }
 
@@ -133,11 +135,15 @@ export async function POST(req: NextRequest) {
     }]
   })
 
-  const { error: holdErr } = await supabase
-    .from('holdings')
-    .upsert(holdingsPayload, { onConflict: 'account_id,security_id' })
-
-  if (holdErr) return NextResponse.json({ error: `포지션 저장 오류: ${holdErr.message}` }, { status: 500 })
+  await sql`
+    INSERT INTO holdings ${sql(holdingsPayload)}
+    ON CONFLICT (account_id, security_id) DO UPDATE SET
+      quantity = EXCLUDED.quantity,
+      avg_price = EXCLUDED.avg_price,
+      total_invested = EXCLUDED.total_invested,
+      snapshot_date = EXCLUDED.snapshot_date,
+      updated_at = EXCLUDED.updated_at
+  `
 
   return NextResponse.json({ imported: holdingsPayload.length, errors })
 }
