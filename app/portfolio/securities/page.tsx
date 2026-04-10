@@ -18,9 +18,15 @@ export default async function SecuritiesPage() {
 
   for (const row of prices) {
     const p = { price: Number(row.price), date: String(row.date).slice(0, 10) }
-    if (!priceHistory[row.ticker]) priceHistory[row.ticker] = []
-    priceHistory[row.ticker].push(p)
-    latestPrices[row.ticker] = { price: p.price, currency: row.currency, date: p.date }
+    // 360200.KS → 360200 으로도 인덱싱 (securities 테이블은 .KS 없이 저장)
+    const keys = [row.ticker]
+    if (row.ticker.endsWith('.KS')) keys.push(row.ticker.slice(0, -3))
+
+    for (const key of keys) {
+      if (!priceHistory[key]) priceHistory[key] = []
+      priceHistory[key].push(p)
+      latestPrices[key] = { price: p.price, currency: row.currency, date: p.date }
+    }
   }
 
   return <SecuritiesManager securities={securities} latestPrices={latestPrices} priceHistory={priceHistory} />
