@@ -110,7 +110,7 @@ export async function refreshAllPrices(): Promise<{
   results: Record<string, number>
 }> {
   const sql = getSql()
-  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null }[]>`SELECT ticker, asset_class, country FROM securities`
+  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`SELECT ticker, asset_class, country, currency FROM securities`
 
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
 
@@ -118,7 +118,9 @@ export async function refreshAllPrices(): Promise<{
 
   // 자산군별 분류
   const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
+  const cashSecurities = securities.filter(s => s.asset_class === '현금')
   const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
+  // KRW=X는 USD 현금 환율 계산을 위해 항상 포함
   const yahooTickers = [...new Set([...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)), 'KRW=X'])]
 
   const [yahooResult, coinResult] = await Promise.all([
@@ -126,7 +128,19 @@ export async function refreshAllPrices(): Promise<{
     fetchCoinGeckoPrices(coinTickers, today),
   ])
 
-  const allSaved = [...yahooResult.saved, ...coinResult.saved]
+  // 현금 처리: KRW=1원, USD=환율
+  const krwRate = yahooResult.saved.find(r => r.ticker === 'KRW=X')?.price ?? null
+  const cashSaved: PriceRow[] = []
+  for (const cash of cashSecurities) {
+    if (cash.currency === 'USD' && krwRate) {
+      cashSaved.push({ ticker: cash.ticker, date: today, price: krwRate, currency: 'KRW', change_pct: null, exchange: null })
+    } else {
+      // KRW 또는 기타 → 1원 고정
+      cashSaved.push({ ticker: cash.ticker, date: today, price: 1, currency: 'KRW', change_pct: null, exchange: null })
+    }
+  }
+
+  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...cashSaved]
   const allFailed = [...yahooResult.failed, ...coinResult.failed]
   const results: Record<string, number> = {}
   for (const row of allSaved) results[row.ticker] = row.price

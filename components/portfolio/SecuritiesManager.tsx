@@ -317,6 +317,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                 {(() => {
                   const lp = latestPrices[s.ticker]
                   const tickerUrl = s.url ? s.url
+                    : s.asset_class === '현금'
+                      ? 'https://search.naver.com/search.naver?sm=mtb_drt&where=m&query=%EB%AF%B8%EA%B5%AD%ED%99%98%EC%9C%A8'
                     : s.asset_class === '코인'
                       ? `https://www.coingecko.com/en/coins/${s.ticker.toLowerCase()}`
                     : s.country === '국내'
