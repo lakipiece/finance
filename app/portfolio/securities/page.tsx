@@ -18,7 +18,7 @@ export default async function SecuritiesPage() {
     if (!latestPrices[row.ticker]) latestPrices[row.ticker] = {
       ...row,
       price: Number(row.price),
-      date: row.date instanceof Date ? row.date.toISOString().slice(0, 10) : String(row.date),
+      date: String(row.date).slice(0, 10),
     }
   }
 
