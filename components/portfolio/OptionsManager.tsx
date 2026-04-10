@@ -1,6 +1,15 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  useSortable, verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
@@ -34,7 +43,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   return (
     <div className="relative" ref={ref}>
       <div
-        className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer"
+        className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer shrink-0"
         style={{ backgroundColor: color }}
         onClick={() => setOpen(!open)}
       />
@@ -55,6 +64,81 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   )
 }
 
+function SortableOptionRow({
+  opt,
+  onColorChange,
+  onLabelChange,
+  onDelete,
+}: {
+  opt: OptionItem
+  onColorChange: (id: string, color: string) => void
+  onLabelChange: (id: string, label: string) => void
+  onDelete: (id: string) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: opt.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(opt.label)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function startEdit() {
+    setDraft(opt.label)
+    setEditing(true)
+    setTimeout(() => inputRef.current?.select(), 0)
+  }
+
+  function commitEdit() {
+    setEditing(false)
+    if (draft.trim() && draft.trim() !== opt.label) {
+      onLabelChange(opt.id, draft.trim())
+    } else {
+      setDraft(opt.label)
+    }
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group">
+      {/* drag handle */}
+      <button {...attributes} {...listeners}
+        className="text-slate-300 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5 shrink-0">
+        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+        </svg>
+      </button>
+
+      <ColorPicker color={opt.color_hex ?? '#94a3b8'} onChange={c => onColorChange(opt.id, c)} />
+
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setDraft(opt.label) } }}
+          className="flex-1 border border-blue-300 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          autoFocus
+        />
+      ) : (
+        <span
+          onClick={startEdit}
+          title="클릭하여 편집"
+          className="text-xs font-medium text-slate-700 flex-1 cursor-text hover:text-blue-600 transition-colors"
+        >
+          {opt.label}
+        </span>
+      )}
+
+      <button onClick={() => onDelete(opt.id)}
+        className="p-1 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 export default function OptionsManager({ initialOptions }: { initialOptions: OptionMap }) {
   const [options, setOptions] = useState<OptionMap>(initialOptions)
   const [activeType, setActiveType] = useState('account_type')
@@ -62,6 +146,11 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
   const [newColor, setNewColor] = useState('#3b82f6')
   const [adding, setAdding] = useState(false)
   const [msg, setMsg] = useState('')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   const types = Object.keys(TYPE_LABELS)
   const currentOptions = options[activeType] ?? []
@@ -110,6 +199,40 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
     })
   }
 
+  async function handleLabelChange(id: string, label: string) {
+    setOptions(prev => ({
+      ...prev,
+      [activeType]: (prev[activeType] ?? []).map(o => o.id === id ? { ...o, label } : o),
+    }))
+    await fetch(`/api/portfolio/options/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label }),
+    })
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = currentOptions.findIndex(o => o.id === active.id)
+    const newIndex = currentOptions.findIndex(o => o.id === over.id)
+    const reordered = arrayMove(currentOptions, oldIndex, newIndex)
+
+    setOptions(prev => ({ ...prev, [activeType]: reordered }))
+
+    // save all sort_orders
+    await Promise.all(
+      reordered.map((o, i) =>
+        fetch(`/api/portfolio/options/${o.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sort_order: i }),
+        })
+      )
+    )
+  }
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-6">
       <h3 className="text-sm font-semibold text-slate-700 mb-4">옵션 관리</h3>
@@ -126,27 +249,25 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
         ))}
       </div>
 
-      {/* 옵션 목록 */}
-      <div className="space-y-2 mb-4">
-        {currentOptions.map(opt => (
-          <div key={opt.id} className="flex items-center gap-2 group">
-            <ColorPicker
-              color={opt.color_hex ?? '#94a3b8'}
-              onChange={c => handleColorChange(opt.id, c)}
-            />
-            <span className="text-xs font-medium text-slate-700 flex-1">{opt.label}</span>
-            <button onClick={() => handleDelete(opt.id)}
-              className="p-1 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+      {/* 옵션 목록 (drag-and-drop) */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={currentOptions.map(o => o.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-2 mb-4">
+            {currentOptions.map(opt => (
+              <SortableOptionRow
+                key={opt.id}
+                opt={opt}
+                onColorChange={handleColorChange}
+                onLabelChange={handleLabelChange}
+                onDelete={handleDelete}
+              />
+            ))}
+            {currentOptions.length === 0 && (
+              <p className="text-xs text-slate-400 py-2">옵션이 없습니다</p>
+            )}
           </div>
-        ))}
-        {currentOptions.length === 0 && (
-          <p className="text-xs text-slate-400 py-2">옵션이 없습니다</p>
-        )}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {/* 추가 폼 */}
       <div className="flex items-center gap-2 pt-3 border-t border-slate-100">

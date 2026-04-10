@@ -20,6 +20,7 @@ interface Props {
   accounts: Account[]
   securities: Security[]
   accountSecurities: AccountSecurity[]
+  typeColors?: Record<string, string>
 }
 
 function formatWithCommas(v: number | null): string {
@@ -71,7 +72,7 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
   )
 }
 
-export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities }: Props) {
+export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {} }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
@@ -262,8 +263,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             const count = accountCounts[a.id] ?? 0
             const total = accountSecurities.filter(as => as.account_id === a.id).length
             const aVal = accountValues[a.id] ?? 0
+            const typeColor = typeColors[a.type ?? ''] ?? null
             return (
               <div key={a.id} onClick={() => setSelectedAccountId(a.id)}
+                style={!isSelected && typeColor ? { borderLeftColor: typeColor, borderLeftWidth: '3px' } : undefined}
                 className={`rounded-xl border px-3 py-2 cursor-pointer transition-all ${
                   isSelected ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'
                 }`}>
