@@ -4,14 +4,23 @@ import SecuritiesManager from '@/components/portfolio/SecuritiesManager'
 
 export const dynamic = 'force-dynamic'
 
+type OptionRow = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
+
 export default async function SecuritiesPage() {
   const sql = getSql()
-  const [securities, prices] = await Promise.all([
+  const [securities, prices, optionRows] = await Promise.all([
     fetchSecurities(),
     sql<{ ticker: string; price: number; currency: string; date: string; change_pct: number | null; exchange: string | null }[]>`
       SELECT ticker, price, currency, date, change_pct, exchange FROM price_history ORDER BY date ASC
     `,
+    sql<OptionRow[]>`SELECT * FROM option_list ORDER BY type, sort_order, label`,
   ])
+
+  const optionsGrouped: Record<string, OptionRow[]> = {}
+  for (const r of optionRows) {
+    if (!optionsGrouped[r.type]) optionsGrouped[r.type] = []
+    optionsGrouped[r.type].push(r)
+  }
 
   const latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null; exchange: string | null }> = {}
   const priceHistory: Record<string, { price: number; date: string }[]> = {}
@@ -29,5 +38,5 @@ export default async function SecuritiesPage() {
     }
   }
 
-  return <SecuritiesManager securities={securities} latestPrices={latestPrices} priceHistory={priceHistory} />
+  return <SecuritiesManager securities={securities} latestPrices={latestPrices} priceHistory={priceHistory} options={optionsGrouped} />
 }

@@ -4,10 +4,13 @@ import { useState, useMemo } from 'react'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
+type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
+
 interface Props {
   securities: Security[]
   latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null; exchange: string | null }>
   priceHistory?: Record<string, { price: number; date: string }[]>
+  options: Record<string, OptionItem[]>
 }
 
 function Sparkline({ data }: { data: { price: number }[] }) {
@@ -32,31 +35,25 @@ function Sparkline({ data }: { data: { price: number }[] }) {
   )
 }
 
-type CardStyle = { badge: string; border: string; ticker: string }
-
-const COUNTRY_STYLE: Record<string, CardStyle> = {
-  '국내':  { badge: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400', ticker: 'bg-emerald-100 text-emerald-800' },
-  '미국':  { badge: 'bg-blue-50 text-blue-700',      border: 'border-l-blue-400',    ticker: 'bg-blue-100 text-blue-800' },
-  '글로벌':{ badge: 'bg-amber-50 text-amber-700',    border: 'border-l-amber-400',   ticker: 'bg-amber-100 text-amber-800' },
-  '기타':  { badge: 'bg-slate-100 text-slate-500',   border: 'border-l-slate-300',   ticker: 'bg-slate-100 text-slate-600' },
+function getColorHex(options: Record<string, OptionItem[]>, type: string, value: string | null): string {
+  if (!value) return '#94a3b8'
+  return options[type]?.find(o => o.value === value)?.color_hex ?? '#94a3b8'
 }
-const ASSET_STYLE: Record<string, CardStyle> = {
-  '채권': { badge: 'bg-violet-50 text-violet-700',  border: 'border-l-violet-400', ticker: 'bg-violet-100 text-violet-800' },
-  '현금': { badge: 'bg-teal-50 text-teal-700',      border: 'border-l-teal-400',   ticker: 'bg-teal-100 text-teal-800' },
-  '코인': { badge: 'bg-orange-50 text-orange-700',  border: 'border-l-orange-400', ticker: 'bg-orange-100 text-orange-800' },
-}
-const DEFAULT_STYLE: CardStyle = { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200', ticker: 'bg-slate-100 text-slate-600' }
 
-function cardStyle(country: string | null, assetClass: string | null): CardStyle {
-  if (assetClass && ASSET_STYLE[assetClass]) return ASSET_STYLE[assetClass]
-  return COUNTRY_STYLE[country ?? ''] ?? DEFAULT_STYLE
+function cardColors(options: Record<string, OptionItem[]>, country: string | null, assetClass: string | null) {
+  // asset_class takes priority (except 주식 which falls through to country)
+  const hex = assetClass && assetClass !== '주식'
+    ? getColorHex(options, 'asset_class', assetClass)
+    : getColorHex(options, 'country', country)
+  return { hex }
 }
 
 // ─── Security Modal (add & edit) ─────────────────────────────────────────────
-function SecurityModal({ security, onSave, onClose }: {
+function SecurityModal({ security, onSave, onClose, options }: {
   security: Security | null
   onSave: (s: Security) => void
   onClose: () => void
+  options: Record<string, OptionItem[]>
 }) {
   const isEdit = security !== null
   const [form, setForm] = useState({
@@ -122,19 +119,22 @@ function SecurityModal({ security, onSave, onClose }: {
               placeholder="슈왑 배당 ETF" /></div>
           <div><label className={lbl}>국가</label>
             <select value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} className={inp}>
-              {['미국','국내','글로벌','기타'].map(c => <option key={c}>{c}</option>)}
+              {(options.country ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>통화</label>
             <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={inp}>
-              <option>USD</option><option>KRW</option>
+              {(options.currency ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>자산군</label>
             <select value={form.asset_class} onChange={e => setForm(p => ({ ...p, asset_class: e.target.value }))} className={inp}>
-              {['주식','채권','현금','코인'].map(c => <option key={c}>{c}</option>)}
+              {(options.asset_class ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>섹터</label>
             <input value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} className={inp}
-              placeholder="테크" /></div>
+              placeholder="테크" list="sector-list" />
+            <datalist id="sector-list">
+              {(options.sector ?? []).map(o => <option key={o.value} value={o.value} />)}
+            </datalist></div>
           <div className="col-span-2"><label className={lbl}>URL</label>
             <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={inp} placeholder="https://..." /></div>
           <div className="col-span-2"><label className={lbl}>메모</label>
@@ -154,7 +154,7 @@ function SecurityModal({ security, onSave, onClose }: {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {} }: Props) {
+export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options }: Props) {
   const [securities, setSecurities] = useState(initSecurities)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
@@ -322,10 +322,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {/* Security cards — 5 columns */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {filteredSecurities.map(s => {
-          const cs = cardStyle(s.country, s.asset_class)
+          const { hex } = cardColors(options, s.country, s.asset_class)
           return (
             <div key={s.id}
-              className={`bg-white rounded-xl border-l-2 border border-slate-100 ${cs.border} flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all`}>
+              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all"
+              style={{ borderLeftColor: hex }}>
               {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
                 {(() => {
@@ -351,11 +352,13 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                       })()
                   return tickerUrl ? (
                     <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity ${cs.ticker}`}>
+                      className="text-[10px] px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity"
+                      style={{ backgroundColor: hex + '15', color: hex }}>
                       {s.ticker}
                     </a>
                   ) : (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none ${cs.ticker}`}>{s.ticker}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-mono leading-none"
+                      style={{ backgroundColor: hex + '15', color: hex }}>{s.ticker}</span>
                   )
                 })()}
                 <span className="text-[10px] text-slate-300 ml-auto">{s.currency}</span>
@@ -392,13 +395,15 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               <div className="flex items-center gap-0.5 flex-wrap">
                 {s.asset_class && (
                   <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
-                    className={`text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity ${cs.badge}`}>
+                    className="text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.asset_class}
                   </button>
                 )}
                 {s.country && (
                   <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
-                    className={`text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity ${cs.badge}`}>
+                    className="text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.country}
                   </button>
                 )}
@@ -456,6 +461,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {(showAddModal || editModalSecurity !== null) && (
         <SecurityModal
           security={editModalSecurity}
+          options={options}
           onSave={saved => {
             if (editModalSecurity) {
               setSecurities(prev => prev.map(s => s.id === saved.id ? saved : s))
