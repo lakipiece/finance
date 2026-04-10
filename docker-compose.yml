@@ -24,6 +24,9 @@ services:
       DATABASE_URL: postgresql://finance:${DB_PASSWORD}@db:5432/finance
       AUTH_SECRET: ${AUTH_SECRET}
       NEXTAUTH_URL: https://fin.lakipiece.com
+      GOOGLE_SERVICE_ACCOUNT_JSON: /run/secrets/google_credentials
+    volumes:
+      - ./google-credentials.json:/run/secrets/google_credentials:ro
     depends_on:
       db:
         condition: service_healthy
