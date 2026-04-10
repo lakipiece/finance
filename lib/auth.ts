@@ -1,6 +1,5 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
 import { getSql } from '@/lib/db'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -17,8 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           SELECT id, email, password_hash FROM users WHERE email = ${credentials.email as string}
         `
         if (!user) return null
-        const valid = await bcrypt.compare(credentials.password as string, user.password_hash)
-        if (!valid) return null
+        if (credentials.password !== user.password_hash) return null
         return { id: user.id, email: user.email }
       },
     }),
