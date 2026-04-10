@@ -18,6 +18,7 @@ interface Props {
   accounts: Account[]
   securities: Security[]
   accountSecurities: AccountSecurity[]
+  typeColors?: Record<string, string>
 }
 
 const COUNTRY_STYLE: Record<string, { badge: string; border: string }> = {
@@ -47,7 +48,7 @@ function SortableAccountItem({ id, children }: { id: string; children: React.Rea
   )
 }
 
-export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks }: Props) {
+export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {} }: Props) {
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -188,12 +189,19 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 <SortableAccountItem key={a.id} id={a.id}>
                   <div
                     onClick={() => { setSelectedAccountId(a.id); setEditingAccountId(null); setShowAddAccount(false) }}
-                    className={`rounded-xl border p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                    className={`rounded-xl border-l-[3px] border border-slate-100 p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'bg-slate-700 !border-slate-700' : 'bg-white hover:border-slate-200'}`}
+                    style={{ borderLeftColor: selectedAccountId !== a.id ? (typeColors[a.type ?? ''] ?? '#e2e8f0') : undefined }}>
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className={`text-xs font-semibold ${selectedAccountId === a.id ? 'text-white' : 'text-slate-800'}`}>{a.name}</span>
-                          {a.type && <span className={`text-[9px] px-1 py-0.5 rounded ${selectedAccountId === a.id ? 'bg-white/20 text-white/70' : 'bg-slate-100 text-slate-500'}`}>{a.type}</span>}
+                          {a.type && (
+                            <span className="text-[9px] px-1 py-0.5 rounded"
+                              style={selectedAccountId === a.id
+                                ? { backgroundColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.7)' }
+                                : { backgroundColor: (typeColors[a.type] ?? '#94a3b8') + '20', color: typeColors[a.type] ?? '#94a3b8' }
+                              }>{a.type}</span>
+                          )}
                         </div>
                         <p className={`text-[10px] mt-0.5 ${selectedAccountId === a.id ? 'text-slate-300' : 'text-slate-400'}`}>{a.broker}</p>
                         <p className={`text-[9px] mt-1 ${selectedAccountId === a.id ? 'text-slate-400' : 'text-slate-300'}`}>

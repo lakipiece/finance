@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
@@ -16,6 +16,43 @@ const TYPE_LABELS: Record<string, string> = {
   currency: '통화',
   asset_class: '자산군',
   sector: '섹터',
+}
+
+function ColorPicker({ color, onChange }: { color: string; onChange: (c: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  return (
+    <div className="relative" ref={ref}>
+      <div
+        className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer"
+        style={{ backgroundColor: color }}
+        onClick={() => setOpen(!open)}
+      />
+      {open && (
+        <div className="absolute left-0 top-7 z-10 flex flex-wrap gap-1 bg-white border border-slate-200 rounded-xl p-2 shadow-lg w-40">
+          {PRESET_COLORS.map(c => (
+            <button key={c} onClick={() => { onChange(c); setOpen(false) }}
+              className="w-5 h-5 rounded-full border-2 transition-all"
+              style={{
+                backgroundColor: c,
+                borderColor: color === c ? '#1e293b' : 'transparent',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function OptionsManager({ initialOptions }: { initialOptions: OptionMap }) {
@@ -93,24 +130,10 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
       <div className="space-y-2 mb-4">
         {currentOptions.map(opt => (
           <div key={opt.id} className="flex items-center gap-2 group">
-            {/* 색상 스와치 */}
-            <div className="relative">
-              <div
-                className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer"
-                style={{ backgroundColor: opt.color_hex ?? '#94a3b8' }}
-              />
-              <div className="absolute left-0 top-7 z-10 hidden group-hover:flex flex-wrap gap-1 bg-white border border-slate-200 rounded-xl p-2 shadow-lg w-40">
-                {PRESET_COLORS.map(c => (
-                  <button key={c} onClick={() => handleColorChange(opt.id, c)}
-                    className="w-5 h-5 rounded-full border-2 transition-all"
-                    style={{
-                      backgroundColor: c,
-                      borderColor: opt.color_hex === c ? '#1e293b' : 'transparent',
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
+            <ColorPicker
+              color={opt.color_hex ?? '#94a3b8'}
+              onChange={c => handleColorChange(opt.id, c)}
+            />
             <span className="text-xs font-medium text-slate-700 flex-1">{opt.label}</span>
             <button onClick={() => handleDelete(opt.id)}
               className="p-1 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
@@ -127,23 +150,7 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
 
       {/* 추가 폼 */}
       <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-        <div className="relative group">
-          <div
-            className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer shrink-0"
-            style={{ backgroundColor: newColor }}
-          />
-          <div className="absolute left-0 top-7 z-10 hidden group-hover:flex flex-wrap gap-1 bg-white border border-slate-200 rounded-xl p-2 shadow-lg w-40">
-            {PRESET_COLORS.map(c => (
-              <button key={c} onClick={() => setNewColor(c)}
-                className="w-5 h-5 rounded-full border-2 transition-all"
-                style={{
-                  backgroundColor: c,
-                  borderColor: newColor === c ? '#1e293b' : 'transparent',
-                }}
-              />
-            ))}
-          </div>
-        </div>
+        <ColorPicker color={newColor} onChange={setNewColor} />
         <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
           placeholder="새 옵션 이름" onKeyDown={e => e.key === 'Enter' && handleAdd()}
           className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300" />
