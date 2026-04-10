@@ -174,6 +174,44 @@ function SecurityModal({ security, onSave, onClose, options }: {
   return createPortal(modal, document.body)
 }
 
+// ─── Holding Card ─────────────────────────────────────────────────────────────
+function HoldingCard({
+  label, value, sub, hoverLines,
+}: {
+  label: string
+  value: string
+  sub?: { text: string; positive?: boolean }
+  hoverLines?: { left: string; right: string }[]
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      className="relative flex flex-col items-center justify-center rounded-xl bg-white border border-slate-100 px-2 py-3 text-center min-w-0 cursor-default"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <p className="text-[9px] text-slate-400 mb-1 uppercase tracking-wider">{label}</p>
+      <p className="text-sm font-semibold text-slate-700 tabular-nums leading-tight">{value}</p>
+      {sub && (
+        <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-green-600' : sub.positive === false ? 'text-red-500' : 'text-slate-400'}`}>
+          {sub.text}
+        </p>
+      )}
+      {hovered && hoverLines && hoverLines.length > 0 && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-10 bg-slate-800 text-white rounded-lg px-3 py-2 shadow-xl whitespace-nowrap min-w-max">
+          {hoverLines.map((l, i) => (
+            <div key={i} className="flex items-center justify-between gap-4 text-[10px]">
+              <span className="text-slate-300">{l.left}</span>
+              <span className="font-medium">{l.right}</span>
+            </div>
+          ))}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Price History Modal ──────────────────────────────────────────────────────
 function PriceHistoryModal({
   security,
@@ -202,21 +240,32 @@ function PriceHistoryModal({
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
+  // 가중평균 계산
   const totalQty = holdings.reduce((s, h) => s + h.quantity, 0)
-  const totalInvested = holdings.reduce((s, h) => s + (h.avg_price ?? 0) * h.quantity, 0)
-  const avgPrice = totalQty > 0 ? totalInvested / totalQty : null
+  const weightedSum = holdings.reduce((s, h) => s + (h.avg_price ?? 0) * h.quantity, 0)
+  const avgPrice = totalQty > 0 ? weightedSum / totalQty : null
+  const totalInvested = avgPrice != null ? avgPrice * totalQty : null
   const currentPrice = latestPrice?.price ?? 0
   const marketValue = currentPrice * totalQty
+  const pnl = totalInvested != null ? marketValue - totalInvested : null
+
+  const fmt = (v: number) => isUSD ? `$${v.toFixed(2)}` : `${Math.round(v).toLocaleString()}원`
+  const fmtKrw = (v: number) => {
+    const abs = Math.abs(v)
+    if (abs >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
+    if (abs >= 10_000) return `${Math.floor(v / 10_000).toLocaleString()}만원`
+    return `${Math.round(v).toLocaleString()}원`
+  }
 
   const modal = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between px-5 pt-5 pb-4 shrink-0">
+        <div className="flex items-start justify-between px-5 pt-5 pb-3 shrink-0">
           <div className="flex-1 min-w-0">
-            {/* Ticker + tags row */}
-            <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            {/* Ticker + tags */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
               {tickerUrl ? (
                 <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
@@ -230,95 +279,98 @@ function PriceHistoryModal({
                   {security.ticker}
                 </span>
               )}
-              {security.asset_class && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.asset_class}</span>
-              )}
-              {security.country && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.country}</span>
-              )}
-              {security.sector && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.sector}</span>
-              )}
-              <span className="text-[10px] text-slate-300 ml-1">{security.currency}</span>
+              {security.asset_class && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.asset_class}</span>}
+              {security.country    && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.country}</span>}
+              {security.sector     && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.sector}</span>}
+              <span className="text-[10px] text-slate-300 ml-0.5">{security.currency}</span>
             </div>
-            {/* Name */}
-            <p className="text-lg font-bold text-slate-800 leading-tight">{security.name}</p>
-            {/* Price */}
-            {latestPrice && (
-              <div className="flex items-baseline gap-2 mt-1.5">
-                <span className="text-2xl font-bold text-slate-800">
-                  {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
-                </span>
-                {latestPrice.change_pct != null && (
-                  <span className={`text-sm font-medium ${latestPrice.change_pct > 0 ? 'text-red-500' : latestPrice.change_pct < 0 ? 'text-blue-500' : 'text-slate-400'}`}>
-                    {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
-                  </span>
-                )}
-                <span className="text-[10px] text-slate-400">{latestPrice.date}</span>
-              </div>
-            )}
+            {/* Name — lighter, bigger */}
+            <p className="text-xl font-bold text-slate-500 leading-tight">{security.name}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 shrink-0 ml-3">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          {/* Price — right aligned, smaller, lighter */}
+          <div className="text-right ml-4 shrink-0">
+            {latestPrice && (
+              <>
+                <p className="text-base font-semibold text-slate-400 tabular-nums">
+                  {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
+                </p>
+                {latestPrice.change_pct != null && (
+                  <p className={`text-xs ${latestPrice.change_pct > 0 ? 'text-red-400' : latestPrice.change_pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                    {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
+                  </p>
+                )}
+                <p className="text-[10px] text-slate-300 mt-0.5">{latestPrice.date}</p>
+              </>
+            )}
+            <button onClick={onClose} className="text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100 mt-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {/* ── Holdings summary ── */}
+        {/* ── Holdings — 5 cards ── */}
         {holdings.length > 0 && (
-          <div className="mx-5 mb-4 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">최근 스냅샷 보유 현황</p>
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              <div>
-                <p className="text-[9px] text-slate-400">총 수량</p>
-                <p className="text-sm font-semibold text-slate-700 tabular-nums">{totalQty.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-[9px] text-slate-400">평균매수가</p>
-                <p className="text-sm font-semibold text-slate-700 tabular-nums">
-                  {avgPrice != null ? (isUSD ? `$${avgPrice.toFixed(2)}` : `${Math.round(avgPrice).toLocaleString()}원`) : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-[9px] text-slate-400">평가금액</p>
-                <p className="text-sm font-semibold text-slate-700 tabular-nums">
-                  {marketValue > 0 ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
-                </p>
-              </div>
-            </div>
-            {/* Per-account breakdown */}
-            <div className="space-y-1">
-              {holdings.map((h, i) => (
-                <div key={i} className="flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500 truncate flex-1">{h.account_broker} · {h.account_name}</span>
-                  <span className="text-slate-500 tabular-nums ml-2">{h.quantity.toLocaleString()}주</span>
-                  {h.avg_price != null && (
-                    <span className="text-slate-400 tabular-nums ml-2">
-                      avg {isUSD ? `$${h.avg_price.toFixed(2)}` : `${Math.round(h.avg_price).toLocaleString()}원`}
-                    </span>
-                  )}
-                </div>
-              ))}
+          <div className="mx-5 mb-4 shrink-0">
+            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-2">최근 스냅샷 보유 현황</p>
+            <div className="grid grid-cols-5 gap-1.5">
+              <HoldingCard
+                label="총 수량"
+                value={totalQty.toLocaleString()}
+                hoverLines={holdings.map(h => ({ left: h.account_name, right: `${h.quantity.toLocaleString()}주` }))}
+              />
+              <HoldingCard
+                label="평균매수가"
+                value={avgPrice != null ? fmt(avgPrice) : '—'}
+                hoverLines={holdings.map(h => ({ left: h.account_name, right: h.avg_price != null ? fmt(h.avg_price) : '—' }))}
+              />
+              <HoldingCard
+                label="투자원금"
+                value={totalInvested != null ? fmtKrw(totalInvested) : '—'}
+                hoverLines={holdings.map(h => ({
+                  left: h.account_name,
+                  right: h.avg_price != null ? fmtKrw(h.avg_price * h.quantity) : '—',
+                }))}
+              />
+              <HoldingCard
+                label="평가금액"
+                value={marketValue > 0 ? fmtKrw(marketValue) : '—'}
+                hoverLines={holdings.map(h => ({
+                  left: h.account_name,
+                  right: currentPrice > 0 ? fmtKrw(currentPrice * h.quantity) : '—',
+                }))}
+              />
+              <HoldingCard
+                label="수익"
+                value={pnl != null ? fmtKrw(pnl) : '—'}
+                sub={pnl != null && totalInvested ? {
+                  text: `${pnl >= 0 ? '+' : ''}${((pnl / totalInvested) * 100).toFixed(1)}%`,
+                  positive: pnl > 0 ? true : pnl < 0 ? false : undefined,
+                } : undefined}
+                hoverLines={holdings.map(h => ({
+                  left: h.account_name,
+                  right: h.avg_price != null && currentPrice > 0
+                    ? fmtKrw((currentPrice - h.avg_price) * h.quantity)
+                    : '—',
+                }))}
+              />
             </div>
           </div>
         )}
 
         {/* ── Chart ── */}
         <div className="mx-5 mb-3 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            가격 이력 {recent30.length > 0 ? `(최근 ${recent30.length}일)` : ''}
+          <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            가격 이력 {recent30.length > 0 ? `(${recent30.length}일)` : ''}
           </p>
           {recent30.length >= 2 ? (
-            <ResponsiveContainer width="100%" height={140}>
+            <ResponsiveContainer width="100%" height={130}>
               <LineChart data={recent30} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis
-                  tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={52}
-                  tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`}
-                  domain={['auto', 'auto']}
-                />
+                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={52}
+                  tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`} domain={['auto', 'auto']} />
                 <Tooltip
                   contentStyle={{ fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
                   formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
@@ -326,8 +378,10 @@ function PriceHistoryModal({
                 <Line type="monotone" dataKey="price" stroke={hex} dot={false} strokeWidth={1.5} />
               </LineChart>
             </ResponsiveContainer>
+          ) : recent30.length === 1 ? (
+            <p className="text-xs text-slate-400 text-center py-4">데이터가 1개뿐이라 차트를 표시할 수 없습니다</p>
           ) : (
-            <p className="text-xs text-slate-400 text-center py-6">수집된 가격 이력이 없습니다</p>
+            <p className="text-xs text-slate-400 text-center py-4">수집된 가격 이력이 없습니다</p>
           )}
         </div>
 
@@ -366,7 +420,6 @@ function PriceHistoryModal({
     </div>
   )
 
-  // createPortal로 document.body에 렌더링 → transform stacking context 이슈 해결
   if (typeof document === 'undefined') return null
   return createPortal(modal, document.body)
 }
