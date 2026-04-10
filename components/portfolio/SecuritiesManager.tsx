@@ -32,14 +32,24 @@ function Sparkline({ data }: { data: { price: number }[] }) {
   )
 }
 
-const COUNTRY_STYLE: Record<string, { badge: string; border: string; ticker: string }> = {
+type CardStyle = { badge: string; border: string; ticker: string }
+
+const COUNTRY_STYLE: Record<string, CardStyle> = {
   '국내':  { badge: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400', ticker: 'bg-emerald-100 text-emerald-800' },
   '미국':  { badge: 'bg-blue-50 text-blue-700',      border: 'border-l-blue-400',    ticker: 'bg-blue-100 text-blue-800' },
   '글로벌':{ badge: 'bg-amber-50 text-amber-700',    border: 'border-l-amber-400',   ticker: 'bg-amber-100 text-amber-800' },
   '기타':  { badge: 'bg-slate-100 text-slate-500',   border: 'border-l-slate-300',   ticker: 'bg-slate-100 text-slate-600' },
 }
-function countryStyle(country: string | null) {
-  return COUNTRY_STYLE[country ?? ''] ?? { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200', ticker: 'bg-slate-100 text-slate-600' }
+const ASSET_STYLE: Record<string, CardStyle> = {
+  '채권': { badge: 'bg-violet-50 text-violet-700',  border: 'border-l-violet-400', ticker: 'bg-violet-100 text-violet-800' },
+  '현금': { badge: 'bg-teal-50 text-teal-700',      border: 'border-l-teal-400',   ticker: 'bg-teal-100 text-teal-800' },
+  '코인': { badge: 'bg-orange-50 text-orange-700',  border: 'border-l-orange-400', ticker: 'bg-orange-100 text-orange-800' },
+}
+const DEFAULT_STYLE: CardStyle = { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200', ticker: 'bg-slate-100 text-slate-600' }
+
+function cardStyle(country: string | null, assetClass: string | null): CardStyle {
+  if (assetClass && ASSET_STYLE[assetClass]) return ASSET_STYLE[assetClass]
+  return COUNTRY_STYLE[country ?? ''] ?? DEFAULT_STYLE
 }
 
 // ─── Security Modal (add & edit) ─────────────────────────────────────────────
@@ -284,7 +294,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {/* Security cards — 5 columns */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {filteredSecurities.map(s => {
-          const cs = countryStyle(s.country)
+          const cs = cardStyle(s.country, s.asset_class)
           return (
             <div key={s.id}
               className={`bg-white rounded-xl border-l-2 border border-slate-100 ${cs.border} flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all`}>
