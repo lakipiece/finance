@@ -32,14 +32,14 @@ function Sparkline({ data }: { data: { price: number }[] }) {
   )
 }
 
-const COUNTRY_STYLE: Record<string, { badge: string; border: string }> = {
-  '국내':  { badge: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400' },
-  '미국':  { badge: 'bg-blue-50 text-blue-700',      border: 'border-l-blue-400' },
-  '글로벌':{ badge: 'bg-amber-50 text-amber-700',    border: 'border-l-amber-400' },
-  '기타':  { badge: 'bg-slate-100 text-slate-500',   border: 'border-l-slate-300' },
+const COUNTRY_STYLE: Record<string, { badge: string; border: string; ticker: string }> = {
+  '국내':  { badge: 'bg-emerald-50 text-emerald-700', border: 'border-l-emerald-400', ticker: 'bg-emerald-100 text-emerald-800' },
+  '미국':  { badge: 'bg-blue-50 text-blue-700',      border: 'border-l-blue-400',    ticker: 'bg-blue-100 text-blue-800' },
+  '글로벌':{ badge: 'bg-amber-50 text-amber-700',    border: 'border-l-amber-400',   ticker: 'bg-amber-100 text-amber-800' },
+  '기타':  { badge: 'bg-slate-100 text-slate-500',   border: 'border-l-slate-300',   ticker: 'bg-slate-100 text-slate-600' },
 }
 function countryStyle(country: string | null) {
-  return COUNTRY_STYLE[country ?? ''] ?? { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200' }
+  return COUNTRY_STYLE[country ?? ''] ?? { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200', ticker: 'bg-slate-100 text-slate-600' }
 }
 
 // ─── Security Modal (add & edit) ─────────────────────────────────────────────
@@ -287,49 +287,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           const cs = countryStyle(s.country)
           return (
             <div key={s.id}
-              className={`bg-white rounded-xl border-l-2 border border-slate-100 ${cs.border} flex flex-col justify-between p-3 hover:shadow-sm transition-all`}
-              style={{ aspectRatio: '10/7' }}>
-              <div>
-                <div className="flex items-start justify-between mb-1.5">
-                  <span className="bg-slate-100 text-slate-600 text-[11px] font-bold px-1.5 py-0.5 rounded font-mono leading-none">{s.ticker}</span>
+              className={`bg-white rounded-xl border-l-2 border border-slate-100 ${cs.border} flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all`}>
+              {/* Row 1: ticker (left) + currency + link (right) */}
+              <div className="flex items-center justify-between gap-1">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none ${cs.ticker}`}>{s.ticker}</span>
+                <div className="flex items-center gap-1.5 ml-auto">
                   <span className="text-[10px] text-slate-400">{s.currency}</span>
-                </div>
-                <p className="text-xs font-semibold text-slate-800 line-clamp-2 leading-snug">{s.name}</p>
-              </div>
-              <div>
-                <div className="flex flex-wrap gap-0.5 mb-1">
-                  {s.country && <span className={`text-[9px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
-                  {s.sector && <span className="text-[9px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
-                </div>
-                {/* Price row + sparkline */}
-                <div className="mb-1">
-                  {latestPrices[s.ticker] ? (() => {
-                    const lp = latestPrices[s.ticker]
-                    const pct = lp.change_pct
-                    const priceColor = pct == null ? 'text-slate-700' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-700'
-                    return (
-                      <div className="flex items-end justify-between gap-1">
-                        <div>
-                          <span
-                            className={`text-xs font-semibold font-mono ${priceColor} cursor-default`}
-                            title={lp.date}
-                          >
-                            {lp.currency === 'USD' ? `$${lp.price.toFixed(2)}` : `${lp.price.toLocaleString()}원`}
-                          </span>
-                          {pct != null && (
-                            <span className={`text-[9px] ml-1 font-mono ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
-                              {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
-                            </span>
-                          )}
-                        </div>
-                        {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
-                          <Sparkline data={priceHistory[s.ticker]} />
-                        )}
-                      </div>
-                    )
-                  })() : <span className="text-[10px] text-slate-300">-</span>}
-                </div>
-                <div className="flex items-center justify-between">
                   {s.url ? (
                     <a href={s.url} target="_blank" rel="noopener noreferrer"
                       className="text-[10px] text-blue-500 hover:underline">링크 ↗</a>
@@ -353,39 +316,68 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                         className="text-[10px] text-blue-500 hover:underline">구글 ↗</a>
                     )
                   })()}
-                  <div className="flex gap-0.5 items-center">
-                    {/* Per-ticker sync button */}
-                    <button
-                      onClick={() => syncTicker(s.ticker)}
-                      disabled={syncing === s.ticker}
-                      title="가격 업데이트"
-                      className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40">
-                      {syncing === s.ticker ? (
-                        <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                        </svg>
-                      ) : syncMsg[s.ticker] ? (
-                        <span className="text-[10px] font-mono">{syncMsg[s.ticker]}</span>
-                      ) : (
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                      )}
-                    </button>
-                    <button onClick={() => setEditModalSecurity(s)}
-                      className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </div>
+              </div>
+              {/* Row 2: name (left) + price (right) */}
+              <div className="flex items-start justify-between gap-1">
+                <p className="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug flex-1">{s.name}</p>
+                <div className="text-right shrink-0">
+                  {latestPrices[s.ticker] ? (() => {
+                    const lp = latestPrices[s.ticker]
+                    const pct = lp.change_pct
+                    const priceColor = pct == null ? 'text-slate-700' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-700'
+                    return (
+                      <>
+                        <span className={`text-xs font-semibold font-mono ${priceColor} cursor-default`} title={lp.date}>
+                          {lp.currency === 'USD' ? `$${lp.price.toFixed(2)}` : `${lp.price.toLocaleString()}원`}
+                        </span>
+                        {pct != null && (
+                          <div className={`text-[9px] font-mono ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                            {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
+                          </div>
+                        )}
+                        {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
+                          <div className="mt-0.5 flex justify-end">
+                            <Sparkline data={priceHistory[s.ticker]} />
+                          </div>
+                        )}
+                      </>
+                    )
+                  })() : <span className="text-[10px] text-slate-300">-</span>}
+                </div>
+              </div>
+              {/* Row 3: tags + action icons */}
+              <div className="flex items-center gap-0.5 flex-wrap">
+                {s.country && <span className={`text-[9px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
+                {s.sector && <span className="text-[9px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
+                <div className="ml-auto flex gap-0.5 items-center">
+                  <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
+                    className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40">
+                    {syncing === s.ticker ? (
+                      <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                       </svg>
-                    </button>
-                    <button onClick={() => deleteSecurity(s.id)}
-                      className="p-0.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    ) : syncMsg[s.ticker] ? (
+                      <span className="text-[10px] font-mono">{syncMsg[s.ticker]}</span>
+                    ) : (
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                    </button>
-                  </div>
+                    )}
+                  </button>
+                  <button onClick={() => setEditModalSecurity(s)}
+                    className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button onClick={() => deleteSecurity(s.id)}
+                    className="p-0.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -394,8 +386,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
 
         {/* Add card */}
         <button onClick={() => setShowAddModal(true)}
-          style={{ aspectRatio: '10/7' }}
-          className="bg-white rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors">
+          className="bg-white rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[80px]">
           <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
