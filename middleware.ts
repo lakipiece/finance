@@ -5,7 +5,10 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
   const { pathname } = req.nextUrl
 
-  const isExempt = pathname.startsWith('/login') || pathname.startsWith('/api/auth')
+  const isExempt =
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api/auth') ||
+    pathname === '/api/portfolio/prices/refresh'
 
   if (!isLoggedIn && !isExempt) {
     const loginUrl = req.nextUrl.clone()
