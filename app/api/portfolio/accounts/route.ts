@@ -6,7 +6,7 @@ import { auth } from '@/lib/auth'
 
 export async function GET() {
   const sql = getSql()
-  const data = await sql`SELECT * FROM accounts ORDER BY name`
+  const data = await sql`SELECT * FROM accounts ORDER BY sort_order ASC, created_at ASC`
   return NextResponse.json(data)
 }
 

@@ -16,6 +16,7 @@ const PORTFOLIO_TABS = [
   { label: '수익', href: '/portfolio/income' },
   { label: '계좌관리', href: '/portfolio/accounts' },
   { label: '종목관리', href: '/portfolio/securities' },
+  { label: '설정', href: '/portfolio/settings' },
 ]
 
 export default function TabNav() {
