@@ -19,7 +19,7 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
   )
   const isUSD = rows[0]?.currency === 'USD'
   const chartData = useMemo(
-    () => rows.map(r => ({ date: r.date.slice(5), price: r.price })),
+    () => rows.map(r => ({ date: r.date, price: r.price })),
     [rows]
   )
   const reversedRows = useMemo(() => [...rows].reverse(), [rows])
@@ -55,17 +55,28 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
       {rows.length > 0 ? (
         <div className="bg-white rounded-2xl border border-slate-100 p-4">
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={chartData}>
+            <LineChart data={chartData} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 9, fill: '#94a3b8' }}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+              />
               <YAxis
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 9, fill: '#94a3b8' }}
+                tickLine={false}
+                axisLine={false}
                 tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`}
-                width={55}
+                width={48}
               />
               <Tooltip
-                formatter={(v: number) => isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`}
-                labelFormatter={l => `날짜: ${l}`}
+                contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
+                itemStyle={{ color: '#334155' }}
+                labelStyle={{ color: '#94a3b8', marginBottom: 2 }}
+                formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
+                labelFormatter={l => `${l}`}
               />
               <Line type="monotone" dataKey="price" stroke="#334155" dot={false} strokeWidth={1.5} />
             </LineChart>
