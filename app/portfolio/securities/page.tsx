@@ -15,7 +15,11 @@ export default async function SecuritiesPage() {
 
   const latestPrices: Record<string, { price: number; currency: string; date: string }> = {}
   for (const row of prices) {
-    if (!latestPrices[row.ticker]) latestPrices[row.ticker] = row
+    if (!latestPrices[row.ticker]) latestPrices[row.ticker] = {
+      ...row,
+      price: Number(row.price),
+      date: row.date instanceof Date ? row.date.toISOString().slice(0, 10) : String(row.date),
+    }
   }
 
   return <SecuritiesManager securities={securities} latestPrices={latestPrices} />
