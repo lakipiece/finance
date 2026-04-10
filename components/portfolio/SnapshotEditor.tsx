@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
 
@@ -39,36 +40,26 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
   className?: string
 }) {
   const [raw, setRaw] = useState<string | null>(null)
-
   const displayValue = raw !== null ? raw : formatWithCommas(value)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setRaw(e.target.value.replace(/[^0-9.]/g, ''))
   }
-
   function handleBlur() {
     const n = raw !== null ? parseFloat(raw) : NaN
     onChange(isNaN(n) ? null : n)
     setRaw(null)
   }
-
   function handleFocus(e: React.FocusEvent<HTMLInputElement>) {
     setRaw(value !== null && value !== undefined ? String(value) : '')
     e.target.select()
   }
 
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      value={displayValue}
-      placeholder={placeholder ?? '0'}
-      tabIndex={tabIndex}
-      onChange={handleChange}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      className={className}
-    />
+    <input type="text" inputMode="decimal" value={displayValue}
+      placeholder={placeholder ?? '0'} tabIndex={tabIndex}
+      onChange={handleChange} onFocus={handleFocus} onBlur={handleBlur}
+      className={className} />
   )
 }
 
@@ -78,8 +69,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   const [msg, setMsg] = useState('')
   const [snapshotDate, setSnapshotDate] = useState(snapshot.date)
   const [isDirty, setIsDirty] = useState(false)
-  // security_id → KRW 환산 가격
   const [secPrices, setSecPrices] = useState<Record<string, number>>({})
+
+  const [modalAccountId, setModalAccountId] = useState<string | null>(null)
+  const [showDirtyAlert, setShowDirtyAlert] = useState(false)
 
   const secMap = useMemo(() => Object.fromEntries(securities.map(s => [s.id, s])), [securities])
   const accMap = useMemo(() => Object.fromEntries(accounts.map(a => [a.id, a])), [accounts])
@@ -98,19 +91,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     })
   })
 
-  const [selectedAccountId, setSelectedAccountId] = useState<string>(accounts[0]?.id ?? '')
-
   const selectedRows = useMemo(() =>
     rows
-      .filter(r => r.account_id === selectedAccountId)
+      .filter(r => r.account_id === modalAccountId)
       .sort((a, b) => (secMap[a.security_id]?.ticker ?? '').localeCompare(secMap[b.security_id]?.ticker ?? '')),
-    [rows, selectedAccountId, secMap]
+    [rows, modalAccountId, secMap]
   )
 
   const lastTabIndex = selectedRows.length * 2
   const saveButtonTabIndex = lastTabIndex + 1
 
-  // 날짜 기준 가격 조회
   const fetchPrices = useCallback(async (date: string) => {
     try {
       const res = await fetch(`/api/portfolio/prices-at?date=${date}`)
@@ -121,11 +111,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     } catch { /* silent */ }
   }, [])
 
-  useEffect(() => {
-    fetchPrices(snapshotDate)
-  }, [snapshotDate, fetchPrices])
+  useEffect(() => { fetchPrices(snapshotDate) }, [snapshotDate, fetchPrices])
 
-  // 페이지 이탈 경고
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       if (isDirty) { e.preventDefault(); e.returnValue = '' }
@@ -144,7 +131,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   }
 
   function getRow(account_id: string, security_id: string) {
-    return rows.find(r => r.account_id === account_id && r.security_id === security_id)
+    return rows.find(r => r.account_id === account_id && r.security_id === security_id)!
   }
 
   function handleBack() {
@@ -152,7 +139,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     router.push('/portfolio/snapshots')
   }
 
-  async function handleSave() {
+  async function handleSave(): Promise<boolean> {
     setSaving(true)
     setMsg('')
     try {
@@ -171,8 +158,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             ...row,
-            total_invested: row.quantity != null && row.avg_price != null
-              ? row.quantity * row.avg_price : null,
+            total_invested: row.quantity != null && row.avg_price != null ? row.quantity * row.avg_price : null,
             snapshot_id: snapshot.id,
             snapshot_date: snapshotDate,
           }),
@@ -181,16 +167,26 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       setMsg('저장 완료')
       setIsDirty(false)
       router.refresh()
+      return true
     } catch {
       setMsg('저장 실패')
+      return false
     } finally {
       setSaving(false)
     }
   }
 
+  async function handleModalSave() {
+    const ok = await handleSave()
+    if (ok) setModalAccountId(null)
+  }
+
+  function handleModalClose() {
+    if (isDirty) { setShowDirtyAlert(true) } else { setModalAccountId(null) }
+  }
+
   const inputCls = 'w-full border border-slate-200 rounded-md px-2 py-1.5 text-xs text-slate-700 text-right focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
 
-  // 계좌별 수량 보유 종목 수
   const accountCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     for (const r of rows) {
@@ -199,7 +195,6 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     return counts
   }, [rows])
 
-  // 계좌별 평가금액
   const accountValues = useMemo(() => {
     const vals: Record<string, number> = {}
     for (const r of rows) {
@@ -211,35 +206,28 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     return vals
   }, [rows, secPrices])
 
-  const totalValue = useMemo(() =>
-    Object.values(accountValues).reduce((a, b) => a + b, 0),
-    [accountValues]
-  )
+  const totalValue = useMemo(() => Object.values(accountValues).reduce((a, b) => a + b, 0), [accountValues])
 
-  // 선택 계좌 평가금액
-  const selectedAccountValue = accountValues[selectedAccountId] ?? 0
+  const modalAccount = accMap[modalAccountId ?? '']
+  const modalAccountValue = accountValues[modalAccountId ?? ''] ?? 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <button onClick={handleBack}
-            className="text-xs text-slate-400 hover:text-slate-600 mb-1">← 목록</button>
+          <button onClick={handleBack} className="text-xs text-slate-400 hover:text-slate-600 mb-1">← 목록</button>
           <div className="flex items-center gap-2">
             <h2 className="text-base font-semibold text-slate-700">스냅샷 편집</h2>
-            <input
-              type="date"
-              value={snapshotDate}
+            <input type="date" value={snapshotDate}
               onChange={e => { setSnapshotDate(e.target.value); setIsDirty(true) }}
-              className="border border-slate-200 rounded-md px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
-            />
+              className="border border-slate-200 rounded-md px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300" />
           </div>
         </div>
         <div className="flex items-center gap-3">
           {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
           {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
-          <button onClick={handleSave} disabled={saving} tabIndex={saveButtonTabIndex}
+          <button onClick={handleSave} disabled={saving}
             className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
             {saving ? '저장 중...' : '저장'}
           </button>
@@ -254,142 +242,163 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         </p>
       </div>
 
-      <div className="flex gap-4 items-start">
-        {/* Left: account tabs */}
-        <div className="w-44 shrink-0 space-y-1.5">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1 mb-2">계좌</p>
-          {accounts.map(a => {
-            const isSelected = selectedAccountId === a.id
-            const count = accountCounts[a.id] ?? 0
-            const total = accountSecurities.filter(as => as.account_id === a.id).length
-            const aVal = accountValues[a.id] ?? 0
-            const typeColor = typeColors[a.type ?? ''] ?? null
-            return (
-              <div key={a.id} onClick={() => setSelectedAccountId(a.id)}
-                style={!isSelected && typeColor ? { borderLeftColor: typeColor, borderLeftWidth: '3px' } : undefined}
-                className={`rounded-xl border px-3 py-2 cursor-pointer transition-all ${
-                  isSelected ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'
-                }`}>
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-xs font-semibold leading-tight truncate ${isSelected ? 'text-white' : 'text-slate-700'}`}>
-                      {a.name}
-                    </p>
-                    <p className={`text-[10px] mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>{a.broker}</p>
-                  </div>
-                  <span className={`text-[9px] shrink-0 ml-1 mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-300'}`}>
-                    {count}/{total}
-                  </span>
+      {/* Account Card Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {accounts.map(a => {
+          const count = accountCounts[a.id] ?? 0
+          const total = accountSecurities.filter(as => as.account_id === a.id).length
+          const aVal = accountValues[a.id] ?? 0
+          const typeColor = typeColors[a.type ?? ''] ?? null
+          return (
+            <div key={a.id} onClick={() => setModalAccountId(a.id)}
+              className="bg-white rounded-2xl border border-slate-100 p-4 cursor-pointer hover:shadow-md transition-all"
+              style={typeColor ? { borderLeft: `3px solid ${typeColor}` } : undefined}>
+              <div className="flex items-start justify-between mb-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-slate-800 truncate leading-tight">{a.name}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{a.broker}</p>
                 </div>
-                {aVal > 0 && (
-                  <p className={`text-[10px] mt-1 font-medium tabular-nums ${isSelected ? 'text-slate-200' : 'text-slate-500'}`}>
-                    {Math.round(aVal).toLocaleString()}원
+                <span className="text-[10px] text-slate-400 shrink-0 ml-2 mt-0.5">{count}/{total}</span>
+              </div>
+              {aVal > 0 ? (
+                <p className="text-xs font-medium text-slate-600 tabular-nums">
+                  {Math.round(aVal).toLocaleString()}원
+                </p>
+              ) : (
+                <p className="text-xs text-slate-300">—</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Account Modal */}
+      {modalAccountId && createPortal(
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+          onClick={handleModalClose}>
+          <div className="bg-white rounded-2xl w-full max-w-5xl flex flex-col shadow-2xl"
+            style={{ maxHeight: '90vh' }}
+            onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+              <div>
+                <p className="font-semibold text-slate-700">
+                  {modalAccount?.broker} · {modalAccount?.name}
+                </p>
+                {modalAccountValue > 0 && (
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    평가금액 <span className="font-medium text-slate-600">{Math.round(modalAccountValue).toLocaleString()}원</span>
                   </p>
                 )}
               </div>
-            )
-          })}
-        </div>
+              <div className="flex items-center gap-2">
+                {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
+                {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
+                <span className="text-[10px] text-slate-400">Tab으로 순서대로 입력</span>
+                <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
+                  className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
+                  {saving ? '저장 중...' : '저장하기'}
+                </button>
+                <button onClick={handleModalClose}
+                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-5 min-h-0">
+              {selectedRows.length === 0 ? (
+                <div className="text-center py-12 text-sm text-slate-400">
+                  연결된 종목이 없습니다 — 계좌 관리에서 종목을 연결해주세요
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {selectedRows.map((row, idx) => {
+                    const sec = secMap[row.security_id]
+                    if (!sec) return null
+                    const currency = sec.currency ?? 'KRW'
+                    const isKrw = currency === 'KRW'
+                    const currentRow = getRow(row.account_id, row.security_id)
+                    const totalPurchased = currentRow.quantity && currentRow.avg_price != null
+                      ? currentRow.quantity * currentRow.avg_price : null
+                    const marketPrice = secPrices[row.security_id] ?? 0
+                    const marketValue = currentRow.quantity > 0 && marketPrice > 0
+                      ? currentRow.quantity * marketPrice : null
+                    const qtyTabIdx = idx * 2 + 1
+                    const avgTabIdx = idx * 2 + 2
 
-        {/* Right: securities */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-semibold text-slate-600">
-                {accMap[selectedAccountId]?.broker} · {accMap[selectedAccountId]?.name}
-              </p>
-              {selectedAccountValue > 0 && (
-                <p className="text-xs text-slate-400 mt-0.5">
-                  평가금액 <span className="font-medium text-slate-600">{Math.round(selectedAccountValue).toLocaleString()}원</span>
-                </p>
+                    return (
+                      <div key={row.security_id}
+                        className={`bg-white rounded-xl border p-3 transition-all ${
+                          currentRow.quantity > 0 ? 'border-slate-200' : 'border-slate-100 opacity-60'
+                        }`}>
+                        <div className="flex items-center gap-1.5 mb-2.5">
+                          <span className="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
+                          <span className="text-xs text-slate-600 truncate font-medium">{sec.name}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <p className="text-[9px] text-slate-400 mb-0.5">수량</p>
+                            <NumInput value={currentRow.quantity || null}
+                              onChange={v => updateRow(row.account_id, row.security_id, 'quantity', v)}
+                              placeholder="0" tabIndex={qtyTabIdx} className={inputCls} />
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-slate-400 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
+                            <NumInput value={currentRow.avg_price}
+                              onChange={v => updateRow(row.account_id, row.security_id, 'avg_price', v)}
+                              placeholder="0" tabIndex={avgTabIdx} className={inputCls} />
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-slate-50 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[9px] text-slate-400">총 매수금액</p>
+                            <p className="text-xs font-medium text-slate-500">
+                              {totalPurchased != null
+                                ? isKrw ? `${Math.round(totalPurchased).toLocaleString()}원` : `${currency} ${totalPurchased.toFixed(2)}`
+                                : '—'}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-[9px] text-slate-400">평가금액</p>
+                            <p className={`text-xs font-medium ${marketValue != null ? 'text-slate-600' : 'text-slate-300'}`}>
+                              {marketValue != null ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </div>
-            <span className="text-[10px] text-slate-400">Tab으로 순서대로 입력</span>
           </div>
+        </div>,
+        document.body
+      )}
 
-          {selectedRows.length === 0 ? (
-            <div className="text-center py-12 text-sm text-slate-400">
-              연결된 종목이 없습니다 — 계좌 관리에서 종목을 연결해주세요
+      {/* Dirty Alert */}
+      {showDirtyAlert && createPortal(
+        <div className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full">
+            <p className="text-sm font-semibold text-slate-800">저장하지 않은 변경사항</p>
+            <p className="text-xs text-slate-500 mt-1.5">수정한 내용이 저장되지 않았습니다.</p>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => setShowDirtyAlert(false)}
+                className="flex-1 bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800">
+                계속 편집
+              </button>
+              <button onClick={() => { setShowDirtyAlert(false); setModalAccountId(null) }}
+                className="flex-1 text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100 border border-slate-200">
+                저장안함
+              </button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
-              {selectedRows.map((row, idx) => {
-                const sec = secMap[row.security_id]
-                if (!sec) return null
-                const currency = sec.currency ?? 'KRW'
-                const isKrw = currency === 'KRW'
-                const currentRow = getRow(row.account_id, row.security_id)!
-                const totalPurchased = currentRow.quantity && currentRow.avg_price != null
-                  ? currentRow.quantity * currentRow.avg_price : null
-                const marketPrice = secPrices[row.security_id] ?? 0
-                const marketValue = currentRow.quantity > 0 && marketPrice > 0
-                  ? currentRow.quantity * marketPrice : null
-                const qtyTabIdx = idx * 2 + 1
-                const avgTabIdx = idx * 2 + 2
-
-                return (
-                  <div key={row.security_id}
-                    className={`bg-white rounded-xl border p-3 transition-all ${
-                      currentRow.quantity > 0 ? 'border-slate-200' : 'border-slate-100 opacity-60'
-                    }`}>
-                    {/* 종목 헤더 */}
-                    <div className="flex items-center gap-1.5 mb-2.5">
-                      <span className="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
-                      <span className="text-xs text-slate-600 truncate font-medium">{sec.name}</span>
-                    </div>
-
-                    {/* 입력 */}
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      <div>
-                        <p className="text-[9px] text-slate-400 mb-0.5">수량</p>
-                        <NumInput
-                          value={currentRow.quantity || null}
-                          onChange={v => updateRow(row.account_id, row.security_id, 'quantity', v)}
-                          placeholder="0"
-                          tabIndex={qtyTabIdx}
-                          className={inputCls}
-                        />
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-slate-400 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
-                        <NumInput
-                          value={currentRow.avg_price}
-                          onChange={v => updateRow(row.account_id, row.security_id, 'avg_price', v)}
-                          placeholder="0"
-                          tabIndex={avgTabIdx}
-                          className={inputCls}
-                        />
-                      </div>
-                    </div>
-
-                    {/* 총 매수금액 / 평가금액 */}
-                    <div className="pt-2 border-t border-slate-50 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[9px] text-slate-400">총 매수금액</p>
-                        <p className="text-xs font-medium text-slate-500">
-                          {totalPurchased != null
-                            ? isKrw
-                              ? `${Math.round(totalPurchased).toLocaleString()}원`
-                              : `${currency} ${totalPurchased.toFixed(2)}`
-                            : '—'}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-[9px] text-slate-400">평가금액</p>
-                        <p className={`text-xs font-medium ${marketValue != null ? 'text-slate-600' : 'text-slate-300'}`}>
-                          {marketValue != null
-                            ? `${Math.round(marketValue).toLocaleString()}원`
-                            : '—'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
