@@ -55,8 +55,9 @@ export async function POST() {
       continue
     }
 
-    // 해당 날짜까지의 최신 가격 찾기
+    // 해당 날짜까지의 최신 가격 찾기 (없으면 가장 가까운 미래 가격 fallback)
     const priceMap: Record<string, number> = {}
+    const fallbackMap: Record<string, { price: number; date: string }> = {}
     for (const p of allPrices) {
       const pDate = (p.date as unknown) instanceof Date
         ? (p.date as unknown as Date).toISOString().slice(0, 10)
@@ -64,6 +65,14 @@ export async function POST() {
       if (pDate <= snapDate && !priceMap[p.ticker]) {
         priceMap[p.ticker] = Number(p.price)
       }
+      // 미래 가격 중 가장 가까운 것 (allPrices는 date DESC이므로 마지막에 남는 게 가장 가까운 미래)
+      if (pDate > snapDate) {
+        fallbackMap[p.ticker] = { price: Number(p.price), date: pDate }
+      }
+    }
+    // fallback 적용
+    for (const [ticker, fb] of Object.entries(fallbackMap)) {
+      if (!priceMap[ticker]) priceMap[ticker] = fb.price
     }
     const exchangeRate = priceMap['KRW=X'] ?? EXCHANGE_RATE_FALLBACK
 

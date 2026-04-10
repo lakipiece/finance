@@ -26,13 +26,25 @@ export async function GET(req: Request) {
   })
   tickers.push('KRW=X')
 
-  // Get latest prices up to date
+  // Get latest prices up to date, fallback to closest future price
   const prices = await sql<{ ticker: string; price: number }[]>`
     SELECT DISTINCT ON (ticker) ticker, price
     FROM price_history
     WHERE ticker = ANY(${tickers}) AND date <= ${date}
     ORDER BY ticker, date DESC
   `
+  // Fallback: tickers with no price before date → get earliest future price
+  const foundTickers = new Set(prices.map(p => p.ticker))
+  const missingTickers = tickers.filter(t => !foundTickers.has(t))
+  if (missingTickers.length > 0) {
+    const fallback = await sql<{ ticker: string; price: number }[]>`
+      SELECT DISTINCT ON (ticker) ticker, price
+      FROM price_history
+      WHERE ticker = ANY(${missingTickers})
+      ORDER BY ticker, date ASC
+    `
+    prices.push(...fallback)
+  }
 
   const priceMap: Record<string, number> = {}
   for (const p of prices) {

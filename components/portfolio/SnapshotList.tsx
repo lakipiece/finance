@@ -90,7 +90,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
       {snapshots.length === 0 ? (
         <p className="text-slate-400 text-sm text-center py-12">아직 스냅샷이 없습니다.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {snapshots.map((snap, i) => {
             const label = labelMap[snap.id]
             const [datePart, suffix] = label.includes(' -')
@@ -142,12 +142,20 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
 
                 {/* 섹터 비중 */}
                 {sectors.length > 0 && (
-                  <p className="text-[10px] text-slate-400 mt-3 leading-relaxed">
-                    {sectors.map(([k, v]) => `${k} ${v}%`).join(' · ')}
-                  </p>
+                  <div className="mt-3 space-y-1">
+                    {sectors.map(([k, v]) => (
+                      <div key={k} className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500 w-14 truncate">{k}</span>
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-slate-300 rounded-full" style={{ width: `${Math.min(v, 100)}%` }} />
+                        </div>
+                        <span className="text-[10px] text-slate-400 w-8 text-right tabular-nums">{v}%</span>
+                      </div>
+                    ))}
+                  </div>
                 )}
 
-                {snap.memo && <p className="text-[10px] text-slate-300 mt-1 truncate">{snap.memo}</p>}
+                {snap.memo && <p className="text-[10px] text-slate-300 mt-2 truncate">{snap.memo}</p>}
 
                 {/* 편집/삭제 */}
                 <div className="absolute bottom-3 right-3 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
