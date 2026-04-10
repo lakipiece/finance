@@ -1,6 +1,15 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import {
+  DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext, sortableKeyboardCoordinates, useSortable,
+  verticalListSortingStrategy, arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
 
 interface AccountSecurity { account_id: string; security_id: string }
@@ -21,6 +30,23 @@ function countryStyle(country: string | null) {
   return COUNTRY_STYLE[country ?? ''] ?? { badge: 'bg-slate-100 text-slate-500', border: 'border-l-slate-200' }
 }
 
+function SortableAccountItem({ id, children }: { id: string; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-1">
+      <button {...attributes} {...listeners}
+        className="cursor-grab active:cursor-grabbing p-1 text-slate-300 hover:text-slate-500 touch-none shrink-0"
+        tabIndex={-1}>
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm8-16a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
+        </svg>
+      </button>
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  )
+}
+
 export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks }: Props) {
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
@@ -34,6 +60,25 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
   const [linkSearch, setLinkSearch] = useState('')
   const [savingLinks, setSavingLinks] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = accounts.findIndex(a => a.id === active.id)
+    const newIndex = accounts.findIndex(a => a.id === over.id)
+    const reordered = arrayMove(accounts, oldIndex, newIndex)
+    setAccounts(reordered)
+    await fetch('/api/portfolio/accounts/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reordered.map((a, i) => ({ id: a.id, sort_order: i }))),
+    })
+  }
 
   useEffect(() => {
     if (!selectedAccountId) return
@@ -137,38 +182,44 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       <div className="flex gap-4" style={{ minHeight: 'calc(100vh - 240px)' }}>
         {/* Left: account list */}
         <div className="w-56 shrink-0 flex flex-col gap-1.5">
-          {accounts.map(a => (
-            <div key={a.id}
-              onClick={() => { setSelectedAccountId(a.id); setEditingAccountId(null); setShowAddAccount(false) }}
-              className={`rounded-xl border p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
-              <div className="flex items-start justify-between">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className={`text-xs font-semibold ${selectedAccountId === a.id ? 'text-white' : 'text-slate-800'}`}>{a.name}</span>
-                    {a.type && <span className={`text-[9px] px-1 py-0.5 rounded ${selectedAccountId === a.id ? 'bg-white/20 text-white/70' : 'bg-slate-100 text-slate-500'}`}>{a.type}</span>}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={accounts.map(a => a.id)} strategy={verticalListSortingStrategy}>
+              {accounts.map(a => (
+                <SortableAccountItem key={a.id} id={a.id}>
+                  <div
+                    onClick={() => { setSelectedAccountId(a.id); setEditingAccountId(null); setShowAddAccount(false) }}
+                    className={`rounded-xl border p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-xs font-semibold ${selectedAccountId === a.id ? 'text-white' : 'text-slate-800'}`}>{a.name}</span>
+                          {a.type && <span className={`text-[9px] px-1 py-0.5 rounded ${selectedAccountId === a.id ? 'bg-white/20 text-white/70' : 'bg-slate-100 text-slate-500'}`}>{a.type}</span>}
+                        </div>
+                        <p className={`text-[10px] mt-0.5 ${selectedAccountId === a.id ? 'text-slate-300' : 'text-slate-400'}`}>{a.broker}</p>
+                        <p className={`text-[9px] mt-1 ${selectedAccountId === a.id ? 'text-slate-400' : 'text-slate-300'}`}>
+                          {links.filter(l => l.account_id === a.id).length}종목 연결됨
+                        </p>
+                      </div>
+                      <div className="flex gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type: a.type ?? '종합위탁' }); setShowAddAccount(false) }}
+                          className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-white/20 text-white/60 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button onClick={() => deleteAccount(a.id)}
+                          className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-red-500/30 text-white/60 hover:text-red-300' : 'hover:bg-red-50 text-slate-400 hover:text-red-500'}`}>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <p className={`text-[10px] mt-0.5 ${selectedAccountId === a.id ? 'text-slate-300' : 'text-slate-400'}`}>{a.broker}</p>
-                  <p className={`text-[9px] mt-1 ${selectedAccountId === a.id ? 'text-slate-400' : 'text-slate-300'}`}>
-                    {links.filter(l => l.account_id === a.id).length}종목 연결됨
-                  </p>
-                </div>
-                <div className="flex gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                  <button onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type: a.type ?? '종합위탁' }); setShowAddAccount(false) }}
-                    className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-white/20 text-white/60 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button onClick={() => deleteAccount(a.id)}
-                    className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-red-500/30 text-white/60 hover:text-red-300' : 'hover:bg-red-50 text-slate-400 hover:text-red-500'}`}>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+                </SortableAccountItem>
+              ))}
+            </SortableContext>
+          </DndContext>
 
           {showAddAccount ? (
             <div className="bg-white rounded-xl border border-blue-100 p-3 space-y-2 shrink-0">
