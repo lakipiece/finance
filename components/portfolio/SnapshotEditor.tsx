@@ -251,22 +251,20 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           const typeColor = typeColors[a.type ?? ''] ?? null
           return (
             <div key={a.id} onClick={() => setModalAccountId(a.id)}
-              className="bg-white rounded-2xl border border-slate-100 p-4 cursor-pointer hover:shadow-md transition-all"
+              className="bg-white rounded-2xl border border-slate-100 p-5 cursor-pointer hover:shadow-md transition-all"
               style={typeColor ? { borderLeft: `3px solid ${typeColor}` } : undefined}>
-              <div className="flex items-start justify-between mb-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-800 truncate leading-tight">{a.name}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{a.broker}</p>
-                </div>
-                <span className="text-[10px] text-slate-400 shrink-0 ml-2 mt-0.5">{count}/{total}</span>
+              <p className="text-sm font-semibold text-slate-800 truncate leading-tight">{a.name}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{a.broker}</p>
+              <div className="flex items-end justify-between mt-3">
+                <span className="text-[10px] text-slate-400">{count}/{total}종목</span>
+                {aVal > 0 ? (
+                  <p className="text-xs font-medium text-slate-600 tabular-nums text-right">
+                    {Math.round(aVal).toLocaleString()}원
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-300">—</p>
+                )}
               </div>
-              {aVal > 0 ? (
-                <p className="text-xs font-medium text-slate-600 tabular-nums">
-                  {Math.round(aVal).toLocaleString()}원
-                </p>
-              ) : (
-                <p className="text-xs text-slate-300">—</p>
-              )}
             </div>
           )
         })}
