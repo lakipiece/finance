@@ -110,7 +110,7 @@ export async function refreshAllPrices(): Promise<{
   results: Record<string, number>
 }> {
   const sql = getSql()
-  const securities = await sql<{ ticker: string; asset_class: string | null }[]>`SELECT ticker, asset_class FROM securities`
+  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null }[]>`SELECT ticker, asset_class, country FROM securities`
 
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
 
@@ -118,8 +118,8 @@ export async function refreshAllPrices(): Promise<{
 
   // 자산군별 분류
   const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
-  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금').map(s => s.ticker)
-  const yahooTickers = [...new Set([...yahooRaw.map(toYahooTicker), 'KRW=X'])]
+  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
+  const yahooTickers = [...new Set([...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)), 'KRW=X'])]
 
   const [yahooResult, coinResult] = await Promise.all([
     fetchYahooPrices(yahooTickers, today),
