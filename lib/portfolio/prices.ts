@@ -6,6 +6,26 @@ import { getSql } from '@/lib/db'
 import { toYahooTicker } from './ticker-utils'
 export { isKrxTicker, toYahooTicker } from './ticker-utils'
 
+// Yahoo Finance exchange code → Google Finance exchange code
+const YAHOO_TO_GOOGLE_EXCHANGE: Record<string, string> = {
+  PCX: 'NYSEARCA',
+  BTS: 'NYSEARCA',
+  NMS: 'NASDAQ',
+  NGM: 'NASDAQ',
+  NCM: 'NASDAQ',
+  NIM: 'NASDAQ',
+  NYQ: 'NYSE',
+  ASE: 'NYSEAMERICAN',
+  PNK: 'OTCMKTS',
+}
+
+export function toGoogleFinanceUrl(ticker: string, yahooExchange?: string | null): string | null {
+  if (!yahooExchange) return null
+  const googleExchange = YAHOO_TO_GOOGLE_EXCHANGE[yahooExchange]
+  if (!googleExchange) return null
+  return `https://www.google.com/finance/quote/${ticker}:${googleExchange}`
+}
+
 // price_history에서 최신 가격 조회 (오늘 or 가장 최근 날짜)
 export async function getPricesFromHistory(
   tickers: string[]
@@ -45,7 +65,7 @@ export async function refreshAllPrices(): Promise<{
   const yahooTickers = [...new Set([...rawTickers.map(toYahooTicker), 'KRW=X'])]
 
   const today = new Date().toISOString().slice(0, 10)
-  const saved: { ticker: string; date: string; price: number; currency: string; change_pct: number | null }[] = []
+  const saved: { ticker: string; date: string; price: number; currency: string; change_pct: number | null; exchange: string | null }[] = []
   const failed: string[] = []
   const results: Record<string, number> = {}
 
@@ -56,8 +76,9 @@ export async function refreshAllPrices(): Promise<{
         const price = (quote as any).regularMarketPrice ?? 0
         const currency = (quote as any).currency ?? 'USD'
         const changePct = (quote as any).regularMarketChangePercent ?? null
+        const exchange = (quote as any).exchange ?? null
         if (price > 0) {
-          saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct })
+          saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct, exchange })
           results[yahooTicker] = price
         } else {
           failed.push(`${yahooTicker}: price=0`)
@@ -70,10 +91,12 @@ export async function refreshAllPrices(): Promise<{
 
   if (saved.length > 0) {
     await sql`
-      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency', 'change_pct')}
+      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
       ON CONFLICT (ticker, date) DO UPDATE
         SET price = EXCLUDED.price,
-            currency = EXCLUDED.currency
+            currency = EXCLUDED.currency,
+            change_pct = EXCLUDED.change_pct,
+            exchange = EXCLUDED.exchange
     `
   }
 

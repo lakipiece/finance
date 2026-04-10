@@ -6,7 +6,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
 interface Props {
   securities: Security[]
-  latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null }>
+  latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null; exchange: string | null }>
   priceHistory?: Record<string, { price: number; date: string }[]>
 }
 
@@ -336,10 +336,23 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   ) : s.country === '국내' ? (
                     <a href={`https://finance.naver.com/item/main.naver?code=${s.ticker.replace('KRX:', '')}`} target="_blank" rel="noopener noreferrer"
                       className="text-[10px] text-blue-500 hover:underline">네이버 ↗</a>
-                  ) : (
-                    <a href={`https://www.google.com/finance/quote/${s.ticker}`} target="_blank" rel="noopener noreferrer"
-                      className="text-[10px] text-blue-500 hover:underline">구글 ↗</a>
-                  )}
+                  ) : (() => {
+                    const lp = latestPrices[s.ticker]
+                    const ex = lp?.exchange
+                    const YAHOO_TO_GOOGLE: Record<string, string> = {
+                      PCX: 'NYSEARCA', BTS: 'NYSEARCA',
+                      NMS: 'NASDAQ', NGM: 'NASDAQ', NCM: 'NASDAQ', NIM: 'NASDAQ',
+                      NYQ: 'NYSE', ASE: 'NYSEAMERICAN', PNK: 'OTCMKTS',
+                    }
+                    const googleEx = ex ? YAHOO_TO_GOOGLE[ex] : null
+                    const url = googleEx
+                      ? `https://www.google.com/finance/quote/${s.ticker}:${googleEx}`
+                      : `https://www.google.com/finance/quote/${s.ticker}`
+                    return (
+                      <a href={url} target="_blank" rel="noopener noreferrer"
+                        className="text-[10px] text-blue-500 hover:underline">구글 ↗</a>
+                    )
+                  })()}
                   <div className="flex gap-0.5 items-center">
                     {/* Per-ticker sync button */}
                     <button
