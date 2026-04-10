@@ -5,6 +5,9 @@ export interface Account {
   name: string
   broker: string
   owner: string | null
+  type_id: string | null
+  currency_id: string | null
+  // resolved via JOIN from option_list
   type: string | null
   currency: string
 }
@@ -13,13 +16,18 @@ export interface Security {
   id: string
   ticker: string
   name: string
-  asset_class: string | null
-  country: string | null
+  asset_class_id: string | null
+  country_id: string | null
+  sector_id: string | null
+  currency_id: string | null
   style: string | null
-  sector: string | null
-  currency: string
   url: string | null
   memo: string | null
+  // resolved via JOIN from option_list
+  asset_class: string | null
+  country: string | null
+  sector: string | null
+  currency: string
 }
 
 export interface Holding {

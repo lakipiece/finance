@@ -10,20 +10,19 @@ export default async function AccountsPage() {
     fetchAccounts(),
     fetchSecurities(),
     sql`SELECT * FROM account_securities` as unknown as Promise<{ account_id: string; security_id: string }[]>,
-    sql`SELECT * FROM option_list WHERE type = 'account_type' ORDER BY sort_order` as unknown as Promise<{ value: string; color_hex: string | null }[]>,
+    sql`SELECT id, label, value, color_hex FROM option_list WHERE type = 'account_type' ORDER BY sort_order` as unknown as Promise<{ id: string; label: string; value: string; color_hex: string | null }[]>,
   ])
   const typeColors: Record<string, string> = {}
   for (const o of optionsRaw) {
     if (o.color_hex) typeColors[o.value] = o.color_hex
   }
-  const accountTypes = optionsRaw.map(o => o.value)
   return (
     <AccountsManager
       accounts={accounts}
       securities={securities}
       accountSecurities={accountSecurities}
       typeColors={typeColors}
-      accountTypes={accountTypes}
+      accountTypeOptions={optionsRaw}
     />
   )
 }

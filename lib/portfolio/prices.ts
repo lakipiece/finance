@@ -110,7 +110,16 @@ export async function refreshAllPrices(): Promise<{
   results: Record<string, number>
 }> {
   const sql = getSql()
-  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`SELECT ticker, asset_class, country, currency FROM securities`
+  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
+    SELECT s.ticker,
+           ac.value AS asset_class,
+           co.value AS country,
+           cu.value AS currency
+    FROM securities s
+    LEFT JOIN option_list ac ON s.asset_class_id = ac.id
+    LEFT JOIN option_list co ON s.country_id     = co.id
+    LEFT JOIN option_list cu ON s.currency_id    = cu.id
+  `
 
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
 

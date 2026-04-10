@@ -57,14 +57,14 @@ function SecurityModal({ security, onSave, onClose, options }: {
 }) {
   const isEdit = security !== null
   const [form, setForm] = useState({
-    ticker: security?.ticker ?? '',
-    name: security?.name ?? '',
-    asset_class: security?.asset_class ?? '주식',
-    country: security?.country ?? '미국',
-    style: security?.style ?? '성장',
-    sector: security?.sector ?? '',
-    currency: security?.currency ?? 'USD',
-    url: security?.url ?? '',
+    ticker:        security?.ticker ?? '',
+    name:          security?.name ?? '',
+    asset_class_id: security?.asset_class_id ?? (options.asset_class?.find(o => o.value === '주식')?.id ?? ''),
+    country_id:    security?.country_id     ?? (options.country?.find(o => o.value === '미국')?.id ?? ''),
+    style:         security?.style ?? '',
+    sector_id:     security?.sector_id      ?? '',
+    currency_id:   security?.currency_id    ?? (options.currency?.find(o => o.value === 'USD')?.id ?? ''),
+    url:  security?.url ?? '',
     memo: security?.memo ?? '',
   })
   const [saving, setSaving] = useState(false)
@@ -79,9 +79,14 @@ function SecurityModal({ security, onSave, onClose, options }: {
         body: JSON.stringify({
           ...(isEdit ? { id: security!.id } : {}),
           ticker: form.ticker.toUpperCase(),
-          name: form.name, asset_class: form.asset_class, country: form.country,
-          style: form.style, sector: form.sector || null, currency: form.currency,
-          url: form.url || null, memo: form.memo || null,
+          name: form.name,
+          asset_class_id: form.asset_class_id || null,
+          country_id:     form.country_id     || null,
+          style:          form.style          || null,
+          sector_id:      form.sector_id      || null,
+          currency_id:    form.currency_id    || null,
+          url:  form.url  || null,
+          memo: form.memo || null,
         }),
       })
       const data = await res.json()
@@ -118,23 +123,25 @@ function SecurityModal({ security, onSave, onClose, options }: {
             <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={inp}
               placeholder="슈왑 배당 ETF" /></div>
           <div><label className={lbl}>국가</label>
-            <select value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} className={inp}>
-              {(options.country ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select value={form.country_id} onChange={e => setForm(p => ({ ...p, country_id: e.target.value }))} className={inp}>
+              <option value="">선택 안함</option>
+              {(options.country ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>통화</label>
-            <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={inp}>
-              {(options.currency ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select value={form.currency_id} onChange={e => setForm(p => ({ ...p, currency_id: e.target.value }))} className={inp}>
+              <option value="">선택 안함</option>
+              {(options.currency ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>자산군</label>
-            <select value={form.asset_class} onChange={e => setForm(p => ({ ...p, asset_class: e.target.value }))} className={inp}>
-              {(options.asset_class ?? []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            <select value={form.asset_class_id} onChange={e => setForm(p => ({ ...p, asset_class_id: e.target.value }))} className={inp}>
+              <option value="">선택 안함</option>
+              {(options.asset_class ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select></div>
           <div><label className={lbl}>섹터</label>
-            <input value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} className={inp}
-              placeholder="테크" list="sector-list" />
-            <datalist id="sector-list">
-              {(options.sector ?? []).map(o => <option key={o.value} value={o.value} />)}
-            </datalist></div>
+            <select value={form.sector_id} onChange={e => setForm(p => ({ ...p, sector_id: e.target.value }))} className={inp}>
+              <option value="">선택 안함</option>
+              {(options.sector ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select></div>
           <div className="col-span-2"><label className={lbl}>URL</label>
             <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={inp} placeholder="https://..." /></div>
           <div className="col-span-2"><label className={lbl}>메모</label>

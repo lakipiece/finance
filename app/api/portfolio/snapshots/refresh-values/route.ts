@@ -17,7 +17,18 @@ export async function POST() {
   const securities = await sql<{
     id: string; ticker: string; currency: string; country: string | null
     sector: string | null; asset_class: string | null
-  }[]>`SELECT id, ticker, currency, country, sector, asset_class FROM securities`
+  }[]>`
+    SELECT s.id, s.ticker,
+           cu.value AS currency,
+           co.value AS country,
+           se.value AS sector,
+           ac.value AS asset_class
+    FROM securities s
+    LEFT JOIN option_list cu ON s.currency_id     = cu.id
+    LEFT JOIN option_list co ON s.country_id      = co.id
+    LEFT JOIN option_list se ON s.sector_id       = se.id
+    LEFT JOIN option_list ac ON s.asset_class_id  = ac.id
+  `
 
   const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
 

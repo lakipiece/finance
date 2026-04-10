@@ -104,13 +104,24 @@ export async function POST(req: NextRequest) {
     if (!broker) continue
     const owner = dataRows.find(r => (r[1] ?? '').trim() === broker)?.[0]?.trim() ?? ''
 
-    const [existing] = await sql`SELECT id FROM accounts WHERE broker = ${broker} AND type = ${accType}`
+    const [existing] = await sql`
+      SELECT a.id FROM accounts a
+      LEFT JOIN option_list t ON a.type_id = t.id
+      WHERE a.broker = ${broker} AND t.value = ${accType}
+    `
 
     if (existing) {
       accountMap[key] = existing.id
     } else {
       const name = `${broker} ${accType}`
-      const [newAccount] = await sql`INSERT INTO accounts (name, broker, owner, type) VALUES (${name}, ${broker}, ${owner}, ${accType}) RETURNING id`
+      const [newAccount] = await sql`
+        INSERT INTO accounts (name, broker, owner, type_id)
+        VALUES (
+          ${name}, ${broker}, ${owner},
+          (SELECT id FROM option_list WHERE type = 'account_type' AND value = ${accType} LIMIT 1)
+        )
+        RETURNING id
+      `
       if (newAccount) accountMap[key] = newAccount.id
     }
   }

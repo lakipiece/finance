@@ -14,12 +14,14 @@ import type { Account, Security } from '@/lib/portfolio/types'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
+type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
+
 interface Props {
   accounts: Account[]
   securities: Security[]
   accountSecurities: AccountSecurity[]
   typeColors?: Record<string, string>
-  accountTypes?: string[]
+  accountTypeOptions?: OptionItem[]
 }
 
 const COUNTRY_STYLE: Record<string, { badge: string; border: string }> = {
@@ -49,7 +51,7 @@ function SortableAccountItem({ id, children }: { id: string; children: React.Rea
   )
 }
 
-export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypes = [] }: Props) {
+export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [] }: Props) {
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -57,7 +59,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
   const [showAddAccount, setShowAddAccount] = useState(false)
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
-  const [accountForm, setAccountForm] = useState({ name: '', broker: '', owner: '', type: '종합위탁' })
+  const [accountForm, setAccountForm] = useState({ name: '', broker: '', owner: '', type_id: '' })
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
   const [linkSearch, setLinkSearch] = useState('')
@@ -137,7 +139,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
         setAccounts(prev => prev.map(a => a.id === editingAccountId ? updated : a))
         notify('계좌 수정 완료'); setEditingAccountId(null)
       } else {
-        const created = await apiFetch('/api/portfolio/accounts', 'POST', { ...accountForm, currency: 'KRW' })
+        const created = await apiFetch('/api/portfolio/accounts', 'POST', { ...accountForm })
         setAccounts(prev => [...prev, created])
         notify('계좌 추가 완료'); setShowAddAccount(false)
       }
@@ -210,7 +212,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         </p>
                       </div>
                       <div className="flex gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                        <button onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type: a.type ?? '종합위탁' }); setShowAddAccount(false) }}
+                        <button onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type_id: a.type_id ?? '' }); setShowAddAccount(false) }}
                           className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-white/20 text-white/60 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -245,8 +247,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </div>
               ))}
               <div><label className={labelCls}>유형</label>
-                <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                  {accountTypes.map(t => <option key={t}>{t}</option>)}
+                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
+                  <option value="">선택 안함</option>
+                  {accountTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select></div>
               <div className="flex gap-1.5">
                 <button onClick={saveAccount} className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800">추가</button>

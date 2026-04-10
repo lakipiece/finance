@@ -14,7 +14,12 @@ export async function GET(req: Request) {
 
   // Get all securities with their currency/country info
   const securities = await sql<{ id: string; ticker: string; currency: string; country: string | null }[]>`
-    SELECT id, ticker, currency, country FROM securities
+    SELECT s.id, s.ticker,
+           cu.value AS currency,
+           co.value AS country
+    FROM securities s
+    LEFT JOIN option_list cu ON s.currency_id = cu.id
+    LEFT JOIN option_list co ON s.country_id  = co.id
   `
 
   // Build yahoo tickers
