@@ -13,7 +13,7 @@ export default async function SecuritiesPage() {
     `,
   ])
 
-  const latestPrices: Record<string, { price: number; currency: string; date: string }> = {}
+  const latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null }> = {}
   const priceHistory: Record<string, { price: number; date: string }[]> = {}
 
   for (const row of prices) {
