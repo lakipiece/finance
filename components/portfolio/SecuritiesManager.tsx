@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
@@ -160,6 +161,115 @@ function SecurityModal({ security, onSave, onClose, options }: {
   )
 }
 
+// ─── Price History Modal ──────────────────────────────────────────────────────
+function PriceHistoryModal({
+  security,
+  history,
+  latestPrice,
+  onClose,
+}: {
+  security: Security
+  history: { price: number; date: string }[]
+  latestPrice: { price: number; currency: string; date: string; change_pct: number | null } | null
+  onClose: () => void
+}) {
+  const isUSD = latestPrice?.currency === 'USD'
+  const recent30 = useMemo(() => [...history].slice(-30), [history])
+  const tableRows = useMemo(() => [...recent30].reverse(), [recent30])
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onClose])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">{security.ticker}</span>
+            <p className="text-sm font-semibold text-slate-800">{security.name}</p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Latest price */}
+        {latestPrice && (
+          <div className="px-5 pb-3 flex items-baseline gap-2 shrink-0">
+            <span className="text-lg font-bold text-slate-800">
+              {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
+            </span>
+            {latestPrice.change_pct != null && (
+              <span className={`text-xs font-medium ${latestPrice.change_pct > 0 ? 'text-red-500' : latestPrice.change_pct < 0 ? 'text-blue-500' : 'text-slate-400'}`}>
+                {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
+              </span>
+            )}
+            <span className="text-[10px] text-slate-400 ml-auto">{latestPrice.date}</span>
+          </div>
+        )}
+
+        {/* Chart */}
+        {recent30.length >= 2 ? (
+          <div className="px-3 shrink-0">
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={recent30} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis
+                  tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={52}
+                  tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`}
+                  domain={['auto', 'auto']}
+                />
+                <Tooltip
+                  contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
+                  formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
+                  labelFormatter={l => `${l}`}
+                />
+                <Line type="monotone" dataKey="price" stroke="#334155" dot={false} strokeWidth={1.5} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="px-5 py-4 text-xs text-slate-400 text-center shrink-0">수집된 가격 이력이 없습니다</div>
+        )}
+
+        {/* Table */}
+        <div className="overflow-y-auto mt-2 border-t border-slate-100">
+          <table className="w-full text-xs">
+            <thead className="sticky top-0 bg-slate-50">
+              <tr className="text-slate-400 uppercase tracking-wider">
+                <th className="text-left px-5 py-2">날짜</th>
+                <th className="text-right px-5 py-2">가격</th>
+                <th className="text-right px-5 py-2">등락</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map(r => (
+                <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
+                  <td className="px-5 py-2 text-slate-500">{r.date}</td>
+                  <td className="px-5 py-2 text-right font-mono text-slate-700">
+                    {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
+                  </td>
+                  <td className="px-5 py-2 text-right text-slate-300">—</td>
+                </tr>
+              ))}
+              {tableRows.length === 0 && (
+                <tr><td colSpan={3} className="px-5 py-6 text-center text-slate-400">데이터 없음</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options }: Props) {
   const [securities, setSecurities] = useState(initSecurities)
@@ -167,6 +277,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
 
   const [editModalSecurity, setEditModalSecurity] = useState<Security | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [historyModalSecurity, setHistoryModalSecurity] = useState<Security | null>(null)
   const [secSearch, setSecSearch] = useState('')
   const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string }>({ country: '', currency: '', asset_class: '', sector: '' })
   const [secSort, setSecSort] = useState<'ticker' | 'name' | 'country_name'>('country_name')
@@ -315,10 +426,6 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         )}
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
-          <a href="/portfolio/securities/prices"
-            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors">
-            가격 이력
-          </a>
           <button onClick={handleRefreshAll} disabled={refreshingAll}
             className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
@@ -332,7 +439,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           const { hex } = cardColors(options, s.country, s.asset_class)
           return (
             <div key={s.id}
-              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all"
+              onClick={() => setHistoryModalSecurity(s)}
+              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:shadow-md hover:border-slate-200 hover:scale-[1.02] transition-all"
               style={{ borderLeftColor: hex }}>
               {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
@@ -359,6 +467,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                       })()
                   return tickerUrl ? (
                     <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
                       className="text-[10px] px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity"
                       style={{ backgroundColor: hex + '15', color: hex }}>
                       {s.ticker}
@@ -399,7 +508,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                 </div>
               </div>
               {/* Row 3: tags + action icons */}
-              <div className="flex items-center gap-0.5 flex-wrap">
+              <div className="flex items-center gap-0.5 flex-wrap" onClick={e => e.stopPropagation()}>
                 {s.asset_class && (
                   <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
                     className="text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
@@ -463,6 +572,16 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           <span className="text-xs">추가</span>
         </button>
       </div>
+
+      {/* Price History modal */}
+      {historyModalSecurity && (
+        <PriceHistoryModal
+          security={historyModalSecurity}
+          history={priceHistory[historyModalSecurity.ticker] ?? []}
+          latestPrice={latestPrices[historyModalSecurity.ticker] ?? null}
+          onClose={() => setHistoryModalSecurity(null)}
+        />
+      )}
 
       {/* Add / Edit modal */}
       {(showAddModal || editModalSecurity !== null) && (
