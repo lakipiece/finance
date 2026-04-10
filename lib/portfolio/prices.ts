@@ -49,25 +49,11 @@ export async function getPricesFromHistory(
   return result
 }
 
-// 모든 securities 티커를 Yahoo Finance에서 가져와 price_history에 저장
-export async function refreshAllPrices(): Promise<{
-  saved: number
-  failed: string[]
-  results: Record<string, number>
-}> {
-  const sql = getSql()
-  const securities = await sql<{ ticker: string }[]>`SELECT ticker FROM securities`
+type PriceRow = { ticker: string; date: string; price: number; currency: string; change_pct: number | null; exchange: string | null }
 
-  if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
-
-  // KRW=X 환율도 포함
-  const rawTickers = securities.map(s => s.ticker)
-  const yahooTickers = [...new Set([...rawTickers.map(toYahooTicker), 'KRW=X'])]
-
-  const today = new Date().toISOString().slice(0, 10)
-  const saved: { ticker: string; date: string; price: number; currency: string; change_pct: number | null; exchange: string | null }[] = []
+async function fetchYahooPrices(yahooTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
+  const saved: PriceRow[] = []
   const failed: string[] = []
-  const results: Record<string, number> = {}
 
   await Promise.allSettled(
     yahooTickers.map(async (yahooTicker) => {
@@ -79,7 +65,6 @@ export async function refreshAllPrices(): Promise<{
         const exchange = (quote as any).exchange ?? null
         if (price > 0) {
           saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct, exchange })
-          results[yahooTicker] = price
         } else {
           failed.push(`${yahooTicker}: price=0`)
         }
@@ -89,9 +74,66 @@ export async function refreshAllPrices(): Promise<{
     })
   )
 
-  if (saved.length > 0) {
+  return { saved, failed }
+}
+
+async function fetchCoinGeckoPrices(coinTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
+  const saved: PriceRow[] = []
+  const failed: string[] = []
+  if (coinTickers.length === 0) return { saved, failed }
+
+  const ids = coinTickers.map(t => t.toLowerCase()).join(',')
+  try {
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=krw&include_24hr_change=true`)
+    if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`)
+    const data = await res.json() as Record<string, { krw: number; krw_24h_change?: number }>
+    for (const ticker of coinTickers) {
+      const id = ticker.toLowerCase()
+      const row = data[id]
+      if (row?.krw > 0) {
+        saved.push({ ticker, date: today, price: row.krw, currency: 'KRW', change_pct: row.krw_24h_change ?? null, exchange: null })
+      } else {
+        failed.push(`${ticker}: not found in CoinGecko`)
+      }
+    }
+  } catch (err: unknown) {
+    failed.push(`coingecko: ${err instanceof Error ? err.message : String(err)}`)
+  }
+
+  return { saved, failed }
+}
+
+// 모든 securities 티커를 Yahoo Finance / CoinGecko에서 가져와 price_history에 저장
+export async function refreshAllPrices(): Promise<{
+  saved: number
+  failed: string[]
+  results: Record<string, number>
+}> {
+  const sql = getSql()
+  const securities = await sql<{ ticker: string; asset_class: string | null }[]>`SELECT ticker, asset_class FROM securities`
+
+  if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  // 자산군별 분류
+  const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
+  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금').map(s => s.ticker)
+  const yahooTickers = [...new Set([...yahooRaw.map(toYahooTicker), 'KRW=X'])]
+
+  const [yahooResult, coinResult] = await Promise.all([
+    fetchYahooPrices(yahooTickers, today),
+    fetchCoinGeckoPrices(coinTickers, today),
+  ])
+
+  const allSaved = [...yahooResult.saved, ...coinResult.saved]
+  const allFailed = [...yahooResult.failed, ...coinResult.failed]
+  const results: Record<string, number> = {}
+  for (const row of allSaved) results[row.ticker] = row.price
+
+  if (allSaved.length > 0) {
     await sql`
-      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
+      INSERT INTO price_history ${sql(allSaved, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
       ON CONFLICT (ticker, date) DO UPDATE
         SET price = EXCLUDED.price,
             currency = EXCLUDED.currency,
@@ -100,7 +142,7 @@ export async function refreshAllPrices(): Promise<{
     `
   }
 
-  return { saved: saved.length, failed, results }
+  return { saved: allSaved.length, failed: allFailed, results }
 }
 
 // 페이지 로딩 시 사용: DB에서 읽기만 함 (Yahoo 호출 없음)

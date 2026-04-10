@@ -120,7 +120,7 @@ function SecurityModal({ security, onSave, onClose }: {
             </select></div>
           <div><label className={lbl}>자산군</label>
             <select value={form.asset_class} onChange={e => setForm(p => ({ ...p, asset_class: e.target.value }))} className={inp}>
-              {['주식','채권','대체자산'].map(c => <option key={c}>{c}</option>)}
+              {['주식','채권','현금','코인'].map(c => <option key={c}>{c}</option>)}
             </select></div>
           <div><label className={lbl}>섹터</label>
             <input value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} className={inp}
@@ -288,51 +288,53 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           return (
             <div key={s.id}
               className={`bg-white rounded-xl border-l-2 border border-slate-100 ${cs.border} flex flex-col gap-1.5 p-2.5 hover:shadow-sm transition-all`}>
-              {/* Row 1: ticker (left) + currency + link (right) */}
+              {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none ${cs.ticker}`}>{s.ticker}</span>
-                <div className="flex items-center gap-1.5 ml-auto">
-                  <span className="text-[10px] text-slate-400">{s.currency}</span>
-                  {s.url ? (
-                    <a href={s.url} target="_blank" rel="noopener noreferrer"
-                      className="text-[10px] text-blue-500 hover:underline">링크 ↗</a>
-                  ) : s.country === '국내' ? (
-                    <a href={`https://finance.naver.com/item/main.naver?code=${s.ticker.replace('KRX:', '')}`} target="_blank" rel="noopener noreferrer"
-                      className="text-[10px] text-blue-500 hover:underline">네이버 ↗</a>
-                  ) : (() => {
-                    const lp = latestPrices[s.ticker]
-                    const ex = lp?.exchange
-                    const YAHOO_TO_GOOGLE: Record<string, string> = {
-                      PCX: 'NYSEARCA', BTS: 'NYSEARCA',
-                      NMS: 'NASDAQ', NGM: 'NASDAQ', NCM: 'NASDAQ', NIM: 'NASDAQ',
-                      NYQ: 'NYSE', ASE: 'NYSEAMERICAN', PNK: 'OTCMKTS',
-                    }
-                    const googleEx = ex ? YAHOO_TO_GOOGLE[ex] : null
-                    const url = googleEx
-                      ? `https://www.google.com/finance/quote/${s.ticker}:${googleEx}`
-                      : `https://www.google.com/finance/quote/${s.ticker}`
-                    return (
-                      <a href={url} target="_blank" rel="noopener noreferrer"
-                        className="text-[10px] text-blue-500 hover:underline">구글 ↗</a>
-                    )
-                  })()}
-                </div>
+                {(() => {
+                  const lp = latestPrices[s.ticker]
+                  const tickerUrl = s.url ? s.url
+                    : s.asset_class === '코인'
+                      ? `https://www.coingecko.com/en/coins/${s.ticker.toLowerCase()}`
+                    : s.country === '국내'
+                      ? `https://finance.naver.com/item/main.naver?code=${s.ticker.replace('KRX:', '')}`
+                    : (() => {
+                        const ex = lp?.exchange
+                        const YAHOO_TO_GOOGLE: Record<string, string> = {
+                          PCX: 'NYSEARCA', BTS: 'NYSEARCA',
+                          NMS: 'NASDAQ', NGM: 'NASDAQ', NCM: 'NASDAQ', NIM: 'NASDAQ',
+                          NYQ: 'NYSE', ASE: 'NYSEAMERICAN', PNK: 'OTCMKTS',
+                        }
+                        const googleEx = ex ? YAHOO_TO_GOOGLE[ex] : null
+                        return googleEx
+                          ? `https://www.google.com/finance/quote/${s.ticker}:${googleEx}`
+                          : `https://www.google.com/finance/quote/${s.ticker}`
+                      })()
+                  return tickerUrl ? (
+                    <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity ${cs.ticker}`}>
+                      {s.ticker}
+                    </a>
+                  ) : (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none ${cs.ticker}`}>{s.ticker}</span>
+                  )
+                })()}
+                <span className="text-[10px] text-slate-400 ml-auto">{s.currency}</span>
               </div>
               {/* Row 2: name (left) + price (right) */}
               <div className="flex items-start justify-between gap-1">
-                <p className="text-sm font-semibold text-slate-800 line-clamp-2 leading-snug flex-1">{s.name}</p>
+                <p className="text-sm font-semibold text-slate-600 line-clamp-2 leading-snug flex-1">{s.name}</p>
                 <div className="text-right shrink-0">
                   {latestPrices[s.ticker] ? (() => {
                     const lp = latestPrices[s.ticker]
                     const pct = lp.change_pct
-                    const priceColor = pct == null ? 'text-slate-700' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-700'
+                    const priceColor = pct == null ? 'text-slate-500' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-500'
                     return (
                       <>
-                        <span className={`text-xs font-semibold font-mono ${priceColor} cursor-default`} title={lp.date}>
-                          {lp.currency === 'USD' ? `$${lp.price.toFixed(2)}` : `${lp.price.toLocaleString()}원`}
+                        <span className={`text-xs font-semibold font-sans ${priceColor} cursor-default`} title={lp.date}>
+                          {lp.currency === 'KRW' ? `${lp.price.toLocaleString()}원` : `$${lp.price.toFixed(2)}`}
                         </span>
                         {pct != null && (
-                          <div className={`text-[9px] font-mono ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                          <div className={`text-[9px] font-sans ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
                           </div>
                         )}
