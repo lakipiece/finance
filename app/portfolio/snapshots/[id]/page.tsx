@@ -25,8 +25,14 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
     sql`SELECT * FROM account_securities` as unknown as Promise<AccountSecurity[]>,
   ])
 
-  const snapshot = snapshots[0] ?? null
-  if (!snapshot) return <p className="p-8 text-slate-400">스냅샷을 찾을 수 없습니다.</p>
+  const raw = snapshots[0] ?? null
+  if (!raw) return <p className="p-8 text-slate-400">스냅샷을 찾을 수 없습니다.</p>
+  const snapshot: Snapshot = {
+    ...raw,
+    date: (raw.date as unknown) instanceof Date
+      ? (raw.date as unknown as Date).toISOString().slice(0, 10)
+      : String(raw.date).slice(0, 10),
+  }
 
   return (
     <SnapshotEditor
