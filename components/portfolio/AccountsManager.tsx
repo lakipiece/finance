@@ -277,8 +277,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                     <input value={accountForm[f.key as keyof typeof accountForm]} onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))} className={inputCls} /></div>
                 ))}
                 <div><label className={labelCls}>유형</label>
-                  <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                    {accountTypes.map(t => <option key={t}>{t}</option>)}
+                  <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
+                    <option value="">선택 안함</option>
+                    {accountTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                   </select></div>
               </div>
               <div className="flex gap-2">
