@@ -45,7 +45,7 @@ export async function refreshAllPrices(): Promise<{
   const yahooTickers = [...new Set([...rawTickers.map(toYahooTicker), 'KRW=X'])]
 
   const today = new Date().toISOString().slice(0, 10)
-  const saved: { ticker: string; date: string; price: number; currency: string }[] = []
+  const saved: { ticker: string; date: string; price: number; currency: string; change_pct: number | null }[] = []
   const failed: string[] = []
   const results: Record<string, number> = {}
 
