@@ -54,7 +54,8 @@ export async function DELETE(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id } = await req.json()
+  const id = req.nextUrl.searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
   const sql = getSql()
   await sql`DELETE FROM securities WHERE id = ${id}`
   return NextResponse.json({ ok: true })
