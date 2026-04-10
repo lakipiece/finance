@@ -6,7 +6,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
 interface Props {
   securities: Security[]
-  latestPrices: Record<string, { price: number; currency: string; date: string }>
+  latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null }>
   priceHistory?: Record<string, { price: number; date: string }[]>
 }
 
@@ -303,30 +303,43 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                 </div>
                 {/* Price row + sparkline */}
                 <div className="mb-1">
-                  {latestPrices[s.ticker] ? (
-                    <div className="flex items-end justify-between gap-1">
-                      <div>
-                        <span className="text-xs font-semibold font-mono text-slate-700">
-                          {latestPrices[s.ticker].currency === 'USD'
-                            ? `$${latestPrices[s.ticker].price.toFixed(2)}`
-                            : `${latestPrices[s.ticker].price.toLocaleString()}원`}
-                        </span>
-                        <span className="text-[9px] text-slate-300 ml-1">{latestPrices[s.ticker].date.slice(5)}</span>
+                  {latestPrices[s.ticker] ? (() => {
+                    const lp = latestPrices[s.ticker]
+                    const pct = lp.change_pct
+                    const priceColor = pct == null ? 'text-slate-700' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-700'
+                    return (
+                      <div className="flex items-end justify-between gap-1">
+                        <div>
+                          <span
+                            className={`text-xs font-semibold font-mono ${priceColor} cursor-default`}
+                            title={lp.date}
+                          >
+                            {lp.currency === 'USD' ? `$${lp.price.toFixed(2)}` : `${lp.price.toLocaleString()}원`}
+                          </span>
+                          {pct != null && (
+                            <span className={`text-[9px] ml-1 font-mono ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                              {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
+                            </span>
+                          )}
+                        </div>
+                        {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
+                          <Sparkline data={priceHistory[s.ticker]} />
+                        )}
                       </div>
-                      {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
-                        <Sparkline data={priceHistory[s.ticker]} />
-                      )}
-                    </div>
-                  ) : <span className="text-[10px] text-slate-300">-</span>}
+                    )
+                  })() : <span className="text-[10px] text-slate-300">-</span>}
                 </div>
                 <div className="flex items-center justify-between">
                   {s.url ? (
                     <a href={s.url} target="_blank" rel="noopener noreferrer"
                       className="text-[10px] text-blue-500 hover:underline">링크 ↗</a>
                   ) : s.country === '국내' ? (
-                    <a href={`https://finance.naver.com/item/main.naver?code=${s.ticker}`} target="_blank" rel="noopener noreferrer"
+                    <a href={`https://finance.naver.com/item/main.naver?code=${s.ticker.replace('KRX:', '')}`} target="_blank" rel="noopener noreferrer"
                       className="text-[10px] text-blue-500 hover:underline">네이버 ↗</a>
-                  ) : <span />}
+                  ) : (
+                    <a href={`https://www.google.com/finance/quote/${s.ticker}`} target="_blank" rel="noopener noreferrer"
+                      className="text-[10px] text-blue-500 hover:underline">구글 ↗</a>
+                  )}
                   <div className="flex gap-0.5 items-center">
                     {/* Per-ticker sync button */}
                     <button

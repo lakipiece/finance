@@ -8,8 +8,8 @@ export default async function SecuritiesPage() {
   const sql = getSql()
   const [securities, prices] = await Promise.all([
     fetchSecurities(),
-    sql<{ ticker: string; price: number; currency: string; date: string }[]>`
-      SELECT ticker, price, currency, date FROM price_history ORDER BY date ASC
+    sql<{ ticker: string; price: number; currency: string; date: string; change_pct: number | null }[]>`
+      SELECT ticker, price, currency, date, change_pct FROM price_history ORDER BY date ASC
     `,
   ])
 
@@ -18,14 +18,14 @@ export default async function SecuritiesPage() {
 
   for (const row of prices) {
     const p = { price: Number(row.price), date: String(row.date).slice(0, 10) }
-    // 360200.KS → 360200 으로도 인덱싱 (securities 테이블은 .KS 없이 저장)
+    const changePct = row.change_pct != null ? Number(row.change_pct) : null
     const keys = [row.ticker]
     if (row.ticker.endsWith('.KS')) keys.push(row.ticker.slice(0, -3))
 
     for (const key of keys) {
       if (!priceHistory[key]) priceHistory[key] = []
       priceHistory[key].push(p)
-      latestPrices[key] = { price: p.price, currency: row.currency, date: p.date }
+      latestPrices[key] = { price: p.price, currency: row.currency, date: p.date, change_pct: changePct }
     }
   }
 

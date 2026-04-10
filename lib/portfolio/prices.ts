@@ -55,8 +55,9 @@ export async function refreshAllPrices(): Promise<{
         const quote = await yahooFinance.quote(yahooTicker)
         const price = (quote as any).regularMarketPrice ?? 0
         const currency = (quote as any).currency ?? 'USD'
+        const changePct = (quote as any).regularMarketChangePercent ?? null
         if (price > 0) {
-          saved.push({ ticker: yahooTicker, date: today, price, currency })
+          saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct })
           results[yahooTicker] = price
         } else {
           failed.push(`${yahooTicker}: price=0`)
@@ -69,7 +70,7 @@ export async function refreshAllPrices(): Promise<{
 
   if (saved.length > 0) {
     await sql`
-      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency')}
+      INSERT INTO price_history ${sql(saved, 'ticker', 'date', 'price', 'currency', 'change_pct')}
       ON CONFLICT (ticker, date) DO UPDATE
         SET price = EXCLUDED.price,
             currency = EXCLUDED.currency
