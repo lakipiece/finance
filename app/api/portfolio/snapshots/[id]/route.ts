@@ -19,6 +19,18 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   return NextResponse.json(data)
 }
 
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await req.json()
+  const sql = getSql()
+  if (body.date) {
+    await sql`UPDATE snapshots SET date = ${body.date} WHERE id = ${params.id}`
+  }
+  return NextResponse.json({ ok: true })
+}
+
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
