@@ -91,15 +91,15 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     const isUSD = !isKrw
     const currentPriceKRW = isUSD ? rawPrice * exchangeRate : rawPrice
 
-    const quantity = h.quantity
+    const quantity = Number(h.quantity)
 
     // avg_price: USD 종목은 USD로 저장됨 → KRW 환산
     // avg_price: KRX 종목은 KRW, 해외 종목은 USD → KRW 환산
-    const avgPriceRaw = h.avg_price ?? 0
+    const avgPriceRaw = Number(h.avg_price ?? 0)
     const avgPriceKRW = isUSD ? avgPriceRaw * exchangeRate : avgPriceRaw
 
     // total_invested: 항상 KRW 기준 (import 시 M열 = 총매수금액(KRW))
-    const totalInvested = h.total_invested ?? avgPriceKRW * quantity
+    const totalInvested = Number(h.total_invested ?? avgPriceKRW * quantity)
 
     const marketValue = currentPriceKRW * quantity
     const unrealizedPnl = marketValue - totalInvested

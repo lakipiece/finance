@@ -95,7 +95,7 @@ function PositionModal({ position: p, totalValue, onClose }: PositionModalProps)
             <p className="text-xs text-slate-400 mb-0.5">현재가</p>
             <p className="text-slate-700">
               {fmt(p.current_price)}원
-              {p.current_price_usd != null && <span className="text-xs text-slate-400 ml-1">${p.current_price_usd.toFixed(2)}</span>}
+              {p.current_price_usd != null && <span className="text-xs text-slate-400 ml-1">${Number(p.current_price_usd).toFixed(2)}</span>}
             </p>
           </div>
           <div>
@@ -275,13 +275,13 @@ export default function PositionsTable({ positions }: Props) {
                           <td className="px-4 py-3 text-right text-slate-600">
                             {fmt(p.avg_price)}원
                             {p.avg_price_usd != null && (
-                              <p className="text-[10px] text-slate-400">${p.avg_price_usd.toFixed(2)}</p>
+                              <p className="text-[10px] text-slate-400">${Number(p.avg_price_usd).toFixed(2)}</p>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right text-slate-600">
                             {fmt(p.current_price)}원
                             {p.current_price_usd != null && (
-                              <p className="text-[10px] text-slate-400">${p.current_price_usd.toFixed(2)}</p>
+                              <p className="text-[10px] text-slate-400">${Number(p.current_price_usd).toFixed(2)}</p>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-slate-800">{fmt(p.market_value)}원</td>
