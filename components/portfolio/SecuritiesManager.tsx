@@ -1,17 +1,28 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 
+type HoldingRow = {
+  security_id: string
+  account_id: string
+  account_name: string
+  account_broker: string
+  quantity: number
+  avg_price: number | null
+}
+
 interface Props {
   securities: Security[]
   latestPrices: Record<string, { price: number; currency: string; date: string; change_pct: number | null; exchange: string | null }>
   priceHistory?: Record<string, { price: number; date: string }[]>
   options: Record<string, OptionItem[]>
+  holdingsMap?: Record<string, HoldingRow[]>
 }
 
 function Sparkline({ data }: { data: { price: number }[] }) {
@@ -100,8 +111,8 @@ function SecurityModal({ security, onSave, onClose, options }: {
   const inp = 'w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
   const lbl = 'block text-[10px] text-slate-500 mb-0.5'
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
+  const modal = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -159,6 +170,8 @@ function SecurityModal({ security, onSave, onClose, options }: {
       </div>
     </div>
   )
+  if (typeof document === 'undefined') return null
+  return createPortal(modal, document.body)
 }
 
 // ─── Price History Modal ──────────────────────────────────────────────────────
@@ -166,11 +179,17 @@ function PriceHistoryModal({
   security,
   history,
   latestPrice,
+  holdings,
+  hex,
+  tickerUrl,
   onClose,
 }: {
   security: Security
   history: { price: number; date: string }[]
   latestPrice: { price: number; currency: string; date: string; change_pct: number | null } | null
+  holdings: HoldingRow[]
+  hex: string
+  tickerUrl: string | null
   onClose: () => void
 }) {
   const isUSD = latestPrice?.currency === 'USD'
@@ -183,43 +202,117 @@ function PriceHistoryModal({
     return () => document.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">{security.ticker}</span>
-            <p className="text-sm font-semibold text-slate-800">{security.name}</p>
+  const totalQty = holdings.reduce((s, h) => s + h.quantity, 0)
+  const totalInvested = holdings.reduce((s, h) => s + (h.avg_price ?? 0) * h.quantity, 0)
+  const avgPrice = totalQty > 0 ? totalInvested / totalQty : null
+  const currentPrice = latestPrice?.price ?? 0
+  const marketValue = currentPrice * totalQty
+
+  const modal = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4 shrink-0">
+          <div className="flex-1 min-w-0">
+            {/* Ticker + tags row */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-2">
+              {tickerUrl ? (
+                <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="text-xs font-bold px-2 py-0.5 rounded font-mono hover:opacity-75 transition-opacity"
+                  style={{ backgroundColor: hex + '20', color: hex }}>
+                  {security.ticker}
+                </a>
+              ) : (
+                <span className="text-xs font-bold px-2 py-0.5 rounded font-mono"
+                  style={{ backgroundColor: hex + '20', color: hex }}>
+                  {security.ticker}
+                </span>
+              )}
+              {security.asset_class && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.asset_class}</span>
+              )}
+              {security.country && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.country}</span>
+              )}
+              {security.sector && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.sector}</span>
+              )}
+              <span className="text-[10px] text-slate-300 ml-1">{security.currency}</span>
+            </div>
+            {/* Name */}
+            <p className="text-lg font-bold text-slate-800 leading-tight">{security.name}</p>
+            {/* Price */}
+            {latestPrice && (
+              <div className="flex items-baseline gap-2 mt-1.5">
+                <span className="text-2xl font-bold text-slate-800">
+                  {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
+                </span>
+                {latestPrice.change_pct != null && (
+                  <span className={`text-sm font-medium ${latestPrice.change_pct > 0 ? 'text-red-500' : latestPrice.change_pct < 0 ? 'text-blue-500' : 'text-slate-400'}`}>
+                    {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
+                  </span>
+                )}
+                <span className="text-[10px] text-slate-400">{latestPrice.date}</span>
+              </div>
+            )}
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 shrink-0 ml-3">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Latest price */}
-        {latestPrice && (
-          <div className="px-5 pb-3 flex items-baseline gap-2 shrink-0">
-            <span className="text-lg font-bold text-slate-800">
-              {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
-            </span>
-            {latestPrice.change_pct != null && (
-              <span className={`text-xs font-medium ${latestPrice.change_pct > 0 ? 'text-red-500' : latestPrice.change_pct < 0 ? 'text-blue-500' : 'text-slate-400'}`}>
-                {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
-              </span>
-            )}
-            <span className="text-[10px] text-slate-400 ml-auto">{latestPrice.date}</span>
+        {/* ── Holdings summary ── */}
+        {holdings.length > 0 && (
+          <div className="mx-5 mb-4 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">최근 스냅샷 보유 현황</p>
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              <div>
+                <p className="text-[9px] text-slate-400">총 수량</p>
+                <p className="text-sm font-semibold text-slate-700 tabular-nums">{totalQty.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[9px] text-slate-400">평균매수가</p>
+                <p className="text-sm font-semibold text-slate-700 tabular-nums">
+                  {avgPrice != null ? (isUSD ? `$${avgPrice.toFixed(2)}` : `${Math.round(avgPrice).toLocaleString()}원`) : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[9px] text-slate-400">평가금액</p>
+                <p className="text-sm font-semibold text-slate-700 tabular-nums">
+                  {marketValue > 0 ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
+                </p>
+              </div>
+            </div>
+            {/* Per-account breakdown */}
+            <div className="space-y-1">
+              {holdings.map((h, i) => (
+                <div key={i} className="flex items-center justify-between text-[10px]">
+                  <span className="text-slate-500 truncate flex-1">{h.account_broker} · {h.account_name}</span>
+                  <span className="text-slate-500 tabular-nums ml-2">{h.quantity.toLocaleString()}주</span>
+                  {h.avg_price != null && (
+                    <span className="text-slate-400 tabular-nums ml-2">
+                      avg {isUSD ? `$${h.avg_price.toFixed(2)}` : `${Math.round(h.avg_price).toLocaleString()}원`}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Chart */}
-        {recent30.length >= 2 ? (
-          <div className="px-3 shrink-0">
-            <ResponsiveContainer width="100%" height={160}>
+        {/* ── Chart ── */}
+        <div className="mx-5 mb-3 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
+            가격 이력 {recent30.length > 0 ? `(최근 ${recent30.length}일)` : ''}
+          </p>
+          {recent30.length >= 2 ? (
+            <ResponsiveContainer width="100%" height={140}>
               <LineChart data={recent30} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
                 <YAxis
                   tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={52}
@@ -227,51 +320,59 @@ function PriceHistoryModal({
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
+                  contentStyle={{ fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
                   formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
-                  labelFormatter={l => `${l}`}
                 />
-                <Line type="monotone" dataKey="price" stroke="#334155" dot={false} strokeWidth={1.5} />
+                <Line type="monotone" dataKey="price" stroke={hex} dot={false} strokeWidth={1.5} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="px-5 py-4 text-xs text-slate-400 text-center shrink-0">수집된 가격 이력이 없습니다</div>
-        )}
-
-        {/* Table */}
-        <div className="overflow-y-auto mt-2 border-t border-slate-100">
-          <table className="w-full text-xs">
-            <thead className="sticky top-0 bg-slate-50">
-              <tr className="text-slate-400 uppercase tracking-wider">
-                <th className="text-left px-5 py-2">날짜</th>
-                <th className="text-right px-5 py-2">가격</th>
-                <th className="text-right px-5 py-2">등락</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableRows.map(r => (
-                <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
-                  <td className="px-5 py-2 text-slate-500">{r.date}</td>
-                  <td className="px-5 py-2 text-right font-mono text-slate-700">
-                    {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
-                  </td>
-                  <td className="px-5 py-2 text-right text-slate-300">—</td>
-                </tr>
-              ))}
-              {tableRows.length === 0 && (
-                <tr><td colSpan={3} className="px-5 py-6 text-center text-slate-400">데이터 없음</td></tr>
-              )}
-            </tbody>
-          </table>
+          ) : (
+            <p className="text-xs text-slate-400 text-center py-6">수집된 가격 이력이 없습니다</p>
+          )}
         </div>
+
+        {/* ── Table ── */}
+        {tableRows.length > 0 && (
+          <div className="overflow-y-auto mx-5 mb-5 rounded-xl border border-slate-100 shrink-1">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-slate-50">
+                <tr className="text-[9px] text-slate-400 uppercase tracking-wider">
+                  <th className="text-left px-4 py-2">날짜</th>
+                  <th className="text-right px-4 py-2">가격</th>
+                  <th className="text-right px-4 py-2">등락</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableRows.map((r, i) => {
+                  const prev = tableRows[i + 1]
+                  const pct = prev ? ((r.price - prev.price) / prev.price) * 100 : null
+                  return (
+                    <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
+                      <td className="px-4 py-1.5 text-[10px] text-slate-500 tabular-nums">{r.date}</td>
+                      <td className="px-4 py-1.5 text-[10px] text-right font-mono text-slate-700 tabular-nums">
+                        {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
+                      </td>
+                      <td className={`px-4 py-1.5 text-[10px] text-right tabular-nums ${pct == null ? 'text-slate-300' : pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                        {pct != null ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—'}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
+
+  // createPortal로 document.body에 렌더링 → transform stacking context 이슈 해결
+  if (typeof document === 'undefined') return null
+  return createPortal(modal, document.body)
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options }: Props) {
+export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options, holdingsMap = {} }: Props) {
   const [securities, setSecurities] = useState(initSecurities)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
@@ -440,7 +541,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           return (
             <div key={s.id}
               onClick={() => setHistoryModalSecurity(s)}
-              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:shadow-md hover:border-slate-200 hover:scale-[1.02] transition-all"
+              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:shadow-md hover:border-slate-200 hover:bg-slate-50/50 transition-all"
               style={{ borderLeftColor: hex }}>
               {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
@@ -574,14 +675,33 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       </div>
 
       {/* Price History modal */}
-      {historyModalSecurity && (
-        <PriceHistoryModal
-          security={historyModalSecurity}
-          history={priceHistory[historyModalSecurity.ticker] ?? []}
-          latestPrice={latestPrices[historyModalSecurity.ticker] ?? null}
-          onClose={() => setHistoryModalSecurity(null)}
-        />
-      )}
+      {historyModalSecurity && (() => {
+        const s = historyModalSecurity
+        const lp = latestPrices[s.ticker]
+        const { hex: modalHex } = cardColors(options, s.country, s.asset_class)
+        const ex = lp?.exchange
+        const YAHOO_TO_GOOGLE: Record<string, string> = {
+          PCX: 'NYSEARCA', BTS: 'NYSEARCA', NMS: 'NASDAQ', NGM: 'NASDAQ', NCM: 'NASDAQ',
+          NIM: 'NASDAQ', NYQ: 'NYSE', ASE: 'NYSEAMERICAN', PNK: 'OTCMKTS',
+        }
+        const modalTickerUrl = s.url ? s.url
+          : s.asset_class === '현금' ? 'https://search.naver.com/search.naver?sm=mtb_drt&where=m&query=%EB%AF%B8%EA%B5%AD%ED%99%98%EC%9C%A8'
+          : s.asset_class === '코인' ? `https://www.coingecko.com/en/coins/${s.ticker.toLowerCase()}`
+          : s.country === '국내' ? `https://finance.naver.com/item/main.naver?code=${s.ticker.replace('KRX:', '')}`
+          : ex ? (YAHOO_TO_GOOGLE[ex] ? `https://www.google.com/finance/quote/${s.ticker}:${YAHOO_TO_GOOGLE[ex]}` : `https://www.google.com/finance/quote/${s.ticker}`)
+          : `https://www.google.com/finance/quote/${s.ticker}`
+        return (
+          <PriceHistoryModal
+            security={s}
+            history={priceHistory[s.ticker] ?? []}
+            latestPrice={lp ?? null}
+            holdings={holdingsMap[s.id] ?? []}
+            hex={modalHex}
+            tickerUrl={modalTickerUrl}
+            onClose={() => setHistoryModalSecurity(null)}
+          />
+        )
+      })()}
 
       {/* Add / Edit modal */}
       {(showAddModal || editModalSecurity !== null) && (
