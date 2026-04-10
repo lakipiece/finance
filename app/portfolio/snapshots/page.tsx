@@ -8,7 +8,10 @@ export const dynamic = 'force-dynamic'
 export default async function SnapshotsPage() {
   const sql = getSql()
   const snapshotsData = await sql<Snapshot[]>`SELECT * FROM snapshots ORDER BY date DESC`
-  const snapshots = snapshotsData
+  const snapshots = snapshotsData.map(s => ({
+    ...s,
+    date: (s.date as unknown) instanceof Date ? (s.date as unknown as Date).toISOString().slice(0, 10) : String(s.date).slice(0, 10),
+  })) as Snapshot[]
 
   // Chart data: compute for latest 5 snapshots
   const chartSnapshots = snapshots.slice(0, 5).reverse() // oldest first for chart
@@ -48,7 +51,7 @@ export default async function SnapshotsPage() {
       // Latest price per ticker up to snapshot date
       const priceMap: Record<string, number> = {}
       for (const p of prices) {
-        if (!priceMap[p.ticker]) priceMap[p.ticker] = p.price
+        if (!priceMap[p.ticker]) priceMap[p.ticker] = Number(p.price)
       }
       const exchangeRate = priceMap['KRW=X'] ?? 1350
 
