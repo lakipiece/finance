@@ -16,12 +16,14 @@ export default async function AccountsPage() {
   for (const o of optionsRaw) {
     if (o.color_hex) typeColors[o.value] = o.color_hex
   }
+  const accountTypes = optionsRaw.map(o => o.value)
   return (
     <AccountsManager
       accounts={accounts}
       securities={securities}
       accountSecurities={accountSecurities}
       typeColors={typeColors}
+      accountTypes={accountTypes}
     />
   )
 }

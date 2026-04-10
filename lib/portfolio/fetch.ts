@@ -6,7 +6,7 @@ import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, T
 
 export async function fetchAccounts(): Promise<Account[]> {
   const sql = getSql()
-  const data = await sql<Account[]>`SELECT * FROM accounts ORDER BY name`
+  const data = await sql<Account[]>`SELECT * FROM accounts ORDER BY sort_order ASC, created_at ASC`
   return data ?? []
 }
 

@@ -20,7 +20,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
   const [snapshots, holdingsRaw, accounts, securities, accountSecurities] = await Promise.all([
     sql`SELECT * FROM snapshots WHERE id = ${id}` as unknown as Promise<Snapshot[]>,
     sql`SELECT * FROM holdings WHERE snapshot_id = ${id}` as unknown as Promise<HoldingRow[]>,
-    sql`SELECT * FROM accounts ORDER BY name` as unknown as Promise<Account[]>,
+    sql`SELECT * FROM accounts ORDER BY sort_order ASC, created_at ASC` as unknown as Promise<Account[]>,
     sql`SELECT * FROM securities ORDER BY ticker` as unknown as Promise<Security[]>,
     sql`SELECT * FROM account_securities` as unknown as Promise<AccountSecurity[]>,
   ])

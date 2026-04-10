@@ -19,6 +19,7 @@ interface Props {
   securities: Security[]
   accountSecurities: AccountSecurity[]
   typeColors?: Record<string, string>
+  accountTypes?: string[]
 }
 
 const COUNTRY_STYLE: Record<string, { badge: string; border: string }> = {
@@ -48,7 +49,7 @@ function SortableAccountItem({ id, children }: { id: string; children: React.Rea
   )
 }
 
-export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {} }: Props) {
+export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypes = [] }: Props) {
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -245,7 +246,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               ))}
               <div><label className={labelCls}>유형</label>
                 <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                  {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
+                  {accountTypes.map(t => <option key={t}>{t}</option>)}
                 </select></div>
               <div className="flex gap-1.5">
                 <button onClick={saveAccount} className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800">추가</button>
@@ -274,7 +275,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 ))}
                 <div><label className={labelCls}>유형</label>
                   <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
-                    {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
+                    {accountTypes.map(t => <option key={t}>{t}</option>)}
                   </select></div>
               </div>
               <div className="flex gap-2">
