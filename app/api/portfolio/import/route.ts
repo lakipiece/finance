@@ -64,15 +64,22 @@ export async function POST(req: NextRequest) {
   const sql = getSql()
 
   // 1. securities 배치 upsert
-  const securitiesPayload = dataRows.map(row => ({
-    ticker: (row[3] ?? '').trim().toUpperCase(),
-    name: (row[4] ?? '').trim(),
-    asset_class: (row[5] ?? '').trim() || null,
-    country: (row[6] ?? '').trim() || null,
-    style: (row[7] ?? '').trim() || null,
-    sector: (row[8] ?? '').trim() || null,
-    currency: ['KR', '국내', '한국'].includes((row[6] ?? '').trim()) ? 'KRW' : 'USD',
-  })).filter(s => s.ticker && s.name)
+  const securitiesMap = new Map<string, { ticker: string; name: string; asset_class: string | null; country: string | null; style: string | null; sector: string | null; currency: string }>()
+  for (const row of dataRows) {
+    const ticker = (row[3] ?? '').trim().toUpperCase()
+    const name = (row[4] ?? '').trim()
+    if (!ticker || !name) continue
+    securitiesMap.set(ticker, {
+      ticker,
+      name,
+      asset_class: (row[5] ?? '').trim() || null,
+      country: (row[6] ?? '').trim() || null,
+      style: (row[7] ?? '').trim() || null,
+      sector: (row[8] ?? '').trim() || null,
+      currency: ['KR', '국내', '한국'].includes((row[6] ?? '').trim()) ? 'KRW' : 'USD',
+    })
+  }
+  const securitiesPayload = [...securitiesMap.values()]
 
   const securitiesResult = await sql`
     INSERT INTO securities ${sql(securitiesPayload)}
