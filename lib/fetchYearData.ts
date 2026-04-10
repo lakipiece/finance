@@ -21,7 +21,7 @@ async function fetchYearDataUncached(year: number): Promise<DashboardData | null
   const rows: RawExpenseRow[] = data.map((e: any) => ({
     year: e.year ?? year,
     month: e.month,
-    expense_date: e.expense_date ?? '',
+    expense_date: e.expense_date instanceof Date ? e.expense_date.toISOString().slice(0, 10) : (e.expense_date ?? ''),
     category: e.category ?? '',
     detail: e.detail ?? '',
     memo: e.memo ?? '',
