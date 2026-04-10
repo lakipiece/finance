@@ -161,7 +161,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [editModalSecurity, setEditModalSecurity] = useState<Security | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [secSearch, setSecSearch] = useState('')
-  const [secFilter, setSecFilter] = useState<{ country: string; currency: string }>({ country: '', currency: '' })
+  const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string }>({ country: '', currency: '', asset_class: '', sector: '' })
   const [secSort, setSecSort] = useState<'ticker' | 'name' | 'country_name'>('country_name')
 
   const [syncing, setSyncing] = useState<string | null>(null)
@@ -223,6 +223,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   }
 
   const countries = [...new Set(securities.map(s => s.country).filter(Boolean))] as string[]
+  const assetClasses = [...new Set(securities.map(s => s.asset_class).filter(Boolean))] as string[]
+  const sectors = [...new Set(securities.map(s => s.sector).filter(Boolean))] as string[]
 
   const filteredSecurities = useMemo(() => {
     let list = [...securities]
@@ -232,6 +234,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
     }
     if (secFilter.country) list = list.filter(s => s.country === secFilter.country)
     if (secFilter.currency) list = list.filter(s => s.currency === secFilter.currency)
+    if (secFilter.asset_class) list = list.filter(s => s.asset_class === secFilter.asset_class)
+    if (secFilter.sector) list = list.filter(s => s.sector === secFilter.sector)
     list.sort((a, b) => {
       if (secSort === 'ticker') return a.ticker.localeCompare(b.ticker)
       if (secSort === 'name') return a.name.localeCompare(b.name)
@@ -264,10 +268,20 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             placeholder="티커 또는 종목명 검색"
             className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
         </div>
+        <select value={secFilter.asset_class} onChange={e => setSecFilter(p => ({ ...p, asset_class: e.target.value }))}
+          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          <option value="">전체 자산군</option>
+          {assetClasses.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
         <select value={secFilter.country} onChange={e => setSecFilter(p => ({ ...p, country: e.target.value }))}
           className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
           <option value="">전체 국가</option>
           {countries.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={secFilter.sector} onChange={e => setSecFilter(p => ({ ...p, sector: e.target.value }))}
+          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          <option value="">전체 섹터</option>
+          {sectors.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.currency} onChange={e => setSecFilter(p => ({ ...p, currency: e.target.value }))}
           className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
@@ -328,7 +342,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono leading-none ${cs.ticker}`}>{s.ticker}</span>
                   )
                 })()}
-                <span className="text-[10px] text-slate-400 ml-auto">{s.currency}</span>
+                <span className="text-[10px] text-slate-300 ml-auto">{s.currency}</span>
               </div>
               {/* Row 2: name (left) + price (right) */}
               <div className="flex items-start justify-between gap-1">
@@ -360,18 +374,34 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               </div>
               {/* Row 3: tags + action icons */}
               <div className="flex items-center gap-0.5 flex-wrap">
-                {s.country && <span className={`text-[9px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
-                {s.sector && <span className="text-[9px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
+                {s.asset_class && (
+                  <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
+                    className={`text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity ${cs.badge}`}>
+                    {s.asset_class}
+                  </button>
+                )}
+                {s.country && (
+                  <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
+                    className={`text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity ${cs.badge}`}>
+                    {s.country}
+                  </button>
+                )}
+                {s.sector && (
+                  <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
+                    className="text-[9px] text-slate-400 bg-slate-50 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    {s.sector}
+                  </button>
+                )}
                 <div className="ml-auto flex gap-0.5 items-center">
                   <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
-                    className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40">
+                    className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
                     {syncing === s.ticker ? (
                       <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                       </svg>
                     ) : syncMsg[s.ticker] ? (
-                      <span className="text-[10px] font-mono">{syncMsg[s.ticker]}</span>
+                      <span className="text-[10px] font-mono text-slate-400">{syncMsg[s.ticker]}</span>
                     ) : (
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -379,13 +409,13 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     )}
                   </button>
                   <button onClick={() => setEditModalSecurity(s)}
-                    className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                    className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
                   <button onClick={() => deleteSecurity(s.id)}
-                    className="p-0.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
+                    className="p-0.5 rounded hover:bg-red-50 text-slate-200 hover:text-red-400 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
