@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
     const detail = (row[5] ?? '').trim()
     const method = (row[6] ?? '').trim()
     const rawAmt = row[7] ?? ''
+    const member = (row[8] ?? '').trim() || null
     const memo = (row[9] ?? '').trim()
 
     if (!cat || !rawAmt) continue
@@ -125,7 +126,7 @@ export async function POST(req: NextRequest) {
       method,
       memo,
       amount: Math.round(amount),
-      member: null,
+      member,
     })
   }
 
