@@ -261,12 +261,17 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-48">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
             placeholder="티커 또는 종목명 검색"
-            className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+            className="w-full pl-7 pr-6 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+          {secSearch && (
+            <button onClick={() => setSecSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
         </div>
         <select value={secFilter.asset_class} onChange={e => setSecFilter(p => ({ ...p, asset_class: e.target.value }))}
           className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
@@ -295,9 +300,18 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           <option value="ticker">티커순</option>
           <option value="name">이름순</option>
         </select>
+        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency) && (
+          <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '' }) }}
+            className="text-[10px] text-slate-400 hover:text-slate-600 border border-slate-200 rounded-lg px-2 py-1.5 hover:bg-slate-50 transition-colors whitespace-nowrap">
+            필터 초기화
+          </button>
+        )}
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
-          <a href="/portfolio/securities/prices" className="text-xs text-blue-500 hover:underline">가격 이력 →</a>
+          <a href="/portfolio/securities/prices"
+            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors">
+            가격 이력
+          </a>
           <button onClick={handleRefreshAll} disabled={refreshingAll}
             className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
