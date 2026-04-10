@@ -25,7 +25,7 @@ export default function TabNav() {
   const tabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
 
   return (
-    <nav className="flex gap-1" aria-label="탭 네비게이션">
+    <nav className="flex gap-1 flex-nowrap overflow-x-auto scrollbar-none" aria-label="탭 네비게이션">
       {tabs.map((tab) => {
         const active = tab.href === '/' || tab.href === '/portfolio'
           ? pathname === tab.href

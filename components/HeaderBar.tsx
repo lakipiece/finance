@@ -12,7 +12,7 @@ export default function HeaderBar() {
 
   return (
     <header
-      className="text-white py-4 px-4 md:px-6 shadow-lg"
+      className="sticky top-0 z-50 text-white py-4 px-4 md:px-6 shadow-lg"
       style={{ background: palette.headerGradient }}
     >
       <div className="max-w-7xl mx-auto">
