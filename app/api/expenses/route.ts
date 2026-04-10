@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const expenses = rows.map((e: any) => ({
     year: e.year,
-    date: e.expense_date ?? '',
+    date: e.expense_date instanceof Date ? e.expense_date.toISOString().slice(0, 10) : (e.expense_date ?? ''),
     month: e.month,
     category: e.category ?? '',
     detail: e.detail ?? '',
