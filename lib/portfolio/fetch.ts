@@ -140,6 +140,13 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   `
   const latestPrice = latestPrices[0] ?? null
 
+  const rawDate = latestPrice?.date ?? null
+  const last_price_updated_at = rawDate
+    ? (rawDate as unknown) instanceof Date
+      ? (rawDate as unknown as Date).toISOString().slice(0, 10)
+      : String(rawDate).slice(0, 10)
+    : null
+
   return {
     total_market_value,
     total_invested,
@@ -147,6 +154,6 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     total_unrealized_pct,
     total_dividends,
     positions,
-    last_price_updated_at: latestPrice?.date ?? null,
+    last_price_updated_at,
   }
 }
