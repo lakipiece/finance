@@ -7,6 +7,29 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 interface Props {
   securities: Security[]
   latestPrices: Record<string, { price: number; currency: string; date: string }>
+  priceHistory?: Record<string, { price: number; date: string }[]>
+}
+
+function Sparkline({ data }: { data: { price: number }[] }) {
+  if (data.length < 2) return null
+  const w = 64, h = 24
+  const prices = data.map(d => d.price)
+  const min = Math.min(...prices)
+  const max = Math.max(...prices)
+  const range = max - min || 1
+  const pts = prices.map((p, i) => {
+    const x = (i / (prices.length - 1)) * w
+    const y = h - ((p - min) / range) * (h - 4) - 2
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+  const last = prices[prices.length - 1]
+  const first = prices[0]
+  const color = last >= first ? '#22c55e' : '#ef4444'
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  )
 }
 
 const COUNTRY_STYLE: Record<string, { badge: string; border: string }> = {
@@ -121,7 +144,7 @@ function SecurityModal({ security, onSave, onClose }: {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function SecuritiesManager({ securities: initSecurities, latestPrices }: Props) {
+export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {} }: Props) {
   const [securities, setSecurities] = useState(initSecurities)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
@@ -278,15 +301,22 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   {s.country && <span className={`text-[9px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
                   {s.sector && <span className="text-[9px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
                 </div>
-                {/* Price row */}
+                {/* Price row + sparkline */}
                 <div className="mb-1">
                   {latestPrices[s.ticker] ? (
-                    <span className="text-[10px] font-mono text-slate-500">
-                      {latestPrices[s.ticker].currency === 'USD'
-                        ? `$${latestPrices[s.ticker].price.toFixed(2)}`
-                        : `${latestPrices[s.ticker].price.toLocaleString()}원`}
-                      <span className="text-slate-300 ml-1">{latestPrices[s.ticker].date.slice(5)}</span>
-                    </span>
+                    <div className="flex items-end justify-between gap-1">
+                      <div>
+                        <span className="text-xs font-semibold font-mono text-slate-700">
+                          {latestPrices[s.ticker].currency === 'USD'
+                            ? `$${latestPrices[s.ticker].price.toFixed(2)}`
+                            : `${latestPrices[s.ticker].price.toLocaleString()}원`}
+                        </span>
+                        <span className="text-[9px] text-slate-300 ml-1">{latestPrices[s.ticker].date.slice(5)}</span>
+                      </div>
+                      {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
+                        <Sparkline data={priceHistory[s.ticker]} />
+                      )}
+                    </div>
                   ) : <span className="text-[10px] text-slate-300">-</span>}
                 </div>
                 <div className="flex items-center justify-between">
