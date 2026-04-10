@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 3. holdings 배치 upsert
-  const holdingsPayload = dataRows.flatMap(row => {
+  const holdingsRaw = dataRows.flatMap(row => {
     const ticker = (row[3] ?? '').trim().toUpperCase()
     const broker = (row[1] ?? '').trim()
     const accType = (row[2] ?? '').trim()
@@ -134,6 +134,13 @@ export async function POST(req: NextRequest) {
       updated_at: new Date().toISOString(),
     }]
   })
+
+  // 같은 배치 내 중복 제거 (마지막 행 우선)
+  const holdingsMap = new Map<string, typeof holdingsRaw[0]>()
+  for (const h of holdingsRaw) {
+    holdingsMap.set(`${h.account_id}||${h.security_id}`, h)
+  }
+  const holdingsPayload = [...holdingsMap.values()]
 
   await sql`
     INSERT INTO holdings ${sql(holdingsPayload)}
