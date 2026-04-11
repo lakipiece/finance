@@ -204,11 +204,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       </div>
 
       {/* 계좌 필터 카드 */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
         {/* 전체 */}
         <button
           onClick={selectAll}
-          className={`rounded-xl border px-4 py-3 text-left transition-all w-36 shrink-0 ${
+          className={`rounded-xl border px-3 py-3 text-left transition-all min-w-0 ${
             selectedAccountIds.size === 0
               ? 'bg-slate-700 border-slate-700'
               : 'bg-white border-slate-100 hover:border-slate-300'
@@ -231,7 +231,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             return (
               <button key={id}
                 onClick={() => toggleAccount(id)}
-                className={`rounded-xl border px-4 py-3 text-left transition-all w-36 shrink-0 relative ${
+                className={`rounded-xl border px-3 py-3 text-left transition-all min-w-0 relative ${
                   isSelected
                     ? 'bg-slate-700 border-slate-700'
                     : 'bg-white border-slate-100 hover:border-slate-300'
