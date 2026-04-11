@@ -75,16 +75,17 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   // 계좌별 집계 (account type 포함)
   const accountGroups = useMemo(() =>
     summary.positions.reduce<Record<string, {
-      name: string; type: string | null; value: number; pnl: number; count: number
+      name: string; type: string | null; value: number; pnl: number; invested: number; count: number
     }>>((acc, p) => {
       const id = p.account.id
       if (!acc[id]) acc[id] = {
         name: p.account.name,
         type: p.account.type,
-        value: 0, pnl: 0, count: 0,
+        value: 0, pnl: 0, invested: 0, count: 0,
       }
       acc[id].value += p.market_value
       acc[id].pnl += p.unrealized_pnl
+      acc[id].invested += p.total_invested
       acc[id].count++
       return acc
     }, {}),
@@ -221,6 +222,13 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           <p className={`text-xs tabular-nums mt-0.5 ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
             {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
           </p>
+          <div className="flex justify-end mt-1">
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+              summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+            }`}>
+              {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
+            </span>
+          </div>
         </button>
 
         {Object.entries(accountGroups)
@@ -255,6 +263,15 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                 <p className={`text-xs tabular-nums mt-0.5 ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                   {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                 </p>
+                <div className="flex justify-end mt-1">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                    g.pnl >= 0
+                      ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')
+                      : (isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-500')
+                  }`}>
+                    {g.pnl >= 0 ? '+' : ''}{g.invested > 0 ? (g.pnl / g.invested * 100).toFixed(1) : '0.0'}%
+                  </span>
+                </div>
               </button>
             )
           })}
