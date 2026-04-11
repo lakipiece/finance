@@ -118,24 +118,26 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
           const isSyncing = syncing === ticker
           const msg = syncMsg[ticker]
           const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? null) : null
+          // 섹터 컬러가 있으면 티커 배지에 적용, 없으면 기본 slate-700
+          const tickerBgColor = sectorColor ?? undefined
 
           return (
             <div key={p.security.id}
               onClick={() => setModal(p)}
               className="bg-white rounded-2xl border border-slate-100 px-4 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all flex flex-col gap-2">
 
-              {/* 헤더: 티커 배지 + 새로고침 */}
+              {/* 헤더: 티커 배지 + 계좌수 + 새로고침 */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="bg-slate-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0">
+                    <span
+                      className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
+                      style={{ backgroundColor: tickerBgColor ?? '#334155' }}>
                       {ticker}
                     </span>
-                    {p.accounts.length > 0 && (
-                      <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
-                        {p.accounts.length}개 계좌
-                      </span>
-                    )}
+                    <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
+                      {p.accounts.length}개 계좌
+                    </span>
                   </div>
                 </div>
                 <button onClick={e => syncTicker(ticker, e)} disabled={isSyncing}
@@ -152,13 +154,8 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
                 </button>
               </div>
 
-              {/* 종목명 + 섹터 dot */}
-              <div className="flex items-start gap-1.5">
-                {sectorColor && (
-                  <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: sectorColor }} />
-                )}
-                <p className="text-xs font-bold text-slate-700 leading-tight">{p.security.name}</p>
-              </div>
+              {/* 종목명 */}
+              <p className="text-xs font-bold text-slate-700 leading-tight">{p.security.name}</p>
 
               <div className="border-t border-slate-50" />
 

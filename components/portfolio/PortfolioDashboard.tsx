@@ -188,6 +188,15 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       <div className="flex items-center justify-end gap-2">
         {refreshMsg && <span className="text-xs text-slate-500">{refreshMsg}</span>}
         {lastUpdated && <span className="text-xs text-slate-400">최근 수집: {lastUpdated}</span>}
+        <button
+          onClick={() => setShowCharts(v => !v)}
+          className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+            showCharts
+              ? 'bg-slate-100 border-slate-300 text-slate-700'
+              : 'border-slate-200 text-slate-500 hover:border-slate-400'
+          }`}>
+          {showCharts ? '차트 닫기' : '차트 보기'}
+        </button>
         <button onClick={handleRefresh} disabled={refreshing}
           className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800 disabled:opacity-50 transition-colors">
           {refreshing ? '수집 중...' : '가격 새로고침'}
@@ -251,49 +260,38 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           })}
       </div>
 
-      {/* 섹터 필터 + 차트 토글 */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5 flex-wrap flex-1">
-          <span className="text-[10px] text-slate-400 font-medium">섹터</span>
-          <button
-            onClick={() => setSelectedSector('all')}
-            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-              selectedSector === 'all'
-                ? 'bg-slate-600 text-white border-slate-600'
-                : 'border-slate-200 text-slate-500 hover:border-slate-400'
-            }`}>
-            전체
-          </button>
-          {sectors.map(s => {
-            const color = sectorColors[s] ?? null
-            return (
-              <button key={s}
-                onClick={() => setSelectedSector(s)}
-                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                  selectedSector === s
-                    ? 'bg-slate-600 text-white border-slate-600'
-                    : 'border-slate-200 text-slate-500 hover:border-slate-400'
-                }`}>
-                {color && (
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                )}
-                {s}
-              </button>
-            )
-          })}
-        </div>
+      {/* 차트 */}
+      {showCharts && <AllocationCharts positions={accountFiltered} />}
+
+      {/* 섹터 필터 */}
+      <div className="flex items-center gap-1.5 flex-wrap">
         <button
-          onClick={() => setShowCharts(v => !v)}
-          className={`text-xs px-3 py-1.5 rounded-lg border transition-colors shrink-0 ${
-            showCharts
-              ? 'bg-slate-100 border-slate-300 text-slate-700'
+          onClick={() => setSelectedSector('all')}
+          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+            selectedSector === 'all'
+              ? 'bg-slate-600 text-white border-slate-600'
               : 'border-slate-200 text-slate-500 hover:border-slate-400'
           }`}>
-          {showCharts ? '차트 닫기' : '차트 보기'}
+          전체
         </button>
+        {sectors.map(s => {
+          const color = sectorColors[s] ?? null
+          return (
+            <button key={s}
+              onClick={() => setSelectedSector(s)}
+              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                selectedSector === s
+                  ? 'bg-slate-600 text-white border-slate-600'
+                  : 'border-slate-200 text-slate-500 hover:border-slate-400'
+              }`}>
+              {color && (
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+              )}
+              {s}
+            </button>
+          )
+        })}
       </div>
-
-      {showCharts && <AllocationCharts positions={accountFiltered} />}
 
       <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
     </div>
