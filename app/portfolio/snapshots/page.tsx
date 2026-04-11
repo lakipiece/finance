@@ -1,6 +1,5 @@
 import { getSql } from '@/lib/db'
 import SnapshotList from '@/components/portfolio/SnapshotList'
-import SnapshotCharts from '@/components/portfolio/SnapshotCharts'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,19 +40,8 @@ export default async function SnapshotsPage() {
       : null,
   }))
 
-  // Chart data from stored values
-  const chartPoints = snapshots
-    .filter(s => s.total_market_value != null)
-    .slice().reverse()
-    .map(s => ({
-      date: s.date,
-      total_market_value: s.total_market_value!,
-      breakdown: s.sector_breakdown ?? {},
-    }))
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-      <SnapshotCharts points={chartPoints} sectorColors={sectorColors} />
+    <div className="max-w-7xl mx-auto px-4 py-6">
       <SnapshotList snapshots={snapshots} sectorColors={sectorColors} />
     </div>
   )

@@ -106,6 +106,10 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
             {refreshing ? '업데이트 중...' : '평가액 업데이트'}
           </button>
+          <button onClick={() => router.push('/portfolio/snapshots/charts')}
+            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50">
+            차트보기
+          </button>
           <button onClick={handleCreate} disabled={creating}
             className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
             {creating ? '생성 중...' : '+ 스냅샷 만들기'}
