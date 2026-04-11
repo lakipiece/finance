@@ -208,19 +208,19 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         {/* 전체 */}
         <button
           onClick={selectAll}
-          className={`rounded-xl border px-3 py-3 text-left transition-all min-w-0 ${
+          title={`${summary.positions.length}종목`}
+          className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
             selectedAccountIds.size === 0
               ? 'bg-slate-700 border-slate-700'
               : 'bg-white border-slate-100 hover:border-slate-300'
           }`}>
-          <p className={`text-[10px] font-medium mb-1 ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
+          <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
           <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-800'}`}>
             {Math.round(summary.total_market_value).toLocaleString()}원
           </p>
           <p className={`text-xs tabular-nums mt-0.5 ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
             {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
           </p>
-          <p className="text-[10px] text-slate-400 mt-1">{summary.positions.length}종목</p>
         </button>
 
         {Object.entries(accountGroups)
@@ -231,7 +231,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             return (
               <button key={id}
                 onClick={() => toggleAccount(id)}
-                className={`rounded-xl border px-3 py-3 text-left transition-all min-w-0 relative ${
+                title={`${g.count}종목`}
+                className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
                   isSelected
                     ? 'bg-slate-700 border-slate-700'
                     : 'bg-white border-slate-100 hover:border-slate-300'
@@ -254,7 +255,6 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                 <p className={`text-xs tabular-nums mt-0.5 ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                   {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                 </p>
-                <p className="text-[10px] text-slate-400 mt-1">{g.count}종목</p>
               </button>
             )
           })}
