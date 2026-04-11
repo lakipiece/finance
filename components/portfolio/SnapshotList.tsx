@@ -15,11 +15,7 @@ type SnapshotItem = {
 interface Props { snapshots: SnapshotItem[] }
 
 function fmtKrw(v: number) {
-  const sign = v < 0 ? '-' : ''
-  const abs = Math.abs(v)
-  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억원`
-  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000).toLocaleString()}만원`
-  return `${sign}${Math.round(abs).toLocaleString()}원`
+  return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
 
 export default function SnapshotList({ snapshots: initSnapshots }: Props) {
@@ -92,7 +88,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
       {snapshots.length === 0 ? (
         <p className="text-slate-400 text-sm text-center py-12">아직 스냅샷이 없습니다.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {snapshots.map((snap, i) => {
             const label = labelMap[snap.id]
             const [datePart, suffix] = label.includes(' -')
@@ -103,7 +99,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
             const pnl = mv != null && inv != null ? mv - inv : null
             const pnlPct = pnl != null && inv != null && inv > 0 ? pnl / inv : null
             const sectors = snap.sector_breakdown
-              ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1]).slice(0, 6)
+              ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1]).slice(0, 10)
               : []
 
             return (
