@@ -795,7 +795,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             holdings={holdingsMap[s.id] ?? []}
             hex={modalHex}
             tickerUrl={modalTickerUrl}
-            usdKrwRate={latestPrices['KRW=X']?.price ?? null}
+            usdKrwRate={latestPrices['KRW=X']?.price ?? 1480}
             onClose={() => setHistoryModalSecurity(null)}
           />
         )
