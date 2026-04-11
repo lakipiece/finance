@@ -247,32 +247,37 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           const aVal = accountValues[a.id] ?? 0
           const typeColor = typeColors[a.type ?? ''] ?? null
           return (
-            <div key={a.id} onClick={() => setModalAccountId(a.id)}
-              className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all"
-              style={typeColor ? { borderLeft: `3px solid ${typeColor}` } : undefined}>
-              {/* 상단: 이름(좌) + 뱃지(우) */}
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <p className="text-sm font-semibold text-slate-800 leading-tight flex-1 min-w-0 truncate">{a.name}</p>
-                {a.type && typeColor && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
-                    style={{ backgroundColor: typeColor + '20', color: typeColor }}>
-                    {a.type}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-400">{a.broker}</p>
-              {/* 하단: 종목수(좌) + 평가금액(우) */}
-              <div className="flex items-center justify-between mt-3">
-                <p className="text-[11px] text-slate-400">
-                  <span className="font-semibold text-slate-600">{count}</span>/{total}종목
-                </p>
-                {aVal > 0 ? (
-                  <p className="text-xs font-medium text-slate-600 tabular-nums">
-                    {Math.round(aVal).toLocaleString()}원
+            <div key={a.id}
+              className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all min-h-[110px]">
+              {/* 왼쪽 색상 바 */}
+              <div className="w-1.5 shrink-0 rounded-l-2xl"
+                style={{ backgroundColor: typeColor ?? '#e2e8f0' }} />
+              {/* 카드 내용 */}
+              <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
+                {/* 이름 + 뱃지 */}
+                <div className="flex items-start justify-between gap-1 mb-0.5">
+                  <p className="text-sm font-bold text-slate-800 leading-tight flex-1 min-w-0">{a.name}</p>
+                  {a.type && typeColor && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                      style={{ backgroundColor: typeColor + '20', color: typeColor }}>
+                      {a.type}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400">{a.broker}</p>
+                {/* 하단: 종목수(좌) + 평가금액(우) */}
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <p className="text-[11px] text-slate-400">
+                    <span className="font-semibold text-slate-600">{count}</span>/{total}종목
                   </p>
-                ) : (
-                  <p className="text-xs text-slate-300">—</p>
-                )}
+                  {aVal > 0 ? (
+                    <p className="text-xs font-medium text-slate-600 tabular-nums">
+                      {Math.round(aVal).toLocaleString()}원
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-300">—</p>
+                  )}
+                </div>
               </div>
             </div>
           )

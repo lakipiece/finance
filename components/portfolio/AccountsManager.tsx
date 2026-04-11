@@ -49,8 +49,8 @@ function SortableAccountCard({
         {/* 왼쪽 색상 바 = 드래그 핸들 */}
         <div {...attributes} {...listeners}
           onClick={e => e.stopPropagation()}
-          className="w-5 shrink-0 cursor-grab active:cursor-grabbing rounded-l-2xl"
-          style={{ backgroundColor: typeColor + '50' }} />
+          className="w-1.5 shrink-0 cursor-grab active:cursor-grabbing rounded-l-2xl"
+          style={{ backgroundColor: typeColor }} />
         {/* 카드 내용 */}
         <div onClick={onCardClick} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
           {/* 이름 + 뱃지 */}
