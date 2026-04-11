@@ -32,12 +32,18 @@ export async function POST() {
 
   const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
 
-  // Yahoo ticker 목록
-  const tickers = securities.map(s => {
+  // Yahoo ticker 목록 (국내 종목은 .KS와 bare 모두 포함 — 코인/현금 등은 bare로 저장됨)
+  const tickers: string[] = []
+  for (const s of securities) {
     const clean = s.ticker.startsWith('KRX:') ? s.ticker.slice(4) : s.ticker
-    if (clean.includes('.')) return clean
-    return s.country === '국내' ? `${clean}.KS` : clean
-  })
+    if (clean.includes('.')) { tickers.push(clean); continue }
+    if (s.country === '국내') {
+      tickers.push(`${clean}.KS`)
+      tickers.push(clean) // fallback for crypto/cash stored without .KS
+    } else {
+      tickers.push(clean)
+    }
+  }
   tickers.push('USDKRW=X')
   const uniqueTickers = [...new Set(tickers)]
 
@@ -96,8 +102,10 @@ export async function POST() {
       if (!sec) continue
       const clean = sec.ticker.startsWith('KRX:') ? sec.ticker.slice(4) : sec.ticker
       const isKrx = sec.country === '국내'
-      const yahooTicker = clean.includes('.') ? clean : (isKrx ? `${clean}.KS` : clean)
-      const rawPrice = priceMap[yahooTicker] ?? 0
+      // 국내 종목은 .KS 우선, 없으면 bare (코인/현금 등은 bare로 저장)
+      const rawPrice = isKrx
+        ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? 0)
+        : (priceMap[clean] ?? 0)
       const isKrw = isKrx || sec.currency === 'KRW'
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
 
