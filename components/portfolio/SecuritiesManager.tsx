@@ -469,8 +469,9 @@ function PriceHistoryModal({
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options, holdingsMap = {} }: Props) {
+export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options: initOptions, holdingsMap = {} }: Props) {
   const [securities, setSecurities] = useState(initSecurities)
+  const [options, setOptions] = useState(initOptions)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
 
   const [editModalSecurity, setEditModalSecurity] = useState<Security | null>(null)
@@ -483,6 +484,17 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<Record<string, string>>({})
   const [refreshingAll, setRefreshingAll] = useState(false)
+
+  // 모달 열릴 때 최신 옵션 로드
+  useEffect(() => {
+    if (!showAddModal && !editModalSecurity) return
+    fetch('/api/portfolio/options')
+      .then(r => r.json())
+      .then((data: Record<string, OptionItem[]>) => {
+        setOptions(data)
+      })
+      .catch(() => {})
+  }, [showAddModal, editModalSecurity])
 
   function notify(text: string, ok = true) {
     setMsg({ text, ok })
