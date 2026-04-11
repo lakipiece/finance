@@ -45,18 +45,16 @@ function SortableAccountCard({
 
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
-      <div onClick={onCardClick}
-        className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all group flex flex-col min-h-[110px]"
-        style={{ borderLeft: `3px solid ${typeColor}` }}>
-        {/* 상단: [::] + 이름(우) + 뱃지(우상단) */}
-        <div className="flex items-start gap-1.5 mb-0.5">
-          <button {...attributes} {...listeners} onClick={e => e.stopPropagation()} tabIndex={-1}
-            className="cursor-grab active:cursor-grabbing text-slate-200 hover:text-slate-400 touch-none shrink-0 mt-0.5">
-            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M8 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm8-16a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
-            </svg>
-          </button>
-          <div className="flex items-start justify-between flex-1 min-w-0 gap-1">
+      <div className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-md transition-all min-h-[110px]">
+        {/* 왼쪽 색상 바 = 드래그 핸들 */}
+        <div {...attributes} {...listeners}
+          onClick={e => e.stopPropagation()}
+          className="w-5 shrink-0 cursor-grab active:cursor-grabbing rounded-l-2xl"
+          style={{ backgroundColor: typeColor + '50' }} />
+        {/* 카드 내용 */}
+        <div onClick={onCardClick} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
+          {/* 이름 + 뱃지 */}
+          <div className="flex items-start justify-between gap-1 mb-0.5">
             <p className="text-sm font-bold text-slate-800 leading-tight flex-1 min-w-0">{account.name}</p>
             {account.type && (
               <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
@@ -65,28 +63,25 @@ function SortableAccountCard({
               </span>
             )}
           </div>
-        </div>
-        {/* 증권사·소유자 — 핸들 너비(18px)만큼 들여쓰기 */}
-        <div className="pl-[18px]">
           <p className="text-xs text-slate-400">{account.broker}</p>
           {account.owner && <p className="text-[11px] text-slate-300 mt-0.5">{account.owner}</p>}
-        </div>
-        {/* 하단: 종목수(좌) + 편집/삭제 hover(우) — mt-auto로 항상 하단 고정 */}
-        <div className="flex items-center justify-between mt-auto pt-2">
-          <p className="text-[11px] text-slate-400">
-            <span className="font-semibold text-slate-600">{linkedCount}</span>종목
-          </p>
-          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-            <button onClick={onEdit} className="p-1 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-600">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-            <button onClick={onDelete} className="p-1 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+          {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
+          <div className="flex items-center justify-between mt-auto pt-2">
+            <p className="text-[11px] text-slate-400">
+              <span className="font-semibold text-slate-600">{linkedCount}</span>종목
+            </p>
+            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+              <button onClick={onEdit} className="p-1 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-600">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button onClick={onDelete} className="p-1 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
