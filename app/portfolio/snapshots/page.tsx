@@ -16,10 +16,18 @@ type SnapshotRow = {
 
 export default async function SnapshotsPage() {
   const sql = getSql()
-  const raw = await sql<SnapshotRow[]>`
-    SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, value_updated_at
-    FROM snapshots ORDER BY date DESC, created_at DESC
-  `
+  const [raw, sectorRows] = await Promise.all([
+    sql<SnapshotRow[]>`
+      SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, value_updated_at
+      FROM snapshots ORDER BY date DESC, created_at DESC
+    `,
+    sql<{ value: string; color_hex: string }[]>`
+      SELECT value, color_hex FROM option_list WHERE type = 'sector' AND color_hex IS NOT NULL
+    `,
+  ])
+  const sectorColors: Record<string, string> = Object.fromEntries(
+    sectorRows.map(r => [r.value, r.color_hex])
+  )
   const snapshots = raw.map(s => ({
     id: s.id,
     memo: s.memo,
@@ -46,7 +54,7 @@ export default async function SnapshotsPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <SnapshotCharts points={chartPoints} />
-      <SnapshotList snapshots={snapshots} />
+      <SnapshotList snapshots={snapshots} sectorColors={sectorColors} />
     </div>
   )
 }

@@ -12,13 +12,16 @@ type SnapshotItem = {
   sector_breakdown: Record<string, number> | null
 }
 
-interface Props { snapshots: SnapshotItem[] }
+interface Props {
+  snapshots: SnapshotItem[]
+  sectorColors?: Record<string, string>
+}
 
 function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
 
-export default function SnapshotList({ snapshots: initSnapshots }: Props) {
+export default function SnapshotList({ snapshots: initSnapshots, sectorColors = {} }: Props) {
   const [snapshots, setSnapshots] = useState(initSnapshots)
   const [creating, setCreating] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
@@ -105,7 +108,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
             return (
               <div key={snap.id}
                 onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-                className="bg-white rounded-2xl border border-slate-100 px-5 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col min-h-[200px]">
+                className="bg-white rounded-2xl border border-slate-100 px-5 py-5 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col">
 
                 {/* 상단: 날짜(좌) + 평가액(우) */}
                 <div className="flex items-start justify-between gap-2">
@@ -121,7 +124,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">{datePart}</p>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="text-right shrink-0 pt-0.5">
                     {mv != null ? (
                       <p className="text-lg font-bold text-slate-800 leading-tight tabular-nums">{fmtKrw(mv)}</p>
                     ) : (
@@ -132,7 +135,7 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
 
                 {/* 투자원금 + 수익률 */}
                 {(inv != null || pnl != null) && (
-                  <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] text-slate-400">투자원금</span>
                       <span className="text-xs text-slate-600 tabular-nums font-medium">
@@ -154,31 +157,34 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
 
                 {/* 섹터 비중 */}
                 {sectors.length > 0 && (
-                  <div className="mt-3 space-y-1.5 flex-1">
-                    {sectors.map(([k, v]) => (
-                      <div key={k} className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-500 w-16 truncate shrink-0">{k}</span>
-                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-slate-400 rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%` }} />
+                  <div className="mt-4 space-y-2 flex-1">
+                    {sectors.map(([k, v]) => {
+                      const color = sectorColors[k] ?? '#94a3b8'
+                      return (
+                        <div key={k} className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-500 w-16 truncate shrink-0">{k}</span>
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%`, backgroundColor: color }} />
+                          </div>
+                          <span className="text-[10px] text-slate-500 w-9 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
                         </div>
-                        <span className="text-[10px] text-slate-500 w-9 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
 
                 {snap.memo && <p className="text-[10px] text-slate-300 mt-2 truncate">{snap.memo}</p>}
 
                 {/* 편집/삭제 */}
-                <div className="absolute bottom-3 right-3 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-0.5 mt-4 pt-2 border-t border-slate-50">
                   <button onClick={e => { e.stopPropagation(); router.push(`/portfolio/snapshots/${snap.id}`) }}
-                    className="p-1 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-500 transition-colors">
+                    className="p-1.5 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-500 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
                   <button onClick={e => handleDelete(snap.id, e)}
-                    className="p-1 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors">
+                    className="p-1.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
