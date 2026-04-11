@@ -93,12 +93,24 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
+  const [liveTypeOptions, setLiveTypeOptions] = useState<OptionItem[]>(accountTypeOptions)
 
   const [modalLinkAccountId, setModalLinkAccountId] = useState<string | null>(null)
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [accountForm, setAccountForm] = useState({ name: '', broker: '', owner: '', type_id: '' })
+
+  // 모달 열릴 때 최신 계좌유형 옵션 로드
+  useEffect(() => {
+    if (!showAddModal && !editingAccountId) return
+    fetch('/api/portfolio/options')
+      .then(r => r.json())
+      .then((data: Record<string, OptionItem[]>) => {
+        if (data.account_type) setLiveTypeOptions(data.account_type)
+      })
+      .catch(() => {})
+  }, [showAddModal, editingAccountId])
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
   const [linkSearch, setLinkSearch] = useState('')
@@ -374,7 +386,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 <label className={labelCls}>유형</label>
                 <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
                   <option value="">선택 안함</option>
-                  {accountTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                  {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
@@ -407,7 +419,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 <label className={labelCls}>유형</label>
                 <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
                   <option value="">선택 안함</option>
-                  {accountTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                  {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
