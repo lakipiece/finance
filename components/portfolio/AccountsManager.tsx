@@ -46,22 +46,10 @@ function SortableAccountCard({
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
       <div onClick={onCardClick}
-        className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all group relative"
+        className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all group"
         style={{ borderLeft: `3px solid ${typeColor}` }}>
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-          <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-          <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-        </div>
-        {/* 핸들 + 유형 뱃지 한 줄 */}
-        <div className="flex items-center gap-1.5 mb-1.5">
+        {/* 상단: 핸들(좌) + 뱃지(우) */}
+        <div className="flex items-center justify-between mb-1.5">
           <button {...attributes} {...listeners} onClick={e => e.stopPropagation()} tabIndex={-1}
             className="cursor-grab active:cursor-grabbing text-slate-200 hover:text-slate-400 touch-none shrink-0">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -78,10 +66,23 @@ function SortableAccountCard({
         <p className="text-sm font-bold text-slate-800 leading-tight">{account.name}</p>
         <p className="text-xs text-slate-400 mt-0.5">{account.broker}</p>
         {account.owner && <p className="text-[11px] text-slate-300 mt-0.5">{account.owner}</p>}
-        <div className="flex justify-end mt-3">
+        {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
+        <div className="flex items-center justify-between mt-3">
           <p className="text-[11px] text-slate-400">
-            <span className="font-semibold text-slate-600">{linkedCount}</span>종목 연결됨
+            <span className="font-semibold text-slate-600">{linkedCount}</span>종목
           </p>
+          <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+            <button onClick={onEdit} className="p-1 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-600">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button onClick={onDelete} className="p-1 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -255,7 +256,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             {/* 추가 카드 */}
             <button
               onClick={() => { setShowAddModal(true); setAccountForm({ name: '', broker: '', owner: '', type_id: '' }) }}
-              className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[100px]">
+              className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[120px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
