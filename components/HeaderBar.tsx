@@ -19,9 +19,6 @@ export default function HeaderBar() {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <div>
-              <p className="text-white/60 text-[10px] md:text-xs font-medium tracking-widest mb-0.5">
-                HOUSEHOLD LEDGER
-              </p>
               <h1 className="text-lg md:text-2xl font-bold">
                 {isPortfolio ? '포트폴리오' : '가계부 대시보드'}
               </h1>

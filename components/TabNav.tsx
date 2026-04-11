@@ -4,19 +4,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const LEDGER_TABS = [
-  { label: '대시보드', href: '/' },
-  { label: '연도비교', href: '/compare' },
-  { label: '검색', href: '/search' },
-  { label: '관리', href: '/admin' },
+  { label: '대시보드', short: '홈',  href: '/' },
+  { label: '연도비교', short: '비교', href: '/compare' },
+  { label: '검색',    short: '검색', href: '/search' },
+  { label: '관리',    short: '관리', href: '/admin' },
 ]
 
 const PORTFOLIO_TABS = [
-  { label: '대시보드', href: '/portfolio' },
-  { label: '스냅샷', href: '/portfolio/snapshots' },
-  { label: '수익', href: '/portfolio/income' },
-  { label: '계좌관리', href: '/portfolio/accounts' },
-  { label: '종목관리', href: '/portfolio/securities' },
-  { label: '설정', href: '/portfolio/settings' },
+  { label: '대시보드', short: '홈',   href: '/portfolio' },
+  { label: '스냅샷',  short: '스냅샷', href: '/portfolio/snapshots' },
+  { label: '수익',    short: '수익',  href: '/portfolio/income' },
+  { label: '계좌관리', short: '계좌', href: '/portfolio/accounts' },
+  { label: '종목관리', short: '종목', href: '/portfolio/securities' },
+  { label: '설정',    short: '설정',  href: '/portfolio/settings' },
 ]
 
 export default function TabNav() {
@@ -25,7 +25,7 @@ export default function TabNav() {
   const tabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
 
   return (
-    <nav className="flex gap-1 flex-nowrap overflow-x-auto scrollbar-none" aria-label="탭 네비게이션">
+    <nav className="flex gap-0.5 flex-nowrap overflow-x-auto scrollbar-none" aria-label="탭 네비게이션">
       {tabs.map((tab) => {
         const active = tab.href === '/' || tab.href === '/portfolio'
           ? pathname === tab.href
@@ -35,13 +35,14 @@ export default function TabNav() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? 'page' : undefined}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-2.5 py-1 md:px-4 md:py-1.5 rounded-full text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
               active
                 ? 'bg-white/20 text-white'
                 : 'text-white/60 hover:text-white/90 hover:bg-white/10'
             }`}
           >
-            {tab.label}
+            <span className="md:hidden">{tab.short}</span>
+            <span className="hidden md:inline">{tab.label}</span>
           </Link>
         )
       })}
