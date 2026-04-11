@@ -53,7 +53,7 @@ export default async function SnapshotsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-      <SnapshotCharts points={chartPoints} />
+      <SnapshotCharts points={chartPoints} sectorColors={sectorColors} />
       <SnapshotList snapshots={snapshots} sectorColors={sectorColors} />
     </div>
   )

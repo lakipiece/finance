@@ -16,7 +16,8 @@ type OptionMap = Record<string, OptionItem[]>
 
 const PRESET_COLORS = [
   '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6',
-  '#ec4899','#14b8a6','#f97316','#6366f1','#64748b','#a3e635','#94a3b8',
+  '#ec4899','#14b8a6','#f97316','#6366f1','#64748b',
+  '#a3e635','#94a3b8','#0ea5e9','#d946ef','#e11d48',
 ]
 
 const TYPE_LABELS: Record<string, string> = {
@@ -27,9 +28,17 @@ const TYPE_LABELS: Record<string, string> = {
   sector: '섹터',
 }
 
+function isValidHex(s: string) {
+  return /^#[0-9a-fA-F]{6}$/.test(s)
+}
+
 function ColorPicker({ color, onChange }: { color: string; onChange: (c: string) => void }) {
   const [open, setOpen] = useState(false)
+  const [hexInput, setHexInput] = useState(color)
   const ref = useRef<HTMLDivElement>(null)
+  const nativeRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => { setHexInput(color) }, [color])
 
   useEffect(() => {
     if (!open) return
@@ -40,6 +49,11 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
+  function handleHexChange(v: string) {
+    setHexInput(v)
+    if (isValidHex(v)) onChange(v)
+  }
+
   return (
     <div className="relative" ref={ref}>
       <div
@@ -48,16 +62,39 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
         onClick={() => setOpen(!open)}
       />
       {open && (
-        <div className="absolute left-0 top-7 z-10 flex flex-wrap gap-1 bg-white border border-slate-200 rounded-xl p-2 shadow-lg w-40">
-          {PRESET_COLORS.map(c => (
-            <button key={c} onClick={() => { onChange(c); setOpen(false) }}
-              className="w-5 h-5 rounded-full border-2 transition-all"
-              style={{
-                backgroundColor: c,
-                borderColor: color === c ? '#1e293b' : 'transparent',
-              }}
+        <div className="absolute left-0 top-7 z-20 bg-white border border-slate-200 rounded-xl p-3 shadow-xl w-52">
+          {/* 프리셋 */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {PRESET_COLORS.map(c => (
+              <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
+                className="w-5 h-5 rounded-full border-2 transition-all hover:scale-110"
+                style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }}
+              />
+            ))}
+          </div>
+          {/* HEX 입력 + 네이티브 피커 */}
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-7 h-7 rounded-lg border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
+              style={{ backgroundColor: color }}
+              onClick={() => nativeRef.current?.click()}
+            >
+              <input
+                ref={nativeRef}
+                type="color"
+                value={color}
+                onChange={e => { onChange(e.target.value); setHexInput(e.target.value) }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
+            <input
+              value={hexInput}
+              onChange={e => handleHexChange(e.target.value)}
+              placeholder="#3b82f6"
+              className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-300"
+              maxLength={7}
             />
-          ))}
+          </div>
         </div>
       )}
     </div>
@@ -65,10 +102,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
 }
 
 function SortableOptionRow({
-  opt,
-  onColorChange,
-  onLabelChange,
-  onDelete,
+  opt, onColorChange, onLabelChange, onDelete,
 }: {
   opt: OptionItem
   onColorChange: (id: string, color: string) => void
@@ -77,32 +111,22 @@ function SortableOptionRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: opt.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
-
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(opt.label)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function startEdit() {
-    setDraft(opt.label)
-    setEditing(true)
-    setTimeout(() => inputRef.current?.select(), 0)
-  }
-
+  function startEdit() { setDraft(opt.label); setEditing(true); setTimeout(() => inputRef.current?.select(), 0) }
   function commitEdit() {
     setEditing(false)
-    if (draft.trim() && draft.trim() !== opt.label) {
-      onLabelChange(opt.id, draft.trim())
-    } else {
-      setDraft(opt.label)
-    }
+    if (draft.trim() && draft.trim() !== opt.label) onLabelChange(opt.id, draft.trim())
+    else setDraft(opt.label)
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group">
-      {/* drag handle */}
+    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group py-0.5">
       <button {...attributes} {...listeners}
         className="text-slate-300 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5 shrink-0">
-        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
         </svg>
       </button>
@@ -110,9 +134,7 @@ function SortableOptionRow({
       <ColorPicker color={opt.color_hex ?? '#94a3b8'} onChange={c => onColorChange(opt.id, c)} />
 
       {editing ? (
-        <input
-          ref={inputRef}
-          value={draft}
+        <input ref={inputRef} value={draft}
           onChange={e => setDraft(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setDraft(opt.label) } }}
@@ -120,11 +142,8 @@ function SortableOptionRow({
           autoFocus
         />
       ) : (
-        <span
-          onClick={startEdit}
-          title="클릭하여 편집"
-          className="text-xs font-medium text-slate-700 flex-1 cursor-text hover:text-blue-600 transition-colors"
-        >
+        <span onClick={startEdit} title="클릭하여 편집"
+          className="text-xs font-medium text-slate-700 flex-1 cursor-text hover:text-blue-600 transition-colors truncate">
           {opt.label}
         </span>
       )}
@@ -139,58 +158,104 @@ function SortableOptionRow({
   )
 }
 
-export default function OptionsManager({ initialOptions }: { initialOptions: OptionMap }) {
-  const [options, setOptions] = useState<OptionMap>(initialOptions)
-  const [activeType, setActiveType] = useState('account_type')
+function OptionTypeCard({
+  typeKey, label, items,
+  onAdd, onDelete, onColorChange, onLabelChange, onDragEnd,
+}: {
+  typeKey: string
+  label: string
+  items: OptionItem[]
+  onAdd: (type: string, label: string, color: string) => Promise<void>
+  onDelete: (type: string, id: string) => Promise<void>
+  onColorChange: (type: string, id: string, color: string) => Promise<void>
+  onLabelChange: (type: string, id: string, label: string) => Promise<void>
+  onDragEnd: (type: string, event: DragEndEvent) => Promise<void>
+}) {
   const [newLabel, setNewLabel] = useState('')
   const [newColor, setNewColor] = useState('#3b82f6')
   const [adding, setAdding] = useState(false)
-  const [msg, setMsg] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
-  const types = Object.keys(TYPE_LABELS)
-  const currentOptions = options[activeType] ?? []
-
   async function handleAdd() {
     if (!newLabel.trim()) return
     setAdding(true)
+    await onAdd(typeKey, newLabel.trim(), newColor)
+    setNewLabel('')
+    setAdding(false)
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-5 flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-semibold text-slate-700">{label}</h4>
+        <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{items.length}개</span>
+      </div>
+
+      <DndContext sensors={sensors} collisionDetection={closestCenter}
+        onDragEnd={e => onDragEnd(typeKey, e)}>
+        <SortableContext items={items.map(o => o.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-0.5 mb-3 flex-1 min-h-[40px]">
+            {items.map(opt => (
+              <SortableOptionRow
+                key={opt.id} opt={opt}
+                onColorChange={(id, c) => onColorChange(typeKey, id, c)}
+                onLabelChange={(id, l) => onLabelChange(typeKey, id, l)}
+                onDelete={(id) => onDelete(typeKey, id)}
+              />
+            ))}
+            {items.length === 0 && (
+              <p className="text-xs text-slate-300 py-2">항목 없음</p>
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
+
+      <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+        <ColorPicker color={newColor} onChange={setNewColor} />
+        <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
+          placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
+        <button onClick={handleAdd} disabled={adding || !newLabel.trim()}
+          className="bg-slate-700 text-white px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-40 shrink-0">
+          추가
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function OptionsManager({ initialOptions }: { initialOptions: OptionMap }) {
+  const [options, setOptions] = useState<OptionMap>(initialOptions)
+  const types = Object.keys(TYPE_LABELS)
+
+  async function handleAdd(type: string, label: string, color: string) {
     const res = await fetch('/api/portfolio/options', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: activeType, label: newLabel.trim(), value: newLabel.trim(), color_hex: newColor }),
+      body: JSON.stringify({ type, label, value: label, color_hex: color }),
     })
     if (res.ok) {
       const item = await res.json()
-      setOptions(prev => ({ ...prev, [activeType]: [...(prev[activeType] ?? []), item] }))
-      setNewLabel('')
-      setMsg('추가됨')
-    } else {
-      const d = await res.json()
-      setMsg(d.error ?? '오류')
+      setOptions(prev => ({ ...prev, [type]: [...(prev[type] ?? []), item] }))
     }
-    setAdding(false)
-    setTimeout(() => setMsg(''), 2000)
   }
 
-  async function handleDelete(id: string) {
+  async function handleDelete(type: string, id: string) {
     if (!confirm('삭제하시겠습니까?')) return
     const res = await fetch(`/api/portfolio/options/${id}`, { method: 'DELETE' })
     if (res.ok) {
-      setOptions(prev => ({
-        ...prev,
-        [activeType]: (prev[activeType] ?? []).filter(o => o.id !== id),
-      }))
+      setOptions(prev => ({ ...prev, [type]: (prev[type] ?? []).filter(o => o.id !== id) }))
     }
   }
 
-  async function handleColorChange(id: string, color_hex: string) {
+  async function handleColorChange(type: string, id: string, color_hex: string) {
     setOptions(prev => ({
       ...prev,
-      [activeType]: (prev[activeType] ?? []).map(o => o.id === id ? { ...o, color_hex } : o),
+      [type]: (prev[type] ?? []).map(o => o.id === id ? { ...o, color_hex } : o),
     }))
     await fetch(`/api/portfolio/options/${id}`, {
       method: 'PATCH',
@@ -199,10 +264,10 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
     })
   }
 
-  async function handleLabelChange(id: string, label: string) {
+  async function handleLabelChange(type: string, id: string, label: string) {
     setOptions(prev => ({
       ...prev,
-      [activeType]: (prev[activeType] ?? []).map(o => o.id === id ? { ...o, label } : o),
+      [type]: (prev[type] ?? []).map(o => o.id === id ? { ...o, label } : o),
     }))
     await fetch(`/api/portfolio/options/${id}`, {
       method: 'PATCH',
@@ -211,17 +276,14 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
     })
   }
 
-  async function handleDragEnd(event: DragEndEvent) {
+  async function handleDragEnd(type: string, event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
-    const oldIndex = currentOptions.findIndex(o => o.id === active.id)
-    const newIndex = currentOptions.findIndex(o => o.id === over.id)
-    const reordered = arrayMove(currentOptions, oldIndex, newIndex)
-
-    setOptions(prev => ({ ...prev, [activeType]: reordered }))
-
-    // save all sort_orders
+    const current = options[type] ?? []
+    const oldIndex = current.findIndex(o => o.id === active.id)
+    const newIndex = current.findIndex(o => o.id === over.id)
+    const reordered = arrayMove(current, oldIndex, newIndex)
+    setOptions(prev => ({ ...prev, [type]: reordered }))
     await Promise.all(
       reordered.map((o, i) =>
         fetch(`/api/portfolio/options/${o.id}`, {
@@ -234,52 +296,22 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-6">
+    <div>
       <h3 className="text-sm font-semibold text-slate-700 mb-4">옵션 관리</h3>
-
-      {/* 타입 탭 */}
-      <div className="flex gap-1 mb-4 flex-wrap">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {types.map(t => (
-          <button key={t} onClick={() => setActiveType(t)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-              activeType === t ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}>
-            {TYPE_LABELS[t]}
-          </button>
+          <OptionTypeCard
+            key={t}
+            typeKey={t}
+            label={TYPE_LABELS[t]}
+            items={options[t] ?? []}
+            onAdd={handleAdd}
+            onDelete={handleDelete}
+            onColorChange={handleColorChange}
+            onLabelChange={handleLabelChange}
+            onDragEnd={handleDragEnd}
+          />
         ))}
-      </div>
-
-      {/* 옵션 목록 (drag-and-drop) */}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={currentOptions.map(o => o.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 mb-4">
-            {currentOptions.map(opt => (
-              <SortableOptionRow
-                key={opt.id}
-                opt={opt}
-                onColorChange={handleColorChange}
-                onLabelChange={handleLabelChange}
-                onDelete={handleDelete}
-              />
-            ))}
-            {currentOptions.length === 0 && (
-              <p className="text-xs text-slate-400 py-2">옵션이 없습니다</p>
-            )}
-          </div>
-        </SortableContext>
-      </DndContext>
-
-      {/* 추가 폼 */}
-      <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
-        <ColorPicker color={newColor} onChange={setNewColor} />
-        <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
-          placeholder="새 옵션 이름" onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300" />
-        <button onClick={handleAdd} disabled={adding}
-          className="bg-slate-700 text-white px-3 py-1 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
-          추가
-        </button>
-        {msg && <span className="text-xs text-slate-500">{msg}</span>}
       </div>
     </div>
   )

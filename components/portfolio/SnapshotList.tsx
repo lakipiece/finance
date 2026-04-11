@@ -108,7 +108,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             return (
               <div key={snap.id}
                 onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-                className="bg-white rounded-2xl border border-slate-100 px-5 py-5 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col">
+                className="bg-white rounded-2xl border border-slate-100 px-6 py-5 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col">
 
                 {/* 상단: 날짜(좌) + 평가액(우) */}
                 <div className="flex items-start justify-between gap-2">
@@ -162,7 +162,10 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                       const color = sectorColors[k] ?? '#94a3b8'
                       return (
                         <div key={k} className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-500 w-16 truncate shrink-0">{k}</span>
+                          <div className="flex items-center gap-1 w-20 shrink-0 min-w-0">
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                            <span className="text-[10px] text-slate-600 truncate">{k}</span>
+                          </div>
                           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                             <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%`, backgroundColor: color }} />
                           </div>
