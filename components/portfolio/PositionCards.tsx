@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import type { PortfolioPosition } from '@/lib/portfolio/types'
+import type { MergedPosition } from './PortfolioDashboard'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
 interface Props {
-  positions: PortfolioPosition[]
+  positions: MergedPosition[]
   totalValue: number
 }
 
@@ -14,48 +14,12 @@ function fmt(n: number) {
 }
 
 function PositionModal({ position: p, totalValue, onClose }: {
-  position: PortfolioPosition
+  position: MergedPosition
   totalValue: number
   onClose: () => void
 }) {
-  const [saving, setSaving] = useState(false)
-  const [msg, setMsg] = useState('')
-  const [qty, setQty] = useState(String(p.quantity))
-  const [avgPrice, setAvgPrice] = useState(String(p.avg_price_usd ?? p.avg_price))
-  const [totalInvested, setTotalInvested] = useState(String(p.total_invested))
-
-  const isUSD = p.avg_price_usd != null
   const pnlColor = p.unrealized_pnl >= 0 ? 'text-rose-500' : 'text-blue-500'
   const weight = totalValue > 0 ? (p.market_value / totalValue * 100).toFixed(1) : '0.0'
-
-  async function handleSave() {
-    setSaving(true)
-    setMsg('')
-    try {
-      const res = await fetch('/api/portfolio/holdings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          account_id: p.account.id,
-          security_id: p.security.id,
-          quantity: parseFloat(qty) || 0,
-          avg_price: parseFloat(avgPrice) || null,
-          total_invested: parseFloat(totalInvested) || null,
-          snapshot_date: new Date().toISOString().slice(0, 10),
-        }),
-      })
-      if (!res.ok) {
-        const json = await res.json()
-        setMsg(`오류: ${json.error}`)
-      } else {
-        setMsg('저장 완료')
-      }
-    } catch {
-      setMsg('저장 실패')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
@@ -64,11 +28,13 @@ function PositionModal({ position: p, totalValue, onClose }: {
           <div>
             <p className="font-bold text-slate-800 text-lg">{p.security.ticker}</p>
             <p className="text-sm text-slate-400">{p.security.name}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{p.account.broker} · {p.account.name}</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {p.accounts.map(a => `${a.broker} · ${a.name}`).join(', ')}
+            </p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none mt-0.5">×</button>
         </div>
-        <div className="px-6 py-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm border-b border-slate-100">
+        <div className="px-6 py-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
           <div>
             <p className="text-xs text-slate-400 mb-0.5">평가금액</p>
             <p className="font-semibold text-slate-800">{fmt(p.market_value)}원</p>
@@ -92,6 +58,10 @@ function PositionModal({ position: p, totalValue, onClose }: {
             <p className="text-slate-700">{weight}%</p>
           </div>
           <div>
+            <p className="text-xs text-slate-400 mb-0.5">수량 / 투자원금</p>
+            <p className="text-slate-700">{p.quantity.toLocaleString()} / {fmt(p.total_invested)}원</p>
+          </div>
+          <div>
             <p className="text-xs text-slate-400 mb-0.5">자산군 / 국가</p>
             <p className="text-slate-700">{p.security.asset_class} / {p.security.country}</p>
           </div>
@@ -102,40 +72,13 @@ function PositionModal({ position: p, totalValue, onClose }: {
             </div>
           )}
         </div>
-        <div className="px-6 py-4 space-y-3">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">포지션 수정</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">수량</label>
-              <input type="number" step="any" value={qty} onChange={e => setQty(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">평균매입가 {isUSD ? '(USD)' : '(원)'}</label>
-              <input type="number" step="any" value={avgPrice} onChange={e => setAvgPrice(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">투자원금 (원)</label>
-              <input type="number" step="any" value={totalInvested} onChange={e => setTotalInvested(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={handleSave} disabled={saving}
-              className="bg-slate-700 text-white px-4 py-1.5 rounded-lg text-sm hover:bg-slate-800 disabled:opacity-50 transition-colors">
-              {saving ? '저장 중...' : '저장'}
-            </button>
-            {msg && <span className={`text-xs ${msg.startsWith('오류') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
-          </div>
-        </div>
       </div>
     </div>
   )
 }
 
 export default function PositionCards({ positions, totalValue }: Props) {
-  const [modal, setModal] = useState<PortfolioPosition | null>(null)
+  const [modal, setModal] = useState<MergedPosition | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<Record<string, string>>({})
 
@@ -173,13 +116,14 @@ export default function PositionCards({ positions, totalValue }: Props) {
           const ticker = p.security.ticker
           const isSyncing = syncing === ticker
           const msg = syncMsg[ticker]
+          const multiAccount = p.accounts.length > 1
 
           return (
-            <div key={`${p.account.id}-${p.security.id}`}
+            <div key={p.security.id}
               onClick={() => setModal(p)}
               className="bg-white rounded-2xl border border-slate-100 px-4 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all flex flex-col gap-2">
 
-              {/* 헤더: 티커 + 새로고침 */}
+              {/* 헤더 */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -191,9 +135,16 @@ export default function PositionCards({ positions, totalValue }: Props) {
                         {p.security.sector}
                       </span>
                     )}
+                    {multiAccount && (
+                      <span className="text-[9px] text-blue-400 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
+                        {p.accounts.length}개 계좌
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-slate-600 mt-1 leading-tight truncate">{p.security.name}</p>
-                  <p className="text-[10px] text-slate-400 truncate">{p.account.broker} · {p.account.name}</p>
+                  {!multiAccount && (
+                    <p className="text-[10px] text-slate-400 truncate">{p.accounts[0].broker} · {p.accounts[0].name}</p>
+                  )}
                 </div>
                 <button onClick={e => syncTicker(ticker, e)} disabled={isSyncing}
                   className="shrink-0 text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors mt-0.5"
@@ -209,7 +160,6 @@ export default function PositionCards({ positions, totalValue }: Props) {
                 </button>
               </div>
 
-              {/* 구분선 */}
               <div className="border-t border-slate-50" />
 
               {/* 평가금액 + 비중 */}
