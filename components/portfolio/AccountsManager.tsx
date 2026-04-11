@@ -46,28 +46,33 @@ function SortableAccountCard({
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
       <div onClick={onCardClick}
-        className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all group"
+        className="bg-white rounded-2xl border border-slate-100 p-3 cursor-pointer hover:shadow-md transition-all group flex flex-col min-h-[110px]"
         style={{ borderLeft: `3px solid ${typeColor}` }}>
-        {/* 상단: 핸들(좌) + 뱃지(우) */}
-        <div className="flex items-center justify-between mb-1.5">
+        {/* 상단: [::] + 이름(우) + 뱃지(우상단) */}
+        <div className="flex items-start gap-1.5 mb-0.5">
           <button {...attributes} {...listeners} onClick={e => e.stopPropagation()} tabIndex={-1}
-            className="cursor-grab active:cursor-grabbing text-slate-200 hover:text-slate-400 touch-none shrink-0">
+            className="cursor-grab active:cursor-grabbing text-slate-200 hover:text-slate-400 touch-none shrink-0 mt-0.5">
             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
               <path d="M8 6a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm8-16a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4zm0 8a2 2 0 110-4 2 2 0 010 4z"/>
             </svg>
           </button>
-          {account.type && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-              style={{ backgroundColor: typeColor + '20', color: typeColor }}>
-              {account.type}
-            </span>
-          )}
+          <div className="flex items-start justify-between flex-1 min-w-0 gap-1">
+            <p className="text-sm font-bold text-slate-800 leading-tight flex-1 min-w-0">{account.name}</p>
+            {account.type && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                style={{ backgroundColor: typeColor + '20', color: typeColor }}>
+                {account.type}
+              </span>
+            )}
+          </div>
         </div>
-        <p className="text-sm font-bold text-slate-800 leading-tight">{account.name}</p>
-        <p className="text-xs text-slate-400 mt-0.5">{account.broker}</p>
-        {account.owner && <p className="text-[11px] text-slate-300 mt-0.5">{account.owner}</p>}
-        {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
-        <div className="flex items-center justify-between mt-3">
+        {/* 증권사·소유자 — 핸들 너비(18px)만큼 들여쓰기 */}
+        <div className="pl-[18px]">
+          <p className="text-xs text-slate-400">{account.broker}</p>
+          {account.owner && <p className="text-[11px] text-slate-300 mt-0.5">{account.owner}</p>}
+        </div>
+        {/* 하단: 종목수(좌) + 편집/삭제 hover(우) — mt-auto로 항상 하단 고정 */}
+        <div className="flex items-center justify-between mt-auto pt-2">
           <p className="text-[11px] text-slate-400">
             <span className="font-semibold text-slate-600">{linkedCount}</span>종목
           </p>
@@ -256,7 +261,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             {/* 추가 카드 */}
             <button
               onClick={() => { setShowAddModal(true); setAccountForm({ name: '', broker: '', owner: '', type_id: '' }) }}
-              className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[120px]">
+              className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[110px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
