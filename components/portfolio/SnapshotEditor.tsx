@@ -240,7 +240,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       </div>
 
       {/* Account Card Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {accounts.map(a => {
           const count = accountCounts[a.id] ?? 0
           const total = accountSecurities.filter(as => as.account_id === a.id).length

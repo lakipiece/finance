@@ -637,9 +637,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           const { hex } = cardColors(options, s.country, s.asset_class)
           return (
             <div key={s.id}
-              onClick={() => setHistoryModalSecurity(s)}
-              className="bg-white rounded-xl border-l-2 border border-slate-100 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:shadow-md hover:border-slate-200 hover:bg-slate-50/50 transition-all"
-              style={{ borderLeftColor: hex }}>
+              className="flex bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
+              <div className="w-1.5 shrink-0 rounded-l-xl" style={{ backgroundColor: hex }} />
+              <div onClick={() => setHistoryModalSecurity(s)}
+                className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-slate-50/30 transition-all min-w-0">
               {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
                 {(() => {
@@ -679,7 +680,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               </div>
               {/* Row 2: name (left) + price (right) */}
               <div className="flex items-start justify-between gap-1">
-                <p className="text-sm font-semibold text-slate-600 line-clamp-2 leading-snug flex-1">{s.name}</p>
+                <p className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug flex-1">{s.name}</p>
                 <div className="text-right shrink-0">
                   {latestPrices[s.ticker] ? (() => {
                     const lp = latestPrices[s.ticker]
@@ -757,6 +758,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   </button>
                 </div>
               </div>
+            </div>
             </div>
           )
         })}
