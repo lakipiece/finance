@@ -15,9 +15,11 @@ type SnapshotItem = {
 interface Props { snapshots: SnapshotItem[] }
 
 function fmtKrw(v: number) {
-  if (Math.abs(v) >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억원`
-  if (Math.abs(v) >= 10_000) return `${Math.floor(v / 10_000).toLocaleString()}만원`
-  return `${Math.round(v).toLocaleString()}원`
+  const sign = v < 0 ? '-' : ''
+  const abs = Math.abs(v)
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억원`
+  if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000).toLocaleString()}만원`
+  return `${sign}${Math.round(abs).toLocaleString()}원`
 }
 
 export default function SnapshotList({ snapshots: initSnapshots }: Props) {
@@ -101,13 +103,13 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
             const pnl = mv != null && inv != null ? mv - inv : null
             const pnlPct = pnl != null && inv != null && inv > 0 ? pnl / inv : null
             const sectors = snap.sector_breakdown
-              ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1]).slice(0, 5)
+              ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1]).slice(0, 6)
               : []
 
             return (
               <div key={snap.id}
                 onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-                className="bg-white rounded-2xl border border-slate-100 px-5 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative">
+                className="bg-white rounded-2xl border border-slate-100 px-5 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col min-h-[200px]">
 
                 {/* 상단: 날짜(좌) + 평가액(우) */}
                 <div className="flex items-start justify-between gap-2">
@@ -115,8 +117,8 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
                     <div className="flex items-center gap-1.5">
                       <p className="text-base font-bold text-slate-800 leading-tight">
                         {datePart.slice(0, 7)}
-                        {suffix && <span className="text-xs font-normal text-slate-400 ml-1">{suffix}</span>}
                       </p>
+                      {suffix && <span className="text-xs font-normal text-slate-400">{suffix}</span>}
                       {i === 0 && (
                         <span className="text-[9px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full font-medium">최신</span>
                       )}
@@ -125,31 +127,45 @@ export default function SnapshotList({ snapshots: initSnapshots }: Props) {
                   </div>
                   <div className="text-right shrink-0">
                     {mv != null ? (
-                      <>
-                        <p className="text-lg font-bold text-slate-800 leading-tight tabular-nums">{fmtKrw(mv)}</p>
-                        {pnl != null && (
-                          <p className={`text-xs font-medium mt-0.5 tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                            {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
-                            {pnlPct != null && ` (${pnl >= 0 ? '+' : ''}${(pnlPct * 100).toFixed(1)}%)`}
-                          </p>
-                        )}
-                      </>
+                      <p className="text-lg font-bold text-slate-800 leading-tight tabular-nums">{fmtKrw(mv)}</p>
                     ) : (
                       <p className="text-sm text-slate-300">—</p>
                     )}
                   </div>
                 </div>
 
+                {/* 투자원금 + 수익률 */}
+                {(inv != null || pnl != null) && (
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-slate-400">투자원금</span>
+                      <span className="text-xs text-slate-600 tabular-nums font-medium">
+                        {inv != null ? fmtKrw(inv) : '—'}
+                      </span>
+                    </div>
+                    {pnl != null && (
+                      <span className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
+                        {pnlPct != null && (
+                          <span className="text-[10px] ml-1">
+                            ({pnl >= 0 ? '+' : ''}{(pnlPct * 100).toFixed(1)}%)
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* 섹터 비중 */}
                 {sectors.length > 0 && (
-                  <div className="mt-3 space-y-1">
+                  <div className="mt-3 space-y-1.5 flex-1">
                     {sectors.map(([k, v]) => (
                       <div key={k} className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-500 w-14 truncate">{k}</span>
+                        <span className="text-[10px] text-slate-500 w-16 truncate shrink-0">{k}</span>
                         <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-slate-300 rounded-full" style={{ width: `${Math.min(v, 100)}%` }} />
+                          <div className="h-full bg-slate-400 rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%` }} />
                         </div>
-                        <span className="text-[10px] text-slate-400 w-8 text-right tabular-nums">{v}%</span>
+                        <span className="text-[10px] text-slate-500 w-9 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
                       </div>
                     ))}
                   </div>

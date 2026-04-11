@@ -28,7 +28,9 @@ export default async function SnapshotsPage() {
       : String(s.date).slice(0, 10),
     total_market_value: s.total_market_value != null ? Number(s.total_market_value) : null,
     total_invested: s.total_invested != null ? Number(s.total_invested) : null,
-    sector_breakdown: s.sector_breakdown,
+    sector_breakdown: s.sector_breakdown != null
+      ? (typeof s.sector_breakdown === 'string' ? JSON.parse(s.sector_breakdown) : s.sector_breakdown)
+      : null,
   }))
 
   // Chart data from stored values

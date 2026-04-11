@@ -38,7 +38,7 @@ export async function POST() {
     if (clean.includes('.')) return clean
     return s.country === '국내' ? `${clean}.KS` : clean
   })
-  tickers.push('KRW=X')
+  tickers.push('USDKRW=X')
   const uniqueTickers = [...new Set(tickers)]
 
   // 전체 price_history 한번에 로드 (최적화)
@@ -85,7 +85,7 @@ export async function POST() {
     for (const [ticker, fb] of Object.entries(fallbackMap)) {
       if (!priceMap[ticker]) priceMap[ticker] = fb.price
     }
-    const exchangeRate = priceMap['KRW=X'] ?? EXCHANGE_RATE_FALLBACK
+    const exchangeRate = priceMap['USDKRW=X'] ?? EXCHANGE_RATE_FALLBACK
 
     let totalMarketValue = 0
     let totalInvested = 0
