@@ -22,13 +22,18 @@ export async function GET(req: Request) {
     LEFT JOIN option_list co ON s.country_id  = co.id
   `
 
-  // Build yahoo tickers
-  const tickers = securities.map(s => {
+  // Build yahoo tickers (국내 종목은 .KS와 bare 모두 포함 — 코인/현금 등은 bare로 저장됨)
+  const tickers: string[] = []
+  for (const s of securities) {
     const clean = s.ticker.startsWith('KRX:') ? s.ticker.slice(4) : s.ticker
-    if (clean.includes('.')) return clean
-    const isKrx = s.country === '국내'
-    return isKrx ? `${clean}.KS` : clean
-  })
+    if (clean.includes('.')) { tickers.push(clean); continue }
+    if (s.country === '국내') {
+      tickers.push(`${clean}.KS`)
+      tickers.push(clean)
+    } else {
+      tickers.push(clean)
+    }
+  }
   tickers.push('KRW=X')
 
   // Get latest prices up to date, fallback to closest future price
@@ -68,8 +73,10 @@ export async function GET(req: Request) {
       secPrices[s.id] = isKrw ? rawPrice : rawPrice * exchangeRate
     } else {
       const isKrx = s.country === '국내'
-      const yahooTicker = isKrx ? `${clean}.KS` : clean
-      const rawPrice = priceMap[yahooTicker] ?? 0
+      // .KS 우선 조회, 없으면 bare (코인/현금 등은 bare로 저장)
+      const rawPrice = isKrx
+        ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? 0)
+        : (priceMap[clean] ?? 0)
       const isKrw = isKrx || s.currency === 'KRW'
       secPrices[s.id] = isKrw ? rawPrice : rawPrice * exchangeRate
     }
