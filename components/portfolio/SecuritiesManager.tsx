@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 
@@ -176,12 +176,13 @@ function SecurityModal({ security, onSave, onClose, options }: {
 
 // ─── Holding Card ─────────────────────────────────────────────────────────────
 function HoldingCard({
-  label, value, sub, hoverLines,
+  label, value, sub, hoverLines, valueColor,
 }: {
   label: string
   value: string
   sub?: { text: string; positive?: boolean }
   hoverLines?: { left: string; right: string }[]
+  valueColor?: string
 }) {
   const [hovered, setHovered] = useState(false)
   return (
@@ -191,7 +192,7 @@ function HoldingCard({
       onMouseLeave={() => setHovered(false)}
     >
       <p className="text-[9px] text-slate-400 mb-1 uppercase tracking-wider">{label}</p>
-      <p className="text-sm font-semibold text-slate-700 tabular-nums leading-tight">{value}</p>
+      <p className={`text-sm font-semibold tabular-nums leading-tight ${valueColor ?? 'text-slate-700'}`}>{value}</p>
       {sub && (
         <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-green-600' : sub.positive === false ? 'text-red-500' : 'text-slate-400'}`}>
           {sub.text}
@@ -220,6 +221,7 @@ function PriceHistoryModal({
   holdings,
   hex,
   tickerUrl,
+  usdKrwRate,
   onClose,
 }: {
   security: Security
@@ -228,6 +230,7 @@ function PriceHistoryModal({
   holdings: HoldingRow[]
   hex: string
   tickerUrl: string | null
+  usdKrwRate?: number | null
   onClose: () => void
 }) {
   const isUSD = latestPrice?.currency === 'USD'
@@ -247,22 +250,46 @@ function PriceHistoryModal({
   const totalInvested = avgPrice != null ? avgPrice * totalQty : null
   const currentPrice = latestPrice?.price ?? 0
   const marketValue = currentPrice * totalQty
-  const pnl = totalInvested != null ? marketValue - totalInvested : null
+
+  // USD → KRW 변환
+  const toKrw = (v: number) => isUSD && usdKrwRate ? v * usdKrwRate : v
+  const investedKrw = totalInvested != null ? toKrw(totalInvested) : null
+  const marketValueKrw = toKrw(marketValue)
+  const pnlKrw = investedKrw != null ? marketValueKrw - investedKrw : null
+  const returnPct = investedKrw && pnlKrw != null && investedKrw > 0
+    ? (pnlKrw / investedKrw) * 100 : null
 
   const fmt = (v: number) => isUSD ? `$${v.toFixed(2)}` : `${Math.round(v).toLocaleString()}원`
   const fmtKrw = (v: number) => {
     const abs = Math.abs(v)
-    if (abs >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
-    if (abs >= 10_000) return `${Math.floor(v / 10_000).toLocaleString()}만원`
+    const sign = v < 0 ? '-' : ''
+    if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억`
+    if (abs >= 10_000) return `${sign}${Math.floor(abs / 10_000).toLocaleString()}만원`
     return `${Math.round(v).toLocaleString()}원`
   }
+  const fmtPnl = (v: number) => `${v > 0 ? '+' : ''}${fmtKrw(v)}`
+  const pnlColor = (v: number | null) => v == null ? 'text-slate-700' : v > 0 ? 'text-red-500' : v < 0 ? 'text-blue-500' : 'text-slate-700'
+
+  // 차트 min/max
+  const minIdx = recent30.length >= 2 ? recent30.reduce((mi, d, i) => d.price < recent30[mi].price ? i : mi, 0) : -1
+  const maxIdx = recent30.length >= 2 ? recent30.reduce((mi, d, i) => d.price > recent30[mi].price ? i : mi, 0) : -1
+  const fmtChartPrice = (v: number) => isUSD
+    ? `$${v >= 1000 ? v.toFixed(0) : v.toFixed(1)}`
+    : v >= 10000 ? `${(v / 10000).toFixed(1)}만` : `${Math.round(v)}`
 
   const modal = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between px-5 pt-5 pb-3 shrink-0">
+        <div className="relative flex items-start justify-between px-5 pt-5 pb-3 pr-12 shrink-0">
+          {/* X — 우상단 고정 */}
+          <button onClick={onClose} className="absolute top-3 right-3 text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
           <div className="flex-1 min-w-0">
             {/* Ticker + tags */}
             <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
@@ -284,37 +311,37 @@ function PriceHistoryModal({
               {security.sector     && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.sector}</span>}
               <span className="text-[10px] text-slate-300 ml-0.5">{security.currency}</span>
             </div>
-            {/* Name — lighter, bigger */}
+            {/* Name */}
             <p className="text-xl font-bold text-slate-500 leading-tight">{security.name}</p>
           </div>
-          {/* Price — right aligned, smaller, lighter */}
-          <div className="text-right ml-4 shrink-0">
-            {latestPrice && (
-              <>
-                <p className="text-base font-semibold text-slate-400 tabular-nums">
-                  {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
-                </p>
+
+          {/* 증감율(좌) + 가격(우, hover→날짜 툴팁) */}
+          {latestPrice && (
+            <div className="ml-4 shrink-0">
+              <div className="flex items-baseline gap-1.5 justify-end">
                 {latestPrice.change_pct != null && (
-                  <p className={`text-xs ${latestPrice.change_pct > 0 ? 'text-red-400' : latestPrice.change_pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] font-medium ${latestPrice.change_pct > 0 ? 'text-red-400' : latestPrice.change_pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
                     {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
-                  </p>
+                  </span>
                 )}
-                <p className="text-[10px] text-slate-300 mt-0.5">{latestPrice.date}</p>
-              </>
-            )}
-            <button onClick={onClose} className="text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100 mt-1">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+                <div className="relative group cursor-default">
+                  <p className="text-base font-semibold text-slate-400 tabular-nums">
+                    {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
+                  </p>
+                  <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-slate-800 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10 shadow-lg">
+                    {latestPrice.date}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ── Holdings — 5 cards ── */}
+        {/* ── Holdings — 2행 × 3카드 ── */}
         {holdings.length > 0 && (
-          <div className="mx-5 mb-4 shrink-0">
-            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-2">최근 스냅샷 보유 현황</p>
-            <div className="grid grid-cols-5 gap-1.5">
+          <div className="mx-5 mb-4 space-y-1.5 shrink-0">
+            {/* 1행: 총수량, 평균매수가, 투자원금 */}
+            <div className="grid grid-cols-3 gap-1.5">
               <HoldingCard
                 label="총 수량"
                 value={totalQty.toLocaleString()}
@@ -327,33 +354,38 @@ function PriceHistoryModal({
               />
               <HoldingCard
                 label="투자원금"
-                value={totalInvested != null ? fmtKrw(totalInvested) : '—'}
+                value={investedKrw != null ? fmtKrw(investedKrw) : '—'}
                 hoverLines={holdings.map(h => ({
                   left: h.account_name,
-                  right: h.avg_price != null ? fmtKrw(h.avg_price * h.quantity) : '—',
+                  right: h.avg_price != null ? fmtKrw(toKrw(h.avg_price * h.quantity)) : '—',
                 }))}
               />
+            </div>
+            {/* 2행: 평가금액, 수익, 수익률 */}
+            <div className="grid grid-cols-3 gap-1.5">
               <HoldingCard
                 label="평가금액"
-                value={marketValue > 0 ? fmtKrw(marketValue) : '—'}
+                value={marketValueKrw > 0 ? fmtKrw(marketValueKrw) : '—'}
                 hoverLines={holdings.map(h => ({
                   left: h.account_name,
-                  right: currentPrice > 0 ? fmtKrw(currentPrice * h.quantity) : '—',
+                  right: currentPrice > 0 ? fmtKrw(toKrw(currentPrice * h.quantity)) : '—',
                 }))}
               />
               <HoldingCard
                 label="수익"
-                value={pnl != null ? fmtKrw(pnl) : '—'}
-                sub={pnl != null && totalInvested ? {
-                  text: `${pnl >= 0 ? '+' : ''}${((pnl / totalInvested) * 100).toFixed(1)}%`,
-                  positive: pnl > 0 ? true : pnl < 0 ? false : undefined,
-                } : undefined}
+                value={pnlKrw != null ? fmtPnl(pnlKrw) : '—'}
+                valueColor={pnlColor(pnlKrw)}
                 hoverLines={holdings.map(h => ({
                   left: h.account_name,
                   right: h.avg_price != null && currentPrice > 0
-                    ? fmtKrw((currentPrice - h.avg_price) * h.quantity)
+                    ? fmtPnl(toKrw((currentPrice - h.avg_price) * h.quantity))
                     : '—',
                 }))}
+              />
+              <HoldingCard
+                label="수익률"
+                value={returnPct != null ? `${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(1)}%` : '—'}
+                valueColor={pnlColor(returnPct)}
               />
             </div>
           </div>
@@ -365,17 +397,29 @@ function PriceHistoryModal({
             가격 이력 {recent30.length > 0 ? `(${recent30.length}일)` : ''}
           </p>
           {recent30.length >= 2 ? (
-            <ResponsiveContainer width="100%" height={130}>
-              <LineChart data={recent30} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
+            <ResponsiveContainer width="100%" height={145}>
+              <LineChart data={recent30} margin={{ top: 22, right: 12, left: 0, bottom: 8 }}
+                style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false} width={52}
-                  tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`} domain={['auto', 'auto']} />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                  interval="preserveStartEnd"
+                  tickFormatter={d => String(d).slice(5)}
+                  padding={{ left: 12, right: 12 }}
+                />
                 <Tooltip
                   contentStyle={{ fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
                   formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
+                  labelFormatter={label => String(label)}
                 />
                 <Line type="monotone" dataKey="price" stroke={hex} dot={false} strokeWidth={1.5} />
+                {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx && (
+                  <>
+                    <ReferenceDot x={recent30[minIdx].date} y={recent30[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
+                      label={{ value: fmtChartPrice(recent30[minIdx].price), position: 'bottom', fontSize: 8, fill: '#64748b' }} />
+                    <ReferenceDot x={recent30[maxIdx].date} y={recent30[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
+                      label={{ value: fmtChartPrice(recent30[maxIdx].price), position: 'top', fontSize: 8, fill: '#64748b' }} />
+                  </>
+                )}
               </LineChart>
             </ResponsiveContainer>
           ) : recent30.length === 1 ? (
@@ -402,11 +446,11 @@ function PriceHistoryModal({
                   const pct = prev ? ((r.price - prev.price) / prev.price) * 100 : null
                   return (
                     <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
-                      <td className="px-4 py-1.5 text-[10px] text-slate-500 tabular-nums">{r.date}</td>
-                      <td className="px-4 py-1.5 text-[10px] text-right font-mono text-slate-700 tabular-nums">
+                      <td className="px-4 py-1.5 text-[10px] font-sans text-slate-500 tabular-nums">{r.date}</td>
+                      <td className="px-4 py-1.5 text-[10px] text-right font-sans text-slate-400 tabular-nums">
                         {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                       </td>
-                      <td className={`px-4 py-1.5 text-[10px] text-right tabular-nums ${pct == null ? 'text-slate-300' : pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                      <td className={`px-4 py-1.5 text-[10px] text-right font-sans tabular-nums ${pct == null ? 'text-slate-300' : pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
                         {pct != null ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—'}
                       </td>
                     </tr>
@@ -751,6 +795,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             holdings={holdingsMap[s.id] ?? []}
             hex={modalHex}
             tickerUrl={modalTickerUrl}
+            usdKrwRate={latestPrices['KRW=X']?.price ?? null}
             onClose={() => setHistoryModalSecurity(null)}
           />
         )
