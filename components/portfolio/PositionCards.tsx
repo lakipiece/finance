@@ -7,6 +7,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 interface Props {
   positions: MergedPosition[]
   totalValue: number
+  sectorColors?: Record<string, string>
 }
 
 function fmt(n: number) {
@@ -27,7 +28,7 @@ function PositionModal({ position: p, totalValue, onClose }: {
         <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between">
           <div>
             <p className="font-bold text-slate-800 text-lg">{p.security.ticker}</p>
-            <p className="text-sm text-slate-400">{p.security.name}</p>
+            <p className="text-sm text-slate-500">{p.security.name}</p>
             <p className="text-xs text-slate-400 mt-0.5">
               {p.accounts.map(a => `${a.broker} · ${a.name}`).join(', ')}
             </p>
@@ -77,7 +78,7 @@ function PositionModal({ position: p, totalValue, onClose }: {
   )
 }
 
-export default function PositionCards({ positions, totalValue }: Props) {
+export default function PositionCards({ positions, totalValue, sectorColors = {} }: Props) {
   const [modal, setModal] = useState<MergedPosition | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<Record<string, string>>({})
@@ -116,38 +117,29 @@ export default function PositionCards({ positions, totalValue }: Props) {
           const ticker = p.security.ticker
           const isSyncing = syncing === ticker
           const msg = syncMsg[ticker]
-          const multiAccount = p.accounts.length > 1
+          const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? null) : null
 
           return (
             <div key={p.security.id}
               onClick={() => setModal(p)}
               className="bg-white rounded-2xl border border-slate-100 px-4 py-4 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all flex flex-col gap-2">
 
-              {/* 헤더 */}
+              {/* 헤더: 티커 배지 + 새로고침 */}
               <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="bg-slate-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0">
                       {ticker}
                     </span>
-                    {p.security.sector && (
+                    {p.accounts.length > 0 && (
                       <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
-                        {p.security.sector}
-                      </span>
-                    )}
-                    {multiAccount && (
-                      <span className="text-[9px] text-blue-400 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
                         {p.accounts.length}개 계좌
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-slate-600 mt-1 leading-tight truncate">{p.security.name}</p>
-                  {!multiAccount && (
-                    <p className="text-[10px] text-slate-400 truncate">{p.accounts[0].broker} · {p.accounts[0].name}</p>
-                  )}
                 </div>
                 <button onClick={e => syncTicker(ticker, e)} disabled={isSyncing}
-                  className="shrink-0 text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors mt-0.5"
+                  className="shrink-0 text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors"
                   title="가격 새로고침">
                   {msg === '✓' ? <span className="text-xs text-green-500">✓</span>
                     : msg === '✗' ? <span className="text-xs text-red-400">✗</span>
@@ -160,27 +152,33 @@ export default function PositionCards({ positions, totalValue }: Props) {
                 </button>
               </div>
 
-              <div className="border-t border-slate-50" />
-
-              {/* 평가금액 + 비중 */}
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-[10px] text-slate-400">평가금액</p>
-                  <p className="text-sm font-bold text-slate-800 tabular-nums">{fmt(p.market_value)}원</p>
-                </div>
-                <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
+              {/* 종목명 + 섹터 dot */}
+              <div className="flex items-start gap-1.5">
+                {sectorColor && (
+                  <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ backgroundColor: sectorColor }} />
+                )}
+                <p className="text-xs font-bold text-slate-700 leading-tight">{p.security.name}</p>
               </div>
 
-              {/* 손익 */}
-              <div className={`text-xs font-semibold tabular-nums ${pnlPos ? 'text-rose-500' : 'text-blue-500'}`}>
-                {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
-                <span className="text-[10px] ml-1 font-normal opacity-80">
-                  ({pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(2)}%)
+              <div className="border-t border-slate-50" />
+
+              {/* 평가금액(우) + % 배지(좌) */}
+              <div className="flex items-center justify-between gap-2">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
+                  pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+                }`}>
+                  {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%
                 </span>
+                <p className="text-sm font-bold text-slate-800 tabular-nums text-right">{fmt(p.market_value)}원</p>
+              </div>
+
+              {/* 손익 금액 */}
+              <div className={`text-xs font-semibold tabular-nums text-right ${pnlPos ? 'text-rose-500' : 'text-blue-500'}`}>
+                {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
               </div>
 
               {/* 현재가 */}
-              <div className="text-[10px] text-slate-400 tabular-nums">
+              <div className="text-[10px] text-slate-400 tabular-nums text-right">
                 현재가 {fmt(p.current_price)}원
                 {p.current_price_usd != null && (
                   <span className="ml-1">${Number(p.current_price_usd).toFixed(2)}</span>
