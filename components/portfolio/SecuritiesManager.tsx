@@ -282,7 +282,7 @@ function PriceHistoryModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
         {/* ── Header ── */}
-        <div className="relative flex items-start justify-between px-5 pt-5 pb-3 pr-12 shrink-0">
+        <div className="relative flex items-end justify-between px-5 pt-5 pb-3 pr-12 shrink-0">
           {/* X — 우상단 고정 */}
           <button onClick={onClose} className="absolute top-3 right-3 text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
