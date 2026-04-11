@@ -134,8 +134,8 @@ export async function refreshAllPrices(): Promise<{
   const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
   const cashSecurities = securities.filter(s => s.asset_class === '현금')
   const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
-  // KRW=X는 USD 현금 환율 계산을 위해 항상 포함
-  const yahooTickers = [...new Set([...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)), 'KRW=X'])]
+  // USDKRW=X: 1 USD = x KRW (≈1480), USD 현금 및 환율 표시에 사용
+  const yahooTickers = [...new Set([...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)), 'USDKRW=X'])]
 
   const [yahooResult, coinResult] = await Promise.all([
     fetchYahooPrices(yahooTickers, today),
@@ -143,7 +143,7 @@ export async function refreshAllPrices(): Promise<{
   ])
 
   // 현금 처리: KRW=1원, USD=환율
-  const krwRate = yahooResult.saved.find(r => r.ticker === 'KRW=X')?.price ?? null
+  const krwRate = yahooResult.saved.find(r => r.ticker === 'USDKRW=X')?.price ?? null
   const cashSaved: PriceRow[] = []
   for (const cash of cashSecurities) {
     if (cash.currency === 'USD' && krwRate) {
