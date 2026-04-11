@@ -11,6 +11,7 @@ interface HoldingRow {
   security_id: string
   quantity: number
   avg_price: number | null
+  orphaned?: boolean
 }
 
 interface AccountSecurity { account_id: string; security_id: string }
@@ -79,7 +80,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
   const [rows, setRows] = useState<HoldingRow[]>(() => {
     const holdingMap = new Map(holdings.map(h => [`${h.account_id}__${h.security_id}`, h]))
-    return accountSecurities.map(as => {
+    const asKeys = new Set(accountSecurities.map(as => `${as.account_id}__${as.security_id}`))
+
+    // 현재 account_securities 기반 rows
+    const fromLinks = accountSecurities.map(as => {
       const existing = holdingMap.get(`${as.account_id}__${as.security_id}`)
       return {
         account_id: as.account_id,
@@ -87,8 +91,23 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         quantity: existing ? Number(existing.quantity) : 0,
         avg_price: existing?.avg_price != null ? Number(existing.avg_price) : null,
         id: existing?.id,
+        orphaned: false,
       }
     })
+
+    // 연결 해제됐지만 holding 데이터가 남아있는 종목 (데이터 있는 것만)
+    const orphaned = holdings
+      .filter(h => !asKeys.has(`${h.account_id}__${h.security_id}`) && (Number(h.quantity) > 0 || h.avg_price != null))
+      .map(h => ({
+        account_id: h.account_id,
+        security_id: h.security_id,
+        quantity: Number(h.quantity),
+        avg_price: h.avg_price != null ? Number(h.avg_price) : null,
+        id: h.id,
+        orphaned: true,
+      }))
+
+    return [...fromLinks, ...orphaned]
   })
 
   const selectedRows = useMemo(() =>
@@ -132,6 +151,15 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
   function getRow(account_id: string, security_id: string) {
     return rows.find(r => r.account_id === account_id && r.security_id === security_id)!
+  }
+
+  async function deleteHolding(account_id: string, security_id: string) {
+    if (!confirm('이 종목의 수량과 금액을 모두 삭제하시겠습니까?')) return
+    const row = getRow(account_id, security_id)
+    if (row?.id) {
+      await fetch(`/api/portfolio/holdings/${row.id}`, { method: 'DELETE' })
+    }
+    setRows(prev => prev.filter(r => !(r.account_id === account_id && r.security_id === security_id)))
   }
 
   function handleBack() {
@@ -342,13 +370,26 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                     const avgTabIdx = idx * 2 + 2
 
                     return (
-                      <div key={row.security_id}
-                        className={`bg-white rounded-xl border p-3 transition-all ${
-                          currentRow.quantity > 0 ? 'border-slate-200' : 'border-slate-100 opacity-60'
+                      <div key={`${row.account_id}__${row.security_id}`}
+                        className={`rounded-xl border p-3 transition-all ${
+                          currentRow.quantity > 0
+                            ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-slate-200 bg-white'
+                            : 'border-slate-100 bg-white opacity-60'
                         }`}>
                         <div className="flex items-center gap-1.5 mb-2.5">
                           <span className="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
-                          <span className="text-xs text-slate-600 truncate font-medium">{sec.name}</span>
+                          <span className="text-xs text-slate-600 truncate font-medium flex-1">{sec.name}</span>
+                          {row.orphaned && (
+                            <span className="text-[9px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
+                          )}
+                          <button
+                            onClick={() => deleteHolding(row.account_id, row.security_id)}
+                            className="p-0.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors shrink-0"
+                            title="홀딩 삭제">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>

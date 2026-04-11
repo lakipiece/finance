@@ -25,6 +25,9 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
   const [snapshots, setSnapshots] = useState(initSnapshots)
   const [creating, setCreating] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [cloneTarget, setCloneTarget] = useState<SnapshotItem | null>(null)
+  const [cloneDate, setCloneDate] = useState('')
+  const [cloning, setCloning] = useState(false)
   const router = useRouter()
 
   // 같은 날짜 suffix
@@ -70,6 +73,28 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
     if (!confirm('스냅샷을 삭제하시겠습니까?')) return
     const res = await fetch(`/api/portfolio/snapshots/${id}`, { method: 'DELETE' })
     if (res.ok) setSnapshots(prev => prev.filter(s => s.id !== id))
+  }
+
+  function openClone(snap: SnapshotItem, e: React.MouseEvent) {
+    e.stopPropagation()
+    setCloneTarget(snap)
+    setCloneDate(new Date().toISOString().slice(0, 10))
+  }
+
+  async function handleCloneConfirm() {
+    if (!cloneTarget || !cloneDate) return
+    setCloning(true)
+    const res = await fetch('/api/portfolio/snapshots', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: cloneDate, clone_from: cloneTarget.id }),
+    })
+    setCloning(false)
+    if (res.ok) {
+      const snap = await res.json()
+      setCloneTarget(null)
+      router.push(`/portfolio/snapshots/${snap.id}`)
+    }
   }
 
   return (
@@ -178,16 +203,22 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
 
                 {snap.memo && <p className="text-[10px] text-slate-300 mt-2 truncate">{snap.memo}</p>}
 
-                {/* 편집/삭제 */}
+                {/* 편집/복제/삭제 */}
                 <div className="flex justify-end gap-0.5 mt-4 pt-2 border-t border-slate-50">
                   <button onClick={e => { e.stopPropagation(); router.push(`/portfolio/snapshots/${snap.id}`) }}
-                    className="p-1.5 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-500 transition-colors">
+                    className="p-1.5 rounded hover:bg-slate-100 text-slate-300 hover:text-slate-500 transition-colors" title="편집">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
+                  <button onClick={e => openClone(snap, e)}
+                    className="p-1.5 rounded hover:bg-blue-50 text-slate-300 hover:text-blue-400 transition-colors" title="복제">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
                   <button onClick={e => handleDelete(snap.id, e)}
-                    className="p-1.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors">
+                    className="p-1.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors" title="삭제">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -196,6 +227,36 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* 복제 확인 모달 */}
+      {cloneTarget && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setCloneTarget(null)}>
+          <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full"
+            onClick={e => e.stopPropagation()}>
+            <p className="text-sm font-semibold text-slate-800 mb-1">스냅샷 복제</p>
+            <p className="text-xs text-slate-400 mb-4">
+              <span className="font-medium text-slate-600">{cloneTarget.date}</span> 스냅샷의 모든 보유 내역을 복사합니다.
+            </p>
+            <div className="mb-4">
+              <label className="text-xs text-slate-500 mb-1 block">새 스냅샷 날짜</label>
+              <input type="date" value={cloneDate}
+                onChange={e => setCloneDate(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+            </div>
+            <div className="flex gap-2">
+              <button onClick={handleCloneConfirm} disabled={cloning || !cloneDate}
+                className="flex-1 bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
+                {cloning ? '복제 중...' : '복제하기'}
+              </button>
+              <button onClick={() => setCloneTarget(null)}
+                className="flex-1 text-slate-500 px-4 py-2 rounded-lg text-xs border border-slate-200 hover:bg-slate-50">
+                취소
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
