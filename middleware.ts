@@ -15,6 +15,12 @@ export default auth((req) => {
     loginUrl.pathname = '/login'
     return NextResponse.redirect(loginUrl)
   }
+
+  if (isLoggedIn && pathname === '/') {
+    const portfolioUrl = req.nextUrl.clone()
+    portfolioUrl.pathname = '/portfolio'
+    return NextResponse.redirect(portfolioUrl)
+  }
 })
 
 export const config = {

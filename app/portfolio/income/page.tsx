@@ -21,7 +21,12 @@ export default async function IncomePage() {
       JOIN accounts a ON a.id = d.account_id
       ORDER BY d.paid_at DESC
     ` as unknown as Promise<DividendRow[]>,
-    sql`SELECT id, ticker, name, currency FROM securities ORDER BY ticker` as unknown as Promise<SecurityRow[]>,
+    sql`
+      SELECT s.id, s.ticker, s.name, COALESCE(ol.value, 'KRW') AS currency
+      FROM securities s
+      LEFT JOIN option_list ol ON s.currency_id = ol.id
+      ORDER BY s.ticker
+    ` as unknown as Promise<SecurityRow[]>,
     sql`SELECT id, name, broker FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
     sql`SELECT * FROM account_securities` as unknown as Promise<AccountSecurity[]>,
   ])
