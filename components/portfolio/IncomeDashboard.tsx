@@ -20,11 +20,25 @@ interface Props {
 }
 
 function toKrw(d: Pick<Dividend, 'amount' | 'currency' | 'exchange_rate'>) {
-  return d.currency === 'KRW' ? d.amount : d.amount * (d.exchange_rate || 1)
+  const amount = Number(d.amount)
+  const rate = Number(d.exchange_rate) || 1
+  return d.currency === 'KRW' ? amount : amount * rate
 }
 
 function taxKrw(d: Pick<Dividend, 'tax' | 'currency' | 'exchange_rate'>) {
-  return d.currency === 'KRW' ? d.tax : d.tax * (d.exchange_rate || 1)
+  const tax = Number(d.tax)
+  const rate = Number(d.exchange_rate) || 1
+  return d.currency === 'KRW' ? tax : tax * rate
+}
+
+function fmtDate(val: unknown): string {
+  if (val instanceof Date) {
+    const y = val.getFullYear()
+    const m = String(val.getMonth() + 1).padStart(2, '0')
+    const dd = String(val.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dd}`
+  }
+  return String(val ?? '')
 }
 
 function fmt(n: number) {
@@ -37,10 +51,11 @@ function fmtFull(n: number) {
   return `${Math.round(n).toLocaleString()}원`
 }
 
-function groupByMonth(items: { date: string; gross: number; net: number }[]) {
+function groupByMonth(items: { date: unknown; gross: number; net: number }[]) {
   const map: Record<string, { gross: number; net: number }> = {}
   items.forEach(({ date, gross, net }) => {
-    const month = date.slice(0, 7)
+    const month = fmtDate(date).slice(0, 7)
+    if (!month) return
     if (!map[month]) map[month] = { gross: 0, net: 0 }
     map[month].gross += gross
     map[month].net += net
@@ -272,12 +287,12 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                     <p className="text-xs text-slate-400">{d.security.name}</p>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-500">{d.account.broker} · {d.account.name}</td>
-                  <td className="px-4 py-3 text-right text-slate-500 tabular-nums">{d.paid_at}</td>
+                  <td className="px-4 py-3 text-right text-slate-500 tabular-nums">{fmtDate(d.paid_at)}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-600">
                     {d.amount.toLocaleString()} {d.currency}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-400 text-xs">
-                    {d.currency === 'USD' ? d.exchange_rate.toLocaleString() : '—'}
+                    {d.currency === 'USD' ? Number(d.exchange_rate).toLocaleString() : '—'}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-emerald-600 font-semibold">
                     {fmtFull(gross)}
