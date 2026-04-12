@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import type { PortfolioPosition } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
-const PALETTE = ['#6B8CAE', '#6DAE8C', '#C4A96D', '#C47D7D', '#8B7BC8', '#5BB5B5', '#E8A87C', '#82C0CC', '#94a3b8', '#A3C4A8', '#D4A5A5', '#A5B4D4']
 const GREY = '#e2e8f0'
 
 interface Props {
@@ -118,6 +118,12 @@ function StackBar({
 
 export default function AllocationCharts({ allPositions, positions, sectorColors = {} }: Props) {
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const { palette } = useTheme()
+  const PALETTE = [
+    palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3],
+    palette.colors[0] + 'CC', palette.colors[1] + 'CC', palette.colors[2] + 'CC', palette.colors[3] + 'CC',
+    palette.colors[0] + '99', palette.colors[1] + '99', palette.colors[2] + '99', palette.colors[3] + '99',
+  ]
 
   const hasPrices = allPositions.some(p => p.market_value > 0)
   const vk: 'market_value' | 'total_invested' = hasPrices ? 'market_value' : 'total_invested'
@@ -165,7 +171,7 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xs font-semibold text-slate-600">자산 구성</h3>
+        <h3 className="text-sm font-semibold text-slate-700">자산 구성</h3>
         <div className="flex items-center gap-2">
           {isFiltered && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 tabular-nums font-medium">

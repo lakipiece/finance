@@ -77,7 +77,7 @@ function SectionHeader({
 }) {
   return (
     <button onClick={onToggle} className="flex items-center gap-1.5 group">
-      <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600 transition-colors">{label}</span>
+      <span className="text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{label}</span>
       {badge !== undefined && badge > 0 && (
         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-white tabular-nums">{badge}</span>
       )}
@@ -223,7 +223,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
       {/* 최상단 툴바 */}
       <div className="flex items-center justify-end gap-2">
@@ -254,7 +254,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           />
         </div>
         {showAccounts && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             <button
               onClick={selectAll}
               title={`${summary.positions.length}종목`}

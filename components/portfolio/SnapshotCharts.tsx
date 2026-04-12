@@ -5,6 +5,7 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface SnapshotPoint {
   date: string
@@ -26,8 +27,6 @@ function fmtY(v: number) {
 function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
-
-const DEFAULT_COLORS = ['#6366f1','#f59e0b','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899','#14b8a6','#64748b','#a3e635']
 
 // 라인차트 커스텀 툴팁
 function LineTooltip({ active, payload, label }: any) {
@@ -56,7 +55,7 @@ function BarTooltip({ active, payload, label }: any) {
         return (
           <div key={p.dataKey} className="flex items-center gap-1.5 mb-0.5">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.fill }} />
-            <span className="text-slate-600 truncate flex-1">{p.name}</span>
+            <span className="text-slate-700 truncate flex-1">{p.name}</span>
             <span className="tabular-nums text-slate-800 font-medium">{pct.toFixed(1)}%</span>
             {mv > 0 && <span className="tabular-nums text-slate-400">{fmtY(amt)}</span>}
           </div>
@@ -72,26 +71,33 @@ function BarTooltip({ active, payload, label }: any) {
 
 export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
   const [mode, setMode] = useState<'asset_class' | 'ticker'>('asset_class')
+  const { palette } = useTheme()
   if (points.length < 2) return null
+
+  const THEME_COLORS = [
+    palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3],
+    palette.colors[0] + 'CC', palette.colors[1] + 'CC', palette.colors[2] + 'CC', palette.colors[3] + 'CC',
+    palette.colors[0] + '99', palette.colors[1] + '99',
+  ]
 
   const keys = [...new Set(points.flatMap(p => Object.keys(p.breakdown)))]
 
   function getColor(key: string, idx: number) {
-    return sectorColors[key] ?? DEFAULT_COLORS[idx % DEFAULT_COLORS.length]
+    return sectorColors[key] ?? THEME_COLORS[idx % THEME_COLORS.length]
   }
 
   return (
     <div className="space-y-4">
       {/* Line chart */}
       <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
-        <h3 className="text-sm font-semibold text-slate-600 mb-4">총 평가금액 추이</h3>
+        <h3 className="text-sm font-semibold text-slate-700 mb-4">총 평가금액 추이</h3>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={points} margin={{ left: 8, right: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tickFormatter={fmtY} tick={{ fontSize: 11 }} width={60} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <YAxis tickFormatter={fmtY} tick={{ fontSize: 11, fill: '#94a3b8' }} width={60} axisLine={false} tickLine={false} />
             <Tooltip content={<LineTooltip />} />
-            <Line type="monotone" dataKey="total_market_value" stroke="#6366f1" strokeWidth={2} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="total_market_value" stroke={palette.colors[0]} strokeWidth={2} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -99,7 +105,7 @@ export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
       {/* Stacked bar chart */}
       <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-600">구성 비중 변화</h3>
+          <h3 className="text-sm font-semibold text-slate-700">구성 비중 변화</h3>
           <div className="flex gap-1">
             {(['asset_class', 'ticker'] as const).map(m => (
               <button key={m} onClick={() => setMode(m)}
@@ -112,8 +118,8 @@ export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={points} margin={{ left: 8, right: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-            <YAxis tickFormatter={v => `${v}%`} tick={{ fontSize: 11 }} width={40} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <YAxis tickFormatter={v => `${v}%`} tick={{ fontSize: 11, fill: '#94a3b8' }} width={40} axisLine={false} tickLine={false} />
             <Tooltip content={<BarTooltip />} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {keys.map((k, i) => (

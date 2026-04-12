@@ -110,7 +110,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {sorted.map(p => {
           const pnlPos = p.unrealized_pnl >= 0
           const weight = totalValue > 0 ? (p.market_value / totalValue * 100).toFixed(1) : '0.0'
@@ -128,7 +128,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
           return (
             <div key={p.security.id}
               onClick={() => setModal(p)}
-              className="bg-white rounded-2xl border border-slate-100 px-4 py-3 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all flex flex-col gap-1.5">
+              className="bg-white rounded-2xl border border-slate-100 px-4 py-3 cursor-pointer hover:shadow-sm hover:border-slate-200 hover:-translate-y-0.5 transition-all flex flex-col gap-1.5">
 
               {/* 헤더: 티커 배지 + 계좌수 + 새로고침 */}
               <div className="flex items-center justify-between gap-2">

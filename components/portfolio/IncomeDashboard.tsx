@@ -258,7 +258,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
   // ── 렌더링 ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
       {/* KPI */}
       <div className="grid grid-cols-3 gap-4">
@@ -267,9 +267,9 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
           { label: `${year}년 납부 세금`, value: totalTax, color: 'text-rose-400' },
           { label: `${year}년 세후 수령액`, value: totalNet, color: 'text-slate-800' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-slate-100 px-5 py-4">
-            <p className="text-xs text-slate-400 mb-1">{label}</p>
-            <p className={`text-xl font-bold text-right ${color}`}>{fmt(value)}원</p>
+          <div key={label} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{label}</p>
+            <p className={`text-2xl font-bold mt-1 ${color}`}>{fmt(value)}원</p>
           </div>
         ))}
       </div>
@@ -277,7 +277,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
       {/* 차트 */}
       {chartData.length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 className="text-sm font-semibold text-slate-500 mb-4">{year}년 월별 배당·분배금 수령액</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-4">{year}년 월별 배당·분배금 수령액</h3>
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />

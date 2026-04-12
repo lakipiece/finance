@@ -51,12 +51,12 @@ export default function PortfolioKpiCards({ summary }: Props) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
       {cards.map(c => (
-        <div key={c.label} className="bg-white rounded-2xl shadow-sm border border-slate-100 px-5 py-4 flex flex-col">
-          <p className="text-xs font-medium text-slate-500 mb-2">{c.label}</p>
-          <p className={`text-xl font-bold tabular-nums text-right leading-tight ${c.color}`}>{c.value}</p>
-          <p className="text-[10px] text-slate-300 mt-1 text-right">{c.sub}</p>
+        <div key={c.label} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col hover:-translate-y-0.5 transition-all">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{c.label}</p>
+          <p className={`text-2xl font-bold tabular-nums leading-tight mt-1 ${c.color}`}>{c.value}</p>
+          <p className="text-xs text-slate-400 mt-1">{c.sub}</p>
         </div>
       ))}
     </div>

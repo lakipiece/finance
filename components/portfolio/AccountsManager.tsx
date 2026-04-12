@@ -45,7 +45,7 @@ function SortableAccountCard({
 
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
-      <div className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-md transition-all min-h-[110px]">
+      <div className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all min-h-[110px]">
         {/* 왼쪽 색상 바 = 드래그 핸들 */}
         <div {...attributes} {...listeners}
           onClick={e => e.stopPropagation()}
@@ -241,7 +241,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const modalAccount = accounts.find(a => a.id === modalLinkAccountId)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       {msg && (
         <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           {msg.text}
@@ -254,7 +254,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={accounts.map(a => a.id)} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {accounts.map(a => (
               <SortableAccountCard
                 key={a.id} id={a.id} account={a}
