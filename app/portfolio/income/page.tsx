@@ -14,10 +14,11 @@ export default async function IncomePage() {
   const [dividends, securities, accounts, accountSecurities] = await Promise.all([
     sql`
       SELECT d.*,
-        json_build_object('ticker', s.ticker, 'name', s.name, 'currency', s.currency) AS security,
+        json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW')) AS security,
         json_build_object('name', a.name, 'broker', a.broker) AS account
       FROM dividends d
       JOIN securities s ON s.id = d.security_id
+      LEFT JOIN option_list ol ON s.currency_id = ol.id
       JOIN accounts a ON a.id = d.account_id
       ORDER BY d.paid_at DESC
     ` as unknown as Promise<DividendRow[]>,
