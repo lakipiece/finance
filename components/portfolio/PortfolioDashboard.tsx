@@ -64,6 +64,33 @@ function mergeBySecuirty(positions: PortfolioPosition[]): MergedPosition[] {
   }))
 }
 
+function SectionHeader({
+  label,
+  open,
+  onToggle,
+  badge,
+}: {
+  label: string
+  open: boolean
+  onToggle: () => void
+  badge?: number
+}) {
+  return (
+    <button onClick={onToggle} className="flex items-center gap-1.5 group">
+      <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600 transition-colors">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-white tabular-nums">{badge}</span>
+      )}
+      <svg
+        className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all ${open ? '' : '-rotate-90'}`}
+        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
+  )
+}
+
 export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {} }: Props) {
   const [refreshing, setRefreshing] = useState(false)
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
@@ -71,19 +98,16 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set())
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
   const [showAccounts, setShowAccounts] = useState(true)
+  const [showSectors, setShowSectors] = useState(true)
   const [showCharts, setShowCharts] = useState(false)
+  const [showPositions, setShowPositions] = useState(true)
 
-  // 계좌별 집계 (account type 포함)
   const accountGroups = useMemo(() =>
     summary.positions.reduce<Record<string, {
       name: string; type: string | null; value: number; pnl: number; invested: number; count: number
     }>>((acc, p) => {
       const id = p.account.id
-      if (!acc[id]) acc[id] = {
-        name: p.account.name,
-        type: p.account.type,
-        value: 0, pnl: 0, invested: 0, count: 0,
-      }
+      if (!acc[id]) acc[id] = { name: p.account.name, type: p.account.type, value: 0, pnl: 0, invested: 0, count: 0 }
       acc[id].value += p.market_value
       acc[id].pnl += p.unrealized_pnl
       acc[id].invested += p.total_invested
@@ -115,10 +139,6 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       else next.add(sector)
       return next
     })
-  }
-
-  function clearSectors() {
-    setSelectedSectors(new Set())
   }
 
   const accountFiltered = useMemo(() =>
@@ -163,6 +183,13 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
     [visibleMerged]
   )
 
+  const chartPositions = useMemo(() =>
+    accountFiltered.filter(p =>
+      selectedSectors.size === 0 || selectedSectors.has(p.security.sector ?? '기타')
+    ),
+    [accountFiltered, selectedSectors]
+  )
+
   async function handleRefresh() {
     setRefreshing(true)
     setRefreshMsg(null)
@@ -200,47 +227,28 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
       <PortfolioKpiCards summary={filteredKpi} />
 
+      {/* 툴바 */}
       <div className="flex items-center justify-end gap-2">
         {refreshMsg && <span className="text-xs text-slate-500">{refreshMsg}</span>}
         {lastUpdated && <span className="text-xs text-slate-400">최근 수집: {lastUpdated}</span>}
-        <button
-          onClick={() => setShowCharts(v => !v)}
-          className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-            showCharts
-              ? 'bg-slate-100 border-slate-300 text-slate-700'
-              : 'border-slate-200 text-slate-500 hover:border-slate-400'
-          }`}>
-          {showCharts ? '차트 닫기' : '차트 보기'}
-        </button>
         <button onClick={handleRefresh} disabled={refreshing}
           className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800 disabled:opacity-50 transition-colors">
           {refreshing ? '수집 중...' : '가격 새로고침'}
         </button>
       </div>
 
-      {/* 계좌 필터 — 접기/펼치기 */}
+      {/* 계좌 섹션 */}
       <div>
-        <button
-          onClick={() => setShowAccounts(v => !v)}
-          className="flex items-center gap-1.5 mb-2 group"
-        >
-          <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600 transition-colors">계좌</span>
-          {selectedAccountIds.size > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-white tabular-nums">
-              {selectedAccountIds.size}
-            </span>
-          )}
-          <svg
-            className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all ${showAccounts ? '' : '-rotate-90'}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
+        <div className="mb-2">
+          <SectionHeader
+            label="계좌"
+            open={showAccounts}
+            onToggle={() => setShowAccounts(v => !v)}
+            badge={selectedAccountIds.size}
+          />
+        </div>
         {showAccounts && (
           <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-            {/* 전체 */}
             <button
               onClick={selectAll}
               title={`${summary.positions.length}종목`}
@@ -316,47 +324,81 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         )}
       </div>
 
-      {/* 섹터 필터 — 다중선택 */}
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <button
-          onClick={clearSectors}
-          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-            selectedSectors.size === 0
-              ? 'bg-slate-600 text-white border-slate-600'
-              : 'border-slate-200 text-slate-500 hover:border-slate-400'
-          }`}>
-          전체
-        </button>
-        {sectors.map(s => {
-          const color = sectorColors[s] ?? null
-          const isSelected = selectedSectors.has(s)
-          return (
-            <button key={s}
-              onClick={() => toggleSector(s)}
-              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                isSelected
+      {/* 섹터 섹션 */}
+      <div>
+        <div className="mb-2">
+          <SectionHeader
+            label="섹터"
+            open={showSectors}
+            onToggle={() => setShowSectors(v => !v)}
+            badge={selectedSectors.size}
+          />
+        </div>
+        {showSectors && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setSelectedSectors(new Set())}
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                selectedSectors.size === 0
                   ? 'bg-slate-600 text-white border-slate-600'
                   : 'border-slate-200 text-slate-500 hover:border-slate-400'
               }`}>
-              {color && (
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? 'white' : color }} />
-              )}
-              {s}
+              전체
             </button>
-          )
-        })}
+            {sectors.map(s => {
+              const color = sectorColors[s] ?? null
+              const isSelected = selectedSectors.has(s)
+              return (
+                <button key={s}
+                  onClick={() => toggleSector(s)}
+                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    isSelected
+                      ? 'bg-slate-600 text-white border-slate-600'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}>
+                  {color && (
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? 'white' : color }} />
+                  )}
+                  {s}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </div>
 
-      {/* 차트 */}
-      {showCharts && <AllocationCharts
-        allPositions={summary.positions}
-        positions={accountFiltered.filter(p =>
-          selectedSectors.size === 0 || selectedSectors.has(p.security.sector ?? '기타')
+      {/* 차트 섹션 */}
+      <div>
+        <div className="mb-2">
+          <SectionHeader
+            label="차트"
+            open={showCharts}
+            onToggle={() => setShowCharts(v => !v)}
+          />
+        </div>
+        {showCharts && (
+          <AllocationCharts
+            allPositions={summary.positions}
+            positions={chartPositions}
+            sectorColors={sectorColors}
+          />
         )}
-        sectorColors={sectorColors}
-      />}
+      </div>
 
-      <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
+      {/* 종목 섹션 */}
+      <div>
+        <div className="mb-2">
+          <SectionHeader
+            label={`종목 ${visibleMerged.length > 0 ? `(${visibleMerged.length})` : ''}`}
+            open={showPositions}
+            onToggle={() => setShowPositions(v => !v)}
+          />
+        </div>
+        {showPositions && (
+          <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
+        )}
+      </div>
+
     </div>
   )
 }
