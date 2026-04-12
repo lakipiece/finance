@@ -205,7 +205,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       </div>
 
       {/* 계좌 필터 카드 */}
-      <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
         {/* 전체 */}
         <button
           onClick={selectAll}
@@ -216,7 +216,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               : 'bg-white border-slate-100 hover:border-slate-300'
           }`}>
           <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
-          <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white/70' : 'text-slate-400'}`}>
+          <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-500'}`}>
             {Math.round(summary.total_market_value).toLocaleString()}원
           </p>
           <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
@@ -258,7 +258,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     {g.name}
                   </p>
                 </div>
-                <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white' : 'text-slate-500'}`}>
                   {Math.round(g.value).toLocaleString()}원
                 </p>
                 <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
@@ -280,9 +280,6 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             )
           })}
       </div>
-
-      {/* 차트 */}
-      {showCharts && <AllocationCharts positions={accountFiltered} />}
 
       {/* 섹터 필터 */}
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -313,6 +310,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           )
         })}
       </div>
+
+      {/* 차트 (섹터 필터 반영) */}
+      {showCharts && <AllocationCharts positions={accountFiltered.filter(p =>
+        selectedSector === 'all' || (p.security.sector ?? '기타') === selectedSector
+      )} />}
 
       <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
     </div>
