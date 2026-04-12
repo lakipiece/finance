@@ -65,6 +65,7 @@ export interface Dividend {
   paid_at: string
   amount: number
   currency: string
+  exchange_rate: number
   tax: number
   memo: string | null
   security?: Security

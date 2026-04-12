@@ -13,7 +13,7 @@ const LEDGER_TABS = [
 const PORTFOLIO_TABS = [
   { label: '대시보드', short: '홈',   href: '/portfolio' },
   { label: '스냅샷',  short: '스냅샷', href: '/portfolio/snapshots' },
-  { label: '수익',    short: '수익',  href: '/portfolio/income' },
+  { label: '배당',    short: '배당',  href: '/portfolio/income' },
   { label: '계좌관리', short: '계좌', href: '/portfolio/accounts' },
   { label: '종목관리', short: '종목', href: '/portfolio/securities' },
   { label: '설정',    short: '설정',  href: '/portfolio/settings' },

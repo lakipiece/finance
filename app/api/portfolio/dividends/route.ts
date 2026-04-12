@@ -22,11 +22,11 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { security_id, account_id, paid_at, amount, currency, tax, memo } = await req.json()
+  const { security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo } = await req.json()
   const sql = getSql()
   const [row] = await sql`
-    INSERT INTO dividends (security_id, account_id, paid_at, amount, currency, tax, memo)
-    VALUES (${security_id}, ${account_id}, ${paid_at}, ${amount}, ${currency ?? 'USD'}, ${tax ?? null}, ${memo ?? null})
+    INSERT INTO dividends (security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo)
+    VALUES (${security_id}, ${account_id}, ${paid_at}, ${amount}, ${currency ?? 'KRW'}, ${exchange_rate ?? 1}, ${tax ?? 0}, ${memo ?? null})
     RETURNING *
   `
   return NextResponse.json(row, { status: 201 })
