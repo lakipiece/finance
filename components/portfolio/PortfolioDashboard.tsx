@@ -216,13 +216,14 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               : 'bg-white border-slate-100 hover:border-slate-300'
           }`}>
           <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
-          <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-800'}`}>
+          <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white/70' : 'text-slate-400'}`}>
             {Math.round(summary.total_market_value).toLocaleString()}원
           </p>
-          <p className={`text-xs tabular-nums mt-0.5 ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+          <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
             {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
           </p>
-          <div className="flex justify-end mt-1">
+          <div className="flex items-center justify-between mt-1">
+            <span className="text-[10px] text-slate-400 opacity-0">-</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
               summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
             }`}>
@@ -257,13 +258,16 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     {g.name}
                   </p>
                 </div>
-                <p className={`text-sm font-bold tabular-nums leading-tight ${isSelected ? 'text-white' : 'text-slate-800'}`}>
+                <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
                   {Math.round(g.value).toLocaleString()}원
                 </p>
-                <p className={`text-xs tabular-nums mt-0.5 ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
                   {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                 </p>
-                <div className="flex justify-end mt-1">
+                <div className="flex items-center justify-between mt-1">
+                  <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-300'}`}>
+                    {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
+                  </span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                     g.pnl >= 0
                       ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')

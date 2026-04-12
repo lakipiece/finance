@@ -161,32 +161,29 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
 
               <div className="border-t border-slate-50" />
 
-              {/* 평가금액 + 비중 */}
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
-                <p className="text-sm font-bold text-slate-800 tabular-nums">{fmt(p.market_value)}원</p>
+              {/* 평가금액 (hover → 현재가 툴팁) */}
+              <div className="relative group/price flex justify-end">
+                <p className="text-sm font-bold text-slate-500 tabular-nums cursor-default">{fmt(p.market_value)}원</p>
+                <div className="absolute bottom-full right-0 mb-1 px-2.5 py-1.5 bg-slate-800 text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover/price:opacity-100 transition-opacity pointer-events-none z-10 tabular-nums shadow-lg">
+                  현재가 {currentPriceLabel}
+                </div>
               </div>
 
-              {/* 손익 금액 + % 배지 */}
-              <div className="flex items-center justify-between gap-1">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
-                  pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
-                }`}>
-                  {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%
-                </span>
+              {/* 손익 금액 */}
+              <div className="flex justify-end">
                 <span className={`text-xs font-semibold tabular-nums ${pnlPos ? 'text-rose-500' : 'text-blue-500'}`}>
                   {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
                 </span>
               </div>
 
-              {/* 현재가 → hover 툴팁 */}
-              <div className="relative group/price self-end">
-                <span className="text-[10px] text-slate-400 border-b border-dashed border-slate-300 cursor-default tabular-nums">
-                  현재가
+              {/* 비중(좌) + 수익률 배지(우) */}
+              <div className="flex items-center justify-between gap-1 mt-0.5">
+                <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
+                  pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+                }`}>
+                  {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%
                 </span>
-                <div className="absolute bottom-full right-0 mb-1 px-2.5 py-1.5 bg-slate-800 text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover/price:opacity-100 transition-opacity pointer-events-none z-10 tabular-nums shadow-lg">
-                  {currentPriceLabel}
-                </div>
               </div>
             </div>
           )
