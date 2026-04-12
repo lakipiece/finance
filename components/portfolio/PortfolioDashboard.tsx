@@ -204,7 +204,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         setRefreshMsg(`오류: ${json.error}`)
       } else {
         const failedMsg = json.failed?.length > 0 ? ` (${json.failed.length}개 실패)` : ''
-        setRefreshMsg(`${json.saved}개 저장 완료${failedMsg}`)
+        if (json.failed?.length > 0) console.warn('[price refresh] failed:', json.failed)
+        setRefreshMsg(`${json.saved}개 저장 완료${failedMsg} ${json.failed?.length > 0 ? '— 콘솔 확인' : ''}`)
         setLastUpdated(new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }))
       }
     } catch {

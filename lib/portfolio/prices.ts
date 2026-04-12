@@ -172,6 +172,7 @@ export async function refreshAllPrices(): Promise<{
     `
   }
 
+  if (allFailed.length > 0) console.warn('[refreshAllPrices] failed:', allFailed)
   return { saved: allSaved.length, failed: allFailed, results }
 }
 
