@@ -149,7 +149,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       d => String(d.security_id) === h.security_id && String(d.account_id) === h.account_id
     )
     const totalDividends = divs.reduce((sum, d) => {
-      const amt = d.currency === 'USD' ? d.amount * (d.exchange_rate ?? exchangeRate) : d.amount
+      const rate = Number(d.exchange_rate) || 1
+      const amt = d.currency === 'KRW' ? Number(d.amount) : Number(d.amount) * rate
       return sum + amt
     }, 0)
 
@@ -175,17 +176,22 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   const total_unrealized_pct = total_invested > 0 ? total_unrealized_pnl / total_invested : 0
   const total_dividends = positions.reduce((s, p) => s + p.total_dividends, 0)
 
-  const latestPrices = await sql<{ date: string }[]>`
-    SELECT date FROM price_history ORDER BY date DESC LIMIT 1
+  const latestPrices = await sql<{ date: string; created_at: string }[]>`
+    SELECT date, created_at FROM price_history ORDER BY created_at DESC LIMIT 1
   `
   const latestPrice = latestPrices[0] ?? null
 
-  const rawDate = latestPrice?.date ?? null
-  const last_price_updated_at = rawDate
-    ? (rawDate as unknown) instanceof Date
-      ? (rawDate as unknown as Date).toISOString().slice(0, 10)
-      : String(rawDate).slice(0, 10)
-    : null
+  let last_price_updated_at: string | null = null
+  if (latestPrice?.created_at) {
+    const d = (latestPrice.created_at as unknown) instanceof Date
+      ? (latestPrice.created_at as unknown as Date)
+      : new Date(String(latestPrice.created_at))
+    const pad = (n: number) => String(n).padStart(2, '0')
+    last_price_updated_at = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  } else if (latestPrice?.date) {
+    const raw = String(latestPrice.date)
+    last_price_updated_at = raw.slice(0, 10)
+  }
 
   return {
     total_market_value,

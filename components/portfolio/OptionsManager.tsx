@@ -57,25 +57,29 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   return (
     <div className="relative" ref={ref}>
       <div
-        className="w-5 h-5 rounded-full border border-slate-200 cursor-pointer shrink-0"
+        className="w-4 h-4 rounded-full border border-slate-200 cursor-pointer shrink-0"
         style={{ backgroundColor: color }}
         onClick={() => setOpen(!open)}
       />
       {open && (
-        <div className="absolute left-0 top-7 z-20 bg-white border border-slate-200 rounded-xl p-3 shadow-xl w-52">
-          {/* 프리셋 */}
-          <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="absolute left-0 top-6 z-20 bg-white border border-slate-200 rounded-xl p-2.5 shadow-xl w-44">
+          {/* 프리셋 — 5열 고정 그리드 */}
+          <div className="grid grid-cols-5 gap-1.5 mb-2.5">
             {PRESET_COLORS.map(c => (
               <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
-                className="w-5 h-5 rounded-full border-2 transition-all hover:scale-110"
-                style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }}
+                className="w-5 h-5 rounded-full border transition-all hover:scale-110"
+                style={{
+                  backgroundColor: c,
+                  borderColor: color === c ? '#1e293b' : 'transparent',
+                  borderWidth: color === c ? '1.5px' : '1px',
+                }}
               />
             ))}
           </div>
           {/* HEX 입력 + 네이티브 피커 */}
           <div className="flex items-center gap-1.5">
             <div
-              className="w-7 h-7 rounded-lg border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
+              className="w-6 h-6 rounded-lg border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
               style={{ backgroundColor: color }}
               onClick={() => nativeRef.current?.click()}
             >
@@ -91,7 +95,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
               value={hexInput}
               onChange={e => handleHexChange(e.target.value)}
               placeholder="#3b82f6"
-              className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-300"
+              className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-300 font-sans focus:outline-none focus:ring-1 focus:ring-blue-300"
               maxLength={7}
             />
           </div>
@@ -123,10 +127,10 @@ function SortableOptionRow({
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2 group py-0.5">
+    <div ref={setNodeRef} style={style} className="flex items-center gap-1.5 group py-0.5">
       <button {...attributes} {...listeners}
         className="text-slate-300 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5 shrink-0">
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
         </svg>
       </button>
@@ -138,19 +142,19 @@ function SortableOptionRow({
           onChange={e => setDraft(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setDraft(opt.label) } }}
-          className="flex-1 border border-blue-300 rounded px-1.5 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
           autoFocus
         />
       ) : (
         <span onClick={startEdit} title="클릭하여 편집"
-          className="text-xs font-medium text-slate-700 flex-1 cursor-text hover:text-blue-600 transition-colors truncate">
+          className="text-[11px] font-medium text-slate-600 flex-1 cursor-text hover:text-blue-600 transition-colors truncate">
           {opt.label}
         </span>
       )}
 
       <button onClick={() => onDelete(opt.id)}
-        className="p-1 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
-        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        className="p-0.5 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -188,17 +192,23 @@ function OptionTypeCard({
     setAdding(false)
   }
 
+  // 항목 1개당 ~24px, 10개 = 240px
+  const LIST_MAX_H = 240
+
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 flex flex-col">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-semibold text-slate-700">{label}</h4>
-        <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{items.length}개</span>
+    <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col">
+      <div className="flex items-center justify-between mb-2.5">
+        <h4 className="text-xs font-semibold text-slate-700">{label}</h4>
+        <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{items.length}개</span>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter}
         onDragEnd={e => onDragEnd(typeKey, e)}>
         <SortableContext items={items.map(o => o.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-0.5 mb-3 flex-1 min-h-[40px]">
+          <div
+            className="space-y-0.5 mb-3 overflow-y-auto"
+            style={{ maxHeight: LIST_MAX_H }}
+          >
             {items.map(opt => (
               <SortableOptionRow
                 key={opt.id} opt={opt}
@@ -208,19 +218,19 @@ function OptionTypeCard({
               />
             ))}
             {items.length === 0 && (
-              <p className="text-xs text-slate-300 py-2">항목 없음</p>
+              <p className="text-[11px] text-slate-300 py-2">항목 없음</p>
             )}
           </div>
         </SortableContext>
       </DndContext>
 
-      <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+      <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-50">
         <ColorPicker color={newColor} onChange={setNewColor} />
         <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
           placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
+          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
         <button onClick={handleAdd} disabled={adding || !newLabel.trim()}
-          className="bg-slate-700 text-white px-2.5 py-1 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-40 shrink-0">
+          className="bg-slate-700 text-white px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-slate-800 disabled:opacity-40 shrink-0">
           추가
         </button>
       </div>
@@ -297,8 +307,8 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-slate-700 mb-4">옵션 관리</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <h3 className="text-xs font-semibold text-slate-600 mb-3">옵션 관리</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {types.map(t => (
           <OptionTypeCard
             key={t}

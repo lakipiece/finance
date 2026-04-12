@@ -179,7 +179,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
               {/* 비중(좌) + 수익률 배지(우) */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
                 <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
                   pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                 }`}>
                   {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%

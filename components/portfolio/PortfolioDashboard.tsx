@@ -225,17 +225,23 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-5">
 
-      <PortfolioKpiCards summary={filteredKpi} />
-
-      {/* 툴바 */}
+      {/* 최상단 툴바 */}
       <div className="flex items-center justify-end gap-2">
-        {refreshMsg && <span className="text-xs text-slate-500">{refreshMsg}</span>}
-        {lastUpdated && <span className="text-xs text-slate-400">최근 수집: {lastUpdated}</span>}
+        {refreshMsg && <span className="text-[10px] text-slate-400">{refreshMsg}</span>}
+        {lastUpdated && (
+          <span className="text-[10px] text-slate-300 tabular-nums">{lastUpdated}</span>
+        )}
         <button onClick={handleRefresh} disabled={refreshing}
-          className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800 disabled:opacity-50 transition-colors">
-          {refreshing ? '수집 중...' : '가격 새로고침'}
+          className="text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors"
+          title={refreshing ? '수집 중...' : '가격 새로고침'}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+            className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}>
+            <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.389zm1.26-3.674a.75.75 0 00.219-.53V2.978a.75.75 0 00-1.5 0v2.43l-.31-.31A7 7 0 003.27 8.236a.75.75 0 101.449.389A5.5 5.5 0 0113.92 6.159l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd" />
+          </svg>
         </button>
       </div>
+
+      <PortfolioKpiCards summary={filteredKpi} />
 
       {/* 계좌 섹션 */}
       <div>
@@ -266,7 +272,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               </p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-[10px] text-slate-400 opacity-0">-</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                   summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                 }`}>
                   {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
@@ -291,14 +297,15 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     {isSelected && (
                       <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-400" />
                     )}
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <div className="flex items-center gap-1.5">
                       {typeColor && (
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: typeColor }} />
+                        <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} />
                       )}
-                      <p className={`text-xs font-semibold truncate leading-tight ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                      <p className={`text-xs font-semibold truncate leading-none ${isSelected ? 'text-white' : 'text-slate-700'}`}>
                         {g.name}
                       </p>
                     </div>
+                    <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-slate-600' : 'border-slate-50'}`} />
                     <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white' : 'text-slate-500'}`}>
                       {Math.round(g.value).toLocaleString()}원
                     </p>
@@ -306,10 +313,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                     </p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-300'}`}>
+                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
                         {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                         g.pnl >= 0
                           ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')
                           : (isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-500')
