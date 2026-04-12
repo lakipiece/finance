@@ -637,7 +637,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={handleRefreshAll} disabled={refreshingAll}
-            className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
+            className={`bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-all ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}>
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
           </button>
         </div>

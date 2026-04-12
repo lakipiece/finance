@@ -99,7 +99,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
   const [showAccounts, setShowAccounts] = useState(true)
   const [showSectors, setShowSectors] = useState(true)
-  const [showCharts, setShowCharts] = useState(false)
+  const [showCharts, setShowCharts] = useState(true)
   const [showPositions, setShowPositions] = useState(true)
 
   const accountGroups = useMemo(() =>
@@ -260,8 +260,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               title={`${summary.positions.length}종목`}
               className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
-                  ? 'bg-slate-100 border-slate-300'
-                  : 'bg-white border-slate-100 hover:border-slate-300'
+                  ? 'bg-slate-100 border-2 border-slate-300'
+                  : 'bg-white border border-slate-100 hover:border-slate-300'
               }`}>
               <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-500' : 'text-slate-400'}`}>전체</p>
               <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
@@ -291,8 +291,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     title={`${g.count}종목`}
                     className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
                       isSelected
-                        ? 'bg-slate-100 border-slate-300'
-                        : 'bg-white border-slate-100 hover:border-slate-300'
+                        ? 'bg-slate-100 border-2 border-slate-300'
+                        : 'bg-white border border-slate-100 hover:border-slate-300'
                     }`}>
                     {isSelected && (
                       <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-slate-400" />
@@ -345,10 +345,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setSelectedSectors(new Set())}
-              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
                 selectedSectors.size === 0
-                  ? 'bg-slate-600 text-white border-slate-600'
-                  : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                  ? 'bg-slate-100 border-2 border-slate-300 text-slate-700 font-medium'
+                  : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
               }`}>
               전체
             </button>
@@ -358,13 +358,13 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               return (
                 <button key={s}
                   onClick={() => toggleSector(s)}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full transition-colors ${
                     isSelected
-                      ? 'bg-slate-600 text-white border-slate-600'
-                      : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                      ? 'bg-slate-100 border-2 border-slate-300 text-slate-700 font-medium'
+                      : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
                   }`}>
                   {color && (
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? 'white' : color }} />
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                   )}
                   {s}
                 </button>

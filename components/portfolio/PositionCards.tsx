@@ -23,56 +23,83 @@ function PositionModal({ position: p, totalValue, onClose }: {
   const weight = totalValue > 0 ? (p.market_value / totalValue * 100).toFixed(1) : '0.0'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="px-6 py-4 border-b border-slate-100 flex items-start justify-between">
-          <div>
-            <p className="font-bold text-slate-800 text-lg">{p.security.ticker}</p>
-            <p className="text-sm text-slate-500">{p.security.name}</p>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {p.accounts.map(a => `${a.broker} · ${a.name}`).join(', ')}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4 flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+              <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                {p.security.ticker}
+              </span>
+              {p.security.asset_class && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-400">{p.security.asset_class}</span>}
+              {p.security.country    && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 text-slate-400">{p.security.country}</span>}
+            </div>
+            <p className="text-sm font-bold text-slate-800 leading-snug">{p.security.name}</p>
+            <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+              {p.accounts.map(a => `${a.broker} · ${a.name}`).join('  ·  ')}
             </p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl leading-none mt-0.5">×</button>
+          <button onClick={onClose} className="text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100 transition-colors shrink-0">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
-        <div className="px-6 py-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <div>
-            <p className="text-xs text-slate-400 mb-0.5">평가금액</p>
-            <p className="font-semibold text-slate-800">{fmt(p.market_value)}원</p>
+
+        {/* 핵심 지표 2칸 */}
+        <div className="px-5 pb-4 grid grid-cols-2 gap-2.5">
+          <div className="bg-slate-50 rounded-xl px-4 py-3">
+            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">평가금액</p>
+            <p className="text-base font-bold text-slate-800 tabular-nums">{fmt(p.market_value)}원</p>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 mb-0.5">손익</p>
-            <p className={`font-semibold ${pnlColor}`}>
+          <div className="bg-slate-50 rounded-xl px-4 py-3">
+            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-1">손익</p>
+            <p className={`text-base font-bold tabular-nums ${pnlColor}`}>
               {p.unrealized_pnl >= 0 ? '+' : ''}{fmt(p.unrealized_pnl)}원
-              <span className="text-xs ml-1">({(p.unrealized_pct * 100).toFixed(2)}%)</span>
+            </p>
+            <p className={`text-xs tabular-nums mt-0.5 ${pnlColor}`}>
+              ({(p.unrealized_pct * 100).toFixed(2)}%)
             </p>
           </div>
+        </div>
+
+        {/* 보조 정보 */}
+        <div className="px-5 pb-5 border-t border-slate-50 pt-3 grid grid-cols-2 gap-x-6 gap-y-2.5">
           <div>
-            <p className="text-xs text-slate-400 mb-0.5">현재가</p>
-            <p className="text-slate-700">
+            <p className="text-[10px] text-slate-400 mb-0.5">현재가</p>
+            <p className="text-sm text-slate-700 tabular-nums">
               {fmt(p.current_price)}원
               {p.current_price_usd != null && <span className="text-xs text-slate-400 ml-1">${Number(p.current_price_usd).toFixed(2)}</span>}
             </p>
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-0.5">포트폴리오 비중</p>
-            <p className="text-slate-700">{weight}%</p>
+            <p className="text-[10px] text-slate-400 mb-0.5">포트폴리오 비중</p>
+            <p className="text-sm text-slate-700 tabular-nums">{weight}%</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-0.5">수량 / 투자원금</p>
-            <p className="text-slate-700">{p.quantity.toLocaleString()} / {fmt(p.total_invested)}원</p>
+            <p className="text-[10px] text-slate-400 mb-0.5">수량</p>
+            <p className="text-sm text-slate-700 tabular-nums">{p.quantity.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-0.5">자산군 / 국가</p>
-            <p className="text-slate-700">{p.security.asset_class} / {p.security.country}</p>
+            <p className="text-[10px] text-slate-400 mb-0.5">투자원금</p>
+            <p className="text-sm text-slate-700 tabular-nums">{fmt(p.total_invested)}원</p>
           </div>
+          {p.security.sector && (
+            <div>
+              <p className="text-[10px] text-slate-400 mb-0.5">섹터</p>
+              <p className="text-sm text-slate-700">{p.security.sector}</p>
+            </div>
+          )}
           {p.total_dividends > 0 && (
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">수령 배당금</p>
-              <p className="text-slate-700">{fmt(p.total_dividends)}원</p>
+              <p className="text-[10px] text-slate-400 mb-0.5">수령 배당금</p>
+              <p className="text-sm text-slate-700 tabular-nums">{fmt(p.total_dividends)}원</p>
             </div>
           )}
         </div>
+
       </div>
     </div>
   )
