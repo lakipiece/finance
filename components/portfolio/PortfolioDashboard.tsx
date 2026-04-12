@@ -129,10 +129,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   )
 
   const filteredKpi = useMemo(() => {
-    const mv = accountFiltered.reduce((s, p) => s + p.market_value, 0)
-    const inv = accountFiltered.reduce((s, p) => s + p.total_invested, 0)
-    const pnl = accountFiltered.reduce((s, p) => s + p.unrealized_pnl, 0)
-    const div = accountFiltered.reduce((s, p) => s + p.total_dividends, 0)
+    const mv = visibleMerged.reduce((s, p) => s + p.market_value, 0)
+    const inv = visibleMerged.reduce((s, p) => s + p.total_invested, 0)
+    const pnl = visibleMerged.reduce((s, p) => s + p.unrealized_pnl, 0)
+    const div = visibleMerged.reduce((s, p) => s + p.total_dividends, 0)
     return {
       total_market_value: mv,
       total_invested: inv,
@@ -142,7 +142,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       positions: accountFiltered,
       last_price_updated_at: summary.last_price_updated_at,
     }
-  }, [accountFiltered, summary.last_price_updated_at])
+  }, [visibleMerged, accountFiltered, summary.last_price_updated_at])
 
   const visibleTotal = useMemo(
     () => visibleMerged.reduce((s, p) => s + p.market_value, 0),
@@ -312,9 +312,13 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       </div>
 
       {/* 차트 (섹터 필터 반영) */}
-      {showCharts && <AllocationCharts positions={accountFiltered.filter(p =>
-        selectedSector === 'all' || (p.security.sector ?? '기타') === selectedSector
-      )} />}
+      {showCharts && <AllocationCharts
+        allPositions={summary.positions}
+        positions={accountFiltered.filter(p =>
+          selectedSector === 'all' || (p.security.sector ?? '기타') === selectedSector
+        )}
+        sectorColors={sectorColors}
+      />}
 
       <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
     </div>
