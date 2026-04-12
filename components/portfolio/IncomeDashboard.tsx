@@ -325,7 +325,6 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">계좌</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
               <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">메모</th>
-              <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">원본금액</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">수령액</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">세금</th>
               <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">세후</th>
@@ -334,7 +333,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={11} className="py-10 text-center text-slate-400 text-xs">내역이 없습니다</td></tr>
+              <tr><td colSpan={10} className="py-10 text-center text-slate-400 text-xs">내역이 없습니다</td></tr>
             )}
             {slice.map((d, i) => {
               const gross = toKrw(d)
@@ -368,9 +367,6 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                     {d.memo
                       ? <span className="block truncate" title={d.memo}>{d.memo}</span>
                       : <span className="text-slate-200">—</span>}
-                  </td>
-                  <td className="py-2.5 px-3 text-right text-xs text-slate-400 tabular-nums whitespace-nowrap">
-                    {Number(d.amount).toLocaleString()} {d.currency}
                   </td>
                   <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-800 whitespace-nowrap">
                     {fmtFull(gross)}
