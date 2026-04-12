@@ -216,7 +216,7 @@ function OptionTypeCard({
   const LIST_MAX_H = 240
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col">
+    <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col h-full">
       <div className="flex items-center justify-between mb-2.5">
         <h4 className="text-xs font-semibold text-slate-700">{label}</h4>
         <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{items.length}개</span>
@@ -244,7 +244,7 @@ function OptionTypeCard({
         </SortableContext>
       </DndContext>
 
-      <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-50">
+      <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-50 mt-auto">
         <ColorPicker color={newColor} onChange={setNewColor} />
         <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
           placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
