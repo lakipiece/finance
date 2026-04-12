@@ -389,9 +389,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       <div>
         <div className="mb-2">
           <SectionHeader
-            label={`종목 ${visibleMerged.length > 0 ? `(${visibleMerged.length})` : ''}`}
+            label="종목"
             open={showPositions}
             onToggle={() => setShowPositions(v => !v)}
+            badge={visibleMerged.length}
           />
         </div>
         {showPositions && (
