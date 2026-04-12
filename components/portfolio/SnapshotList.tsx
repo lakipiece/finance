@@ -100,7 +100,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-slate-700">스냅샷</h2>
+        <h2 className="text-base font-semibold text-slate-700">스냅샷</h2>
         <div className="flex gap-2">
           <button onClick={handleRefreshValues} disabled={refreshing}
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">

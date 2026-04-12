@@ -17,7 +17,7 @@ export default async function PortfolioSettingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-      <h2 className="text-lg font-bold text-slate-800">설정</h2>
+      <h2 className="text-base font-semibold text-slate-700">설정</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/portfolio/rebalance"

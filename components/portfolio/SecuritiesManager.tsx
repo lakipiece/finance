@@ -649,7 +649,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           const { hex } = cardColors(options, s.country, s.asset_class)
           return (
             <div key={s.id}
-              className="flex bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
+              className="group flex bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
               <div className="w-1.5 shrink-0 rounded-l-xl" style={{ backgroundColor: hex }} />
               <div onClick={() => setHistoryModalSecurity(s)}
                 className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-slate-50/30 transition-all min-w-0">
@@ -740,7 +740,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     {s.sector}
                   </button>
                 )}
-                <div className="ml-auto flex gap-0.5 items-center">
+                <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
                     className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
                     {syncing === s.ticker ? (

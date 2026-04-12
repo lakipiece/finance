@@ -201,7 +201,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       } else {
         const failedMsg = json.failed?.length > 0 ? ` (${json.failed.length}개 실패)` : ''
         setRefreshMsg(`${json.saved}개 저장 완료${failedMsg}`)
-        setLastUpdated(new Date().toISOString().slice(0, 10))
+        setLastUpdated(new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }))
       }
     } catch {
       setRefreshMsg('새로고침 실패')
@@ -260,11 +260,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               title={`${summary.positions.length}종목`}
               className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
-                  ? 'bg-slate-700 border-slate-700'
+                  ? 'bg-slate-100 border-slate-300'
                   : 'bg-white border-slate-100 hover:border-slate-300'
               }`}>
-              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
-              <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-500'}`}>
+              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-500' : 'text-slate-400'}`}>전체</p>
+              <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
                 {Math.round(summary.total_market_value).toLocaleString()}원
               </p>
               <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
@@ -291,22 +291,22 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     title={`${g.count}종목`}
                     className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
                       isSelected
-                        ? 'bg-slate-700 border-slate-700'
+                        ? 'bg-slate-100 border-slate-300'
                         : 'bg-white border-slate-100 hover:border-slate-300'
                     }`}>
                     {isSelected && (
-                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-400" />
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-slate-400" />
                     )}
                     <div className="flex items-center gap-1.5">
                       {typeColor && (
                         <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} />
                       )}
-                      <p className={`text-xs font-semibold truncate leading-none ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                      <p className={`text-xs font-semibold truncate leading-none ${isSelected ? 'text-slate-700' : 'text-slate-700'}`}>
                         {g.name}
                       </p>
                     </div>
-                    <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-slate-600' : 'border-slate-50'}`} />
-                    <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white' : 'text-slate-500'}`}>
+                    <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-slate-200' : 'border-slate-50'}`} />
+                    <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-slate-700' : 'text-slate-500'}`}>
                       {Math.round(g.value).toLocaleString()}원
                     </p>
                     <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
@@ -318,8 +318,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       </span>
                       <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                         g.pnl >= 0
-                          ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')
-                          : (isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-500')
+                          ? 'bg-rose-50 text-rose-500'
+                          : 'bg-blue-50 text-blue-500'
                       }`}>
                         {g.pnl >= 0 ? '+' : ''}{g.invested > 0 ? (g.pnl / g.invested * 100).toFixed(1) : '0.0'}%
                       </span>
