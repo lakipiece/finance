@@ -69,7 +69,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
   const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set())
-  const [selectedSector, setSelectedSector] = useState<string | 'all'>('all')
+  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
+  const [showAccounts, setShowAccounts] = useState(true)
   const [showCharts, setShowCharts] = useState(false)
 
   // 계좌별 집계 (account type 포함)
@@ -97,14 +98,27 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
-      setSelectedSector('all')
+      setSelectedSectors(new Set())
       return next
     })
   }
 
   function selectAll() {
     setSelectedAccountIds(new Set())
-    setSelectedSector('all')
+    setSelectedSectors(new Set())
+  }
+
+  function toggleSector(sector: string) {
+    setSelectedSectors(prev => {
+      const next = new Set(prev)
+      if (next.has(sector)) next.delete(sector)
+      else next.add(sector)
+      return next
+    })
+  }
+
+  function clearSectors() {
+    setSelectedSectors(new Set())
   }
 
   const accountFiltered = useMemo(() =>
@@ -122,10 +136,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   }, [mergedPositions])
 
   const visibleMerged = useMemo(() =>
-    selectedSector === 'all'
+    selectedSectors.size === 0
       ? mergedPositions
-      : mergedPositions.filter(p => (p.security.sector ?? '기타') === selectedSector),
-    [mergedPositions, selectedSector]
+      : mergedPositions.filter(p => selectedSectors.has(p.security.sector ?? '기타')),
+    [mergedPositions, selectedSectors]
   )
 
   const filteredKpi = useMemo(() => {
@@ -204,89 +218,110 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         </button>
       </div>
 
-      {/* 계좌 필터 카드 */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
-        {/* 전체 */}
+      {/* 계좌 필터 — 접기/펼치기 */}
+      <div>
         <button
-          onClick={selectAll}
-          title={`${summary.positions.length}종목`}
-          className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
-            selectedAccountIds.size === 0
-              ? 'bg-slate-700 border-slate-700'
-              : 'bg-white border-slate-100 hover:border-slate-300'
-          }`}>
-          <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
-          <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-500'}`}>
-            {Math.round(summary.total_market_value).toLocaleString()}원
-          </p>
-          <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
-            {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
-          </p>
-          <div className="flex items-center justify-between mt-1">
-            <span className="text-[10px] text-slate-400 opacity-0">-</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
-              summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
-            }`}>
-              {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
+          onClick={() => setShowAccounts(v => !v)}
+          className="flex items-center gap-1.5 mb-2 group"
+        >
+          <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600 transition-colors">계좌</span>
+          {selectedAccountIds.size > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-white tabular-nums">
+              {selectedAccountIds.size}
             </span>
-          </div>
+          )}
+          <svg
+            className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all ${showAccounts ? '' : '-rotate-90'}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
-        {Object.entries(accountGroups)
-          .sort((a, b) => b[1].value - a[1].value)
-          .map(([id, g]) => {
-            const isSelected = selectedAccountIds.has(id)
-            const typeColor = g.type ? (accountTypeColors[g.type] ?? null) : null
-            return (
-              <button key={id}
-                onClick={() => toggleAccount(id)}
-                title={`${g.count}종목`}
-                className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
-                  isSelected
-                    ? 'bg-slate-700 border-slate-700'
-                    : 'bg-white border-slate-100 hover:border-slate-300'
+        {showAccounts && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            {/* 전체 */}
+            <button
+              onClick={selectAll}
+              title={`${summary.positions.length}종목`}
+              className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
+                selectedAccountIds.size === 0
+                  ? 'bg-slate-700 border-slate-700'
+                  : 'bg-white border-slate-100 hover:border-slate-300'
+              }`}>
+              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-300' : 'text-slate-400'}`}>전체</p>
+              <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-white' : 'text-slate-500'}`}>
+                {Math.round(summary.total_market_value).toLocaleString()}원
+              </p>
+              <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
+              </p>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[10px] text-slate-400 opacity-0">-</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                  summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                 }`}>
-                {isSelected && (
-                  <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-400" />
-                )}
-                {/* 계좌 이름 + 유형 컬러 dot */}
-                <div className="flex items-center gap-1.5 mb-1">
-                  {typeColor && (
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: typeColor }} />
-                  )}
-                  <p className={`text-xs font-semibold truncate leading-tight ${isSelected ? 'text-white' : 'text-slate-700'}`}>
-                    {g.name}
-                  </p>
-                </div>
-                <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white' : 'text-slate-500'}`}>
-                  {Math.round(g.value).toLocaleString()}원
-                </p>
-                <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
-                  {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
-                </p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-300'}`}>
-                    {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
-                  </span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
-                    g.pnl >= 0
-                      ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')
-                      : (isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-500')
-                  }`}>
-                    {g.pnl >= 0 ? '+' : ''}{g.invested > 0 ? (g.pnl / g.invested * 100).toFixed(1) : '0.0'}%
-                  </span>
-                </div>
-              </button>
-            )
-          })}
+                  {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
+                </span>
+              </div>
+            </button>
+
+            {Object.entries(accountGroups)
+              .sort((a, b) => b[1].value - a[1].value)
+              .map(([id, g]) => {
+                const isSelected = selectedAccountIds.has(id)
+                const typeColor = g.type ? (accountTypeColors[g.type] ?? null) : null
+                return (
+                  <button key={id}
+                    onClick={() => toggleAccount(id)}
+                    title={`${g.count}종목`}
+                    className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
+                      isSelected
+                        ? 'bg-slate-700 border-slate-700'
+                        : 'bg-white border-slate-100 hover:border-slate-300'
+                    }`}>
+                    {isSelected && (
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-blue-400" />
+                    )}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {typeColor && (
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: typeColor }} />
+                      )}
+                      <p className={`text-xs font-semibold truncate leading-tight ${isSelected ? 'text-white' : 'text-slate-700'}`}>
+                        {g.name}
+                      </p>
+                    </div>
+                    <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-white' : 'text-slate-500'}`}>
+                      {Math.round(g.value).toLocaleString()}원
+                    </p>
+                    <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                      {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
+                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-300'}`}>
+                        {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                        g.pnl >= 0
+                          ? (isSelected ? 'bg-rose-400/20 text-rose-300' : 'bg-rose-50 text-rose-500')
+                          : (isSelected ? 'bg-blue-400/20 text-blue-300' : 'bg-blue-50 text-blue-500')
+                      }`}>
+                        {g.pnl >= 0 ? '+' : ''}{g.invested > 0 ? (g.pnl / g.invested * 100).toFixed(1) : '0.0'}%
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+          </div>
+        )}
       </div>
 
-      {/* 섹터 필터 */}
+      {/* 섹터 필터 — 다중선택 */}
       <div className="flex items-center gap-1.5 flex-wrap">
         <button
-          onClick={() => setSelectedSector('all')}
+          onClick={clearSectors}
           className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-            selectedSector === 'all'
+            selectedSectors.size === 0
               ? 'bg-slate-600 text-white border-slate-600'
               : 'border-slate-200 text-slate-500 hover:border-slate-400'
           }`}>
@@ -294,16 +329,17 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         </button>
         {sectors.map(s => {
           const color = sectorColors[s] ?? null
+          const isSelected = selectedSectors.has(s)
           return (
             <button key={s}
-              onClick={() => setSelectedSector(s)}
+              onClick={() => toggleSector(s)}
               className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                selectedSector === s
+                isSelected
                   ? 'bg-slate-600 text-white border-slate-600'
                   : 'border-slate-200 text-slate-500 hover:border-slate-400'
               }`}>
               {color && (
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isSelected ? 'white' : color }} />
               )}
               {s}
             </button>
@@ -311,11 +347,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         })}
       </div>
 
-      {/* 차트 (섹터 필터 반영) */}
+      {/* 차트 */}
       {showCharts && <AllocationCharts
         allPositions={summary.positions}
         positions={accountFiltered.filter(p =>
-          selectedSector === 'all' || (p.security.sector ?? '기타') === selectedSector
+          selectedSectors.size === 0 || selectedSectors.has(p.security.sector ?? '기타')
         )}
         sectorColors={sectorColors}
       />}
