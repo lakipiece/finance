@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
+import { useTheme } from '@/lib/ThemeContext'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 
@@ -67,6 +68,7 @@ function SecurityModal({ security, onSave, onClose, options }: {
   onClose: () => void
   options: Record<string, OptionItem[]>
 }) {
+  const { palette } = useTheme()
   const isEdit = security !== null
   const [form, setForm] = useState({
     ticker:        security?.ticker ?? '',
@@ -162,7 +164,8 @@ function SecurityModal({ security, onSave, onClose, options }: {
         {err && <p className="text-xs text-red-500 mb-3">{err}</p>}
         <div className="flex gap-2">
           <button onClick={handleSave} disabled={saving || (!isEdit && !form.ticker) || !form.name}
-            className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
+            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : isEdit ? '저장' : '추가'}
           </button>
           <button onClick={onClose} className="text-slate-500 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors">취소</button>
@@ -470,6 +473,7 @@ function PriceHistoryModal({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options: initOptions, holdingsMap = {} }: Props) {
+  const { palette } = useTheme()
   const [securities, setSecurities] = useState(initSecurities)
   const [options, setOptions] = useState(initOptions)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -637,7 +641,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={handleRefreshAll} disabled={refreshingAll}
-            className={`bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-all ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}>
+            className={`text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-all ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}
+            style={{ backgroundColor: palette.colors[0] }}>
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
           </button>
         </div>

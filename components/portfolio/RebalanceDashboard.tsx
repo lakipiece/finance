@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface Props {
   summary: PortfolioSummary
@@ -26,6 +27,7 @@ function groupPct(
 }
 
 export default function RebalanceDashboard({ summary, targets }: Props) {
+  const { palette } = useTheme()
   const [editTargets, setEditTargets] = useState<TargetAllocation[]>(targets)
   const [saved, setSaved] = useState(false)
   const total = summary.total_market_value
@@ -69,7 +71,8 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
         <h2 className="text-lg font-bold text-slate-800">리밸런싱</h2>
         <button
           onClick={saveTargets}
-          className="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800 transition-colors"
+          className="text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition-opacity"
+          style={{ backgroundColor: palette.colors[0] }}
         >
           {saved ? '저장됨 ✓' : '목표 저장'}
         </button>

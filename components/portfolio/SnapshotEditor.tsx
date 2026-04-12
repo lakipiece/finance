@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface HoldingRow {
   id?: string
@@ -67,6 +68,7 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
 
 export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {} }: Props) {
   const router = useRouter()
+  const { palette } = useTheme()
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const [snapshotDate, setSnapshotDate] = useState(snapshot.date)
@@ -262,7 +264,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             </span>
           )}
           <button onClick={handleSave} disabled={saving}
-            className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
+            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : '저장'}
           </button>
         </div>
@@ -337,7 +340,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
                 <span className="text-[10px] text-slate-400">Tab으로 순서대로 입력</span>
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
-                  className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50">
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  style={{ backgroundColor: palette.colors[0] }}>
                   {saving ? '저장 중...' : '저장하기'}
                 </button>
                 <button onClick={handleModalClose}
@@ -441,7 +445,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             <p className="text-xs text-slate-500 mt-1.5">수정한 내용이 저장되지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className="flex-1 bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800">
+                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: palette.colors[0] }}>
                 계속 편집
               </button>
               <button onClick={() => { setShowDirtyAlert(false); setModalAccountId(null) }}

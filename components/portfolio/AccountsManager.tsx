@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface AccountSecurity { account_id: string; security_id: string }
 type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
@@ -90,6 +91,7 @@ function SortableAccountCard({
 }
 
 export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [] }: Props) {
+  const { palette } = useTheme()
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -293,7 +295,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               <div className="flex items-center gap-2">
                 {isDirty && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>}
                 <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                  className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-40">
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                  style={{ backgroundColor: palette.colors[0] }}>
                   {savingLinks ? '저장 중...' : '저장하기'}
                 </button>
                 <button onClick={handleModalClose}
@@ -353,7 +356,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <p className="text-xs text-slate-500 mt-1.5">연결 종목을 수정했지만 저장하지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className="flex-1 bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800">
+                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: palette.colors[0] }}>
                 계속 편집
               </button>
               <button onClick={discardAndClose}
@@ -390,7 +394,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800">추가</button>
+                <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>추가</button>
                 <button onClick={() => setShowAddModal(false)} className="text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100">취소</button>
               </div>
             </div>
@@ -423,7 +427,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800">수정</button>
+                <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>수정</button>
                 <button onClick={() => setEditingAccountId(null)} className="text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100">취소</button>
               </div>
             </div>

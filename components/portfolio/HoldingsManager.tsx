@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import type { Account, Security } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -29,6 +30,7 @@ function SecurityModal({ security, onSave, onClose }: {
   onSave: (s: Security) => void
   onClose: () => void
 }) {
+  const { palette } = useTheme()
   const isEdit = security !== null
   const [form, setForm] = useState({
     ticker: security?.ticker ?? '',
@@ -114,7 +116,8 @@ function SecurityModal({ security, onSave, onClose }: {
         {err && <p className="text-xs text-red-500 mb-3">{err}</p>}
         <div className="flex gap-2">
           <button onClick={handleSave} disabled={saving || (!isEdit && !form.ticker) || !form.name}
-            className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition-colors">
+            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : isEdit ? '저장' : '추가'}
           </button>
           <button onClick={onClose} className="text-slate-500 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors">취소</button>
@@ -126,6 +129,7 @@ function SecurityModal({ security, onSave, onClose }: {
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function HoldingsManager({ accounts: initAccounts, securities: initSecurities, accountSecurities: initLinks }: Props) {
+  const { palette } = useTheme()
   const [tab, setTab] = useState<Tab>('accounts')
   const [accounts, setAccounts] = useState(initAccounts)
   const [securities, setSecurities] = useState(initSecurities)
@@ -282,7 +286,8 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
       <div className="flex gap-2">
         {(['accounts', 'securities'] as Tab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === t ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === t ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            style={tab === t ? { backgroundColor: palette.colors[0] } : undefined}>
             {t === 'accounts' ? '계좌' : '종목'}
           </button>
         ))}
@@ -302,7 +307,8 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
             {accounts.map(a => (
               <div key={a.id}
                 onClick={() => { setSelectedAccountId(a.id); setEditingAccountId(null); setShowAddAccount(false) }}
-                className={`rounded-xl border p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'bg-slate-700 border-slate-700' : 'bg-white border-slate-100 hover:border-slate-200'}`}>
+                className={`rounded-xl border p-3 cursor-pointer transition-all shrink-0 ${selectedAccountId === a.id ? 'text-white' : 'bg-white border-slate-100 hover:border-slate-200'}`}
+                style={selectedAccountId === a.id ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -351,7 +357,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                     {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
                   </select></div>
                 <div className="flex gap-1.5">
-                  <button onClick={saveAccount} className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800">추가</button>
+                  <button onClick={saveAccount} className="text-white px-3 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>추가</button>
                   <button onClick={() => setShowAddAccount(false)} className="text-slate-500 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-100">취소</button>
                 </div>
               </div>
@@ -381,7 +387,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                     </select></div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveAccount} className="bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800">저장</button>
+                  <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>저장</button>
                   <button onClick={() => setEditingAccountId(null)} className="text-slate-500 px-4 py-2 rounded-lg text-sm hover:bg-slate-100">취소</button>
                 </div>
               </div>
@@ -398,7 +404,8 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                       <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>
                     )}
                     <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                      className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-40 transition-colors">
+                      className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                      style={{ backgroundColor: palette.colors[0] }}>
                       {savingLinks ? '저장 중...' : '저장하기'}
                     </button>
                   </div>

@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -78,9 +79,9 @@ function groupByMonth(items: { date: unknown; amount: number }[]) {
 
 const inp = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
 const sel = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
-const filterBtn = (active: boolean) =>
+const filterBtnCls = (active: boolean) =>
   `text-xs px-2.5 py-1 rounded-full border transition-colors ${
-    active ? 'bg-slate-600 text-white border-slate-600' : 'border-slate-200 text-slate-500 hover:border-slate-400'
+    active ? 'text-white' : 'border-slate-200 text-slate-500 hover:border-slate-400'
   }`
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
@@ -111,6 +112,7 @@ type SortMode = 'date' | 'amount'
 
 export default function IncomeDashboard({ dividends: initialDividends, securities, accounts, accountSecurities }: Props) {
   const router = useRouter()
+  const { palette } = useTheme()
 
   const [dividends, setDividends] = useState(initialDividends)
   const [form, setForm] = useState(emptyForm())
@@ -308,7 +310,8 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
           </div>
           <button
             onClick={openAddModal}
-            className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-slate-800 transition-colors whitespace-nowrap">
+            className="text-white px-3 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity whitespace-nowrap"
+            style={{ backgroundColor: palette.colors[0] }}>
             + 배당 추가
           </button>
         </div>
@@ -408,8 +411,9 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
               className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                sortMode === mode ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}>
+                sortMode === mode ? 'text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}
+              style={sortMode === mode ? { backgroundColor: palette.colors[0] } : undefined}>
               {mode === 'date' ? '날짜순' : '수령액순'}
             </button>
           ))}
@@ -418,8 +422,9 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
               className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}>
+                pageSize === size ? 'text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}
+              style={pageSize === size ? { backgroundColor: palette.colors[0] } : undefined}>
               {size}
             </button>
           ))}
@@ -471,11 +476,13 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                   <div className="flex flex-wrap gap-1.5">
                     <button type="button"
                       onClick={() => { setModalOwner(''); setForm(p => ({ ...p, account_id: '', security_id: '' })) }}
-                      className={filterBtn(modalOwner === '')}>전체</button>
+                      className={filterBtnCls(modalOwner === '')}
+                      style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>전체</button>
                     {owners.map(o => (
                       <button type="button" key={o}
                         onClick={() => { setModalOwner(o); setForm(p => ({ ...p, account_id: '', security_id: '' })) }}
-                        className={filterBtn(modalOwner === o)}>{o}</button>
+                        className={filterBtnCls(modalOwner === o)}
+                        style={modalOwner === o ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>{o}</button>
                     ))}
                   </div>
                 </div>
@@ -522,7 +529,8 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                   {['KRW', 'USD'].map(c => (
                     <button type="button" key={c}
                       onClick={() => setForm(p => ({ ...p, currency: c, exchange_rate: '', tax: '' }))}
-                      className={filterBtn(form.currency === c)}>{c}</button>
+                      className={filterBtnCls(form.currency === c)}
+                      style={form.currency === c ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>{c}</button>
                   ))}
                 </div>
               </div>
@@ -584,7 +592,8 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                   취소
                 </button>
                 <button type="submit" disabled={saving}
-                  className="px-5 py-2 rounded-lg text-sm bg-slate-700 text-white hover:bg-slate-800 disabled:opacity-50">
+                  className="px-5 py-2 rounded-lg text-sm text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  style={{ backgroundColor: palette.colors[0] }}>
                   {saving ? '저장 중...' : editTarget ? '수정' : '추가'}
                 </button>
               </div>

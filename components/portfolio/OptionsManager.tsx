@@ -10,6 +10,7 @@ import {
   useSortable, verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { useTheme } from '@/lib/ThemeContext'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
@@ -195,6 +196,7 @@ function OptionTypeCard({
   onLabelChange: (type: string, id: string, label: string) => Promise<void>
   onDragEnd: (type: string, event: DragEndEvent) => Promise<void>
 }) {
+  const { palette } = useTheme()
   const [newLabel, setNewLabel] = useState('')
   const [newColor, setNewColor] = useState('#3b82f6')
   const [adding, setAdding] = useState(false)
@@ -250,7 +252,8 @@ function OptionTypeCard({
           placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
           className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
         <button onClick={handleAdd} disabled={adding || !newLabel.trim()}
-          className="bg-slate-700 text-white px-2 py-1 rounded-lg text-[11px] font-medium hover:bg-slate-800 disabled:opacity-40 shrink-0">
+          className="text-white px-2 py-1 rounded-lg text-[11px] font-medium hover:opacity-90 disabled:opacity-40 transition-opacity shrink-0"
+          style={{ backgroundColor: palette.colors[0] }}>
           추가
         </button>
       </div>
