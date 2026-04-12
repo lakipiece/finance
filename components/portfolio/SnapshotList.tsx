@@ -146,36 +146,27 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                   </div>
                   <p className="text-[10px] text-slate-400 mt-0.5">{datePart}</p>
                 </div>
-                <div className="text-right shrink-0">
+                <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
                   {mv != null ? (
                     <p className="text-lg font-bold text-slate-400 leading-tight tabular-nums">{fmtKrw(mv)}</p>
                   ) : (
                     <p className="text-sm text-slate-300">—</p>
                   )}
-                </div>
-              </div>
-
-              {/* 투자원금 + 수익률 */}
-              {(inv != null || pnl != null) && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-slate-400">투자원금</span>
-                    <span className="text-xs text-slate-600 tabular-nums font-medium">
-                      {inv != null ? fmtKrw(inv) : '—'}
-                    </span>
-                  </div>
+                  {inv != null && (
+                    <p className="text-[10px] text-slate-400 tabular-nums">{fmtKrw(inv)}</p>
+                  )}
                   {pnl != null && (
-                    <span className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
                       {pnlPct != null && (
-                        <span className="text-[10px] ml-1">
+                        <span className="text-[9px] ml-0.5 opacity-80">
                           ({pnl >= 0 ? '+' : ''}{(pnlPct * 100).toFixed(1)}%)
                         </span>
                       )}
-                    </span>
+                    </p>
                   )}
                 </div>
-              )}
+              </div>
 
               {/* 섹터 비중 — 전체 스크롤 */}
               {sectors.length > 0 && (
@@ -183,15 +174,15 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                   {sectors.map(([k, v]) => {
                     const color = sectorColors[k] ?? '#94a3b8'
                     return (
-                      <div key={k} className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 w-20 shrink-0 min-w-0">
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      <div key={k} className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1 w-16 shrink-0 min-w-0">
+                          <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                           <span className="text-[10px] text-slate-600 truncate">{k}</span>
                         </div>
-                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden mx-1">
                           <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%`, backgroundColor: color }} />
                         </div>
-                        <span className="text-[10px] text-slate-500 w-9 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
+                        <span className="text-[10px] text-slate-400 w-8 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
                       </div>
                     )
                   })}
