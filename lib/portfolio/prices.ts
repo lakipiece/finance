@@ -142,25 +142,21 @@ export async function refreshAllPrices(): Promise<{
     fetchCoinGeckoPrices(coinTickers, today),
   ])
 
-  // 현금 처리: KRW=1원, USD=환율
-  const krwRate = yahooResult.saved.find(r => r.ticker === 'USDKRW=X')?.price ?? null
-  const cashSaved: PriceRow[] = []
-  for (const cash of cashSecurities) {
-    if (cash.currency === 'USD' && krwRate) {
-      cashSaved.push({ ticker: cash.ticker, date: today, price: krwRate, currency: 'KRW', change_pct: null, exchange: null })
-    } else {
-      // KRW 또는 기타 → 1원 고정
-      cashSaved.push({ ticker: cash.ticker, date: today, price: 1, currency: 'KRW', change_pct: null, exchange: null })
-    }
-  }
-
-  // USDKRW=X를 KRW=X로도 저장 (fetch.ts / prices-at에서 KRW=X 키로 조회)
-  const krwXRow = yahooResult.saved.find(r => r.ticker === 'USDKRW=X')
-  const krwAlias: PriceRow[] = krwXRow
-    ? [{ ...krwXRow, ticker: 'KRW=X' }]
+  // USDKRW=X → KRW=X(환율 조회용), USD(현금 종목용) alias 추가
+  // KRW 현금은 1원 고정
+  const usdkrwRow = yahooResult.saved.find(r => r.ticker === 'USDKRW=X')
+  const fxAliases: PriceRow[] = usdkrwRow
+    ? [
+        { ...usdkrwRow, ticker: 'KRW=X' },
+        { ...usdkrwRow, ticker: 'USD', currency: 'KRW' },
+      ]
     : []
 
-  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...cashSaved, ...krwAlias]
+  const krwCash = cashSecurities
+    .filter(c => c.currency !== 'USD' && c.ticker !== 'USD')
+    .map(c => ({ ticker: c.ticker, date: today, price: 1, currency: 'KRW', change_pct: null, exchange: null } as PriceRow))
+
+  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...krwCash, ...fxAliases]
   const allFailed = [...yahooResult.failed, ...coinResult.failed]
   const results: Record<string, number> = {}
   for (const row of allSaved) results[row.ticker] = row.price
@@ -237,9 +233,10 @@ export async function fetchHistoricalPrices(
             if (!price || price <= 0) continue
             const dateStr = new Date((row as any).date).toISOString().slice(0, 10)
             allRows.push({ ticker, date: dateStr, price, currency, change_pct: null, exchange: null })
-            // USDKRW=X를 KRW=X로도 저장 (fetch.ts / prices-at에서 KRW=X 키로 조회)
+            // USDKRW=X → KRW=X(환율 조회용), USD(현금 종목용) alias
             if (ticker === 'USDKRW=X') {
               allRows.push({ ticker: 'KRW=X', date: dateStr, price, currency: 'KRW', change_pct: null, exchange: null })
+              allRows.push({ ticker: 'USD', date: dateStr, price, currency: 'KRW', change_pct: null, exchange: null })
             }
           }
         } catch (err: unknown) {
