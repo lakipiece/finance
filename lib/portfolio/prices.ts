@@ -154,7 +154,13 @@ export async function refreshAllPrices(): Promise<{
     }
   }
 
-  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...cashSaved]
+  // USDKRW=X를 KRW=X로도 저장 (fetch.ts / prices-at에서 KRW=X 키로 조회)
+  const krwXRow = yahooResult.saved.find(r => r.ticker === 'USDKRW=X')
+  const krwAlias: PriceRow[] = krwXRow
+    ? [{ ...krwXRow, ticker: 'KRW=X' }]
+    : []
+
+  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...cashSaved, ...krwAlias]
   const allFailed = [...yahooResult.failed, ...coinResult.failed]
   const results: Record<string, number> = {}
   for (const row of allSaved) results[row.ticker] = row.price
@@ -231,6 +237,10 @@ export async function fetchHistoricalPrices(
             if (!price || price <= 0) continue
             const dateStr = new Date((row as any).date).toISOString().slice(0, 10)
             allRows.push({ ticker, date: dateStr, price, currency, change_pct: null, exchange: null })
+            // USDKRW=X를 KRW=X로도 저장 (fetch.ts / prices-at에서 KRW=X 키로 조회)
+            if (ticker === 'USDKRW=X') {
+              allRows.push({ ticker: 'KRW=X', date: dateStr, price, currency: 'KRW', change_pct: null, exchange: null })
+            }
           }
         } catch (err: unknown) {
           failed.push(`${ticker}: ${err instanceof Error ? err.message : String(err)}`)
