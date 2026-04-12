@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getSql } from '@/lib/db'
 import OptionsManager from '@/components/portfolio/OptionsManager'
+import HistoricalPriceFetcher from '@/components/portfolio/HistoricalPriceFetcher'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +27,8 @@ export default async function PortfolioSettingsPage() {
           <p className="text-xs text-slate-400">목표 비율 설정 및 리밸런싱 계산</p>
         </Link>
       </div>
+
+      <HistoricalPriceFetcher />
 
       <OptionsManager initialOptions={grouped} />
     </div>

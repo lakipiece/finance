@@ -179,3 +179,104 @@ export async function getPrices(
 ): Promise<Record<string, { price: number; currency: string }>> {
   return getPricesFromHistory(tickers)
 }
+
+// 날짜 범위의 과거 일별 종가를 Yahoo Finance / CoinGecko에서 수집
+export async function fetchHistoricalPrices(
+  startDate: string,  // 'YYYY-MM-DD'
+  endDate: string,    // 'YYYY-MM-DD'
+): Promise<{ saved: number; failed: string[]; tickers: string[] }> {
+  const sql = getSql()
+  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
+    SELECT s.ticker,
+           ac.value AS asset_class,
+           co.value AS country,
+           cu.value AS currency
+    FROM securities s
+    LEFT JOIN option_list ac ON s.asset_class_id = ac.id
+    LEFT JOIN option_list co ON s.country_id     = co.id
+    LEFT JOIN option_list cu ON s.currency_id    = cu.id
+  `
+  if (!securities || securities.length === 0) return { saved: 0, failed: [], tickers: [] }
+
+  const period1 = new Date(startDate)
+  const period2 = new Date(endDate)
+
+  const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
+  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
+  const yahooTickers = [...new Set([
+    ...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)),
+    'USDKRW=X',
+  ])]
+
+  const allRows: PriceRow[] = []
+  const failed: string[] = []
+
+  // Yahoo: 5개씩 순차 배치 (rate limit 방지)
+  const BATCH = 5
+  for (let i = 0; i < yahooTickers.length; i += BATCH) {
+    const batch = yahooTickers.slice(i, i + BATCH)
+    await Promise.allSettled(
+      batch.map(async (ticker) => {
+        try {
+          const rows = await yahooFinance.historical(ticker, {
+            period1,
+            period2,
+            interval: '1d',
+          })
+          const currency = ticker === 'USDKRW=X' ? 'KRW'
+            : ticker.endsWith('.KS') ? 'KRW'
+            : 'USD'
+          for (const row of rows ?? []) {
+            const price = (row as any).adjClose ?? (row as any).close ?? 0
+            if (!price || price <= 0) continue
+            const dateStr = new Date((row as any).date).toISOString().slice(0, 10)
+            allRows.push({ ticker, date: dateStr, price, currency, change_pct: null, exchange: null })
+          }
+        } catch (err: unknown) {
+          failed.push(`${ticker}: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      })
+    )
+    // 배치 간 200ms 딜레이
+    if (i + BATCH < yahooTickers.length) await new Promise(r => setTimeout(r, 200))
+  }
+
+  // CoinGecko: /coins/{id}/market_chart/range
+  for (const ticker of coinTickers) {
+    try {
+      const from = Math.floor(period1.getTime() / 1000)
+      const to = Math.floor(period2.getTime() / 1000)
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/coins/${ticker.toLowerCase()}/market_chart/range?vs_currency=krw&from=${from}&to=${to}`
+      )
+      if (!res.ok) throw new Error(`CoinGecko HTTP ${res.status}`)
+      const data = await res.json() as { prices: [number, number][] }
+      for (const [ts, price] of data.prices ?? []) {
+        const dateStr = new Date(ts).toISOString().slice(0, 10)
+        allRows.push({ ticker, date: dateStr, price, currency: 'KRW', change_pct: null, exchange: null })
+      }
+    } catch (err: unknown) {
+      failed.push(`${ticker}(coin): ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  // 같은 (ticker, date) 중복 제거 — 마지막 값 유지
+  const deduped = Object.values(
+    Object.fromEntries(allRows.map(r => [`${r.ticker}__${r.date}`, r]))
+  )
+
+  if (deduped.length > 0) {
+    await sql`
+      INSERT INTO price_history ${sql(deduped, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
+      ON CONFLICT (ticker, date) DO UPDATE
+        SET price = EXCLUDED.price,
+            currency = EXCLUDED.currency
+    `
+  }
+
+  return {
+    saved: deduped.length,
+    failed,
+    tickers: yahooTickers.concat(coinTickers),
+  }
+}
