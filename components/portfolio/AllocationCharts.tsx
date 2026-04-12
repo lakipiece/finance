@@ -159,11 +159,24 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
     setExpandedRow(prev => prev === label ? null : label)
   }
 
+  const isFiltered = allTotal > 0 && Math.abs(filteredTotal - allTotal) > 1
+  const selectedPct = allTotal > 0 ? filteredTotal / allTotal * 100 : 100
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-      <div className="flex items-baseline justify-between mb-4">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-xs font-semibold text-slate-600">자산 구성</h3>
-        <span className="text-xs text-slate-400 tabular-nums">{fmtKRW(filteredTotal)}</span>
+        <div className="flex items-center gap-2">
+          {isFiltered && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 tabular-nums font-medium">
+              {selectedPct.toFixed(1)}%
+            </span>
+          )}
+          <span className="text-xs tabular-nums text-slate-700 font-semibold">{fmtKRW(filteredTotal)}</span>
+          {isFiltered && (
+            <span className="text-[10px] tabular-nums text-slate-300">/ {fmtKRW(allTotal)}</span>
+          )}
+        </div>
       </div>
       <div className="space-y-3">
         {rows.map(row => (
