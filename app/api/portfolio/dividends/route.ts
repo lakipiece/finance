@@ -22,12 +22,22 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo } = await req.json()
-  const sql = getSql()
-  const [row] = await sql`
-    INSERT INTO dividends (security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo)
-    VALUES (${security_id}, ${account_id}, ${paid_at}, ${amount}, ${currency ?? 'KRW'}, ${exchange_rate ?? 1}, ${tax ?? 0}, ${memo ?? null})
-    RETURNING *
-  `
-  return NextResponse.json(row, { status: 201 })
+  try {
+    const { security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo } = await req.json()
+
+    if (!security_id || !account_id || !paid_at || !amount) {
+      return NextResponse.json({ error: '필수 항목 누락' }, { status: 400 })
+    }
+
+    const sql = getSql()
+    const [row] = await sql`
+      INSERT INTO dividends (security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo)
+      VALUES (${security_id}, ${account_id}, ${paid_at}, ${Number(amount)}, ${currency ?? 'KRW'}, ${Number(exchange_rate) || 1}, ${Number(tax) || 0}, ${memo ?? null})
+      RETURNING *
+    `
+    return NextResponse.json(row, { status: 201 })
+  } catch (e: any) {
+    console.error('[dividends POST]', e?.message ?? e)
+    return NextResponse.json({ error: e?.message ?? '저장 실패' }, { status: 500 })
+  }
 }

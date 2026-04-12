@@ -72,11 +72,12 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     net: toKrw(d) - taxKrw(d),
   })))
 
-  // 계좌에 연결된 종목 필터
+  // 계좌에 연결된 종목 필터 (없으면 전체)
   const linkedSecurities = form.account_id
     ? (() => {
         const ids = new Set(accountSecurities.filter(l => l.account_id === form.account_id).map(l => l.security_id))
-        return securities.filter(s => ids.has(s.id))
+        const filtered = securities.filter(s => ids.has(s.id))
+        return filtered.length > 0 ? filtered : securities
       })()
     : securities
 
@@ -84,31 +85,47 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   function handleSecurityChange(security_id: string) {
     const sec = securities.find(s => s.id === security_id)
     const currency = sec?.currency === 'USD' ? 'USD' : 'KRW'
-    setForm(p => ({ ...p, security_id, currency, exchange_rate: '' }))
+    setForm(p => ({ ...p, security_id, currency, exchange_rate: '', tax: '' }))
+  }
+
+  // 금액 변경 시 15.6% 세금 자동계산
+  function handleAmountChange(amount: string) {
+    const n = parseFloat(amount)
+    const autoTax = !isNaN(n) && n > 0 ? (n * 0.156).toFixed(2) : ''
+    setForm(p => ({ ...p, amount, tax: autoTax }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    const res = await fetch('/api/portfolio/dividends', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        security_id: form.security_id,
-        account_id: form.account_id,
-        paid_at: form.paid_at,
-        currency: form.currency,
-        amount: parseFloat(form.amount),
-        exchange_rate: form.currency === 'USD' && form.exchange_rate ? parseFloat(form.exchange_rate) : 1,
-        tax: form.tax ? parseFloat(form.tax) : 0,
-        memo: form.memo || null,
-      }),
-    })
-    setMsg(res.ok ? '저장 완료' : '저장 실패')
-    setSaving(false)
-    if (res.ok) {
-      setForm(p => ({ ...p, security_id: '', paid_at: '', amount: '', exchange_rate: '', tax: '', memo: '' }))
-      router.refresh()
+    setMsg('')
+    try {
+      const res = await fetch('/api/portfolio/dividends', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          security_id: form.security_id,
+          account_id: form.account_id,
+          paid_at: form.paid_at,
+          currency: form.currency,
+          amount: parseFloat(form.amount),
+          exchange_rate: form.currency === 'USD' && form.exchange_rate ? parseFloat(form.exchange_rate) : 1,
+          tax: form.tax ? parseFloat(form.tax) : 0,
+          memo: form.memo || null,
+        }),
+      })
+      const json = await res.json()
+      if (res.ok) {
+        setMsg('저장 완료')
+        setForm(p => ({ ...p, security_id: '', paid_at: '', amount: '', exchange_rate: '', tax: '', memo: '' }))
+        router.refresh()
+      } else {
+        setMsg(`저장 실패: ${json.error ?? res.status}`)
+      }
+    } catch (err: any) {
+      setMsg(`오류: ${err?.message ?? '알 수 없는 오류'}`)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -179,13 +196,11 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
             <option value="USD">USD</option>
           </select>
 
-          <div className="relative">
-            <input type="number" step="any" required
-              placeholder={`금액 (${form.currency})`}
-              value={form.amount}
-              onChange={e => setForm(p => ({ ...p, amount: e.target.value }))}
-              className={`${inp} w-full`} />
-          </div>
+          <input type="number" step="any" required
+            placeholder={`금액 (${form.currency})`}
+            value={form.amount}
+            onChange={e => handleAmountChange(e.target.value)}
+            className={inp} />
 
           {form.currency === 'USD' ? (
             <input type="number" step="any" required
