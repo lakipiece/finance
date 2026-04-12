@@ -50,65 +50,75 @@ function fmtKRW(v: number) {
   return `${v.toLocaleString()}원`
 }
 
-function StackBar({ row }: { row: DimRow }) {
-  const [hovered, setHovered] = useState<Segment | null>(null)
-
+function DetailPanel({ row }: { row: DimRow }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-medium text-slate-500 w-12 shrink-0 text-right">{row.label}</span>
-        <div className="flex-1 flex h-5 rounded-md overflow-hidden gap-px">
-          {row.segments.map((seg, i) => (
-            <div
-              key={i}
-              style={{ width: `${seg.pct}%`, backgroundColor: seg.color, minWidth: seg.pct > 0.5 ? 2 : 0 }}
-              className="transition-opacity hover:opacity-75 cursor-default"
-              onMouseEnter={() => setHovered(seg)}
-              onMouseLeave={() => setHovered(null)}
-            />
-          ))}
-        </div>
-        <span className="text-[10px] tabular-nums text-slate-400 w-16 text-right shrink-0">
-          {fmtKRW(row.total)}
-        </span>
-      </div>
-      {/* 호버 툴팁 */}
-      {hovered && (
-        <div className="ml-14 text-[10px] text-slate-600 bg-slate-50 border border-slate-100 rounded-lg px-2.5 py-1.5 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: hovered.color }} />
-          <span className="font-medium">{hovered.name}</span>
-          <span className="text-slate-400 tabular-nums">{hovered.pct.toFixed(1)}%</span>
-          <span className="text-slate-500 tabular-nums">{fmtKRW(hovered.value)}</span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// 범례 — 여러 행에 걸쳐 표시
-function Legend({ rows }: { rows: DimRow[] }) {
-  // 각 dimension 별로 구분해서 표시
-  return (
-    <div className="mt-4 space-y-3">
-      {rows.map(row => (
-        <div key={row.label}>
-          <p className="text-[10px] font-semibold text-slate-400 mb-1">{row.label}</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-1">
-            {row.segments.filter(s => s.pct >= 0.5).map((seg, i) => (
-              <div key={i} className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
-                <span className="text-[10px] text-slate-600">{seg.name}</span>
-                <span className="text-[10px] text-slate-400 tabular-nums">{seg.pct.toFixed(1)}%</span>
-              </div>
-            ))}
+    <div className="ml-14 mt-1.5 bg-slate-50 rounded-xl border border-slate-100 px-3 py-2.5 space-y-1.5">
+      {row.segments.map((seg, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+          <span className="text-[10px] text-slate-600 flex-1 truncate">{seg.name}</span>
+          <div className="w-20 bg-slate-200 rounded-full h-1 overflow-hidden">
+            <div className="h-1 rounded-full" style={{ width: `${seg.pct}%`, backgroundColor: seg.color }} />
           </div>
+          <span className="text-[10px] text-slate-400 tabular-nums w-8 text-right">{seg.pct.toFixed(1)}%</span>
+          <span className="text-[10px] text-slate-600 tabular-nums w-16 text-right">{fmtKRW(seg.value)}</span>
         </div>
       ))}
     </div>
   )
 }
 
+function StackBar({
+  row,
+  isExpanded,
+  onToggle,
+}: {
+  row: DimRow
+  isExpanded: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center gap-2 group"
+      >
+        <span className="text-[10px] font-medium text-slate-500 w-12 shrink-0 text-right group-hover:text-slate-700 transition-colors">
+          {row.label}
+        </span>
+        <div className="flex-1 flex h-5 rounded-md overflow-hidden gap-px">
+          {row.segments.map((seg, i) => (
+            <div
+              key={i}
+              style={{ width: `${seg.pct}%`, backgroundColor: seg.color, minWidth: seg.pct > 0.5 ? 2 : 0 }}
+              className="relative flex items-center overflow-hidden"
+            >
+              {seg.pct >= 8 && (
+                <span className="text-[9px] text-white font-medium px-1 truncate leading-none select-none">
+                  {seg.pct.toFixed(0)}%
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+        <span className="text-[10px] tabular-nums text-slate-400 w-16 text-right shrink-0">
+          {fmtKRW(row.total)}
+        </span>
+        <svg
+          className={`w-3 h-3 text-slate-300 group-hover:text-slate-500 transition-all shrink-0 ${isExpanded ? '' : '-rotate-90'}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isExpanded && <DetailPanel row={row} />}
+    </div>
+  )
+}
+
 export default function AllocationCharts({ allPositions, positions, sectorColors = {} }: Props) {
+  const [expandedRow, setExpandedRow] = useState<string | null>(null)
+
   const hasPrices = allPositions.some(p => p.market_value > 0)
   const vk: 'market_value' | 'total_invested' = hasPrices ? 'market_value' : 'total_invested'
 
@@ -127,7 +137,6 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
   }
   const accountSegments = toSegments(allByAccount, allTotal, name => accountColorMap[name])
 
-  // 나머지 행: positions 기준
   const bySector = groupBy(positions, p => p.security.sector ?? '기타', vk).slice(0, 12)
   const byCountry = groupBy(positions, p => p.security.country ?? '기타', vk).slice(0, 10)
   const byAssetClass = groupBy(positions, p => p.security.asset_class ?? '기타', vk).slice(0, 8)
@@ -146,6 +155,10 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
     { label: '자산군별', segments: assetClassSegments, total: filteredTotal },
   ]
 
+  function toggle(label: string) {
+    setExpandedRow(prev => prev === label ? null : label)
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
       <div className="flex items-baseline justify-between mb-4">
@@ -153,9 +166,15 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
         <span className="text-xs text-slate-400 tabular-nums">{fmtKRW(filteredTotal)}</span>
       </div>
       <div className="space-y-3">
-        {rows.map(row => <StackBar key={row.label} row={row} />)}
+        {rows.map(row => (
+          <StackBar
+            key={row.label}
+            row={row}
+            isExpanded={expandedRow === row.label}
+            onToggle={() => toggle(row.label)}
+          />
+        ))}
       </div>
-      <Legend rows={rows} />
     </div>
   )
 }

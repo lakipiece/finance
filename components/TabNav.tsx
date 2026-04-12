@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const LEDGER_TABS = [
-  { label: '대시보드', short: '홈',  href: '/' },
+  { label: '대시보드', short: '홈',  href: '/expenses' },
   { label: '연도비교', short: '비교', href: '/compare' },
   { label: '검색',    short: '검색', href: '/search' },
   { label: '관리',    short: '관리', href: '/admin' },
@@ -27,7 +27,7 @@ export default function TabNav() {
   return (
     <nav className="flex gap-0.5 flex-nowrap overflow-x-auto scrollbar-none" aria-label="탭 네비게이션">
       {tabs.map((tab) => {
-        const active = tab.href === '/' || tab.href === '/portfolio'
+        const active = tab.href === '/expenses' || tab.href === '/portfolio'
           ? pathname === tab.href
           : pathname.startsWith(tab.href)
         return (

@@ -18,7 +18,7 @@ export default function TopModeToggle() {
         포트폴리오
       </Link>
       <Link
-        href="/"
+        href="/expenses"
         className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
           !isPortfolio ? 'bg-white text-slate-700' : 'text-white/70 hover:text-white'
         }`}
