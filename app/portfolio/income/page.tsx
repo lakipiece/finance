@@ -4,9 +4,9 @@ import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 
 export const dynamic = 'force-dynamic'
 
-type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker'> }
+type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker' | 'owner'> }
 type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>
-type AccountRow = Pick<Account, 'id' | 'name' | 'broker'>
+type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner'>
 type AccountSecurity = { account_id: string; security_id: string }
 
 export default async function IncomePage() {
@@ -17,7 +17,7 @@ export default async function IncomePage() {
       sql`
         SELECT d.*,
           json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW')) AS security,
-          json_build_object('name', a.name, 'broker', a.broker) AS account
+          json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner) AS account
         FROM dividends d
         JOIN securities s ON s.id = d.security_id
         LEFT JOIN option_list ol ON s.currency_id = ol.id
@@ -30,7 +30,7 @@ export default async function IncomePage() {
         LEFT JOIN option_list ol ON s.currency_id = ol.id
         ORDER BY s.ticker
       ` as unknown as Promise<SecurityRow[]>,
-      sql`SELECT id, name, broker FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
+      sql`SELECT id, name, broker, owner FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
     ])
 
