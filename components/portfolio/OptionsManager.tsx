@@ -35,7 +35,9 @@ function isValidHex(s: string) {
 function ColorPicker({ color, onChange }: { color: string; onChange: (c: string) => void }) {
   const [open, setOpen] = useState(false)
   const [hexInput, setHexInput] = useState(color)
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+  const triggerRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const nativeRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { setHexInput(color) }, [color])
@@ -43,11 +45,24 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   useEffect(() => {
     if (!open) return
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        triggerRef.current && !triggerRef.current.contains(e.target as Node)
+      ) setOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
+
+  function handleOpen() {
+    if (!open && triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect()
+      // 드롭다운 너비 ~148px, 화면 우측 넘침 방지
+      const left = Math.min(r.left, window.innerWidth - 156)
+      setPos({ top: r.bottom + 4, left })
+    }
+    setOpen(v => !v)
+  }
 
   function handleHexChange(v: string) {
     setHexInput(v)
@@ -55,19 +70,24 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   }
 
   return (
-    <div className="relative" ref={ref}>
+    <div>
       <div
-        className="w-4 h-4 rounded-full border border-slate-200 cursor-pointer shrink-0"
+        ref={triggerRef}
+        className="w-3.5 h-3.5 rounded-full border border-slate-200 cursor-pointer shrink-0"
         style={{ backgroundColor: color }}
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
       />
       {open && (
-        <div className="absolute left-0 top-6 z-20 bg-white border border-slate-200 rounded-xl p-2.5 shadow-xl w-44">
-          {/* 프리셋 — 5열 고정 그리드 */}
-          <div className="grid grid-cols-5 gap-1.5 mb-2.5">
+        <div
+          ref={dropdownRef}
+          className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2 shadow-xl"
+          style={{ top: pos.top, left: pos.left }}
+        >
+          {/* 프리셋 — 5열 */}
+          <div className="grid grid-cols-5 gap-1 mb-2">
             {PRESET_COLORS.map(c => (
               <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
-                className="w-5 h-5 rounded-full border transition-all hover:scale-110"
+                className="w-4 h-4 rounded-full border transition-all hover:scale-110"
                 style={{
                   backgroundColor: c,
                   borderColor: color === c ? '#1e293b' : 'transparent',
@@ -77,9 +97,9 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
             ))}
           </div>
           {/* HEX 입력 + 네이티브 피커 */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <div
-              className="w-6 h-6 rounded-lg border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
+              className="w-5 h-5 rounded-md border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
               style={{ backgroundColor: color }}
               onClick={() => nativeRef.current?.click()}
             >
@@ -95,7 +115,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
               value={hexInput}
               onChange={e => handleHexChange(e.target.value)}
               placeholder="#3b82f6"
-              className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-300 font-sans focus:outline-none focus:ring-1 focus:ring-blue-300"
+              className="w-[72px] border border-slate-200 rounded-md px-1.5 py-0.5 text-[10px] text-slate-300 font-sans focus:outline-none focus:ring-1 focus:ring-blue-300"
               maxLength={7}
             />
           </div>
