@@ -1,6 +1,7 @@
 'use client'
 
 import type { PortfolioSummary } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 
 interface Props { summary: PortfolioSummary }
 
@@ -13,6 +14,7 @@ function pctStr(n: number) {
 }
 
 export default function PortfolioKpiCards({ summary }: Props) {
+  const { palette } = useTheme()
   const { total_market_value, total_invested, total_unrealized_pnl, total_unrealized_pct, total_dividends } = summary
   const pnlPos = total_unrealized_pnl >= 0
   const pnlColor = pnlPos ? 'text-rose-500' : 'text-blue-500'
@@ -32,7 +34,8 @@ export default function PortfolioKpiCards({ summary }: Props) {
           {/* 레이블 + 툴팁 */}
           <div className="relative group/lbl inline-block self-start mb-1">
             <p className="text-xs text-slate-400 font-medium uppercase tracking-wider cursor-default">{c.label}</p>
-            <div className="absolute bottom-full left-0 mb-1.5 px-2 py-1 bg-slate-700 text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover/lbl:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+            <div className="absolute bottom-full left-0 mb-1.5 px-2 py-1 text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover/lbl:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg"
+              style={{ backgroundColor: palette.colors[0] }}>
               {c.sub}
             </div>
           </div>

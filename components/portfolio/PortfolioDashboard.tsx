@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account } from '@/lib/portfolio/types'
+import { useTheme } from '@/lib/ThemeContext'
 import PortfolioKpiCards from './PortfolioKpiCards'
 import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
@@ -75,11 +76,13 @@ function SectionHeader({
   onToggle: () => void
   badge?: number
 }) {
+  const { palette } = useTheme()
   return (
     <button onClick={onToggle} className="flex items-center gap-1.5 group">
       <span className="text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-white tabular-nums">{badge}</span>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-full text-white tabular-nums"
+          style={{ backgroundColor: palette.colors[0] }}>{badge}</span>
       )}
       <svg
         className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all ${open ? '' : '-rotate-90'}`}
@@ -92,6 +95,7 @@ function SectionHeader({
 }
 
 export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {} }: Props) {
+  const { palette } = useTheme()
   const [refreshing, setRefreshing] = useState(false)
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
@@ -260,9 +264,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               title={`${summary.positions.length}종목`}
               className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
-                  ? 'bg-slate-100 border-2 border-slate-300'
-                  : 'bg-white border border-slate-100 hover:border-slate-300'
-              }`}>
+                  ? 'bg-slate-50'
+                  : 'bg-white border-slate-100 hover:border-slate-300'
+              }`}
+              style={selectedAccountIds.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
               <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-500' : 'text-slate-400'}`}>전체</p>
               <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
                 {Math.round(summary.total_market_value).toLocaleString()}원
@@ -290,10 +295,9 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     onClick={() => toggleAccount(id)}
                     title={`${g.count}종목`}
                     className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
-                      isSelected
-                        ? 'bg-slate-100 border-2 border-slate-300'
-                        : 'bg-white border border-slate-100 hover:border-slate-300'
-                    }`}>
+                      isSelected ? 'bg-slate-50' : 'bg-white border-slate-100 hover:border-slate-300'
+                    }`}
+                    style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
                     {isSelected && (
                       <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-slate-400" />
                     )}
@@ -345,11 +349,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setSelectedSectors(new Set())}
-              className={`text-xs px-2.5 py-1 rounded-full transition-colors ${
+              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                 selectedSectors.size === 0
-                  ? 'bg-slate-100 border-2 border-slate-300 text-slate-700 font-medium'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-              }`}>
+                  ? 'bg-slate-50 text-slate-700 font-medium'
+                  : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+              }`}
+              style={selectedSectors.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
               전체
             </button>
             {sectors.map(s => {
@@ -358,11 +363,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               return (
                 <button key={s}
                   onClick={() => toggleSector(s)}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full transition-colors ${
+                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                     isSelected
-                      ? 'bg-slate-100 border-2 border-slate-300 text-slate-700 font-medium'
-                      : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-400'
-                  }`}>
+                      ? 'bg-slate-50 text-slate-700 font-medium'
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}
+                  style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
                   {color && (
                     <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                   )}
