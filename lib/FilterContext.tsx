@@ -13,11 +13,11 @@ const FilterContext = createContext<FilterCtx>({
 })
 
 export function FilterProvider({ children }: { children: React.ReactNode }) {
-  const [excludeLoan, setExcludeLoanState] = useState(false)
+  const [excludeLoan, setExcludeLoanState] = useState(true)
 
   useEffect(() => {
     const saved = localStorage.getItem('exclude-loan')
-    if (saved === 'true') setExcludeLoanState(true)
+    if (saved !== null) setExcludeLoanState(saved === 'true')
   }, [])
 
   function setExcludeLoan(v: boolean) {

@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
+  BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Legend,
+  PieChart, Pie, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
 
@@ -28,7 +29,7 @@ function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
 
-// 라인차트 커스텀 툴팁
+// 총 평가금액 바차트 커스텀 툴팁
 function LineTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
@@ -39,11 +40,9 @@ function LineTooltip({ active, payload, label }: any) {
   )
 }
 
-// 바차트 커스텀 툴팁
+// 구성 비중 바차트 커스텀 툴팁
 function BarTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
-  const total = payload.reduce((sum: number, p: any) => sum + (Number(p.value) || 0), 0)
-  // total_market_value는 payload[0].payload에 있음
   const mv = payload[0]?.payload?.total_market_value ?? 0
   return (
     <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs max-w-[200px]">
@@ -71,6 +70,8 @@ function BarTooltip({ active, payload, label }: any) {
 
 export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
   const [mode, setMode] = useState<'asset_class' | 'ticker'>('asset_class')
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [filterKey, setFilterKey] = useState<string | null>(null)
   const { palette } = useTheme()
   if (points.length < 2) return null
 
@@ -88,21 +89,78 @@ export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Line chart */}
+      {/* 총 평가금액 추이 — 바 차트 */}
       <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
         <h3 className="text-sm font-semibold text-slate-700 mb-4">총 평가금액 추이</h3>
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={points} margin={{ left: 8, right: 8 }}>
+          <BarChart data={points} margin={{ left: 8, right: 8 }}
+            onClick={(data) => {
+              const label = data?.activeLabel as string | undefined
+              if (label) {
+                setSelectedDate(prev => prev === label ? null : label)
+                setFilterKey(null)
+              }
+            }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={fmtY} tick={{ fontSize: 11, fill: '#94a3b8' }} width={60} axisLine={false} tickLine={false} />
-            <Tooltip content={<LineTooltip />} />
-            <Line type="monotone" dataKey="total_market_value" stroke={palette.colors[0]} strokeWidth={2} dot={{ r: 4 }} />
-          </LineChart>
+            <Tooltip content={<LineTooltip />} cursor={{ fill: '#f8fafc' }} />
+            <Bar dataKey="total_market_value" fill={palette.colors[0]} radius={[4, 4, 0, 0]}
+              style={{ cursor: 'pointer' }} />
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Stacked bar chart */}
+      {/* 도넛 드릴다운 — 선택된 날짜의 섹터 구성 */}
+      {selectedDate && (() => {
+        const point = points.find(p => p.date === selectedDate)
+        if (!point) return null
+        const entries = Object.entries(point.breakdown)
+          .filter(([, v]) => v > 0)
+          .sort((a, b) => b[1] - a[1])
+        const pieData = entries.map(([name, pct], i) => ({
+          name,
+          value: pct,
+          fill: sectorColors[name] ?? THEME_COLORS[i % THEME_COLORS.length],
+        }))
+        return (
+          <div className="bg-white rounded-2xl border border-slate-100 px-6 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-slate-600">{selectedDate} 구성 비중</h4>
+              <button onClick={() => { setSelectedDate(null); setFilterKey(null) }}
+                className="text-slate-300 hover:text-slate-500 text-xs">닫기</button>
+            </div>
+            <div className="flex items-center gap-6 flex-wrap">
+              <PieChart width={160} height={160}>
+                <Pie data={pieData} cx={75} cy={75} innerRadius={45} outerRadius={70}
+                  dataKey="value" paddingAngle={2}
+                  onClick={(entry) => setFilterKey(prev => prev === entry.name ? null : entry.name)}
+                  style={{ cursor: 'pointer' }}>
+                  {pieData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill}
+                      opacity={filterKey && filterKey !== entry.name ? 0.3 : 1} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
+              </PieChart>
+              <div className="flex-1 space-y-1 max-h-32 overflow-y-auto min-w-0">
+                {entries.map(([name, pct], i) => (
+                  <div key={name}
+                    className={`flex items-center gap-1.5 cursor-pointer rounded px-1 py-0.5 ${filterKey === name ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+                    onClick={() => setFilterKey(prev => prev === name ? null : name)}>
+                    <span className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: sectorColors[name] ?? THEME_COLORS[i % THEME_COLORS.length] }} />
+                    <span className="text-[10px] text-slate-600 flex-1 truncate">{name}</span>
+                    <span className="text-[10px] tabular-nums text-slate-500">{pct.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* 구성 비중 변화 — stacked bar */}
       <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-700">구성 비중 변화</h3>
@@ -124,7 +182,8 @@ export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {keys.map((k, i) => (
               <Bar key={k} dataKey={`breakdown.${k}`} name={k} stackId="a"
-                fill={getColor(k, i)} />
+                fill={getColor(k, i)}
+                opacity={filterKey && filterKey !== k ? 0.2 : 1} />
             ))}
           </BarChart>
         </ResponsiveContainer>

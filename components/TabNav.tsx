@@ -7,16 +7,18 @@ const LEDGER_TABS = [
   { label: '대시보드', short: '홈',  href: '/expenses' },
   { label: '연도비교', short: '비교', href: '/compare' },
   { label: '검색',    short: '검색', href: '/search' },
-  { label: '관리',    short: '관리', href: '/admin' },
+  { label: '설정',    short: '설정', href: '/settings' },
 ]
 
 const PORTFOLIO_TABS = [
   { label: '대시보드', short: '홈',   href: '/portfolio' },
   { label: '스냅샷',  short: '스냅샷', href: '/portfolio/snapshots' },
   { label: '배당',    short: '배당',  href: '/portfolio/income' },
-  { label: '계좌관리', short: '계좌', href: '/portfolio/accounts' },
-  { label: '종목관리', short: '종목', href: '/portfolio/securities' },
-  { label: '설정',    short: '설정',  href: '/portfolio/settings' },
+  { label: '계좌',    short: '계좌',  href: '/portfolio/accounts' },
+  { label: '종목',    short: '종목',  href: '/portfolio/securities' },
+  { label: '옵션',    short: '옵션',  href: '/portfolio/options' },
+  { label: '리밸런싱', short: '리밸', href: '/portfolio/rebalance' },
+  { label: '설정',    short: '설정',  href: '/settings' },
 ]
 
 export default function TabNav() {

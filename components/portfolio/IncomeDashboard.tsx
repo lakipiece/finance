@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  PieChart, Pie, Cell,
 } from 'recharts'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
@@ -75,10 +76,22 @@ function groupByMonth(items: { date: unknown; amount: number }[]) {
   return Object.entries(map).sort().map(([month, amount]) => ({ month, amount }))
 }
 
+function groupByMonthAndTicker(items: DividendRow[]) {
+  const map: Record<string, Record<string, number>> = {}
+  for (const d of items) {
+    const month = fmtDate(d.paid_at).slice(0, 7)
+    if (!month) continue
+    if (!map[month]) map[month] = {}
+    const ticker = d.security.ticker
+    map[month][ticker] = (map[month][ticker] ?? 0) + toKrw(d)
+  }
+  return map
+}
+
 // ─── 스타일 ──────────────────────────────────────────────────────────────────
 
-const inp = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
-const sel = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-500 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
+const inp = 'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
+const sel = 'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
 const filterBtnCls = (active: boolean) =>
   `text-xs px-2.5 py-1 rounded-full border transition-colors ${
     active ? 'text-white' : 'border-slate-200 text-slate-500 hover:border-slate-400'
@@ -86,12 +99,12 @@ const filterBtnCls = (active: boolean) =>
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, color }: any) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-100 rounded-lg px-3 py-1.5 shadow-sm">
       <p className="text-[10px] text-slate-400 mb-0.5">{label}</p>
-      <p className="text-[11px] font-semibold text-emerald-600">
+      <p className="text-[11px] font-semibold" style={{ color: color ?? '#10b981' }}>
         {Math.round(payload[0].value).toLocaleString()}원
       </p>
     </div>
@@ -120,10 +133,14 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
   const [showModal, setShowModal] = useState(false)
   const [editTarget, setEditTarget] = useState<DividendRow | null>(null)
   const [modalOwner, setModalOwner] = useState<string>('')
+  const [secSearch, setSecSearch] = useState('')
+  const [secDropOpen, setSecDropOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('date')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+  const secDropRef = useRef<HTMLDivElement>(null)
 
   // ── 연간 KPI ─────────────────────────────────────────────────────────────
   const year = thisYear()
@@ -139,6 +156,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
   const chartData = groupByMonth(
     yearDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
   )
+  const monthTickerMap = useMemo(() => groupByMonthAndTicker(yearDividends), [yearDividends])
 
   // ── 사용자 목록 (owner) ───────────────────────────────────────────────────
   const owners = useMemo(() => {
@@ -159,6 +177,28 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
     const filtered = securities.filter(s => ids.has(s.id))
     return filtered.length > 0 ? filtered : securities
   }, [form.account_id, securities, accountSecurities])
+
+  const filteredModalSecurities = useMemo(() =>
+    !secSearch
+      ? modalSecurities.slice(0, 20)
+      : modalSecurities.filter(s =>
+          s.ticker.toLowerCase().includes(secSearch.toLowerCase()) ||
+          s.name.toLowerCase().includes(secSearch.toLowerCase())
+        ).slice(0, 20),
+    [modalSecurities, secSearch]
+  )
+
+  // 드롭다운 바깥 클릭 닫기
+  useEffect(() => {
+    if (!secDropOpen) return
+    function handleClick(e: MouseEvent) {
+      if (secDropRef.current && !secDropRef.current.contains(e.target as Node)) {
+        setSecDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [secDropOpen])
 
   // ── 테이블 필터 + 정렬 ────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -189,12 +229,16 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
     setEditTarget(null)
     setModalOwner('')
     setForm(emptyForm())
+    setSecSearch('')
+    setSecDropOpen(false)
     setShowModal(true)
   }
 
   function openEditModal(d: DividendRow) {
     setEditTarget(d)
     setModalOwner(d.account.owner ?? '')
+    setSecSearch('')
+    setSecDropOpen(false)
     setForm({
       account_id: d.account_id,
       security_id: d.security_id,
@@ -264,16 +308,18 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
 
       {/* KPI */}
       <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: `${year}년 총 수령액`, value: totalGross, color: 'text-emerald-600' },
-          { label: `${year}년 납부 세금`, value: totalTax, color: 'text-rose-400' },
-          { label: `${year}년 세후 수령액`, value: totalNet, color: 'text-slate-800' },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
-            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{label}</p>
-            <p className={`text-2xl font-bold mt-1 ${color}`}>{fmt(value)}원</p>
-          </div>
-        ))}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 총 수령액</p>
+          <p className="text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(totalGross)}원</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 납부 세금</p>
+          <p className="text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(totalTax)}원</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 세후 수령액</p>
+          <p className="text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(totalNet)}원</p>
+        </div>
       </div>
 
       {/* 차트 */}
@@ -281,16 +327,67 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
         <div className="bg-white rounded-2xl border border-slate-100 p-5">
           <h3 className="text-sm font-semibold text-slate-700 mb-4">{year}년 월별 배당·분배금 수령액</h3>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={chartData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
+            <BarChart data={chartData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+              onClick={(data) => {
+                const label = data?.activeLabel as string | undefined
+                if (label) setSelectedMonth(prev => prev === label ? null : label)
+              }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} width={52} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="amount" fill="#a7f3d0" radius={[3, 3, 0, 0]} maxBarSize={32} />
+              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Bar dataKey="amount" radius={[3, 3, 0, 0]} maxBarSize={32}
+                fill={palette.colors[0]}
+                style={{ cursor: 'pointer' }} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       )}
+
+      {/* 도넛 드릴다운 */}
+      {selectedMonth && (() => {
+        const breakdown = monthTickerMap[selectedMonth] ?? {}
+        const entries = Object.entries(breakdown).sort((a, b) => b[1] - a[1])
+        const total = entries.reduce((s, [, v]) => s + v, 0)
+        const pieData = entries.map(([name, value], i) => ({
+          name, value,
+          fill: palette.colors[i % palette.colors.length] ?? '#94a3b8',
+        }))
+        return (
+          <div className="bg-white rounded-2xl border border-slate-100 px-6 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-slate-600">{selectedMonth} 종목별 배당</h4>
+              <button onClick={() => setSelectedMonth(null)} className="text-slate-300 hover:text-slate-500 text-xs">닫기</button>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap">
+              <PieChart width={160} height={160}>
+                <Pie data={pieData} cx={75} cy={75} innerRadius={45} outerRadius={70}
+                  dataKey="value" paddingAngle={2}>
+                  {pieData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v: number) => `${Math.round(v).toLocaleString()}원`} />
+              </PieChart>
+              <div className="flex-1 space-y-1 min-w-0">
+                {entries.map(([name, value], i) => (
+                  <div key={name} className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: palette.colors[i % palette.colors.length] ?? '#94a3b8' }} />
+                    <span className="text-[10px] text-slate-600 flex-1 truncate">{name}</span>
+                    <span className="text-[10px] tabular-nums text-slate-500">
+                      {total > 0 ? (value / total * 100).toFixed(1) : 0}%
+                    </span>
+                    <span className="text-[10px] tabular-nums text-slate-400">
+                      {Math.round(value).toLocaleString()}원
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* 테이블 헤더: 타이틀 + 검색 + 추가 버튼 */}
       <div className="flex items-center justify-between gap-3">
@@ -348,7 +445,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                   <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{fmtDate(d.paid_at)}</td>
                   <td className="py-2.5 px-3">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                       {d.security.ticker}
                     </span>
                     <p className="text-[10px] text-slate-400 mt-0.5 max-w-[100px] truncate" title={d.security.name}>{d.security.name}</p>
@@ -377,7 +474,7 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
                   <td className="py-2.5 px-3 text-right tabular-nums text-xs text-slate-400 whitespace-nowrap">
                     {tax > 0 ? fmtFull(tax) : <span className="text-slate-200">—</span>}
                   </td>
-                  <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-emerald-600 whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-700 whitespace-nowrap">
                     {fmtFull(net)}
                   </td>
                   <td className="py-2.5 px-3">
@@ -504,14 +601,48 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
               {/* 종목 선택 */}
               <div>
                 <p className="text-xs text-slate-400 mb-1.5">종목</p>
-                <select required value={form.security_id}
-                  onChange={e => handleSecurityChange(e.target.value)}
-                  className={sel}>
-                  <option value="">종목 선택</option>
-                  {modalSecurities.map(s => (
-                    <option key={s.id} value={s.id}>{s.ticker} {s.name}</option>
-                  ))}
-                </select>
+                {form.security_id ? (
+                  <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5">
+                    <span className="text-xs font-medium text-slate-700 flex-1 truncate">
+                      {modalSecurities.find(s => s.id === form.security_id)?.ticker}
+                      {' '}{modalSecurities.find(s => s.id === form.security_id)?.name}
+                    </span>
+                    <button type="button"
+                      onClick={() => { setForm(p => ({ ...p, security_id: '' })); setSecSearch('') }}
+                      className="text-slate-400 hover:text-slate-600 text-xs shrink-0">변경</button>
+                  </div>
+                ) : (
+                  <div className="relative" ref={secDropRef}>
+                    <input
+                      type="text"
+                      placeholder="종목 검색 (티커 또는 종목명)"
+                      value={secSearch}
+                      onChange={e => { setSecSearch(e.target.value); setSecDropOpen(true) }}
+                      onFocus={() => setSecDropOpen(true)}
+                      className={inp}
+                      autoComplete="off"
+                    />
+                    {secDropOpen && filteredModalSecurities.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-48 overflow-y-auto">
+                        {filteredModalSecurities.map(s => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => {
+                              handleSecurityChange(s.id)
+                              setSecSearch('')
+                              setSecDropOpen(false)
+                            }}
+                            className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <span className="font-mono font-semibold text-slate-700 w-16 shrink-0">{s.ticker}</span>
+                            <span className="text-slate-500 truncate">{s.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* 수령일 */}

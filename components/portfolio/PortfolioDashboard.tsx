@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import PortfolioKpiCards from './PortfolioKpiCards'
@@ -17,6 +18,7 @@ interface Props {
 export interface MergedPosition {
   security: PortfolioPosition['security']
   accounts: Account[]
+  accountValues: Record<string, number>
   quantity: number
   avg_price: number
   avg_price_usd: number | null
@@ -37,6 +39,7 @@ function mergeBySecuirty(positions: PortfolioPosition[]): MergedPosition[] {
       map.set(key, {
         security: p.security,
         accounts: [p.account],
+        accountValues: { [p.account.id]: p.market_value },
         quantity: p.quantity,
         avg_price: p.avg_price,
         avg_price_usd: p.avg_price_usd,
@@ -51,6 +54,7 @@ function mergeBySecuirty(positions: PortfolioPosition[]): MergedPosition[] {
     } else {
       const m = map.get(key)!
       if (!m.accounts.find(a => a.id === p.account.id)) m.accounts.push(p.account)
+      m.accountValues[p.account.id] = (m.accountValues[p.account.id] ?? 0) + p.market_value
       m.quantity += p.quantity
       m.total_invested += p.total_invested
       m.market_value += p.market_value
@@ -96,6 +100,7 @@ function SectionHeader({
 
 export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {} }: Props) {
   const { palette } = useTheme()
+  const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
@@ -207,6 +212,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         if (json.failed?.length > 0) console.warn('[price refresh] failed:', json.failed)
         setRefreshMsg(`${json.saved}개 저장 완료${failedMsg} ${json.failed?.length > 0 ? '— 콘솔 확인' : ''}`)
         setLastUpdated(new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }))
+        router.refresh()
       }
     } catch {
       setRefreshMsg('새로고침 실패')
