@@ -1,12 +1,11 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRef } from 'react'
 import { signOut } from 'next-auth/react'
 import PreviewModal from './PreviewModal'
-import type { ParsePreviewResponse } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
+import { useDataImport } from '@/lib/useDataImport'
 import ThemePicker from './ThemePicker'
 
 interface Props {
@@ -14,112 +13,8 @@ interface Props {
 }
 
 export default function AdminClient({ initialYears }: Props) {
-  const router = useRouter()
   const { excludeLoan, setExcludeLoan } = useFilter()
-
-  // Excel upload state
-  const [uploadYear, setUploadYear] = useState(new Date().getFullYear())
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Google Sheets state
-  const [sheetId, setSheetId] = useState('')
-  const [sheetName, setSheetName] = useState('지출내역')
-  const [sheetYear, setSheetYear] = useState(new Date().getFullYear())
-  const [sheetsLoading, setSheetsLoading] = useState(false)
-  const [sheetsError, setSheetsError] = useState('')
-
-  // Preview state (shared)
-  const [preview, setPreview] = useState<ParsePreviewResponse | null>(null)
-  const [saving, setSaving] = useState(false)
-
-  // Year summary state
-  const [years, setYears] = useState<YearSummary[]>(initialYears)
-
-  // Sync loading state per year
-  const [syncingYear, setSyncingYear] = useState<number | null>(null)
-
-  async function handleFileUpload(file: File) {
-    setUploadError('')
-    setUploading(true)
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('year', String(uploadYear))
-
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const json = await res.json()
-    setUploading(false)
-
-    if (!res.ok) { setUploadError(json.error ?? '업로드 실패'); return }
-    setPreview({ ...json, source: 'excel' })
-  }
-
-  async function handleSheetsImport(overrideId?: string, overrideYear?: number) {
-    const targetId = overrideId ?? sheetId
-    const targetYear = overrideYear ?? sheetYear
-    setSheetsError('')
-
-    const isGoogleSheetsUrl = targetId.includes('docs.google.com/spreadsheets')
-    const isRawId = /^[a-zA-Z0-9_-]{20,}$/.test(targetId.trim())
-    if (!isGoogleSheetsUrl && !isRawId) {
-      setSheetsError('Google Sheets URL 또는 스프레드시트 ID를 입력해주세요.')
-      return
-    }
-
-    if (overrideId) {
-      setSyncingYear(targetYear)
-    } else {
-      setSheetsLoading(true)
-    }
-
-    const res = await fetch('/api/sheets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ spreadsheetId: targetId, sheetName, year: targetYear }),
-    })
-    const json = await res.json()
-
-    if (overrideId) {
-      setSyncingYear(null)
-    } else {
-      setSheetsLoading(false)
-    }
-
-    if (!res.ok) {
-      if (overrideId) { alert(json.error ?? '동기화 실패'); return }
-      setSheetsError(json.error ?? '가져오기 실패')
-      return
-    }
-    const sheetsUrl = targetId.includes('docs.google.com') ? targetId : `https://docs.google.com/spreadsheets/d/${targetId}`
-    setPreview({ ...json, source: 'googlesheet', source_url: sheetsUrl })
-  }
-
-  async function handleYearSync(y: YearSummary) {
-    if (!y.source_url) return
-    await handleSheetsImport(y.source_url, y.year)
-  }
-
-  async function handleConfirmSave() {
-    if (!preview) return
-    setSaving(true)
-
-    const res = await fetch('/api/insert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rows: preview.rows, year: preview.year, source: preview.source ?? 'excel', source_url: preview.source_url ?? '' }),
-    })
-    const json = await res.json()
-    setSaving(false)
-
-    if (!res.ok) { alert(json.error ?? '저장 실패'); return }
-
-    const inserted: number = json.inserted ?? 0
-    setPreview(null)
-    alert(`${inserted}건 저장 완료`)
-    window.location.href = '/admin'
-  }
+  const imp = useDataImport(initialYears, { redirectAfterSave: '/admin' })
 
   async function handleLogout() {
     await signOut({ callbackUrl: '/login' })
@@ -141,7 +36,7 @@ export default function AdminClient({ initialYears }: Props) {
         </button>
       </div>
 
-      {/* Settings */}
+      {/* 공통 설정 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
         <div className="flex items-center gap-8 flex-wrap">
           <div className="flex items-center gap-3">
@@ -160,23 +55,23 @@ export default function AdminClient({ initialYears }: Props) {
         </div>
       </div>
 
-      {/* Section A: Stored data summary (top) */}
+      {/* 저장된 데이터 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
         <h2 className="text-base font-semibold text-slate-700 mb-4">저장된 데이터</h2>
-        {years.length === 0 ? (
+        {imp.years.length === 0 ? (
           <p className="text-sm text-slate-400">아직 저장된 데이터가 없습니다.</p>
         ) : (
           <div className="flex gap-4 flex-wrap">
-            {years.map((y) => {
+            {imp.years.map((y) => {
               const isSheets = y.source === 'googlesheet'
-              const isSyncing = syncingYear === y.year
+              const isSyncing = imp.syncingYear === y.year
               return (
                 <div
                   key={y.year}
                   className={`bg-slate-50 rounded-xl px-6 py-4 text-center min-w-28 min-h-[100px] transition-all ${
                     isSheets && y.source_url ? 'cursor-pointer hover:bg-slate-100 hover:-translate-y-0.5' : ''
                   } ${isSyncing ? 'animate-pulse' : ''}`}
-                  onClick={isSheets && y.source_url && !isSyncing ? () => handleYearSync(y) : undefined}
+                  onClick={isSheets && y.source_url && !isSyncing ? () => imp.handleYearSync(y) : undefined}
                 >
                   <div className="text-2xl font-bold text-slate-800">{y.year}</div>
                   <div className="text-xs text-slate-400 mt-1">{y.count.toLocaleString()}건</div>
@@ -198,18 +93,17 @@ export default function AdminClient({ initialYears }: Props) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Section B: Google Sheets */}
+        {/* Google Sheets */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-1">Google Sheets 연동</h2>
           <p className="text-xs text-slate-400 mb-4">서비스 계정으로 시트 데이터를 가져옵니다</p>
-
           <div className="space-y-3">
             <div>
               <label className="block text-xs text-slate-500 mb-1">스프레드시트 URL 또는 ID</label>
               <input
                 type="text"
-                value={sheetId}
-                onChange={(e) => setSheetId(e.target.value)}
+                value={imp.sheetId}
+                onChange={(e) => imp.setSheetId(e.target.value)}
                 placeholder="Google Sheets URL 또는 ID"
                 className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
@@ -218,8 +112,8 @@ export default function AdminClient({ initialYears }: Props) {
               <label className="block text-xs text-slate-500 mb-1">시트 이름</label>
               <input
                 type="text"
-                value={sheetName}
-                onChange={(e) => setSheetName(e.target.value)}
+                value={imp.sheetName}
+                onChange={(e) => imp.setSheetName(e.target.value)}
                 className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
             </div>
@@ -227,74 +121,71 @@ export default function AdminClient({ initialYears }: Props) {
               <label className="block text-xs text-slate-500 mb-1">연도</label>
               <input
                 type="number"
-                value={sheetYear}
-                onChange={(e) => setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
+                value={imp.sheetYear}
+                onChange={(e) => imp.setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
                 className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
             </div>
             <button
-              onClick={() => handleSheetsImport()}
-              disabled={sheetsLoading || !sheetId}
+              onClick={() => imp.handleSheetsImport()}
+              disabled={imp.sheetsLoading || !imp.sheetId}
               className="w-full py-2 rounded-xl bg-slate-800 text-white text-sm font-semibold hover:bg-slate-700 transition-colors disabled:opacity-50"
             >
-              {sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
+              {imp.sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
             </button>
-            {sheetsError && <p className="text-xs text-red-500">{sheetsError}</p>}
+            {imp.sheetsError && <p className="text-xs text-red-500">{imp.sheetsError}</p>}
           </div>
         </div>
 
-        {/* Section C: Excel Upload */}
+        {/* Excel Upload */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="text-base font-semibold text-slate-700 mb-1">엑셀 업로드</h2>
           <p className="text-xs text-slate-400 mb-4">xlsx 파일 업로드 후 미리보기에서 확인</p>
-
           <div className="mb-4">
             <label className="block text-xs text-slate-500 mb-1">연도</label>
             <input
               type="number"
-              value={uploadYear}
-              onChange={(e) => setUploadYear(parseInt(e.target.value) || new Date().getFullYear())}
+              value={imp.uploadYear}
+              onChange={(e) => imp.setUploadYear(parseInt(e.target.value) || new Date().getFullYear())}
               className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </div>
-
           <div
             className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center cursor-pointer hover:border-slate-300 transition-colors"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => imp.fileInputRef.current?.click()}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {
               e.preventDefault()
               const file = e.dataTransfer.files[0]
-              if (file) handleFileUpload(file)
+              if (file) imp.handleFileUpload(file)
             }}
           >
             <div className="text-3xl mb-2">📄</div>
             <p className="text-sm text-slate-500">
-              {uploading ? '파싱 중...' : '파일을 드래그하거나 클릭해서 선택'}
+              {imp.uploading ? '파싱 중...' : '파일을 드래그하거나 클릭해서 선택'}
             </p>
             <p className="text-xs text-slate-400 mt-1">.xlsx 형식, 최대 10MB</p>
           </div>
           <input
-            ref={fileInputRef}
+            ref={imp.fileInputRef}
             type="file"
             accept=".xlsx"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
-              if (file) handleFileUpload(file)
+              if (file) imp.handleFileUpload(file)
             }}
           />
-          {uploadError && <p className="text-xs text-red-500 mt-2">{uploadError}</p>}
+          {imp.uploadError && <p className="text-xs text-red-500 mt-2">{imp.uploadError}</p>}
         </div>
       </div>
 
-      {/* Preview Modal */}
-      {preview && (
+      {imp.preview && (
         <PreviewModal
-          preview={preview}
-          onConfirm={handleConfirmSave}
-          onCancel={() => setPreview(null)}
-          loading={saving}
+          preview={imp.preview}
+          onConfirm={imp.handleConfirmSave}
+          onCancel={() => imp.setPreview(null)}
+          loading={imp.saving}
         />
       )}
     </div>
