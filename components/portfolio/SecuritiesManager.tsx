@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { useTheme } from '@/lib/ThemeContext'
@@ -237,8 +237,32 @@ function PriceHistoryModal({
   onClose: () => void
 }) {
   const isUSD = latestPrice?.currency === 'USD'
-  const recent30 = useMemo(() => [...history].slice(-30), [history])
-  const tableRows = useMemo(() => [...recent30].reverse(), [recent30])
+
+  // 차트용: 최대 90일 데이터 + 이동평균 필드
+  const chartData = useMemo(() => {
+    const data = [...history].slice(-90)
+    return data.map((d, i) => ({
+      date: d.date,
+      price: d.price,
+      ma5:  i >= 4  ? data.slice(i - 4,  i + 1).reduce((s, x) => s + x.price, 0) / 5  : null,
+      ma20: i >= 19 ? data.slice(i - 19, i + 1).reduce((s, x) => s + x.price, 0) / 20 : null,
+      ma60: i >= 59 ? data.slice(i - 59, i + 1).reduce((s, x) => s + x.price, 0) / 60 : null,
+    }))
+  }, [history])
+
+  // Y축 domain — 가격 + 이동평균 전체 범위 기반, 0 시작 안함
+  const yDomain = useMemo((): [number, number] | undefined => {
+    const vals = chartData.flatMap(d =>
+      [d.price, d.ma5, d.ma20, d.ma60].filter((v): v is number => v !== null)
+    )
+    if (vals.length === 0) return undefined
+    const min = Math.min(...vals)
+    const max = Math.max(...vals)
+    const pad = (max - min) * 0.06 || max * 0.02
+    return [min - pad, max + pad]
+  }, [chartData])
+
+  const tableRows = useMemo(() => [...history].slice(-30).reverse(), [history])
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
@@ -274,8 +298,8 @@ function PriceHistoryModal({
   const pnlColor = (v: number | null) => v == null ? 'text-slate-700' : v > 0 ? 'text-red-500' : v < 0 ? 'text-blue-500' : 'text-slate-700'
 
   // 차트 min/max
-  const minIdx = recent30.length >= 2 ? recent30.reduce((mi, d, i) => d.price < recent30[mi].price ? i : mi, 0) : -1
-  const maxIdx = recent30.length >= 2 ? recent30.reduce((mi, d, i) => d.price > recent30[mi].price ? i : mi, 0) : -1
+  const minIdx = chartData.length >= 2 ? chartData.reduce((mi, d, i) => d.price < chartData[mi].price ? i : mi, 0) : -1
+  const maxIdx = chartData.length >= 2 ? chartData.reduce((mi, d, i) => d.price > chartData[mi].price ? i : mi, 0) : -1
   const fmtChartPrice = (v: number) => isUSD
     ? `$${v >= 1000 ? v.toFixed(0) : v.toFixed(1)}`
     : v >= 10000 ? `${(v / 10000).toFixed(1)}만` : `${Math.round(v)}`
@@ -396,12 +420,22 @@ function PriceHistoryModal({
 
         {/* ── Chart ── */}
         <div className="mx-5 mb-3 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
-          <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-            가격 이력 {recent30.length > 0 ? `(${recent30.length}일)` : ''}
-          </p>
-          {recent30.length >= 2 ? (
-            <ResponsiveContainer width="100%" height={145}>
-              <LineChart data={recent30} margin={{ top: 22, right: 12, left: 0, bottom: 8 }}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+              가격 이력 {chartData.length > 0 ? `(${chartData.length}일)` : ''}
+            </p>
+            {/* MA 범례 */}
+            {chartData.length >= 5 && (
+              <div className="flex items-center gap-2">
+                {chartData.length >= 5  && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
+                {chartData.length >= 20 && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
+                {chartData.length >= 60 && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
+              </div>
+            )}
+          </div>
+          {chartData.length >= 2 ? (
+            <ResponsiveContainer width="100%" height={160}>
+              <LineChart data={chartData} margin={{ top: 22, right: 12, left: 0, bottom: 8 }}
                 style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false}
@@ -409,23 +443,40 @@ function PriceHistoryModal({
                   tickFormatter={d => String(d).slice(5)}
                   padding={{ left: 12, right: 12 }}
                 />
+                <YAxis
+                  domain={yDomain}
+                  tick={{ fontSize: 9, fill: '#94a3b8' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={fmtChartPrice}
+                  width={44}
+                />
                 <Tooltip
                   contentStyle={{ fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
-                  formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
+                  formatter={(v: number, name: string) => {
+                    const label = name === 'price' ? '가격' : name === 'ma5' ? 'MA5' : name === 'ma20' ? 'MA20' : 'MA60'
+                    return [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, label]
+                  }}
                   labelFormatter={label => String(label)}
                 />
+                {/* 가격선 */}
                 <Line type="monotone" dataKey="price" stroke={hex} dot={false} strokeWidth={1.5} />
+                {/* 이동평균선 */}
+                <Line type="monotone" dataKey="ma5"  stroke="#fb923c" dot={false} strokeWidth={1} connectNulls={false} />
+                <Line type="monotone" dataKey="ma20" stroke="#a78bfa" dot={false} strokeWidth={1} connectNulls={false} />
+                <Line type="monotone" dataKey="ma60" stroke="#38bdf8" dot={false} strokeWidth={1} connectNulls={false} />
+                {/* 최저/최고 기준점 */}
                 {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx && (
                   <>
-                    <ReferenceDot x={recent30[minIdx].date} y={recent30[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(recent30[minIdx].price), position: 'bottom', fontSize: 8, fill: '#64748b' }} />
-                    <ReferenceDot x={recent30[maxIdx].date} y={recent30[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(recent30[maxIdx].price), position: 'top', fontSize: 8, fill: '#64748b' }} />
+                    <ReferenceDot x={chartData[minIdx].date} y={chartData[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
+                      label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 8, fill: '#64748b' }} />
+                    <ReferenceDot x={chartData[maxIdx].date} y={chartData[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
+                      label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 8, fill: '#64748b' }} />
                   </>
                 )}
               </LineChart>
             </ResponsiveContainer>
-          ) : recent30.length === 1 ? (
+          ) : chartData.length === 1 ? (
             <p className="text-xs text-slate-400 text-center py-4">데이터가 1개뿐이라 차트를 표시할 수 없습니다</p>
           ) : (
             <p className="text-xs text-slate-400 text-center py-4">수집된 가격 이력이 없습니다</p>
