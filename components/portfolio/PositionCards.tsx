@@ -82,7 +82,7 @@ function PositionModal({ position: p, totalValue, onClose, sectorColors = {} }: 
             <p className="text-sm font-semibold text-slate-700 tabular-nums">
               {fmt(p.current_price)}원
               {p.current_price_usd != null && (
-                <span className="text-[9px] text-slate-400 block">${Number(p.current_price_usd).toFixed(2)}</span>
+                <span className="text-[10px] text-slate-400 block">${Number(p.current_price_usd).toFixed(2)}</span>
               )}
             </p>
           </div>
@@ -94,7 +94,7 @@ function PositionModal({ position: p, totalValue, onClose, sectorColors = {} }: 
             <p className="text-[10px] text-slate-400 mb-1">손익</p>
             <p className={`text-sm font-semibold tabular-nums ${pnlColor}`}>
               {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
-              <span className="text-[9px] block">{pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(2)}%</span>
+              <span className="text-[10px] block">{pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(2)}%</span>
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
                     style={{ backgroundColor: tickerBgColor ?? '#334155' }}>
                     {ticker}
                   </span>
-                  <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
                     {p.accounts.length}개 계좌
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
               {/* 비중(좌) + 수익률 배지(우) */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
                 <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
                   pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                 }`}>
                   {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%

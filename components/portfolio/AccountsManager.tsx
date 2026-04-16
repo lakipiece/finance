@@ -65,10 +65,10 @@ function SortableAccountCard({
             )}
           </div>
           <p className="text-xs text-slate-400">{account.broker}</p>
-          {account.owner && <p className="text-[11px] text-slate-300 mt-0.5">{account.owner}</p>}
+          {account.owner && <p className="text-xs text-slate-300 mt-0.5">{account.owner}</p>}
           {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
           <div className="flex items-center justify-between mt-auto pt-2">
-            <p className="text-[11px] text-slate-400">
+            <p className="text-xs text-slate-400">
               <span className="font-semibold text-slate-600">{linkedCount}</span>종목
             </p>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
@@ -332,10 +332,10 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         return next
                       })}
                       className="w-3.5 h-3.5 rounded accent-slate-700 cursor-pointer shrink-0" />
-                    <span className="bg-slate-100 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
+                    <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
                     <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${badge}`}>{s.country}</span>
-                    <span className="text-[9px] text-slate-400 shrink-0">{s.currency}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${badge}`}>{s.country}</span>
+                    <span className="text-[10px] text-slate-400 shrink-0">{s.currency}</span>
                   </label>
                 )
               })}

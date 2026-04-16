@@ -293,7 +293,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               </p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-[10px] text-slate-400 opacity-0">-</span>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                   summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
                 }`}>
                   {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
@@ -336,7 +336,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
                         {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
                       </span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
                         g.pnl >= 0
                           ? 'bg-rose-50 text-rose-500'
                           : 'bg-blue-50 text-blue-500'

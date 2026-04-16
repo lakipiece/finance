@@ -163,12 +163,12 @@ function SortableOptionRow({
           onChange={e => setDraft(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setDraft(opt.label) } }}
-          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
           autoFocus
         />
       ) : (
         <span onClick={startEdit} title="클릭하여 편집"
-          className="text-[11px] font-medium text-slate-600 flex-1 cursor-text hover:text-blue-600 transition-colors truncate">
+          className="text-xs font-medium text-slate-600 flex-1 cursor-text hover:text-blue-600 transition-colors truncate">
           {opt.label}
         </span>
       )}
@@ -240,7 +240,7 @@ function OptionTypeCard({
               />
             ))}
             {items.length === 0 && (
-              <p className="text-[11px] text-slate-300 py-2">항목 없음</p>
+              <p className="text-xs text-slate-300 py-2">항목 없음</p>
             )}
           </div>
         </SortableContext>
@@ -250,9 +250,9 @@ function OptionTypeCard({
         <ColorPicker color={newColor} onChange={setNewColor} />
         <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
           placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
+          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
         <button onClick={handleAdd} disabled={adding || !newLabel.trim()}
-          className="text-white px-2 py-1 rounded-lg text-[11px] font-medium hover:opacity-90 disabled:opacity-40 transition-opacity shrink-0"
+          className="text-white px-2 py-1 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity shrink-0"
           style={{ backgroundColor: palette.colors[0] }}>
           추가
         </button>

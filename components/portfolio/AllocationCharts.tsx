@@ -94,7 +94,7 @@ function StackBar({
               className="relative flex items-center overflow-hidden"
             >
               {seg.pct >= 8 && (
-                <span className="text-[9px] text-white font-medium px-1 truncate leading-none select-none">
+                <span className="text-[10px] text-white font-medium px-1 truncate leading-none select-none">
                   {seg.pct.toFixed(0)}%
                 </span>
               )}

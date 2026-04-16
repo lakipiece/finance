@@ -143,7 +143,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     </p>
                     {suffix && <span className="text-xs font-normal text-slate-400">{suffix}</span>}
                     {i === 0 && (
-                      <span className="text-[9px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full font-medium">최신</span>
+                      <span className="text-[10px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full font-medium">최신</span>
                     )}
                   </div>
                   <p className="text-[10px] text-slate-400 mt-0.5">{datePart}</p>
@@ -161,7 +161,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
                       {pnlPct != null && (
-                        <span className="text-[9px] ml-0.5 opacity-80">
+                        <span className="text-[10px] ml-0.5 opacity-80">
                           ({pnl >= 0 ? '+' : ''}{(pnlPct * 100).toFixed(1)}%)
                         </span>
                       )}

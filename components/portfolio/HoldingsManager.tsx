@@ -313,10 +313,10 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`text-xs font-semibold ${selectedAccountId === a.id ? 'text-white' : 'text-slate-800'}`}>{a.name}</span>
-                      {a.type && <span className={`text-[9px] px-1 py-0.5 rounded ${selectedAccountId === a.id ? 'bg-white/20 text-white/70' : 'bg-slate-100 text-slate-500'}`}>{a.type}</span>}
+                      {a.type && <span className={`text-[10px] px-1 py-0.5 rounded ${selectedAccountId === a.id ? 'bg-white/20 text-white/70' : 'bg-slate-100 text-slate-500'}`}>{a.type}</span>}
                     </div>
                     <p className={`text-[10px] mt-0.5 ${selectedAccountId === a.id ? 'text-slate-300' : 'text-slate-400'}`}>{a.broker}</p>
-                    <p className={`text-[9px] mt-1 ${selectedAccountId === a.id ? 'text-slate-400' : 'text-slate-300'}`}>
+                    <p className={`text-[10px] mt-1 ${selectedAccountId === a.id ? 'text-slate-400' : 'text-slate-300'}`}>
                       {links.filter(l => l.account_id === a.id).length}종목 연결됨
                     </p>
                   </div>
@@ -449,10 +449,10 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                           }}
                           className="w-3.5 h-3.5 rounded accent-slate-700 cursor-pointer shrink-0"
                         />
-                        <span className="bg-slate-100 text-slate-600 text-[9px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
+                        <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
                         <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded shrink-0 ${cs.badge}`}>{s.country}</span>
-                        <span className="text-[9px] text-slate-400 shrink-0">{s.currency}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${cs.badge}`}>{s.country}</span>
+                        <span className="text-[10px] text-slate-400 shrink-0">{s.currency}</span>
                       </label>
                     )
                   })}
@@ -513,15 +513,15 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                   style={{ aspectRatio: '10/7' }}>
                   <div>
                     <div className="flex items-start justify-between mb-1.5">
-                      <span className="bg-slate-100 text-slate-600 text-[11px] font-bold px-1.5 py-0.5 rounded font-mono leading-none">{s.ticker}</span>
+                      <span className="bg-slate-100 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded font-mono leading-none">{s.ticker}</span>
                       <span className="text-[10px] text-slate-400">{s.currency}</span>
                     </div>
                     <p className="text-xs font-semibold text-slate-800 line-clamp-2 leading-snug">{s.name}</p>
                   </div>
                   <div>
                     <div className="flex flex-wrap gap-0.5 mb-1.5">
-                      {s.country && <span className={`text-[9px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
-                      {s.sector && <span className="text-[9px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
+                      {s.country && <span className={`text-[10px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
+                      {s.sector && <span className="text-[10px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
                     </div>
                     <div className="flex items-center justify-between">
                       {s.url ? (

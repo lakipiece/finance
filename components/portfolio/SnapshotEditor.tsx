@@ -299,7 +299,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 <p className="text-xs text-slate-400">{a.broker}</p>
                 {/* 하단: 종목수(좌) + 평가금액(우) */}
                 <div className="flex items-center justify-between mt-auto pt-2">
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-xs text-slate-400">
                     <span className="font-semibold text-slate-600">{count}</span>/{total}종목
                   </p>
                   {aVal > 0 ? (
@@ -382,10 +382,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                             : 'border-slate-100 bg-white opacity-60'
                         }`}>
                         <div className="flex items-center gap-1.5 mb-2.5">
-                          <span className="bg-slate-100 text-slate-600 text-[9px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
+                          <span className="bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
                           <span className="text-xs text-slate-600 truncate font-medium flex-1">{sec.name}</span>
                           {row.orphaned && (
-                            <span className="text-[9px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
+                            <span className="text-[10px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
                           )}
                           <button
                             onClick={() => deleteHolding(row.account_id, row.security_id)}
@@ -398,13 +398,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>
-                            <p className="text-[9px] text-slate-400 mb-0.5">수량</p>
+                            <p className="text-[10px] text-slate-400 mb-0.5">수량</p>
                             <NumInput value={currentRow.quantity || null}
                               onChange={v => updateRow(row.account_id, row.security_id, 'quantity', v)}
                               placeholder="0" tabIndex={qtyTabIdx} className={inputCls} />
                           </div>
                           <div>
-                            <p className="text-[9px] text-slate-400 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
+                            <p className="text-[10px] text-slate-400 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
                             <NumInput value={currentRow.avg_price}
                               onChange={v => updateRow(row.account_id, row.security_id, 'avg_price', v)}
                               placeholder="0" tabIndex={avgTabIdx} className={inputCls} />
@@ -412,7 +412,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                         </div>
                         <div className="pt-2 border-t border-slate-50 space-y-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-[9px] text-slate-400">총 매수금액</p>
+                            <p className="text-[10px] text-slate-400">총 매수금액</p>
                             <p className="text-xs font-medium text-slate-500">
                               {totalPurchased != null
                                 ? isKrw ? `${Math.round(totalPurchased).toLocaleString()}원` : `${currency} ${totalPurchased.toFixed(2)}`
@@ -420,7 +420,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                             </p>
                           </div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[9px] text-slate-400">평가금액</p>
+                            <p className="text-[10px] text-slate-400">평가금액</p>
                             <p className={`text-xs font-medium ${marketValue != null ? 'text-slate-600' : 'text-slate-300'}`}>
                               {marketValue != null ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
                             </p>

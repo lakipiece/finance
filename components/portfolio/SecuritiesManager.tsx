@@ -194,7 +194,7 @@ function HoldingCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <p className="text-[9px] text-slate-400 mb-1 uppercase tracking-wider">{label}</p>
+      <p className="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">{label}</p>
       <p className={`text-sm font-semibold tabular-nums leading-tight ${valueColor ?? 'text-slate-700'}`}>{value}</p>
       {sub && (
         <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-green-600' : sub.positive === false ? 'text-red-500' : 'text-slate-400'}`}>
@@ -421,15 +421,15 @@ function PriceHistoryModal({
         {/* ── Chart ── */}
         <div className="mx-5 mb-3 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               가격 이력 {chartData.length > 0 ? `(${chartData.length}일)` : ''}
             </p>
             {/* MA 범례 */}
             {chartData.length >= 5 && (
               <div className="flex items-center gap-2">
-                {chartData.length >= 5  && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
-                {chartData.length >= 20 && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
-                {chartData.length >= 60 && <span className="flex items-center gap-1 text-[8px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
+                {chartData.length >= 5  && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
+                {chartData.length >= 20 && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
+                {chartData.length >= 60 && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
               </div>
             )}
           </div>
@@ -488,7 +488,7 @@ function PriceHistoryModal({
           <div className="overflow-y-auto mx-5 mb-5 rounded-xl border border-slate-100 shrink-1">
             <table className="w-full">
               <thead className="sticky top-0 bg-slate-50">
-                <tr className="text-[9px] text-slate-400 uppercase tracking-wider">
+                <tr className="text-[10px] text-slate-400 uppercase tracking-wider">
                   <th className="text-left px-4 py-2">날짜</th>
                   <th className="text-right px-4 py-2">가격</th>
                   <th className="text-right px-4 py-2">등락</th>
@@ -760,7 +760,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                           {lp.currency === 'KRW' ? `${lp.price.toLocaleString()}원` : `$${lp.price.toFixed(2)}`}
                         </span>
                         {pct != null && (
-                          <div className={`text-[9px] font-sans ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                          <div className={`text-[10px] font-sans ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
                           </div>
                         )}
@@ -778,21 +778,21 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               <div className="flex items-center gap-0.5 flex-wrap" onClick={e => e.stopPropagation()}>
                 {s.asset_class && (
                   <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
-                    className="text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    className="text-[10px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.asset_class}
                   </button>
                 )}
                 {s.country && (
                   <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
-                    className="text-[9px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    className="text-[10px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.country}
                   </button>
                 )}
                 {s.sector && (
                   <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
-                    className="text-[9px] text-slate-400 bg-slate-50 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    className="text-[10px] text-slate-400 bg-slate-50 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.sector}
                   </button>
                 )}

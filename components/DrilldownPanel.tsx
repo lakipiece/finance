@@ -311,7 +311,7 @@ export default function DrilldownPanel({
                         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: catColors[selectedCat!] }} />
                       </div>
                     </div>
-                    <span className="text-[11px] font-semibold text-slate-800 shrink-0 w-16 text-right">{formatWonFull(d.amount)}</span>
+                    <span className="text-xs font-semibold text-slate-800 shrink-0 w-16 text-right">{formatWonFull(d.amount)}</span>
                   </div>
                 )
               }) : (
