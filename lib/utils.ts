@@ -12,6 +12,19 @@ export function formatWonFull(n: number): string {
   return `${n.toLocaleString()}원`
 }
 
+/** 반올림 후 원 단위 표시 (포트폴리오 금액 등) */
+export function formatWonRound(n: number): string {
+  return `${Math.round(n).toLocaleString('ko-KR')}원`
+}
+
+/** 억/만 단위 축약 (숫자만, 원 접미사 없음) */
+export function formatWonCompact(n: number): string {
+  const abs = Math.abs(n)
+  if (abs >= 100_000_000) return `${(n / 100_000_000).toFixed(2)}억`
+  if (abs >= 10_000) return `${Math.floor(n / 10_000).toLocaleString()}만`
+  return n.toLocaleString()
+}
+
 export const CAT_COLORS: Record<string, string> = {
   '고정비': '#6B8CAE',
   '대출상환': '#C47D7D',

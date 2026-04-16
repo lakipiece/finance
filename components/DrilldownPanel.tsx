@@ -78,13 +78,13 @@ export default function DrilldownPanel({
       }
       // Stacked by top details
       return MONTH_LABELS.map((label, i) => {
-        const entry: Record<string, any> = { month: label }
+        const entry: Record<string, number | string> = { month: label }
         let others = 0
         for (const [detail, months] of Object.entries(catDetails.detailMonthly)) {
           const amount = months[i] ?? 0
           if (amount === 0) continue
           if (topDetails.includes(detail)) {
-            entry[detail] = (entry[detail] ?? 0) + amount
+            entry[detail] = ((entry[detail] as number) ?? 0) + amount
           } else {
             others += amount
           }
@@ -103,7 +103,7 @@ export default function DrilldownPanel({
   const chartKeys = isCategory
     ? (selectedTrendDetail
         ? [selectedTrendDetail]
-        : [...topDetails, ...(chartData.some((d: any) => d['기타']) ? ['기타'] : [])])
+        : [...topDetails, ...(chartData.some((d) => d['기타']) ? ['기타'] : [])])
     : activeCategories
 
   const chartColors = isCategory
@@ -235,7 +235,7 @@ export default function DrilldownPanel({
                   fill={chartColors[key] ?? '#6B8CAE'}
                   radius={idx === chartKeys.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                   cursor="pointer"
-                  onClick={(_: any, index: number) => onMonthSelect?.(index + 1)}
+                  onClick={(_: unknown, index: number) => onMonthSelect?.(index + 1)}
                 >
                   {chartData.map((_, i) => (
                     <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />

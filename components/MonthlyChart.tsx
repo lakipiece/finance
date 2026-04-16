@@ -14,6 +14,7 @@ import {
 import type { MonthlyData } from '@/lib/types'
 import { CATEGORIES, formatWonFull } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
+import type { ChartTooltipProps, TooltipEntry } from '@/lib/chartTypes'
 
 interface Props {
   monthlyList: MonthlyData[]
@@ -22,13 +23,13 @@ interface Props {
   highlightCategory?: string | null
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
-  const total = payload.reduce((s: number, p: any) => s + (p.value ?? 0), 0)
+  const total = payload.reduce((s: number, p: TooltipEntry) => s + (p.value ?? 0), 0)
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm">
       <p className="font-semibold text-slate-700 mb-2">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p: TooltipEntry) => (
         <div key={p.dataKey} className="flex items-center gap-2 mb-1">
           <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: p.fill }} />
           <span className="text-slate-500">{p.dataKey}</span>
@@ -46,7 +47,7 @@ function CustomTooltip({ active, payload, label }: any) {
 export default function MonthlyChart({ monthlyList, selectedMonth, onMonthSelect, highlightCategory }: Props) {
   const { catColors } = useTheme()
 
-  function handleClick(data: any, index: number) {
+  function handleClick(_data: unknown, index: number) {
     onMonthSelect(index + 1)
   }
 

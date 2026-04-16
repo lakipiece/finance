@@ -6,6 +6,7 @@ import {
 import type { ExpenseItem } from '@/lib/types'
 import { formatWonFull } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 interface Props {
   allExpenses: ExpenseItem[]
@@ -14,11 +15,11 @@ interface Props {
   onDetailSelect: (detail: string | null) => void
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm">
-      <p className="font-semibold text-slate-700">{payload[0].payload.name}</p>
+      <p className="font-semibold text-slate-700">{payload[0].payload.name as string}</p>
       <p className="text-slate-500 mt-0.5">{formatWonFull(payload[0].value)}</p>
     </div>
   )

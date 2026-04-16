@@ -7,6 +7,7 @@ import {
   PieChart, Pie, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 interface SnapshotPoint {
   date: string
@@ -30,7 +31,7 @@ function fmtKrw(v: number) {
 }
 
 // 총 평가금액 바차트 커스텀 툴팁
-function LineTooltip({ active, payload, label }: any) {
+function LineTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
@@ -41,9 +42,9 @@ function LineTooltip({ active, payload, label }: any) {
 }
 
 // 구성 비중 바차트 커스텀 툴팁
-function BarTooltip({ active, payload, label }: any) {
+function BarTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
-  const mv = payload[0]?.payload?.total_market_value ?? 0
+  const mv = (payload[0]?.payload?.total_market_value as number) ?? 0
   return (
     <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs max-w-[200px]">
       <p className="text-slate-400 mb-1.5">{label}</p>

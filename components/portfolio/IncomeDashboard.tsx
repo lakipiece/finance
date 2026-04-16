@@ -8,6 +8,8 @@ import {
 } from 'recharts'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
+import { formatWonCompact, formatWonRound } from '@/lib/utils'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -37,14 +39,8 @@ function fmtDate(val: unknown): string {
   }
   return String(val ?? '')
 }
-function fmt(n: number) {
-  if (Math.abs(n) >= 100_000_000) return `${(n / 100_000_000).toFixed(2)}억`
-  if (Math.abs(n) >= 10_000) return `${Math.floor(n / 10_000).toLocaleString()}만`
-  return n.toLocaleString()
-}
-function fmtFull(n: number) {
-  return `${Math.round(n).toLocaleString()}원`
-}
+const fmt = formatWonCompact
+const fmtFull = formatWonRound
 function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -99,7 +95,7 @@ const filterBtnCls = (active: boolean) =>
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label, color }: any) {
+function CustomTooltip({ active, payload, label, color }: ChartTooltipProps & { color?: string }) {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white border border-slate-100 rounded-lg px-3 py-1.5 shadow-sm">

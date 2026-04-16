@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import type { DashboardData, ExpenseItem, DetailItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull, CAT_BADGE } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 interface Props {
   data: DashboardData
@@ -11,14 +12,14 @@ interface Props {
   onCategorySelect: (cat: string) => void
 }
 
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const p = payload[0]
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-sm">
       <p className="font-semibold text-slate-700">{p.name}</p>
       <p className="text-slate-500 mt-0.5">{formatWonFull(p.value)}</p>
-      <p className="text-slate-400 text-xs">{p.payload.pct}%</p>
+      <p className="text-slate-400 text-xs">{p.payload.pct as number}%</p>
     </div>
   )
 }

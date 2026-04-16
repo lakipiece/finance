@@ -31,7 +31,7 @@ export interface MergedPosition {
   total_dividends: number
 }
 
-function mergeBySecuirty(positions: PortfolioPosition[]): MergedPosition[] {
+function mergeBySecurity(positions: PortfolioPosition[]): MergedPosition[] {
   const map = new Map<string, MergedPosition>()
   for (const p of positions) {
     const key = p.security.id
@@ -164,7 +164,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
     [summary.positions, selectedAccountIds]
   )
 
-  const mergedPositions = useMemo(() => mergeBySecuirty(accountFiltered), [accountFiltered])
+  const mergedPositions = useMemo(() => mergeBySecurity(accountFiltered), [accountFiltered])
 
   const sectors = useMemo(() => {
     const s = new Set(mergedPositions.map(p => p.security.sector ?? '기타'))

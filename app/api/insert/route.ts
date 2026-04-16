@@ -51,21 +51,13 @@ export async function POST(req: NextRequest) {
 
   const sql = getSql()
 
-  // Delete all existing rows for this year, then insert fresh data.
-  // These are two separate operations (no DB transaction via JS client).
-  // Input validation above minimises the risk of insert failure after delete.
   try {
-    await sql`DELETE FROM expenses WHERE year = ${year}`
+    await sql.begin(async (tx) => {
+      await tx`DELETE FROM expenses WHERE year = ${year}`
+      await tx`INSERT INTO expenses ${tx(toInsert)}`
+    })
   } catch (e: any) {
-    return NextResponse.json({ error: `삭제 실패: ${e?.message}` }, { status: 500 })
-  }
-
-  try {
-    await sql`INSERT INTO expenses ${sql(toInsert)}`
-  } catch (e: any) {
-    return NextResponse.json({
-      error: `데이터 삽입 실패: ${e?.message}. ${year}년 데이터가 삭제된 상태입니다. 다시 시도해주세요.`,
-    }, { status: 500 })
+    return NextResponse.json({ error: `저장 실패: ${e?.message}` }, { status: 500 })
   }
 
   invalidateCache()
