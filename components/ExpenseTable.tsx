@@ -40,7 +40,47 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      {/* 모바일 카드 뷰 */}
+      <div className="sm:hidden space-y-2 mb-4">
+        {slice.map((e, i) => (
+          <div
+            key={`${e.date}-${e.detail}-${e.amount}-${i}`}
+            className={`border border-slate-100 rounded-xl px-4 py-3 ${i % 2 === 1 ? 'bg-slate-50/40' : 'bg-white'}`}
+          >
+            <div className="flex items-start justify-between gap-2 mb-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
+                  {e.category}
+                </span>
+                {e.detail && (
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 truncate max-w-[140px]">
+                    {e.detail}
+                  </span>
+                )}
+                {e.member && (
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                    e.member === 'L' ? 'bg-blue-50 text-blue-600' :
+                    e.member === 'P' ? 'bg-pink-50 text-pink-600' :
+                    'bg-slate-100 text-slate-500'
+                  }`}>{e.member}</span>
+                )}
+              </div>
+              <span className="font-semibold text-slate-800 text-sm shrink-0 tabular-nums">
+                {formatWonFull(e.amount)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span className="tabular-nums">{e.date}</span>
+              {e.method && <span>{e.method}</span>}
+            </div>
+            {e.memo && (
+              <p className="text-xs text-slate-400 mt-1 truncate" title={e.memo}>{e.memo}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">

@@ -274,18 +274,18 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           />
         </div>
         {showAccounts && (
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             <button
               onClick={selectAll}
               title={`${summary.positions.length}종목`}
-              className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 ${
+              className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
                   ? 'bg-slate-50'
                   : 'bg-white border-slate-100 hover:border-slate-300'
               }`}
               style={selectedAccountIds.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
               <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-500' : 'text-slate-400'}`}>전체</p>
-              <p className={`text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+              <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
                 {Math.round(summary.total_market_value).toLocaleString()}원
               </p>
               <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
@@ -310,7 +310,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                   <button key={id}
                     onClick={() => toggleAccount(id)}
                     title={`${g.count}종목`}
-                    className={`rounded-xl border px-3 py-3 text-right transition-all min-w-0 relative ${
+                    className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 relative ${
                       isSelected ? 'bg-slate-50' : 'bg-white border-slate-100 hover:border-slate-300'
                     }`}
                     style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
@@ -326,7 +326,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       </p>
                     </div>
                     <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-slate-200' : 'border-slate-50'}`} />
-                    <p className={`text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-slate-700' : 'text-slate-500'}`}>
+                    <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-slate-700' : 'text-slate-500'}`}>
                       {Math.round(g.value).toLocaleString()}원
                     </p>
                     <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>

@@ -28,9 +28,9 @@ export default function PortfolioKpiCards({ summary }: Props) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       {cards.map(c => (
-        <div key={c.label} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col hover:-translate-y-0.5 transition-all">
+        <div key={c.label} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-5 flex flex-col hover:-translate-y-0.5 transition-all">
           {/* 레이블 + 툴팁 */}
           <div className="relative group/lbl inline-block self-start mb-1">
             <p className="text-xs text-slate-400 font-medium uppercase tracking-wider cursor-default">{c.label}</p>
@@ -39,7 +39,7 @@ export default function PortfolioKpiCards({ summary }: Props) {
               {c.sub}
             </div>
           </div>
-          <p className={`text-xl font-bold tabular-nums leading-tight mt-auto text-right ${c.color}`}>{c.value}</p>
+          <p className={`text-lg sm:text-xl font-bold tabular-nums leading-tight mt-auto text-right ${c.color}`}>{c.value}</p>
         </div>
       ))}
     </div>

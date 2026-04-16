@@ -135,14 +135,14 @@ export default function DrilldownPanel({
 
   return (
   <>
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 mb-4 sm:mb-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">{monthData.month} 상세 내역</h2>
+          <h2 className="text-base sm:text-lg font-bold text-slate-800">{monthData.month} 상세 내역</h2>
           <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(monthData.total)}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <YearPicker variant="light" />
           {onClose && (
             <button

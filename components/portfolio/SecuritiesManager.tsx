@@ -306,7 +306,7 @@ function PriceHistoryModal({
 
   const modal = (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[95dvh] sm:max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
         {/* ── Header ── */}
         <div className="relative flex items-end justify-between px-5 pt-5 pb-3 pr-12 shrink-0">

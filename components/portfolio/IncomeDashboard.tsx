@@ -307,18 +307,18 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
       {/* KPI */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 총 수령액</p>
-          <p className="text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(totalGross)}원</p>
+          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(totalGross)}원</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 납부 세금</p>
-          <p className="text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(totalTax)}원</p>
+          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(totalTax)}원</p>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 세후 수령액</p>
-          <p className="text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(totalNet)}원</p>
+          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(totalNet)}원</p>
         </div>
       </div>
 
@@ -390,10 +390,10 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
       })()}
 
       {/* 테이블 헤더: 타이틀 + 검색 + 추가 버튼 */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
-        <div className="flex items-center gap-2 flex-1 justify-end">
-          <div className="relative w-64">
+        <div className="flex items-center gap-2 flex-1 sm:justify-end">
+          <div className="relative flex-1 sm:w-64 sm:flex-none">
             <input
               type="text"
               placeholder="내역 / 계좌 / 사용자 / 메모 검색..."
@@ -414,8 +414,48 @@ export default function IncomeDashboard({ dividends: initialDividends, securitie
         </div>
       </div>
 
+      {/* 모바일 카드 뷰 */}
+      <div className="sm:hidden space-y-2">
+        {filtered.length === 0 && (
+          <p className="text-center text-slate-400 text-xs py-8">내역이 없습니다</p>
+        )}
+        {slice.map((d) => {
+          const gross = toKrw(d)
+          const tax = taxKrw(d)
+          const net = gross - tax
+          return (
+            <div key={d.id} className="border border-slate-100 rounded-xl px-4 py-3 bg-white">
+              <div className="flex items-start justify-between gap-2 mb-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 shrink-0">
+                    {d.security.ticker}
+                  </span>
+                  <span className="text-xs text-slate-500 truncate">{d.security.name}</span>
+                </div>
+                <span className="font-semibold text-slate-800 text-sm shrink-0 tabular-nums whitespace-nowrap">
+                  {fmtFull(net)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <span className="tabular-nums">{fmtDate(d.paid_at)}</span>
+                <span className="text-slate-500">{d.account.broker} · {d.account.name}</span>
+              </div>
+              {d.account.owner && (
+                <div className="mt-1">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{d.account.owner}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-slate-50 text-[10px] text-slate-400 tabular-nums">
+                <span>수령 {fmtFull(gross)}</span>
+                {tax > 0 && <span>세금 {fmtFull(tax)}</span>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
       {/* 테이블 */}
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">

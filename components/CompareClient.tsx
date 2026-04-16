@@ -77,8 +77,8 @@ export default function CompareClient({ availableYears }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* Year selector */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4 flex items-center gap-6 flex-wrap">
-        <span className="text-sm font-semibold text-slate-600">연도 선택</span>
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4 sm:gap-6 flex-wrap">
+        <span className="hidden sm:inline text-sm font-semibold text-slate-600">연도 선택</span>
         <div className="flex gap-3 flex-wrap">
           {availableYears.map((y) => {
             const isSelected = selectedYears.includes(y.year)
