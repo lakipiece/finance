@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { formatWonRound } from '@/lib/utils'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
+import { btn, tbl } from '@/lib/styles'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -69,7 +70,7 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           </div>
           <button
             onClick={openAddModal}
-            className="text-white px-3 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity whitespace-nowrap"
+            className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}>
             + 배당 추가
           </button>
@@ -112,13 +113,13 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
                 {tax > 0 && <span>세금 {formatWonRound(tax)}</span>}
               </div>
               <div className="flex items-center gap-2 justify-end mt-2">
-                <button onClick={() => onEdit(d)} className="text-slate-300 hover:text-slate-500 transition-colors" title="수정">
+                <button onClick={() => onEdit(d)} className={btn.icon} title="수정">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button onClick={() => onDelete(d.id)} className="text-slate-300 hover:text-rose-400 transition-colors" title="삭제">
+                <button onClick={() => onDelete(d.id)} className={btn.danger} title="삭제">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -135,15 +136,15 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">#</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">종목</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">계좌</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">메모</th>
-              <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">수령액</th>
-              <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">세금</th>
-              <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">세후</th>
+              <th className={tbl.th}>#</th>
+              <th className={tbl.th}>날짜</th>
+              <th className={tbl.th}>종목</th>
+              <th className={tbl.th}>계좌</th>
+              <th className={tbl.th}>사용자</th>
+              <th className={tbl.th}>메모</th>
+              <th className={tbl.thRight}>수령액</th>
+              <th className={tbl.thRight}>세금</th>
+              <th className={tbl.thRight}>세후</th>
               <th className="py-2 px-3"></th>
             </tr>
           </thead>
@@ -156,17 +157,16 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
               const tax = taxKrw(d)
               const net = gross - tax
               return (
-                <tr key={d.id}
-                  className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
+                <tr key={d.id} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
                   <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{fmtDate(d.paid_at)}</td>
-                  <td className="py-2.5 px-3">
+                  <td className={tbl.td}>
                     <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
                       {d.security.ticker}
                     </span>
                     <p className="text-[10px] text-slate-400 mt-0.5 max-w-[100px] truncate" title={d.security.name}>{d.security.name}</p>
                   </td>
-                  <td className="py-2.5 px-3">
+                  <td className={tbl.td}>
                     <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
                       {d.account.broker}
                     </span>
@@ -182,20 +182,20 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
                       ? <span className="block truncate" title={d.memo}>{d.memo}</span>
                       : <span className="text-slate-200">—</span>}
                   </td>
-                  <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-800 whitespace-nowrap">{formatWonRound(gross)}</td>
-                  <td className="py-2.5 px-3 text-right tabular-nums text-xs text-slate-400 whitespace-nowrap">
+                  <td className={`${tbl.tdRight} font-semibold text-slate-800 whitespace-nowrap`}>{formatWonRound(gross)}</td>
+                  <td className={`${tbl.tdRight} text-slate-400 whitespace-nowrap`}>
                     {tax > 0 ? formatWonRound(tax) : <span className="text-slate-200">—</span>}
                   </td>
-                  <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-700 whitespace-nowrap">{formatWonRound(net)}</td>
+                  <td className={`${tbl.tdRight} font-semibold text-slate-700 whitespace-nowrap`}>{formatWonRound(net)}</td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2 justify-end">
-                      <button onClick={() => onEdit(d)} className="text-slate-300 hover:text-slate-500 transition-colors" title="수정">
+                      <button onClick={() => onEdit(d)} className={btn.icon} title="수정">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
-                      <button onClick={() => onDelete(d.id)} className="text-slate-300 hover:text-rose-400 transition-colors" title="삭제">
+                      <button onClick={() => onDelete(d.id)} className={btn.danger} title="삭제">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -217,10 +217,8 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           <span className="text-slate-200">|</span>
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                sortMode === mode ? 'text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-              style={sortMode === mode ? { backgroundColor: palette.colors[0] } : undefined}>
+              className={btn.pill(sortMode === mode)}
+              style={sortMode === mode ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
               {mode === 'date' ? '날짜순' : '수령액순'}
             </button>
           ))}
@@ -228,10 +226,8 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           <span>페이지당</span>
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                pageSize === size ? 'text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-              style={pageSize === size ? { backgroundColor: palette.colors[0] } : undefined}>
+              className={btn.pill(pageSize === size)}
+              style={pageSize === size ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
               {size}
             </button>
           ))}

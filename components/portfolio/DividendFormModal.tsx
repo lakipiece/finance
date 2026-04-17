@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { fmtDate } from '@/lib/portfolio/dividendUtils'
+import { btn, field, modal } from '@/lib/styles'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -47,15 +48,6 @@ const emptyForm = () => ({
   account_id: '', security_id: '', paid_at: todayStr(),
   currency: 'KRW', amount: '', exchange_rate: '', tax: '', memo: '',
 })
-
-// ─── 스타일 ──────────────────────────────────────────────────────────────────
-
-const inp = 'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
-const sel = 'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 font-normal focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
-const filterBtnCls = (active: boolean) =>
-  `text-xs px-2.5 py-1 rounded-full border transition-colors ${
-    active ? 'text-white' : 'border-slate-200 text-slate-500 hover:border-slate-400'
-  }`
 
 // ─── 컴포넌트 ────────────────────────────────────────────────────────────────
 
@@ -172,36 +164,36 @@ export default function DividendFormModal({
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[95dvh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-5">
+    <div className={modal.overlay}>
+      <div className={modal.containerLg}>
+        <div className={modal.header}>
           <h2 className="text-sm font-semibold text-slate-700">
             {editTarget ? '배당·분배금 수정' : '배당·분배금 추가'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className={modal.close}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="dividend-form" onSubmit={handleSubmit} className={modal.body}>
 
           {/* 사용자 선택 */}
           {owners.length > 0 && (
             <div>
-              <p className="text-xs text-slate-400 mb-1.5">계좌 사용자</p>
+              <p className={field.label}>계좌 사용자</p>
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
                   onClick={() => { setModalOwner(''); setForm(p => ({ ...p, account_id: '', security_id: '' })) }}
-                  className={filterBtnCls(modalOwner === '')}
+                  className={btn.pill(modalOwner === '')}
                   style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
                   전체
                 </button>
                 {owners.map(o => (
                   <button type="button" key={o}
                     onClick={() => { setModalOwner(o); setForm(p => ({ ...p, account_id: '', security_id: '' })) }}
-                    className={filterBtnCls(modalOwner === o)}
+                    className={btn.pill(modalOwner === o)}
                     style={modalOwner === o ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
                     {o}
                   </button>
@@ -212,10 +204,10 @@ export default function DividendFormModal({
 
           {/* 계좌 선택 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">계좌</p>
+            <p className={field.label}>계좌</p>
             <select required value={form.account_id}
               onChange={e => setForm(p => ({ ...p, account_id: e.target.value, security_id: '' }))}
-              className={sel}>
+              className={field.select}>
               <option value="">계좌 선택</option>
               {modalAccounts.map(a => (
                 <option key={a.id} value={a.id}>{a.broker} {a.name}</option>
@@ -225,7 +217,7 @@ export default function DividendFormModal({
 
           {/* 종목 선택 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">종목</p>
+            <p className={field.label}>종목</p>
             {form.security_id ? (
               <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5">
                 <span className="text-xs font-medium text-slate-700 flex-1 truncate">
@@ -244,7 +236,7 @@ export default function DividendFormModal({
                   value={secSearch}
                   onChange={e => { setSecSearch(e.target.value); setSecDropOpen(true) }}
                   onFocus={() => setSecDropOpen(true)}
-                  className={inp}
+                  className={field.input}
                   autoComplete="off"
                 />
                 {secDropOpen && filteredModalSecurities.length > 0 && (
@@ -268,20 +260,20 @@ export default function DividendFormModal({
 
           {/* 수령일 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">수령일</p>
+            <p className={field.label}>수령일</p>
             <input type="date" required value={form.paid_at}
               onChange={e => setForm(p => ({ ...p, paid_at: e.target.value }))}
-              className={inp} />
+              className={field.input} />
           </div>
 
           {/* 통화 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">통화</p>
+            <p className={field.label}>통화</p>
             <div className="flex gap-1.5">
               {['KRW', 'USD'].map(c => (
                 <button type="button" key={c}
                   onClick={() => setForm(p => ({ ...p, currency: c, exchange_rate: '', tax: '' }))}
-                  className={filterBtnCls(form.currency === c)}
+                  className={btn.pill(form.currency === c)}
                   style={form.currency === c ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
                   {c}
                 </button>
@@ -292,21 +284,21 @@ export default function DividendFormModal({
           {/* 금액 + 환율 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-slate-400 mb-1.5">금액 ({form.currency})</p>
+              <p className={field.label}>금액 ({form.currency})</p>
               <input type="text" inputMode="decimal" required
                 placeholder="0"
                 value={form.amount}
                 onChange={e => handleAmountChange(e.target.value)}
-                className={`${inp} text-right`} />
+                className={`${field.input} text-right`} />
             </div>
             {form.currency === 'USD' ? (
               <div>
-                <p className="text-xs text-slate-400 mb-1.5">환율 (₩/USD)</p>
+                <p className={field.label}>환율 (₩/USD)</p>
                 <input type="text" inputMode="decimal" required
                   placeholder="0"
                   value={form.exchange_rate}
                   onChange={e => setForm(p => ({ ...p, exchange_rate: fmtNumber(e.target.value.replace(/,/g, '')) }))}
-                  className={`${inp} text-right`} />
+                  className={`${field.input} text-right`} />
               </div>
             ) : <div />}
           </div>
@@ -320,38 +312,37 @@ export default function DividendFormModal({
 
           {/* 세금 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">세금 ({form.currency}) <span className="text-slate-300">· 15.4% 자동계산</span></p>
+            <p className={field.label}>세금 ({form.currency}) <span className="text-slate-300">· 15.4% 자동계산</span></p>
             <input type="text" inputMode="decimal"
               placeholder="0"
               value={form.tax}
               onChange={e => setForm(p => ({ ...p, tax: fmtNumber(e.target.value.replace(/,/g, '')) }))}
-              className={`${inp} text-right`} />
+              className={`${field.input} text-right`} />
           </div>
 
           {/* 메모 */}
           <div>
-            <p className="text-xs text-slate-400 mb-1.5">메모</p>
+            <p className={field.label}>메모</p>
             <textarea
               rows={3}
               placeholder="메모 (선택)"
               value={form.memo}
               onChange={e => setForm(p => ({ ...p, memo: e.target.value }))}
-              className={`${inp} resize-none`} />
+              className={field.textarea} />
           </div>
 
-          {/* 버튼 */}
-          <div className="flex justify-end gap-2 pt-1">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:bg-slate-50 border border-slate-200">
-              취소
-            </button>
-            <button type="submit" disabled={saving}
-              className="px-5 py-2 rounded-lg text-sm text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
-              style={{ backgroundColor: palette.colors[0] }}>
-              {saving ? '저장 중...' : editTarget ? '수정' : '추가'}
-            </button>
-          </div>
         </form>
+
+        <div className={modal.footer}>
+          <button type="button" onClick={onClose} className={btn.secondary}>
+            취소
+          </button>
+          <button type="submit" form="dividend-form" disabled={saving}
+            className={btn.primary}
+            style={{ backgroundColor: palette.colors[0] }}>
+            {saving ? '저장 중...' : editTarget ? '수정' : '추가'}
+          </button>
+        </div>
       </div>
     </div>
   )
