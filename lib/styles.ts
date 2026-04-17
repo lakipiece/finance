@@ -34,7 +34,7 @@ export const btn = {
         ? 'text-white border-transparent'
         : 'border-slate-200 text-slate-500 hover:border-slate-400'
     }`,
-}
+} as const
 
 // ─── 카드 ──────────────────────────────────────────────────────────────────
 // rounded-2xl 고정. rounded-xl은 카드에 사용 금지.
@@ -57,7 +57,7 @@ export const field = {
   input:
     'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 ' +
     'focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white',
-  // 셀렉트 (bg-white 명시 포함 — 동일)
+  // select는 현재 input과 동일. 추후 appearance-none 등 분기 시 별도 정의.
   select:
     'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 ' +
     'focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white',
