@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, CartesianGrid, Legend,
+  ResponsiveContainer, CartesianGrid, LabelList,
   PieChart, Pie, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
@@ -21,7 +21,7 @@ interface Props {
 }
 
 function fmtY(v: number) {
-  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(0)}억`
+  if (v >= 100_000_000) return `${(v / 100_000_000).toFixed(1)}억`
   if (v >= 10_000) return `${Math.floor(v / 10_000)}만`
   return String(v)
 }
@@ -30,7 +30,6 @@ function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
 
-// 총 평가금액 바차트 커스텀 툴팁
 function LineTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   return (
@@ -41,7 +40,6 @@ function LineTooltip({ active, payload, label }: ChartTooltipProps) {
   )
 }
 
-// 구성 비중 바차트 커스텀 툴팁
 function BarTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const mv = (payload[0]?.payload?.total_market_value as number) ?? 0
@@ -70,9 +68,8 @@ function BarTooltip({ active, payload, label }: ChartTooltipProps) {
 }
 
 export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
-  const [mode, setMode] = useState<'asset_class' | 'ticker'>('asset_class')
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [filterKey, setFilterKey] = useState<string | null>(null)
+  const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
   const { palette } = useTheme()
   if (points.length < 2) return null
 
@@ -82,109 +79,153 @@ export default function SnapshotCharts({ points, sectorColors = {} }: Props) {
     palette.colors[0] + '99', palette.colors[1] + '99',
   ]
 
-  const keys = [...new Set(points.flatMap(p => Object.keys(p.breakdown)))]
+  const allKeys = [...new Set(points.flatMap(p => Object.keys(p.breakdown)))]
 
-  function getColor(key: string, idx: number) {
+  function getColor(key: string) {
+    const idx = allKeys.indexOf(key)
     return sectorColors[key] ?? THEME_COLORS[idx % THEME_COLORS.length]
   }
 
+  function toggleSector(k: string) {
+    setSelectedSectors(prev => {
+      const next = new Set(prev)
+      if (next.has(k)) next.delete(k)
+      else next.add(k)
+      return next
+    })
+  }
+
+  const visibleKeys = selectedSectors.size > 0
+    ? allKeys.filter(k => selectedSectors.has(k))
+    : allKeys
+
   return (
     <div className="space-y-4">
-      {/* 총 평가금액 추이 — 바 차트 */}
-      <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
-        <h3 className="text-sm font-semibold text-slate-700 mb-4">총 평가금액 추이</h3>
+
+      {/* 총 평가금액 추이 — 제목 없음, Y축 없음, 바 위 숫자 */}
+      <div className="bg-white rounded-2xl border border-slate-100 px-6 pt-5 pb-4">
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={points} margin={{ left: 8, right: 8 }}
+          <BarChart data={points} margin={{ left: 8, right: 8, top: 24 }}
             onClick={(data) => {
               const label = data?.activeLabel as string | undefined
-              if (label) {
-                setSelectedDate(prev => prev === label ? null : label)
-                setFilterKey(null)
-              }
+              if (label) setSelectedDate(prev => prev === label ? null : label)
             }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={fmtY} tick={{ fontSize: 11, fill: '#94a3b8' }} width={60} axisLine={false} tickLine={false} />
             <Tooltip content={<LineTooltip />} cursor={{ fill: '#f8fafc' }} />
             <Bar dataKey="total_market_value" fill={palette.colors[0]} radius={[4, 4, 0, 0]}
-              style={{ cursor: 'pointer' }} />
+              style={{ cursor: 'pointer' }}>
+              <LabelList dataKey="total_market_value" position="top"
+                formatter={(v: number) => fmtY(v)}
+                style={{ fontSize: 10, fill: '#94a3b8' }} />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* 도넛 드릴다운 — 선택된 날짜의 섹터 구성 */}
+      {/* 선택된 날짜의 구성 비중 드릴다운 */}
       {selectedDate && (() => {
         const point = points.find(p => p.date === selectedDate)
         if (!point) return null
         const entries = Object.entries(point.breakdown)
           .filter(([, v]) => v > 0)
           .sort((a, b) => b[1] - a[1])
-        const pieData = entries.map(([name, pct], i) => ({
-          name,
-          value: pct,
-          fill: sectorColors[name] ?? THEME_COLORS[i % THEME_COLORS.length],
+        const pieData = entries.map(([name, pct]) => ({
+          name, value: pct,
+          fill: getColor(name),
         }))
         return (
-          <div className="bg-white rounded-2xl border border-slate-100 px-6 py-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
+            <div className="flex items-center justify-between mb-4">
               <h4 className="text-xs font-semibold text-slate-600">{selectedDate} 구성 비중</h4>
-              <button onClick={() => { setSelectedDate(null); setFilterKey(null) }}
+              <button onClick={() => setSelectedDate(null)}
                 className="text-slate-300 hover:text-slate-500 text-xs">닫기</button>
             </div>
-            <div className="flex items-center gap-6 flex-wrap">
-              <PieChart width={160} height={160}>
-                <Pie data={pieData} cx={75} cy={75} innerRadius={45} outerRadius={70}
-                  dataKey="value" paddingAngle={2}
-                  onClick={(entry) => setFilterKey(prev => prev === entry.name ? null : entry.name)}
-                  style={{ cursor: 'pointer' }}>
-                  {pieData.map((entry, i) => (
-                    <Cell key={i} fill={entry.fill}
-                      opacity={filterKey && filterKey !== entry.name ? 0.3 : 1} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
-              </PieChart>
-              <div className="flex-1 space-y-1 max-h-32 overflow-y-auto min-w-0">
-                {entries.map(([name, pct], i) => (
-                  <div key={name}
-                    className={`flex items-center gap-1.5 cursor-pointer rounded px-1 py-0.5 ${filterKey === name ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
-                    onClick={() => setFilterKey(prev => prev === name ? null : name)}>
-                    <span className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: sectorColors[name] ?? THEME_COLORS[i % THEME_COLORS.length] }} />
-                    <span className="text-[10px] text-slate-600 flex-1 truncate">{name}</span>
-                    <span className="text-[10px] tabular-nums text-slate-500">{pct.toFixed(1)}%</span>
-                  </div>
-                ))}
+            <div className="flex gap-8 flex-wrap">
+              {/* 도넛 */}
+              <div className="shrink-0">
+                <PieChart width={160} height={160}>
+                  <Pie data={pieData} cx={75} cy={75} innerRadius={45} outerRadius={70}
+                    dataKey="value" paddingAngle={2}>
+                    {pieData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} />
+                </PieChart>
+              </div>
+
+              {/* 섹터 목록 — 가로 바 + % + 금액 */}
+              <div className="flex-1 space-y-3 min-w-[200px] py-1">
+                {entries.map(([name, pct]) => {
+                  const amt = point.total_market_value * pct / 100
+                  const color = getColor(name)
+                  return (
+                    <div key={name}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-[10px] text-slate-600 flex-1 truncate">{name}</span>
+                        <span className="text-[10px] tabular-nums text-slate-500 shrink-0">{pct.toFixed(1)}%</span>
+                        <span className="text-[10px] tabular-nums text-slate-400 shrink-0 w-16 text-right">
+                          {fmtY(amt)}원
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden ml-3.5">
+                        <div className="h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }} />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
         )
       })()}
 
-      {/* 구성 비중 변화 — stacked bar */}
+      {/* 구성 비중 변화 */}
       <div className="bg-white rounded-2xl border border-slate-100 px-6 py-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">구성 비중 변화</h3>
-          <div className="flex gap-1">
-            {(['asset_class', 'ticker'] as const).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className={`text-xs px-2 py-1 rounded-full ${mode === m ? 'bg-slate-200 text-slate-700' : 'text-slate-400'}`}>
-                {m === 'asset_class' ? '자산군' : '종목'}
+        <div className="flex items-start gap-4 mb-4 flex-wrap">
+          <h3 className="text-sm font-semibold text-slate-700 shrink-0">구성 비중 변화</h3>
+          {/* 섹터 복수 선택 */}
+          <div className="flex flex-wrap gap-1 flex-1">
+            {allKeys.map(k => {
+              const active = selectedSectors.has(k)
+              const color = getColor(k)
+              return (
+                <button key={k}
+                  onClick={() => toggleSector(k)}
+                  className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                    active
+                      ? 'text-white border-transparent'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                  }`}
+                  style={active ? { backgroundColor: color } : undefined}>
+                  {k}
+                </button>
+              )
+            })}
+            {selectedSectors.size > 0 && (
+              <button onClick={() => setSelectedSectors(new Set())}
+                className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 text-slate-400 hover:text-slate-600">
+                전체
               </button>
-            ))}
+            )}
           </div>
         </div>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={points} margin={{ left: 8, right: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <BarChart data={points} margin={{ left: 0, right: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <YAxis tickFormatter={v => `${v}%`} tick={{ fontSize: 11, fill: '#94a3b8' }} width={40} axisLine={false} tickLine={false} />
+            <YAxis hide />
             <Tooltip content={<BarTooltip />} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
-            {keys.map((k, i) => (
-              <Bar key={k} dataKey={`breakdown.${k}`} name={k} stackId="a"
-                fill={getColor(k, i)}
-                opacity={filterKey && filterKey !== k ? 0.2 : 1} />
+            {visibleKeys.map(k => (
+              <Bar key={k}
+                dataKey={(entry: SnapshotPoint) => entry.breakdown[k] ?? 0}
+                name={k}
+                stackId="a"
+                fill={getColor(k)}
+              />
             ))}
           </BarChart>
         </ResponsiveContainer>
