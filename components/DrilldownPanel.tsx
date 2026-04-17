@@ -140,7 +140,7 @@ export default function DrilldownPanel({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slate-800">{monthData.month} 상세 내역</h2>
+          <h2 className="text-base sm:text-lg font-bold" style={{ color: '#1A237E' }}>{monthData.month} 상세 내역</h2>
           <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(monthData.total)}</p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
@@ -165,13 +165,13 @@ export default function DrilldownPanel({
           onClick={() => { setSelectedCat(null); setSelectedTrendDetail(null) }}
           className="text-left rounded-xl p-3 transition-all"
           style={{
-            background: (!selectedCat || selectedCat === '__all__') ? 'rgba(100,116,139,0.16)' : 'rgba(100,116,139,0.08)',
-            outline: (!selectedCat || selectedCat === '__all__') ? '2px solid #64748b' : '2px solid transparent',
+            background: (!selectedCat || selectedCat === '__all__') ? 'rgba(26,35,126,0.1)' : 'rgba(26,35,126,0.04)',
+            outline: (!selectedCat || selectedCat === '__all__') ? '2px solid #1A237E' : '2px solid transparent',
           }}
         >
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full bg-slate-500" />
-            <span className="text-xs font-medium text-slate-500">전체</span>
+            <span className="w-2 h-2 rounded-full" style={{ background: (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#94a3b8' }} />
+            <span className="text-xs font-medium" style={{ color: (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#64748b' }}>전체</span>
           </div>
           <p className="text-base font-bold text-slate-800">{formatWonFull(monthData.total)}</p>
         </button>
@@ -209,7 +209,8 @@ export default function DrilldownPanel({
           {selectedMonth && (
             <button
               onClick={() => onMonthSelect?.(selectedMonth)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              className="text-xs font-medium"
+              style={{ color: '#1A237E' }}
             >
               월 필터 해제
             </button>
@@ -275,7 +276,7 @@ export default function DrilldownPanel({
       {/* Detail summary (category selected) */}
       {isCategory && (
         <div className="mb-5">
-          <h3 className="text-sm font-semibold text-slate-600 mb-2">{selectedCat} 항목별 집계</h3>
+          <h3 className="text-sm font-semibold mb-2" style={{ color: '#1A237E' }}>{selectedCat} 항목별 집계</h3>
           {catDetailsLoading ? (
             <div className="space-y-2">
               {[1,2,3].map(i => <div key={i} className="h-8 bg-slate-50 rounded-lg animate-pulse" />)}
@@ -429,7 +430,8 @@ function ExpenseTableCard({
                 <button
                   key={key}
                   onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey === key ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500'}`}
+                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey !== key ? 'bg-slate-100 text-slate-500' : ''}`}
+                  style={sortKey === key ? { background: '#1A237E', color: '#fff' } : undefined}
                 >
                   {{ date: '날짜', category: '분류', detail: '내역', amount: '금액' }[key]}{sortIcon(key)}
                 </button>
@@ -517,7 +519,8 @@ function ExpenseTableCard({
                 <button
                   key={size}
                   onClick={() => { setPageSize(size); setPage(1) }}
-                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+                  style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}
                 >{size}</button>
               ))}
             </div>

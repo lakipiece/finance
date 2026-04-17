@@ -101,8 +101,11 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-slate-700">스냅샷</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>스냅샷</h1>
+          <p className="text-xs text-slate-400 mt-0.5">포트폴리오 시점별 기록</p>
+        </div>
         <div className="flex gap-2">
           <button onClick={handleRefreshValues} disabled={refreshing}
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
@@ -111,6 +114,17 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           <button onClick={() => router.push('/portfolio/snapshots/charts')}
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50">
             차트보기
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={creating}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
+            style={{ background: '#00695C' }}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            {creating ? '생성 중...' : '스냅샷 추가'}
           </button>
         </div>
       </div>
