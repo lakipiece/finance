@@ -145,7 +145,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       : pathname.startsWith(href)
 
   return (
-    <div className="flex flex-col h-full w-[220px]" style={{ background: '#1A237E' }}>
+    <div className="flex flex-col h-full w-[220px] border-r border-slate-200" style={{ background: '#F8FAFC' }}>
       {/* 로고 */}
       <div className="flex items-center px-5 pt-6 pb-6">
         <IconLogo />
@@ -160,14 +160,18 @@ export default function Sidebar({ onClose }: SidebarProps) {
               key={tab.href}
               href={tab.href}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? 'text-white'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-[#1A237E]'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
               }`}
-              style={active ? { background: 'rgba(255,255,255,0.12)' } : undefined}
+              style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
             >
-              <span className={active ? 'text-white' : 'text-slate-500'}>{tab.icon}</span>
+              {/* active 좌측 인디케이터 */}
+              {active && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+              )}
+              <span className={active ? 'text-[#1A237E]' : 'text-slate-400'}>{tab.icon}</span>
               {tab.label}
             </Link>
           )
@@ -175,17 +179,16 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* 모드 전환 — 포트폴리오 먼저 */}
-      <div className="px-4 pb-6 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(0,0,0,0.2)' }}>
+      <div className="px-4 pb-6 pt-4 border-t border-slate-200">
+        <div className="flex gap-1 p-1 bg-slate-200 rounded-xl">
           <Link
             href="/portfolio"
             onClick={onClose}
             className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
               isPortfolio
-                ? 'text-slate-800'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-[#1A237E] shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
-            style={isPortfolio ? { background: 'rgba(255,255,255,0.92)' } : undefined}
           >
             포트폴리오
           </Link>
@@ -194,10 +197,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
             onClick={onClose}
             className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
               !isPortfolio
-                ? 'text-slate-800'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-[#1A237E] shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
             }`}
-            style={!isPortfolio ? { background: 'rgba(255,255,255,0.92)' } : undefined}
           >
             가계부
           </Link>

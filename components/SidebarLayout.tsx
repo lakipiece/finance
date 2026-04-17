@@ -38,10 +38,10 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 */}
       <div className="md:pl-[220px] min-h-screen flex flex-col">
         {/* 모바일 햄버거 바 */}
-        <div className="md:hidden flex items-center h-12 px-4 sticky top-0 z-30" style={{ background: '#1A237E' }}>
+        <div className="md:hidden flex items-center h-12 px-4 sticky top-0 z-30 border-b border-slate-200" style={{ background: '#F8FAFC' }}>
           <button
             onClick={() => setOpen(true)}
-            className="p-1.5 rounded-lg text-slate-300 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
             aria-label="메뉴 열기"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
