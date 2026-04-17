@@ -6,6 +6,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn, field, modal as modalStyles } from '@/lib/styles'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 
@@ -110,71 +111,70 @@ function SecurityModal({ security, onSave, onClose, options }: {
     finally { setSaving(false) }
   }
 
-  const inp = 'w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
-  const lbl = 'block text-[10px] text-slate-500 mb-0.5'
-
-  const modal = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
+  const secModal = (
+    <div className={modalStyles.overlayTop} onClick={onClose}>
+      <div className={modalStyles.container} onClick={e => e.stopPropagation()}>
+        <div className={modalStyles.header}>
           <div className="flex items-center gap-2">
             {isEdit && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span>}
             <h3 className="text-sm font-semibold text-slate-800">{isEdit ? '종목 수정' : '종목 추가'}</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+          <button onClick={onClose} className={modalStyles.close}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {!isEdit && (
-            <div className="col-span-2"><label className={lbl}>티커 *</label>
-              <input value={form.ticker} onChange={e => setForm(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
-                className={inp} placeholder="SCHD" /></div>
-          )}
-          <div className="col-span-2"><label className={lbl}>종목명 *</label>
-            <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={inp}
-              placeholder="슈왑 배당 ETF" /></div>
-          <div><label className={lbl}>국가</label>
-            <select value={form.country_id} onChange={e => setForm(p => ({ ...p, country_id: e.target.value }))} className={inp}>
-              <option value="">선택 안함</option>
-              {(options.country ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select></div>
-          <div><label className={lbl}>통화</label>
-            <select value={form.currency_id} onChange={e => setForm(p => ({ ...p, currency_id: e.target.value }))} className={inp}>
-              <option value="">선택 안함</option>
-              {(options.currency ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select></div>
-          <div><label className={lbl}>자산군</label>
-            <select value={form.asset_class_id} onChange={e => setForm(p => ({ ...p, asset_class_id: e.target.value }))} className={inp}>
-              <option value="">선택 안함</option>
-              {(options.asset_class ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select></div>
-          <div><label className={lbl}>섹터</label>
-            <select value={form.sector_id} onChange={e => setForm(p => ({ ...p, sector_id: e.target.value }))} className={inp}>
-              <option value="">선택 안함</option>
-              {(options.sector ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-            </select></div>
-          <div className="col-span-2"><label className={lbl}>URL</label>
-            <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={inp} placeholder="https://..." /></div>
-          <div className="col-span-2"><label className={lbl}>메모</label>
-            <input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={inp} /></div>
+        <div className={modalStyles.body}>
+          <div className="grid grid-cols-2 gap-2">
+            {!isEdit && (
+              <div className="col-span-2"><label className={field.labelSm}>티커 *</label>
+                <input value={form.ticker} onChange={e => setForm(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
+                  className={field.input} placeholder="SCHD" /></div>
+            )}
+            <div className="col-span-2"><label className={field.labelSm}>종목명 *</label>
+              <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={field.input}
+                placeholder="슈왑 배당 ETF" /></div>
+            <div><label className={field.labelSm}>국가</label>
+              <select value={form.country_id} onChange={e => setForm(p => ({ ...p, country_id: e.target.value }))} className={field.input}>
+                <option value="">선택 안함</option>
+                {(options.country ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select></div>
+            <div><label className={field.labelSm}>통화</label>
+              <select value={form.currency_id} onChange={e => setForm(p => ({ ...p, currency_id: e.target.value }))} className={field.input}>
+                <option value="">선택 안함</option>
+                {(options.currency ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select></div>
+            <div><label className={field.labelSm}>자산군</label>
+              <select value={form.asset_class_id} onChange={e => setForm(p => ({ ...p, asset_class_id: e.target.value }))} className={field.input}>
+                <option value="">선택 안함</option>
+                {(options.asset_class ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select></div>
+            <div><label className={field.labelSm}>섹터</label>
+              <select value={form.sector_id} onChange={e => setForm(p => ({ ...p, sector_id: e.target.value }))} className={field.input}>
+                <option value="">선택 안함</option>
+                {(options.sector ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select></div>
+            <div className="col-span-2"><label className={field.labelSm}>URL</label>
+              <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>
+            <div className="col-span-2"><label className={field.labelSm}>메모</label>
+              <input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={field.input} /></div>
+          </div>
+          {err && <p className="text-xs text-red-500">{err}</p>}
         </div>
-        {err && <p className="text-xs text-red-500 mb-3">{err}</p>}
-        <div className="flex gap-2">
+        <div className={modalStyles.footer}>
+          <button onClick={onClose} className={btn.secondary}>취소</button>
           <button onClick={handleSave} disabled={saving || (!isEdit && !form.ticker) || !form.name}
-            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : isEdit ? '저장' : '추가'}
           </button>
-          <button onClick={onClose} className="text-slate-500 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors">취소</button>
         </div>
       </div>
     </div>
   )
   if (typeof document === 'undefined') return null
-  return createPortal(modal, document.body)
+  return createPortal(secModal, document.body)
 }
 
 // ─── Holding Card ─────────────────────────────────────────────────────────────
@@ -304,14 +304,14 @@ function PriceHistoryModal({
     ? `$${v >= 1000 ? v.toFixed(0) : v.toFixed(1)}`
     : v >= 10000 ? `${(v / 10000).toFixed(1)}만` : `${Math.round(v)}`
 
-  const modal = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[95dvh] sm:max-h-[90vh]" onClick={e => e.stopPropagation()}>
+  const histModal = (
+    <div className={modalStyles.overlayTop} onClick={onClose}>
+      <div className={modalStyles.containerLg} onClick={e => e.stopPropagation()}>
 
         {/* ── Header ── */}
         <div className="relative flex items-end justify-between px-5 pt-5 pb-3 pr-12 shrink-0">
           {/* X — 우상단 고정 */}
-          <button onClick={onClose} className="absolute top-3 right-3 text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100">
+          <button onClick={onClose} className={`absolute top-3 right-3 ${modalStyles.close}`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -519,7 +519,7 @@ function PriceHistoryModal({
   )
 
   if (typeof document === 'undefined') return null
-  return createPortal(modal, document.body)
+  return createPortal(histModal, document.body)
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -692,7 +692,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={handleRefreshAll} disabled={refreshingAll}
-            className={`text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-all ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}
+            className={`${btn.primary} ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}
             style={{ backgroundColor: palette.colors[0] }}>
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
           </button>
@@ -813,13 +813,13 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     )}
                   </button>
                   <button onClick={() => setEditModalSecurity(s)}
-                    className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors">
+                    className={btn.icon}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
                   <button onClick={() => deleteSecurity(s.id)}
-                    className="p-0.5 rounded hover:bg-red-50 text-slate-200 hover:text-red-400 transition-colors">
+                    className={btn.danger}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
