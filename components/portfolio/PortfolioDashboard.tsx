@@ -103,14 +103,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null)
-  const REFRESH_KEY = 'portfolio-last-refresh'
-  const [lastUpdated, setLastUpdated] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem(REFRESH_KEY)
-      if (stored) return stored
-    }
-    return summary.last_price_updated_at
-  })
+  const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
   const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set())
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
   const [showAccounts, setShowAccounts] = useState(true)
@@ -218,8 +211,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         const failedMsg = json.failed?.length > 0 ? ` (${json.failed.length}개 실패)` : ''
         if (json.failed?.length > 0) console.warn('[price refresh] failed:', json.failed)
         setRefreshMsg(`${json.saved}개 저장 완료${failedMsg} ${json.failed?.length > 0 ? '— 콘솔 확인' : ''}`)
-        const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
-        sessionStorage.setItem(REFRESH_KEY, now)
+        const now = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' })
         setLastUpdated(now)
         router.refresh()
       }
