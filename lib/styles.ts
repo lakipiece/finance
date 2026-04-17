@@ -171,3 +171,71 @@ export const layout = {
   page:    'max-w-7xl mx-auto px-4 py-8 space-y-6',
   section: 'space-y-4',
 } as const
+
+// ─── The Orchestrated Lens — 고급 편집 디자인 토큰 ─────────────────────────
+// 경계선 대신 배경 레이어링으로 깊이를 표현한다. 1px 경계선 섹션 분리 금지.
+
+// Surface 계층 — tailwind.config.ts의 surface.* 색상 토큰에 대응
+// Foundation(#f8f9ff) → Canvas(#eff4ff) → Card(#fff) 순으로 "부상"
+export const surface = {
+  // 앱 최상위 배경
+  foundation: 'bg-surface',
+  // 사이드바, 보조 패널
+  canvas: 'bg-surface-low',
+  // 주요 카드 — 경계선 없이 배경 대비로 "팝업" 효과
+  card: 'bg-surface-card rounded-2xl',
+  // 강조 카드 — 그림자로 부상감
+  cardElevated: 'bg-surface-card rounded-2xl shadow-[0_4px_32px_0_rgba(13,28,46,0.06)]',
+  // 구분 존 (섹션 분리 배경)
+  zone: 'bg-surface-container rounded-2xl',
+} as const
+
+// 글래스모피즘 — 모달, 플로팅 메뉴 등 포커스 필요 요소
+export const glass = {
+  // 표준 글래스 패널
+  panel:
+    'bg-white/70 backdrop-blur-[20px] ' +
+    'shadow-[0_4px_32px_0_rgba(13,28,46,0.08)] rounded-2xl',
+  // 오버레이 — 모달 배경 (기존 modal.overlay 대체 가능)
+  overlay:
+    'fixed inset-0 z-50 flex items-center justify-center ' +
+    'bg-[#0d1c2e]/30 backdrop-blur-[6px] px-4',
+} as const
+
+// 폰트 — Manrope (기술적 헤드라인), Noto Sans KR (한글 본문)
+// Manrope는 24px 이상 숫자, 페이지 제목에 사용
+export const font = {
+  // 대형 KPI 숫자 — 2.75rem, Manrope 700
+  display: 'font-manrope text-[2.75rem] font-bold leading-none tracking-tight tabular-nums',
+  // 페이지/섹션 타이틀 — Manrope 600
+  headline: 'font-manrope text-2xl font-semibold',
+  // 카드 타이틀 — Inter/Noto 600
+  title: 'text-lg font-semibold text-[#0d1c2e]',
+  // 본문 — 0.875rem
+  body: 'text-sm text-[#0d1c2e]/80',
+  // 메타 — 0.6875rem
+  meta: 'text-[11px] font-medium text-[#0d1c2e]/50',
+} as const
+
+// 주요 CTA 버튼 — "Machined Metal" 그라디언트
+// primary는 기존 btn.primary(테마색)와 병행. 이건 다크 네이비 고정 CTA용.
+export const cta = {
+  // 다크 네이비 그라디언트 — 135° "machined metal" 효과
+  primary:
+    'px-4 py-2 rounded-md text-xs font-semibold text-white transition-opacity ' +
+    'bg-gradient-to-br from-[#131b2e] to-[#7c839b] hover:opacity-90 disabled:opacity-50',
+  // 보조 — surface-container-high 배경, 경계선 없음
+  secondary:
+    'px-4 py-2 rounded-md text-xs font-semibold transition-colors ' +
+    'bg-surface-container-high text-[#131b2e] hover:bg-surface-dim disabled:opacity-50',
+} as const
+
+// Intelligence Badge — 상태 표시 반투명 배지 (solid pill 금지)
+// 배경: 상태색 10% 불투명도 + 고대비 텍스트
+export const statusBadge = {
+  success:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700',
+  warning:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700',
+  danger:   'px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-600',
+  info:     'px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-500/10 text-sky-700',
+  neutral:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/10 text-slate-600',
+} as const

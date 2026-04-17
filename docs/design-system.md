@@ -5,6 +5,19 @@
 
 ---
 
+## 철학: The Orchestrated Lens
+
+> *"모든 픽셀은 자리를 얻어야 한다. 선이 명확성을 주지 못하면 제거한다. 타이포그래피와 블루-그레이 표면의 미세한 이동이 사용자의 시선을 안내한다."*
+
+고밀도 엔터프라이즈 환경에서 "템플릿" 외형은 집중의 적이다. 이 디자인 시스템은 **The Orchestrated Lens** 철학을 따른다: 데이터는 단순히 표시되는 것이 아니라, 정교한 레이어링과 색조 깊이를 통해 *큐레이션*된다.
+
+**핵심 원칙: 선 없는(No-Line) 구조**
+- 섹션 분리용 `1px solid border` **금지**
+- 경계는 배경색 이동(Tonal Shift)으로 표현
+- 선이 필요한 곳에는 "Ghost Border" 사용: `outline-variant`(#c6c6cd) 15% 불투명도
+
+---
+
 ## 0. 빠른 참조 — `lib/styles.ts`
 
 컴포넌트 내부에 Tailwind 클래스를 하드코딩하지 말 것.  
@@ -59,6 +72,32 @@ import { btn, card, field, badge, modal, text, tbl, skeleton, layout } from '@/l
 
 ## 1. 색상
 
+### Surface 계층 (The Orchestrated Lens 핵심)
+
+배경색 레이어링으로 깊이를 표현한다. `surface.*` 토큰은 `tailwind.config.ts`에 등록되어 있다.
+
+| 토큰 (Tailwind) | Hex | 용도 |
+|---|---|---|
+| `bg-surface` | `#f8f9ff` | Foundation — 앱 최상위 배경 |
+| `bg-surface-low` | `#eff4ff` | Canvas — 사이드바, 보조 패널 |
+| `bg-surface-container` | `#e6eeff` | Container — 구분 존 |
+| `bg-surface-container-high` | `#dce9ff` | Container High — 보조 버튼 배경 |
+| `bg-surface-dim` | `#ccdbf3` | Dim — 비활성 상태 |
+| `bg-surface-card` / `bg-white` | `#ffffff` | High-Focus Card — 주요 카드 "팝업" |
+| `text-[#0d1c2e]` | `#0d1c2e` | On Surface — 기본 텍스트 (pure black 금지) |
+| `bg-[#131b2e]` | `#131b2e` | Primary Container — 주요 CTA 배경 |
+
+```tsx
+import { surface } from '@/lib/styles'
+
+// 레이어 스택 (Foundation → Canvas → Card)
+<div className="bg-surface min-h-screen">        {/* 앱 배경 */}
+  <aside className={surface.canvas}>             {/* 사이드바 */}
+  <main>
+    <div className={surface.cardElevated}>        {/* 주요 카드, 그림자로 부상 */}
+    <div className={surface.zone}>               {/* 구분 존, 테두리 없음 */}
+```
+
 ### Slate Scale (주요 텍스트/배경)
 
 | 토큰 | Tailwind | 용도 |
@@ -103,6 +142,22 @@ const { palette } = useTheme()
 ---
 
 ## 2. 타이포그래피
+
+### 폰트 패밀리
+
+| 역할 | 폰트 | 사용 범위 |
+|------|------|-----------|
+| 헤드라인 · KPI 숫자 | **Manrope** (`font-manrope`) | 24px 이상 숫자, 페이지 제목 |
+| 한글 본문 · UI | **Noto Sans KR** (기본) | 일반 텍스트, 레이블, 데이터 셀 |
+
+```tsx
+import { font } from '@/lib/styles'
+
+<p className={font.display}>₩1,234만</p>      {/* 2.75rem, Manrope 700 */}
+<h1 className={font.headline}>포트폴리오</h1>  {/* 1.5rem, Manrope 600 */}
+<p className={font.body}>일반 설명 텍스트</p>  {/* 0.875rem */}
+<span className={font.meta}>메타 정보</span>   {/* 0.6875rem */}
+```
 
 ### 텍스트 크기 규칙
 
@@ -435,7 +490,84 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
 
 ---
 
-## 10. 알려진 기술 부채
+## 10. 글래스모피즘 & 앰비언트 섀도우
+
+### 글래스모피즘
+
+포커스가 필요한 요소(모달, 플로팅 메뉴)에 사용한다.
+
+```tsx
+import { glass } from '@/lib/styles'
+
+{/* 글래스 패널 */}
+<div className={glass.panel}>
+  {/* surface_variant 70% 불투명도 + backdrop-blur 20px */}
+</div>
+
+{/* 글래스 오버레이 (modal.overlay 대안, 더 고급스러운 느낌) */}
+<div className={glass.overlay}>
+  <div className={glass.panel + ' w-full max-w-md p-6'}>
+    모달 내용
+  </div>
+</div>
+```
+
+### 앰비언트 섀도우
+
+표준 drop-shadow 대신 `on_surface`(#0d1c2e) 6% 틴트 섀도우를 사용한다.
+
+```tsx
+// 앰비언트 섀도우 — 드롭다운, 플로팅 요소
+className="shadow-[0_4px_32px_0_rgba(13,28,46,0.06)]"
+
+// Ghost Border — 고밀도 테이블에서 줄 구분이 꼭 필요할 때
+className="border border-[#c6c6cd]/15"   // "느껴지되 보이지 않는" 선
+```
+
+### Intelligence Badge (상태 배지)
+
+Solid 컬러 pill 대신 10% 불투명도 배경으로 가벼운 느낌을 유지한다.
+
+```tsx
+import { statusBadge } from '@/lib/styles'
+
+<span className={statusBadge.success}>연결됨</span>
+<span className={statusBadge.warning}>주의</span>
+<span className={statusBadge.danger}>오류</span>
+<span className={statusBadge.info}>처리 중</span>
+<span className={statusBadge.neutral}>비활성</span>
+```
+
+### 주요 CTA (Machined Metal 그라디언트)
+
+테마색 버튼(`btn.primary`)과 별개로, 다크 네이비 고정 CTA에 사용한다.
+
+```tsx
+import { cta } from '@/lib/styles'
+
+<button className={cta.primary}>데이터 가져오기</button>   {/* 다크 네이비 그라디언트 */}
+<button className={cta.secondary}>취소</button>            {/* surface-container-high 배경 */}
+```
+
+---
+
+## 11. Do's & Don'ts (The Orchestrated Lens)
+
+### Do
+- Y축 우선. 리스트 세로 패딩을 충분히 확보해 고밀도 데이터를 읽기 쉽게 한다.
+- 24px 이상 숫자는 `font-manrope`를 사용해 기술적 정밀감을 강조한다.
+- 비활성 상태에는 `bg-surface-dim`(#ccdbf3)을 사용해 활성 영역과 포커스를 분리한다.
+- 그림자는 `rgba(13,28,46,0.06)` 틴트 앰비언트 섀도우만 사용한다.
+
+### Don't
+- 카드 분리에 100% 불투명 border 사용하지 말 것 — 시각 노이즈로 엔터프라이즈 사용자를 피로하게 한다.
+- 텍스트에 pure black(`#000000`) 사용하지 말 것 — `text-[#0d1c2e]` 또는 `text-slate-800`을 사용한다.
+- 카드에 standard drop-shadow 사용하지 말 것 — 배경색 중첩이 90%, 그림자는 10%다.
+- `1px solid border`로 섹션을 나누지 말 것 — 배경색 이동 또는 Ghost Border를 사용한다.
+
+---
+
+## 12. 알려진 기술 부채
 
 | 항목 | 파일 | 우선순위 |
 |------|------|----------|
