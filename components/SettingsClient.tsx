@@ -6,6 +6,7 @@ import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
 import ThemePicker from './ThemePicker'
+import { field, badge } from '@/lib/styles'
 
 interface Props {
   initialYears: YearSummary[]
@@ -69,7 +70,7 @@ export default function SettingsClient({ initialYears }: Props) {
                     <div className="text-xl font-bold text-slate-800">{y.year}</div>
                     <div className="text-[10px] text-slate-400 mt-0.5">{y.count.toLocaleString()}건</div>
                     <div className="flex items-center justify-center gap-1 mt-1">
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${isSheets ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                      <span className={isSheets ? badge.success : badge.info}>
                         {isSheets ? 'Sheets' : 'Excel'}
                       </span>
                     </div>
@@ -89,22 +90,22 @@ export default function SettingsClient({ initialYears }: Props) {
             <p className="text-xs font-medium text-slate-600 mb-3">Google Sheets 연동</p>
             <div className="space-y-2.5">
               <div>
-                <label className="block text-xs text-slate-400 mb-1">스프레드시트 URL 또는 ID</label>
+                <label className={field.label}>스프레드시트 URL 또는 ID</label>
                 <input
                   type="text"
                   value={imp.sheetId}
                   onChange={(e) => imp.setSheetId(e.target.value)}
                   placeholder="Google Sheets URL 또는 ID"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                  className={field.input}
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-400 mb-1">시트 이름</label>
+                <label className={field.label}>시트 이름</label>
                 <input
                   type="text"
                   value={imp.sheetName}
                   onChange={(e) => imp.setSheetName(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                  className={field.input}
                 />
               </div>
               <div>
@@ -131,7 +132,7 @@ export default function SettingsClient({ initialYears }: Props) {
           <div className="bg-white rounded-2xl border border-slate-100 p-4">
             <p className="text-xs font-medium text-slate-600 mb-3">엑셀 업로드</p>
             <div className="mb-3">
-              <label className="block text-xs text-slate-400 mb-1">연도</label>
+              <label className={field.label}>연도</label>
               <input
                 type="number"
                 value={imp.uploadYear}
@@ -140,7 +141,7 @@ export default function SettingsClient({ initialYears }: Props) {
               />
             </div>
             <div
-              className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-slate-300 transition-colors"
+              className={field.dropzone}
               onClick={() => imp.fileInputRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {

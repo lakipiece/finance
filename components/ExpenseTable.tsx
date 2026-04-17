@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { formatWonFull, CAT_BADGE } from '@/lib/utils'
+import { tbl } from '@/lib/styles'
 
 interface Props {
   expenses: ExpenseItem[]
@@ -84,21 +85,21 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">#</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">날짜</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">분류</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">내역</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
-              <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
-              <th className="text-right py-2 px-3 text-xs text-slate-400 font-medium">금액</th>
+              <th className={tbl.th}>#</th>
+              <th className={tbl.th}>날짜</th>
+              <th className={tbl.th}>분류</th>
+              <th className={tbl.th}>내역</th>
+              <th className={tbl.th}>비고</th>
+              <th className={tbl.th}>결제수단</th>
+              <th className={tbl.th}>사용자</th>
+              <th className={tbl.thRight}>금액</th>
             </tr>
           </thead>
           <tbody>
             {slice.map((e, i) => (
               <tr
                 key={`${e.date}-${e.detail}-${e.amount}-${i}`}
-                className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}
+                className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}
               >
                 <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                 <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
@@ -181,14 +182,14 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
           <button
             onClick={() => setPage(1)}
             disabled={safePage === 1}
-            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             처음
           </button>
           <button
             onClick={() => setPage(p => Math.max(1, p - 1))}
             disabled={safePage === 1}
-            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             이전
           </button>
@@ -198,14 +199,14 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
           <button
             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
             disabled={safePage === totalPages}
-            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             다음
           </button>
           <button
             onClick={() => setPage(totalPages)}
             disabled={safePage === totalPages}
-            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             끝
           </button>

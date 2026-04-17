@@ -8,6 +8,7 @@ import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
 import YearPicker from './YearPicker'
+import { tbl, field } from '@/lib/styles'
 
 interface Props {
   monthData: MonthlyData
@@ -364,7 +365,6 @@ function ExpenseTableCard({
   }
 
   const sortIcon = (key: string) => sortKey !== key ? ' ↕' : sortDir === 'asc' ? ' ↑' : ' ↓'
-  const thSort = 'text-left py-2 px-3 text-xs text-slate-400 font-medium cursor-pointer hover:text-slate-600 select-none'
 
   const tableData = useMemo(() => {
     if (!expenses) return []
@@ -412,7 +412,7 @@ function ExpenseTableCard({
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="내역 / 분류 / 결제수단 / 비고 검색..."
-          className="border border-slate-200 rounded-xl px-3 py-1.5 text-[10px] text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300 w-52"
+          className={`${field.input} w-52`}
         />
       </div>
 
@@ -467,19 +467,19 @@ function ExpenseTableCard({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">#</th>
-                  <th className={thSort} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
-                  <th className={thSort} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
-                  <th className={thSort} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
-                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">사용자</th>
-                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">비고</th>
-                  <th className="text-left py-2 px-3 text-xs text-slate-400 font-medium">결제수단</th>
-                  <th className={`${thSort} text-right`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
+                  <th className={tbl.th}>#</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
+                  <th className={tbl.th}>사용자</th>
+                  <th className={tbl.th}>비고</th>
+                  <th className={tbl.th}>결제수단</th>
+                  <th className={`${tbl.thRight} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
                 </tr>
               </thead>
               <tbody>
                 {slice.map((e, i) => (
-                  <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={`border-b border-slate-50 hover:bg-slate-50 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
+                  <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
                     <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                     <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
                     <td className="py-2 px-3">
@@ -522,11 +522,11 @@ function ExpenseTableCard({
               ))}
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">처음</button>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">이전</button>
+              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">처음</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">이전</button>
               <span className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">다음</button>
-              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">끝</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
+              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">끝</button>
             </div>
           </div>
         </>
