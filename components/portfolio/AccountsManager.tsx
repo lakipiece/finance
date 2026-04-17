@@ -13,6 +13,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn, field, badge, modal } from '@/lib/styles'
 
 interface AccountSecurity { account_id: string; security_id: string }
 type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
@@ -72,12 +73,12 @@ function SortableAccountCard({
               <span className="font-semibold text-slate-600">{linkedCount}</span>종목
             </p>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
-              <button onClick={onEdit} className="p-1 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-600">
+              <button onClick={onEdit} className={btn.icon}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </button>
-              <button onClick={onDelete} className="p-1 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-400">
+              <button onClick={onDelete} className={btn.danger}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -238,8 +239,6 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     })
   }, [securities, linkSearch, pendingIds])
 
-  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
-  const labelCls = 'block text-xs text-slate-500 mb-1'
   const modalAccount = accounts.find(a => a.id === modalLinkAccountId)
 
   return (
@@ -282,12 +281,12 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Link Modal */}
       {modalLinkAccountId && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        <div className={modal.overlayTop}
           onClick={handleModalClose}>
           <div className="bg-white rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl"
             style={{ maxHeight: '82vh' }}
             onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+            <div className={modal.header}>
               <div>
                 <h3 className="font-semibold text-slate-800">{modalAccount?.name}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{modalAccount?.broker}{modalAccount?.type ? ` · ${modalAccount.type}` : ''}</p>
@@ -295,12 +294,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               <div className="flex items-center gap-2">
                 {isDirty && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>}
                 <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                  className={btn.primary}
                   style={{ backgroundColor: palette.colors[0] }}>
                   {savingLinks ? '저장 중...' : '저장하기'}
                 </button>
-                <button onClick={handleModalClose}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+                <button onClick={handleModalClose} className={modal.close}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -314,14 +312,14 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </svg>
                 <input value={linkSearch} onChange={e => setLinkSearch(e.target.value)}
                   placeholder="티커 또는 종목명 검색"
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+                  className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
               </div>
               <p className="text-[10px] text-slate-400 mt-1.5">{pendingIds.size}종목 선택됨 · {filteredLinkSecurities.length}개 표시</p>
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               {filteredLinkSecurities.map(s => {
                 const checked = pendingIds.has(s.id)
-                const badge = countryBadge(s.country)
+                const badgeCls = countryBadge(s.country)
                 return (
                   <label key={s.id}
                     className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50">
@@ -332,9 +330,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         return next
                       })}
                       className="w-3.5 h-3.5 rounded accent-slate-700 cursor-pointer shrink-0" />
-                    <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
+                    <span className={`${badge.ticker} bg-slate-100 text-slate-600 shrink-0`}>{s.ticker}</span>
                     <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${badge}`}>{s.country}</span>
+                    <span className={`${badge.sm} shrink-0 ${badgeCls}`}>{s.country}</span>
                     <span className="text-[10px] text-slate-400 shrink-0">{s.currency}</span>
                   </label>
                 )
@@ -356,12 +354,12 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <p className="text-xs text-slate-500 mt-1.5">연결 종목을 수정했지만 저장하지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                className={`flex-1 ${btn.primary}`}
                 style={{ backgroundColor: palette.colors[0] }}>
                 계속 편집
               </button>
               <button onClick={discardAndClose}
-                className="flex-1 text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100 border border-slate-200">
+                className={`flex-1 ${btn.secondary}`}>
                 저장안함
               </button>
             </div>
@@ -372,7 +370,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Add Account Modal */}
       {showAddModal && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        <div className={modal.overlayTop}
           onClick={() => setShowAddModal(false)}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             onClick={e => e.stopPropagation()}>
@@ -380,22 +378,22 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <div className="space-y-3">
               {[{key:'name',label:'계좌명 *',placeholder:'종합위탁'},{key:'broker',label:'금융사 *',placeholder:'카카오페이'},{key:'owner',label:'소유자',placeholder:''}].map(f => (
                 <div key={f.key}>
-                  <label className={labelCls}>{f.label}</label>
+                  <label className={field.label}>{f.label}</label>
                   <input value={accountForm[f.key as keyof typeof accountForm]}
                     onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
-                    placeholder={f.placeholder} className={inputCls} />
+                    placeholder={f.placeholder} className={field.input} />
                 </div>
               ))}
               <div>
-                <label className={labelCls}>유형</label>
-                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
+                <label className={field.label}>유형</label>
+                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={field.select}>
                   <option value="">선택 안함</option>
                   {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>추가</button>
-                <button onClick={() => setShowAddModal(false)} className="text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100">취소</button>
+                <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
+                <button onClick={() => setShowAddModal(false)} className={btn.secondary}>취소</button>
               </div>
             </div>
           </div>
@@ -405,7 +403,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Edit Account Modal */}
       {editingAccountId && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
+        <div className={modal.overlayTop}
           onClick={() => setEditingAccountId(null)}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             onClick={e => e.stopPropagation()}>
@@ -413,22 +411,22 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <div className="space-y-3">
               {[{key:'name',label:'계좌명 *'},{key:'broker',label:'금융사 *'},{key:'owner',label:'소유자'}].map(f => (
                 <div key={f.key}>
-                  <label className={labelCls}>{f.label}</label>
+                  <label className={field.label}>{f.label}</label>
                   <input value={accountForm[f.key as keyof typeof accountForm]}
                     onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
-                    className={inputCls} />
+                    className={field.input} />
                 </div>
               ))}
               <div>
-                <label className={labelCls}>유형</label>
-                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={inputCls}>
+                <label className={field.label}>유형</label>
+                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={field.select}>
                   <option value="">선택 안함</option>
                   {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>수정</button>
-                <button onClick={() => setEditingAccountId(null)} className="text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100">취소</button>
+                <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>수정</button>
+                <button onClick={() => setEditingAccountId(null)} className={btn.secondary}>취소</button>
               </div>
             </div>
           </div>

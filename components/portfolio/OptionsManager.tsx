@@ -11,6 +11,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn, field } from '@/lib/styles'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
@@ -174,7 +175,7 @@ function SortableOptionRow({
       )}
 
       <button onClick={() => onDelete(opt.id)}
-        className="p-0.5 text-slate-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        className="p-0.5 text-slate-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -250,9 +251,9 @@ function OptionTypeCard({
         <ColorPicker color={newColor} onChange={setNewColor} />
         <input value={newLabel} onChange={e => setNewLabel(e.target.value)}
           placeholder="새 항목" onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="flex-1 border border-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 min-w-0" />
+          className={`${field.input} min-w-0`} />
         <button onClick={handleAdd} disabled={adding || !newLabel.trim()}
-          className="text-white px-2 py-1 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity shrink-0"
+          className={`${btn.primary} shrink-0`}
           style={{ backgroundColor: palette.colors[0] }}>
           추가
         </button>
