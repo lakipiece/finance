@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import type { Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn, field, badge, modal } from '@/lib/styles'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -67,60 +68,75 @@ function SecurityModal({ security, onSave, onClose }: {
     finally { setSaving(false) }
   }
 
-  const inp = 'w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
-  const lbl = 'block text-[10px] text-slate-500 mb-0.5'
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
+    <div className={modal.overlay} onClick={onClose}>
+      <div className={modal.container} onClick={e => e.stopPropagation()}>
+        <div className={modal.header}>
           <div className="flex items-center gap-2">
-            {isEdit && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span>}
+            {isEdit && <span className={`${badge.ticker} bg-slate-100 text-slate-600`}>{security!.ticker}</span>}
             <h3 className="text-sm font-semibold text-slate-800">{isEdit ? '종목 수정' : '종목 추가'}</h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100">
+          <button onClick={onClose} className={modal.close}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          {!isEdit && (
-            <div className="col-span-2"><label className={lbl}>티커 *</label>
-              <input value={form.ticker} onChange={e => setForm(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
-                className={inp} placeholder="SCHD" /></div>
-          )}
-          <div className="col-span-2"><label className={lbl}>종목명 *</label>
-            <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={inp}
-              placeholder="슈왑 배당 ETF" /></div>
-          <div><label className={lbl}>국가</label>
-            <select value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} className={inp}>
-              {['미국','국내','글로벌','기타'].map(c => <option key={c}>{c}</option>)}
-            </select></div>
-          <div><label className={lbl}>통화</label>
-            <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={inp}>
-              <option>USD</option><option>KRW</option>
-            </select></div>
-          <div><label className={lbl}>자산군</label>
-            <select value={form.asset_class} onChange={e => setForm(p => ({ ...p, asset_class: e.target.value }))} className={inp}>
-              {['주식','채권','대체자산'].map(c => <option key={c}>{c}</option>)}
-            </select></div>
-          <div><label className={lbl}>섹터</label>
-            <input value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} className={inp}
-              placeholder="테크" /></div>
-          <div className="col-span-2"><label className={lbl}>URL</label>
-            <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={inp} placeholder="https://..." /></div>
-          <div className="col-span-2"><label className={lbl}>메모</label>
-            <input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={inp} /></div>
+        <div className={modal.body}>
+          <div className="grid grid-cols-2 gap-2">
+            {!isEdit && (
+              <div className="col-span-2">
+                <label className={field.labelSm}>티커 *</label>
+                <input value={form.ticker} onChange={e => setForm(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
+                  className={field.input} placeholder="SCHD" />
+              </div>
+            )}
+            <div className="col-span-2">
+              <label className={field.labelSm}>종목명 *</label>
+              <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={field.input}
+                placeholder="슈왑 배당 ETF" />
+            </div>
+            <div>
+              <label className={field.labelSm}>국가</label>
+              <select value={form.country} onChange={e => setForm(p => ({ ...p, country: e.target.value }))} className={field.select}>
+                {['미국','국내','글로벌','기타'].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={field.labelSm}>통화</label>
+              <select value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} className={field.select}>
+                <option>USD</option><option>KRW</option>
+              </select>
+            </div>
+            <div>
+              <label className={field.labelSm}>자산군</label>
+              <select value={form.asset_class} onChange={e => setForm(p => ({ ...p, asset_class: e.target.value }))} className={field.select}>
+                {['주식','채권','대체자산'].map(c => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={field.labelSm}>섹터</label>
+              <input value={form.sector} onChange={e => setForm(p => ({ ...p, sector: e.target.value }))} className={field.input}
+                placeholder="테크" />
+            </div>
+            <div className="col-span-2">
+              <label className={field.labelSm}>URL</label>
+              <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." />
+            </div>
+            <div className="col-span-2">
+              <label className={field.labelSm}>메모</label>
+              <input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={field.input} />
+            </div>
+          </div>
+          {err && <p className="text-xs text-red-500">{err}</p>}
         </div>
-        {err && <p className="text-xs text-red-500 mb-3">{err}</p>}
-        <div className="flex gap-2">
+        <div className={modal.footer}>
+          <button onClick={onClose} className={btn.secondary}>취소</button>
           <button onClick={handleSave} disabled={saving || (!isEdit && !form.ticker) || !form.name}
-            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : isEdit ? '저장' : '추가'}
           </button>
-          <button onClick={onClose} className="text-slate-500 px-4 py-2 rounded-lg text-xs font-medium hover:bg-slate-100 transition-colors">취소</button>
         </div>
       </div>
     </div>
@@ -274,10 +290,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
     })
   }, [securities, linkSearch, pendingIds])
 
-  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300'
-  const labelCls = 'block text-xs text-slate-500 mb-1'
   const selectedAccount = accounts.find(a => a.id === selectedAccountId)
-
   const countries = [...new Set(securities.map(s => s.country).filter(Boolean))] as string[]
 
   return (
@@ -321,13 +334,15 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                     </p>
                   </div>
                   <div className="flex gap-0.5 shrink-0" onClick={e => e.stopPropagation()}>
-                    <button onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type: a.type ?? '종합위탁' }); setShowAddAccount(false) }}
+                    <button
+                      onClick={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type: a.type ?? '종합위탁' }); setShowAddAccount(false) }}
                       className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-white/20 text-white/60 hover:text-white' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
-                    <button onClick={() => deleteAccount(a.id)}
+                    <button
+                      onClick={() => deleteAccount(a.id)}
                       className={`p-1 rounded ${selectedAccountId === a.id ? 'hover:bg-red-500/30 text-white/60 hover:text-red-300' : 'hover:bg-red-50 text-slate-400 hover:text-red-500'}`}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -346,19 +361,21 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                   { key: 'owner', label: '소유자', placeholder: '' },
                 ].map(f => (
                   <div key={f.key}>
-                    <label className={labelCls}>{f.label}</label>
+                    <label className={field.label}>{f.label}</label>
                     <input value={accountForm[f.key as keyof typeof accountForm]}
                       onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
-                      placeholder={f.placeholder} className={inputCls} />
+                      placeholder={f.placeholder} className={field.input} />
                   </div>
                 ))}
-                <div><label className={labelCls}>유형</label>
-                  <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
+                <div>
+                  <label className={field.label}>유형</label>
+                  <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={field.select}>
                     {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
-                  </select></div>
+                  </select>
+                </div>
                 <div className="flex gap-1.5">
-                  <button onClick={saveAccount} className="text-white px-3 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>추가</button>
-                  <button onClick={() => setShowAddAccount(false)} className="text-slate-500 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-100">취소</button>
+                  <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
+                  <button onClick={() => setShowAddAccount(false)} className={btn.secondary}>취소</button>
                 </div>
               </div>
             ) : (
@@ -378,17 +395,21 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                 <p className="text-sm font-semibold text-slate-700">계좌 수정</p>
                 <div className="grid grid-cols-2 gap-3">
                   {[{key:'name',label:'계좌명 *'},{key:'broker',label:'금융사 *'},{key:'owner',label:'소유자'}].map(f => (
-                    <div key={f.key}><label className={labelCls}>{f.label}</label>
-                      <input value={accountForm[f.key as keyof typeof accountForm]} onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))} className={inputCls} /></div>
+                    <div key={f.key}>
+                      <label className={field.label}>{f.label}</label>
+                      <input value={accountForm[f.key as keyof typeof accountForm]} onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))} className={field.input} />
+                    </div>
                   ))}
-                  <div><label className={labelCls}>유형</label>
-                    <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={inputCls}>
+                  <div>
+                    <label className={field.label}>유형</label>
+                    <select value={accountForm.type} onChange={e => setAccountForm(p => ({ ...p, type: e.target.value }))} className={field.select}>
                       {['종합위탁','연금저축','ISA','IRP','예금','CMA'].map(t => <option key={t}>{t}</option>)}
-                    </select></div>
+                    </select>
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={saveAccount} className="text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition-opacity" style={{ backgroundColor: palette.colors[0] }}>저장</button>
-                  <button onClick={() => setEditingAccountId(null)} className="text-slate-500 px-4 py-2 rounded-lg text-sm hover:bg-slate-100">취소</button>
+                  <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>저장</button>
+                  <button onClick={() => setEditingAccountId(null)} className={btn.secondary}>취소</button>
                 </div>
               </div>
             ) : selectedAccount ? (
@@ -404,7 +425,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                       <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>
                     )}
                     <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                      className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-40 transition-opacity"
+                      className={btn.primary}
                       style={{ backgroundColor: palette.colors[0] }}>
                       {savingLinks ? '저장 중...' : '저장하기'}
                     </button>
@@ -421,7 +442,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                       value={linkSearch}
                       onChange={e => setLinkSearch(e.target.value)}
                       placeholder="티커 또는 종목명 검색"
-                      className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300"
+                      className={field.search}
                     />
                   </div>
                   <p className="text-[10px] text-slate-400 mt-1.5">
@@ -449,9 +470,9 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                           }}
                           className="w-3.5 h-3.5 rounded accent-slate-700 cursor-pointer shrink-0"
                         />
-                        <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono shrink-0">{s.ticker}</span>
+                        <span className={`${badge.ticker} bg-slate-100 text-slate-600 shrink-0`}>{s.ticker}</span>
                         <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded shrink-0 ${cs.badge}`}>{s.country}</span>
+                        <span className={`${badge.sm} shrink-0 ${cs.badge}`}>{s.country}</span>
                         <span className="text-[10px] text-slate-400 shrink-0">{s.currency}</span>
                       </label>
                     )
@@ -481,7 +502,7 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
               </svg>
               <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
                 placeholder="티커 또는 종목명 검색"
-                className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+                className={field.search} />
             </div>
             <select value={secFilter.country} onChange={e => setSecFilter(p => ({ ...p, country: e.target.value }))}
               className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
@@ -513,15 +534,15 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                   style={{ aspectRatio: '10/7' }}>
                   <div>
                     <div className="flex items-start justify-between mb-1.5">
-                      <span className="bg-slate-100 text-slate-600 text-xs font-bold px-1.5 py-0.5 rounded font-mono leading-none">{s.ticker}</span>
+                      <span className={`${badge.ticker} bg-slate-100 text-slate-600 leading-none`}>{s.ticker}</span>
                       <span className="text-[10px] text-slate-400">{s.currency}</span>
                     </div>
                     <p className="text-xs font-semibold text-slate-800 line-clamp-2 leading-snug">{s.name}</p>
                   </div>
                   <div>
                     <div className="flex flex-wrap gap-0.5 mb-1.5">
-                      {s.country && <span className={`text-[10px] px-1 py-0.5 rounded ${cs.badge}`}>{s.country}</span>}
-                      {s.sector && <span className="text-[10px] text-slate-500 bg-slate-50 px-1 py-0.5 rounded">{s.sector}</span>}
+                      {s.country && <span className={`${badge.sm} ${cs.badge}`}>{s.country}</span>}
+                      {s.sector && <span className={`${badge.sm} text-slate-500 bg-slate-50`}>{s.sector}</span>}
                     </div>
                     <div className="flex items-center justify-between">
                       {s.url ? (
@@ -532,14 +553,12 @@ export default function HoldingsManager({ accounts: initAccounts, securities: in
                           className="text-[10px] text-blue-500 hover:underline">네이버 ↗</a>
                       ) : <span />}
                       <div className="flex gap-0.5">
-                        <button onClick={() => setEditModalSecurity(s)}
-                          className="p-0.5 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+                        <button onClick={() => setEditModalSecurity(s)} className={btn.icon}>
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
-                        <button onClick={() => deleteSecurity(s.id)}
-                          className="p-0.5 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
+                        <button onClick={() => deleteSecurity(s.id)} className={btn.danger}>
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
