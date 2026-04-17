@@ -145,7 +145,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       : pathname.startsWith(href)
 
   return (
-    <div className="flex flex-col h-full w-[220px]" style={{ background: '#1a2332' }}>
+    <div className="flex flex-col h-full w-[220px]" style={{ background: '#1A237E' }}>
       {/* 로고 */}
       <div className="flex items-center px-5 pt-6 pb-6">
         <IconLogo />
