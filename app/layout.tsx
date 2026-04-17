@@ -3,7 +3,7 @@ import { Noto_Sans_KR, Manrope } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/ThemeContext'
 import { FilterProvider } from '@/lib/FilterContext'
-import HeaderBar from '@/components/HeaderBar'
+import SidebarLayout from '@/components/SidebarLayout'
 
 const notoSans = Noto_Sans_KR({
   weight: ['300', '400', '500', '600', '700'],
@@ -27,11 +27,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${notoSans.className} ${manrope.variable} bg-[#f8f9ff] min-h-screen`}>
+      <body className={`${notoSans.className} ${manrope.variable}`}>
         <ThemeProvider>
           <FilterProvider>
-            <HeaderBar />
-            <main>{children}</main>
+            <SidebarLayout>{children}</SidebarLayout>
           </FilterProvider>
         </ThemeProvider>
       </body>
