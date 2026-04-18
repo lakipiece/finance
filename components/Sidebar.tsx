@@ -113,10 +113,8 @@ function IconLogo() {
 
 const LEDGER_TABS = [
   { label: '대시보드', href: '/expenses',  icon: <IconGrid /> },
-  { label: '월별',    href: '/monthly',   icon: <IconCalendar /> },
   { label: '연도비교', href: '/compare',   icon: <IconBarChart /> },
   { label: '검색',    href: '/search',    icon: <IconSearch /> },
-  { label: '설정',    href: '/settings',  icon: <IconSettings /> },
 ]
 
 const PORTFOLIO_TABS = [
@@ -127,7 +125,6 @@ const PORTFOLIO_TABS = [
   { label: '종목',     href: '/portfolio/securities',  icon: <IconList /> },
   { label: '옵션',     href: '/portfolio/options',     icon: <IconSliders /> },
   { label: '리밸런싱', href: '/portfolio/rebalance',   icon: <IconScale /> },
-  { label: '설정',     href: '/portfolio/settings',    icon: <IconSettings /> },
 ]
 
 interface SidebarProps {
@@ -178,30 +175,45 @@ export default function Sidebar({ onClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* 모드 전환 — 포트폴리오 먼저 */}
+      {/* 하단: 모드 전환 + 설정 */}
       <div className="px-4 pb-6 pt-4 border-t border-slate-200">
-        <div className="flex gap-1 p-1 bg-slate-200 rounded-xl">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex gap-1 p-1 bg-slate-200 rounded-xl">
+            <Link
+              href="/portfolio"
+              onClick={onClose}
+              className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                isPortfolio
+                  ? 'bg-white text-[#1A237E] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              포트폴리오
+            </Link>
+            <Link
+              href="/expenses"
+              onClick={onClose}
+              className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                !isPortfolio
+                  ? 'bg-white text-[#1A237E] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              가계부
+            </Link>
+          </div>
           <Link
-            href="/portfolio"
+            href="/settings"
             onClick={onClose}
-            className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              isPortfolio
-                ? 'bg-white text-[#1A237E] shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+            title="설정"
+            className={`p-1.5 rounded-lg transition-colors ${
+              pathname === '/settings'
+                ? 'text-[#1A237E]'
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
             }`}
+            style={pathname === '/settings' ? { background: 'rgba(26,35,126,0.07)' } : undefined}
           >
-            포트폴리오
-          </Link>
-          <Link
-            href="/expenses"
-            onClick={onClose}
-            className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              !isPortfolio
-                ? 'bg-white text-[#1A237E] shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            가계부
+            <IconSettings />
           </Link>
         </div>
       </div>
