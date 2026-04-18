@@ -39,9 +39,8 @@ export default function HistoricalPriceFetcher() {
   return (
     <div className="bg-white rounded-xl border border-slate-100 px-5 py-5 space-y-4">
       <div>
-        <p className="font-semibold text-slate-800 mb-0.5">과거 가격 일괄 수집</p>
-        <p className="text-xs text-slate-400">날짜 범위를 지정해 Yahoo Finance / CoinGecko에서 일별 종가를 가져옵니다.</p>
-        <p className="text-xs text-slate-400">종목이 많거나 기간이 길면 수 분 소요될 수 있습니다.</p>
+        <p className="text-xs font-semibold text-slate-600 mb-0.5">과거 가격 일괄 수집</p>
+        <p className="text-[10px] text-slate-400">날짜 범위를 지정해 Yahoo Finance / CoinGecko에서 일별 종가를 가져옵니다. 종목이 많거나 기간이 길면 수 분 소요될 수 있습니다.</p>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
@@ -67,7 +66,8 @@ export default function HistoricalPriceFetcher() {
         <button
           onClick={handleFetch}
           disabled={loading || !startDate || !endDate}
-          className="bg-slate-700 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="text-white px-4 py-1.5 rounded-lg text-xs hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center gap-1.5"
+          style={{ backgroundColor: '#1A237E' }}
         >
           {loading && (
             <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">

@@ -6,6 +6,7 @@ import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
 import { field, badge } from '@/lib/styles'
+import { OPTION_COLORS } from '@/lib/palettes'
 
 interface Props {
   initialYears: YearSummary[]
@@ -21,19 +22,9 @@ export default function SettingsClient({ initialYears }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* 공통 설정 */}
+      {/* 상단: 로그아웃만 */}
       <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <div className="flex items-center gap-8 flex-wrap">
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-slate-700">대출상환 제외</p>
-            <button
-              onClick={() => setExcludeLoan(!excludeLoan)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? '' : 'bg-slate-200'}`}
-              style={excludeLoan ? { backgroundColor: '#1A237E' } : undefined}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
-            </button>
-          </div>
+        <div className="flex items-center">
           <button
             onClick={handleLogout}
             className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 transition-colors ml-auto"
@@ -47,23 +38,38 @@ export default function SettingsClient({ initialYears }: Props) {
       <div>
         <h3 className="text-xs font-semibold text-slate-500 mb-3">가계부 데이터 관리</h3>
 
+        {/* 대출상환 제외 토글 */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-slate-600">대출상환 제외</p>
+            <button
+              onClick={() => setExcludeLoan(!excludeLoan)}
+              className={`relative w-10 h-5 rounded-full transition-colors ${excludeLoan ? '' : 'bg-slate-200'}`}
+              style={excludeLoan ? { backgroundColor: '#1A237E' } : undefined}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
+            </button>
+            <p className="text-[10px] text-slate-400">가계부 대시보드/검색에서 대출상환 카테고리를 집계에서 제외합니다</p>
+          </div>
+        </div>
+
         {/* 저장된 데이터 */}
         {imp.years.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-4">
             <p className="text-xs font-medium text-slate-600 mb-3">저장된 데이터</p>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {imp.years.map((y) => {
                 const isSheets = y.source === 'googlesheet'
                 const isSyncing = imp.syncingYear === y.year
                 return (
                   <div
                     key={y.year}
-                    className={`bg-slate-50 rounded-xl px-5 py-3 text-center min-w-24 transition-all ${
+                    className={`bg-slate-50 rounded-xl px-4 py-2.5 text-center min-w-[72px] transition-all ${
                       isSheets && y.source_url ? 'cursor-pointer hover:bg-slate-100 hover:-translate-y-0.5' : ''
                     } ${isSyncing ? 'animate-pulse' : ''}`}
                     onClick={isSheets && y.source_url && !isSyncing ? () => imp.handleYearSync(y) : undefined}
                   >
-                    <div className="text-xl font-bold text-slate-800">{y.year}</div>
+                    <div className="text-sm font-semibold text-slate-700">{y.year}</div>
                     <div className="text-[10px] text-slate-400 mt-0.5">{y.count.toLocaleString()}건</div>
                     <div className="flex items-center justify-center gap-1 mt-1">
                       <span className={isSheets ? badge.success : badge.info}>
@@ -163,6 +169,26 @@ export default function SettingsClient({ initialYears }: Props) {
               }}
             />
             {imp.uploadError && <p className="text-xs text-red-500 mt-2">{imp.uploadError}</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* 색상 팔레트 참조표 */}
+      <div>
+        <h3 className="text-xs font-semibold text-slate-500 mb-3">옵션 색상 팔레트</h3>
+        <div className="bg-white rounded-2xl border border-slate-100 p-4">
+          <p className="text-[10px] text-slate-400 mb-3">옵션 항목에서 사용 가능한 30가지 색상입니다. 항목의 색상 점을 클릭해 변경할 수 있습니다.</p>
+          <div className="grid grid-cols-10 gap-2">
+            {OPTION_COLORS.map((c) => (
+              <div key={c} className="flex flex-col items-center gap-1">
+                <div
+                  className="w-6 h-6 rounded-full border border-slate-100 shadow-sm"
+                  style={{ backgroundColor: c }}
+                  title={c}
+                />
+                <span className="text-[8px] text-slate-400 font-mono leading-none">{c.slice(1)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

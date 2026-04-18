@@ -12,24 +12,12 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field } from '@/lib/styles'
+import { OPTION_COLORS } from '@/lib/palettes'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
 
-const PRESET_COLORS = [
-  // Blues
-  '#1A237E','#283593','#1565C0','#0277BD','#01579B',
-  // Teals & Greens
-  '#00695C','#00796B','#006064','#00838F','#2E7D32','#33691E',
-  // Purples & Indigo
-  '#4527A0','#311B92','#512DA8','#6A1B9A','#4A148C',
-  // Reds & Oranges
-  '#B71C1C','#C62828','#BF360C','#E65100','#D84315',
-  // Pinks & Rose
-  '#880E4F','#C2185B','#AD1457','#D81B60',
-  // Slates & Browns
-  '#37474F','#455A64','#546E7A','#4A5568','#4E342E',
-]
+const PRESET_COLORS = OPTION_COLORS
 
 const TYPE_LABELS: Record<string, string> = {
   account_type: '계좌유형',
@@ -338,9 +326,44 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
     )
   }
 
+  const [assigning, setAssigning] = useState(false)
+
+  async function handleAutoAssign() {
+    if (!confirm('모든 항목의 색상을 팔레트 순서대로 자동 배정하시겠습니까?')) return
+    setAssigning(true)
+    const updates: Promise<void>[] = []
+    const nextOptions: OptionMap = {}
+    for (const type of Object.keys(options)) {
+      const items = options[type] ?? []
+      nextOptions[type] = items.map((o, i) => {
+        const color = PRESET_COLORS[i % PRESET_COLORS.length]
+        updates.push(
+          fetch(`/api/portfolio/options/${o.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ color_hex: color }),
+          }).then(() => {})
+        )
+        return { ...o, color_hex: color }
+      })
+    }
+    setOptions(nextOptions)
+    await Promise.all(updates)
+    setAssigning(false)
+  }
+
   return (
     <div>
-      <h3 className="text-xs font-semibold text-slate-600 mb-3">옵션 관리</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-semibold text-slate-600">옵션 관리</h3>
+        <button
+          onClick={handleAutoAssign}
+          disabled={assigning}
+          className="px-2.5 py-1 rounded-lg border border-slate-200 text-[10px] text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-colors"
+        >
+          {assigning ? '배정 중...' : '팔레트 색상 자동 배정'}
+        </button>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {types.map(t => (
           <OptionTypeCard
