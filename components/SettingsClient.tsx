@@ -5,7 +5,6 @@ import PreviewModal from './PreviewModal'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
-import ThemePicker from './ThemePicker'
 import { field, badge } from '@/lib/styles'
 
 interface Props {
@@ -25,10 +24,6 @@ export default function SettingsClient({ initialYears }: Props) {
       {/* 공통 설정 */}
       <div className="bg-white rounded-2xl border border-slate-100 p-4">
         <div className="flex items-center gap-8 flex-wrap">
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-slate-700">테마</p>
-            <ThemePicker />
-          </div>
           <div className="flex items-center gap-3">
             <p className="text-sm text-slate-700">대출상환 제외</p>
             <button

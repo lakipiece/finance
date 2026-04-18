@@ -6,7 +6,6 @@ import PreviewModal from './PreviewModal'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
-import ThemePicker from './ThemePicker'
 
 interface Props {
   initialYears: YearSummary[]
@@ -48,10 +47,6 @@ export default function AdminClient({ initialYears }: Props) {
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
             </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <p className="text-sm text-slate-700">테마</p>
-            <ThemePicker />
           </div>
         </div>
       </div>
