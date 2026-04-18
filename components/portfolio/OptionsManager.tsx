@@ -82,8 +82,8 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
           className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2 shadow-xl"
           style={{ top: pos.top, left: pos.left }}
         >
-          {/* 프리셋 — 6열 */}
-          <div className="grid grid-cols-6 gap-1 mb-2">
+          {/* 프리셋 — 7열 (70색 = 10행) */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
             {PRESET_COLORS.map(c => (
               <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
                 className="w-4 h-4 rounded-full border transition-all hover:scale-110"

@@ -221,15 +221,15 @@ export default function SettingsClient({ initialYears }: Props) {
         <h3 className="text-xs font-semibold text-slate-500 mb-3">옵션 색상 팔레트</h3>
         <div className="bg-white rounded-2xl border border-slate-100 p-4">
           <p className="text-[10px] text-slate-400 mb-3">옵션 항목에서 사용 가능한 30가지 색상입니다. 항목의 색상 점을 클릭해 변경할 수 있습니다.</p>
-          <div className="grid grid-cols-10 gap-2">
+          <div className="grid grid-cols-10 gap-1.5">
             {OPTION_COLORS.map((c) => (
-              <div key={c} className="flex flex-col items-center gap-1">
+              <div key={c} className="flex flex-col items-center gap-0.5">
                 <div
-                  className="w-6 h-6 rounded-full border border-slate-100 shadow-sm"
+                  className="w-5 h-5 rounded-full border border-slate-100 shadow-sm"
                   style={{ backgroundColor: c }}
                   title={c}
                 />
-                <span className="text-[8px] text-slate-400 font-mono leading-none">{c.slice(1)}</span>
+                <span className="text-[7px] text-slate-400 font-mono leading-none">{c.slice(1)}</span>
               </div>
             ))}
           </div>

@@ -148,9 +148,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   return (
     <div className="flex flex-col h-full w-[220px] border-r border-slate-200" style={{ background: '#F8FAFC' }}>
-      {/* 로고 */}
-      <div className="flex items-center px-5 pt-6 pb-6">
+      {/* 로고 + 브랜드 타이틀 */}
+      <div className="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <IconLogo />
+        <div className="leading-none">
+          <p className="text-[11px] font-bold tracking-widest text-slate-700 uppercase">Lakipiece</p>
+          <p className="text-[11px] font-bold tracking-widest uppercase" style={{ color: '#1A237E' }}>Finance</p>
+          <p className="text-[8px] text-slate-400 tracking-wide mt-0.5">The Precision Curator</p>
+        </div>
       </div>
 
       {/* 네비게이션 */}
