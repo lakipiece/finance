@@ -66,9 +66,12 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-800">리밸런싱</h2>
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>리밸런싱</h1>
+          <p className="text-xs text-slate-400 mt-0.5">목표 비율 설정 및 현황 비교</p>
+        </div>
         <button
           onClick={saveTargets}
           className="text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 transition-opacity"

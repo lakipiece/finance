@@ -115,6 +115,14 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>검색</h1>
+          <p className="text-xs text-slate-400 mt-0.5">전체 지출 내역 검색</p>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
         <div className="flex flex-wrap gap-3">

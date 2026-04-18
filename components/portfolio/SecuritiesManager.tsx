@@ -634,12 +634,20 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   }, [securities, secSearch, secFilter, secSort])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-3">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-3">
       {msg && (
         <div className={`px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           {msg.text}
         </div>
       )}
+
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>종목 관리</h1>
+          <p className="text-xs text-slate-400 mt-0.5">보유 종목 등록 및 가격 이력 관리</p>
+        </div>
+      </div>
 
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">

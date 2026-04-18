@@ -119,6 +119,13 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>배당 · 분배금</h1>
+          <p className="text-xs text-slate-400 mt-0.5">연도별 수령 현황 및 세후 집계</p>
+        </div>
+      </div>
 
       {/* KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">

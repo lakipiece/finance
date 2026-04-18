@@ -224,7 +224,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
   if (summary.positions.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-7xl mx-auto px-4 py-8 text-center">
         <p className="text-slate-400">보유 종목이 없습니다.</p>
         <button onClick={handleRefresh} disabled={refreshing}
           className="mt-4 bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800 disabled:opacity-50">
@@ -237,8 +237,14 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
-      {/* 최상단 툴바 */}
-      <div className="flex items-center justify-end gap-2">
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>포트폴리오</h1>
+          <p className="text-xs text-slate-400 mt-0.5">전체 보유 현황 및 수익률</p>
+        </div>
+        {/* 툴바 */}
+        <div className="flex items-center gap-2">
         {refreshMsg && <span className="text-[10px] text-slate-400">{refreshMsg}</span>}
         {lastUpdated && (
           <span className="text-[10px] text-slate-300 tabular-nums">{lastUpdated}</span>
@@ -251,6 +257,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.389zm1.26-3.674a.75.75 0 00.219-.53V2.978a.75.75 0 00-1.5 0v2.43l-.31-.31A7 7 0 003.27 8.236a.75.75 0 101.449.389A5.5 5.5 0 0113.92 6.159l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd" />
           </svg>
         </button>
+        </div>
       </div>
 
       <PortfolioKpiCards summary={filteredKpi} />

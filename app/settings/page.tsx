@@ -13,8 +13,13 @@ export default async function SettingsPage() {
   const years = await fetchAvailableYears()
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-      <h2 className="text-sm font-semibold text-slate-700">설정</h2>
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>설정</h1>
+          <p className="text-xs text-slate-400 mt-0.5">테마, 연도 데이터 관리</p>
+        </div>
+      </div>
       <SettingsClient initialYears={years} />
       <div>
         <h3 className="text-xs font-semibold text-slate-500 mb-3">포트폴리오 데이터 관리</h3>

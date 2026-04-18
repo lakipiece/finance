@@ -76,6 +76,14 @@ export default function CompareClient({ availableYears }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* 페이지 헤더 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>연도 비교</h1>
+          <p className="text-xs text-slate-400 mt-0.5">연도별 지출 패턴 비교 분석</p>
+        </div>
+      </div>
+
       {/* Year selector */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4 sm:gap-6 flex-wrap">
         <span className="hidden sm:inline text-sm font-semibold text-slate-600">연도 선택</span>

@@ -14,7 +14,13 @@ export default async function PortfolioOptionsPage() {
     grouped[r.type].push(r)
   }
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>옵션 관리</h1>
+          <p className="text-xs text-slate-400 mt-0.5">섹터, 계좌 유형 등 분류 옵션 설정</p>
+        </div>
+      </div>
       <OptionsManager initialOptions={grouped} />
     </div>
   )

@@ -250,7 +250,10 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       )}
 
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-base font-semibold text-slate-700">계좌 관리</h2>
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>계좌 관리</h1>
+          <p className="text-xs text-slate-400 mt-0.5">연결 계좌 및 종목 배분 관리</p>
+        </div>
       </div>
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
