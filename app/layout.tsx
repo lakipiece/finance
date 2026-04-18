@@ -20,8 +20,9 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: '가계부 대시보드',
-  description: '가계부 지출 분석 대시보드',
+  title: 'Lakipiece Finance',
+  description: 'The Precision Curator — 포트폴리오 & 가계부 관리',
+  icons: { icon: '/icon.svg', shortcut: '/icon.svg' },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

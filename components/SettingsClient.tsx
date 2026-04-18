@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import PreviewModal from './PreviewModal'
 import type { YearSummary } from '@/lib/fetchYears'
@@ -7,6 +8,40 @@ import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
 import { field, badge } from '@/lib/styles'
 import { OPTION_COLORS } from '@/lib/palettes'
+
+function RefreshValuesButton() {
+  const [refreshing, setRefreshing] = useState(false)
+  const [done, setDone] = useState(false)
+
+  async function handle() {
+    setRefreshing(true)
+    setDone(false)
+    await fetch('/api/portfolio/snapshots/refresh-values', { method: 'POST' })
+    setRefreshing(false)
+    setDone(true)
+    setTimeout(() => setDone(false), 3000)
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-medium text-slate-600">스냅샷 평가액 업데이트</p>
+        <p className="text-[10px] text-slate-400 mt-0.5">현재가 기준으로 모든 스냅샷의 total_market_value를 재계산합니다</p>
+      </div>
+      <div className="flex items-center gap-2">
+        {done && <span className="text-[10px] text-emerald-600">완료</span>}
+        <button
+          onClick={handle}
+          disabled={refreshing}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+          style={{ backgroundColor: '#1A237E' }}
+        >
+          {refreshing ? '업데이트 중...' : '평가액 업데이트'}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 interface Props {
   initialYears: YearSummary[]
@@ -170,6 +205,14 @@ export default function SettingsClient({ initialYears }: Props) {
             />
             {imp.uploadError && <p className="text-xs text-red-500 mt-2">{imp.uploadError}</p>}
           </div>
+        </div>
+      </div>
+
+      {/* 포트폴리오 관리 */}
+      <div>
+        <h3 className="text-xs font-semibold text-slate-500 mb-3">포트폴리오 관리</h3>
+        <div className="bg-white rounded-2xl border border-slate-100 p-4">
+          <RefreshValuesButton />
         </div>
       </div>
 

@@ -103,10 +103,14 @@ function IconPlus() {
 }
 function IconLogo() {
   return (
-    <svg className="w-7 h-7" viewBox="0 0 28 28" fill="none">
-      <rect width="28" height="28" rx="8" fill="#1e293b" />
-      <path d="M8 20V8h2v10h8v2H8z" fill="white" />
-      <circle cx="20" cy="10" r="2.5" fill="#64748b" />
+    <svg className="w-7 h-7" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="7" fill="#1e293b"/>
+      <rect x="6" y="6" width="3" height="20" rx="1.5" fill="white"/>
+      <rect x="6" y="6" width="15" height="3" rx="1.5" fill="white"/>
+      <rect x="6" y="13" width="10" height="3" rx="1.5" fill="white"/>
+      <rect x="6" y="22" width="5" height="4" rx="1.5" fill="#00695C"/>
+      <line x1="12" y1="26" x2="25" y2="7" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round"/>
+      <polyline points="19,7 25,7 25,13" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
     </svg>
   )
 }

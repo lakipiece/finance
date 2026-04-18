@@ -248,11 +248,24 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       <div className="flex items-center justify-between mb-5">
         <div>
           <button onClick={handleBack} className="text-xs text-slate-400 hover:text-slate-600 mb-1">← 목록</button>
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-slate-700">스냅샷 편집</h2>
-            <input type="date" value={snapshotDate}
-              onChange={e => { setSnapshotDate(e.target.value); setIsDirty(true) }}
-              className="border border-slate-200 rounded-md px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300" />
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-base font-semibold" style={{ color: '#1A237E' }}>스냅샷 편집</h2>
+            <span className="text-slate-300 text-sm">—</span>
+            {/* 세련된 데이트피커 */}
+            <div className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 transition-colors cursor-pointer group">
+              <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+              <span className="text-xs font-medium text-slate-600 tabular-nums">
+                {snapshotDate.replace(/-/g, '. ')}
+              </span>
+              <input
+                type="date"
+                value={snapshotDate}
+                onChange={e => { setSnapshotDate(e.target.value); setIsDirty(true) }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">

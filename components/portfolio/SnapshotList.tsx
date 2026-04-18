@@ -107,24 +107,9 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           <p className="text-xs text-slate-400 mt-0.5">포트폴리오 시점별 기록</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleRefreshValues} disabled={refreshing}
-            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
-            {refreshing ? '업데이트 중...' : '평가액 업데이트'}
-          </button>
           <button onClick={() => router.push('/portfolio/snapshots/charts')}
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50">
             차트보기
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium text-white disabled:opacity-50"
-            style={{ background: '#00695C' }}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            {creating ? '생성 중...' : '스냅샷 추가'}
           </button>
         </div>
       </div>
@@ -232,18 +217,6 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           )
         })}
 
-        {/* + 스냅샷 만들기 카드 */}
-        <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-1.5 min-h-[220px] hover:border-slate-400 hover:bg-slate-50 disabled:opacity-40 transition-all cursor-pointer group">
-          <svg className="w-7 h-7 text-slate-300 group-hover:text-slate-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-          </svg>
-          <span className="text-xs text-slate-300 group-hover:text-slate-500 transition-colors">
-            {creating ? '생성 중...' : '추가'}
-          </span>
-        </button>
       </div>
 
       {/* 복제 확인 모달 */}
@@ -257,10 +230,18 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
               <span className="font-medium text-slate-600">{cloneTarget.date}</span> 스냅샷의 모든 보유 내역을 복사합니다.
             </p>
             <div className="mb-4">
-              <label className="text-xs text-slate-500 mb-1 block">새 스냅샷 날짜</label>
-              <input type="date" value={cloneDate}
-                onChange={e => setCloneDate(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300" />
+              <label className="text-xs text-slate-500 mb-1.5 block">새 스냅샷 날짜</label>
+              <div className="relative flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white transition-colors">
+                <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                </svg>
+                <span className="text-xs font-medium text-slate-600 tabular-nums flex-1">
+                  {cloneDate ? cloneDate.replace(/-/g, '. ') : '날짜 선택'}
+                </span>
+                <input type="date" value={cloneDate}
+                  onChange={e => setCloneDate(e.target.value)}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              </div>
             </div>
             <div className="flex gap-2">
               <button onClick={handleCloneConfirm} disabled={cloning || !cloneDate}

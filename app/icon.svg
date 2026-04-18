@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#1e293b"/>
+  <!-- F: vertical stem -->
+  <rect x="6" y="6" width="3" height="20" rx="1.5" fill="white"/>
+  <!-- F: top bar -->
+  <rect x="6" y="6" width="15" height="3" rx="1.5" fill="white"/>
+  <!-- F: middle bar -->
+  <rect x="6" y="13" width="10" height="3" rx="1.5" fill="white"/>
+  <!-- green bottom accent -->
+  <rect x="6" y="22" width="5" height="4" rx="1.5" fill="#00695C"/>
+  <!-- pink diagonal arrow line -->
+  <line x1="12" y1="26" x2="25" y2="7" stroke="#C2185B" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- arrowhead -->
+  <polyline points="19,7 25,7 25,13" stroke="#C2185B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
