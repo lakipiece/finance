@@ -206,19 +206,18 @@ export const glass = {
     'bg-[#0d1c2e]/30 backdrop-blur-[6px] px-4',
 } as const
 
-// 폰트 — Manrope (기술적 헤드라인), Noto Sans KR (한글 본문)
-// Manrope는 24px 이상 숫자, 페이지 제목에 사용
+// 폰트 — Noto Sans KR 고딕 단일 폰트 체계
 export const font = {
-  // 대형 KPI 숫자 — 2.75rem, Manrope 700
-  display: 'font-manrope text-[2.75rem] font-bold leading-none tracking-tight tabular-nums',
-  // 페이지/섹션 타이틀 — Manrope 600
-  headline: 'font-manrope text-2xl font-semibold',
-  // 카드 타이틀 — Inter/Noto 600
-  title: 'text-lg font-semibold text-[#0d1c2e]',
-  // 본문 — 0.875rem
-  body: 'text-sm text-[#0d1c2e]/80',
-  // 메타 — 0.6875rem
-  meta: 'text-[11px] font-medium text-[#0d1c2e]/50',
+  // 대형 KPI 숫자
+  display: 'text-[2.75rem] font-bold leading-none tracking-tight tabular-nums',
+  // 페이지/섹션 타이틀
+  headline: 'text-2xl font-semibold',
+  // 카드 타이틀
+  title: 'text-lg font-semibold text-slate-800',
+  // 본문
+  body: 'text-sm text-slate-700',
+  // 메타
+  meta: 'text-[11px] font-medium text-slate-500',
 } as const
 
 // 주요 CTA 버튼 — "Machined Metal" 그라디언트
