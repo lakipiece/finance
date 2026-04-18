@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import type { DashboardData, ExpenseItem, DetailItem } from '@/lib/types'
-import { CATEGORIES, formatWonFull, CAT_BADGE } from '@/lib/utils'
+import { CATEGORIES, formatWonFull, catBadgeStyle } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 
@@ -123,7 +123,7 @@ export default function CategorySection({ data, selectedCategory, onCategorySele
               return (
                 <div key={i}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[row.name] ?? 'bg-slate-100 text-slate-700'}`}>{row.name}</span>
+                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={catBadgeStyle(row.name)}>{row.name}</span>
                     <span className="font-medium text-slate-800">{formatWonFull(row.amount)}</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">

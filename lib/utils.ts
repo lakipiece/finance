@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react'
+
 export function formatWon(n: number): string {
   if (n >= 100000000) {
     return `${(n / 100000000).toFixed(1)}억원`
@@ -32,12 +34,20 @@ export const CAT_COLORS: Record<string, string> = {
   '여행공연비': '#C4A96D',
 }
 
-export const CAT_BADGE: Record<string, string> = {
-  '고정비': 'bg-blue-100 text-blue-700',
-  '대출상환': 'bg-rose-100 text-rose-700',
-  '변동비': 'bg-green-100 text-green-700',
-  '여행공연비': 'bg-amber-100 text-amber-700',
+// 카테고리 배지 — 테마 색상 기준 (DEFAULT_PALETTE.colors 순서와 동일)
+export const CAT_BADGE: Record<string, { bg: string; text: string }> = {
+  '고정비':   { bg: 'rgba(26,35,126,0.10)',  text: '#1A237E' },
+  '대출상환': { bg: 'rgba(105,0,67,0.10)',   text: '#690043' },
+  '변동비':   { bg: 'rgba(0,105,92,0.10)',   text: '#00695C' },
+  '여행공연비':{ bg: 'rgba(57,0,105,0.10)',  text: '#390069' },
 }
 
 export const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
 export type Category = typeof CATEGORIES[number]
+
+export function catBadgeStyle(cat: string): CSSProperties {
+  const b = CAT_BADGE[cat]
+  return b
+    ? { backgroundColor: b.bg, color: b.text }
+    : { backgroundColor: 'rgba(100,116,139,0.08)', color: '#64748b' }
+}

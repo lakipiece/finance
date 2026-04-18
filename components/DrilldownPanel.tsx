@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import type { CategoryDetailsData } from './DashboardClient'
-import { formatWonFull, CAT_BADGE, CATEGORIES } from '@/lib/utils'
+import { formatWonFull, catBadgeStyle, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
 import YearPicker from './YearPicker'
@@ -259,7 +259,7 @@ export default function DrilldownPanel({
               <div key={cat} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between text-xs mb-0.5">
-                    <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CAT_BADGE[cat] ?? 'bg-slate-100 text-slate-700'}`}>{cat}</span>
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(cat)}>{cat}</span>
                     <span className="text-slate-400 ml-2 shrink-0">{pct}%</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
@@ -441,7 +441,7 @@ function ExpenseTableCard({
               <div key={`${e.date}-${e.detail}-${e.amount}-${i}`} className="border border-slate-100 rounded-xl p-3">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>{e.category}</span>
+                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={catBadgeStyle(e.category)}>{e.category}</span>
                     {e.detail && <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>}
                   </div>
                   <span className="font-semibold text-slate-800 text-sm">{formatWonFull(e.amount)}</span>
@@ -485,7 +485,7 @@ function ExpenseTableCard({
                     <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                     <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
                     <td className="py-2 px-3">
-                      <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>{e.category}</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(e.category)}>{e.category}</span>
                     </td>
                     <td className="py-2 px-3">
                       {e.detail ? <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">{e.detail}</span> : <span className="text-slate-300">—</span>}

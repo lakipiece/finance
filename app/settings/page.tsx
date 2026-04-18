@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { fetchAvailableYears } from '@/lib/fetchYears'
 import SettingsClient from '@/components/SettingsClient'
 import HistoricalPriceFetcher from '@/components/portfolio/HistoricalPriceFetcher'
+import LogoutButton from '@/components/LogoutButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,11 +15,12 @@ export default async function SettingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>설정</h1>
-          <p className="text-xs text-slate-400 mt-0.5">테마, 연도 데이터 관리</p>
+          <p className="text-xs text-slate-400 mt-0.5">연도 데이터 관리</p>
         </div>
+        <LogoutButton />
       </div>
       <SettingsClient initialYears={years} />
       <div>

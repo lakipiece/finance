@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { ExpenseItem } from '@/lib/types'
-import { formatWonFull, CAT_BADGE } from '@/lib/utils'
+import { formatWonFull, catBadgeStyle } from '@/lib/utils'
 import { tbl } from '@/lib/styles'
 
 interface Props {
@@ -50,7 +50,7 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
           >
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
+                <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium shrink-0" style={catBadgeStyle(e.category)}>
                   {e.category}
                 </span>
                 {e.detail && (
@@ -104,7 +104,7 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
                 <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                 <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
                 <td className="py-2.5 px-3">
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${CAT_BADGE[e.category] ?? 'bg-slate-100 text-slate-600'}`}>
+                  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={catBadgeStyle(e.category)}>
                     {e.category}
                   </span>
                 </td>

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { signOut } from 'next-auth/react'
 import PreviewModal from './PreviewModal'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
@@ -51,24 +50,8 @@ export default function SettingsClient({ initialYears }: Props) {
   const { excludeLoan, setExcludeLoan } = useFilter()
   const imp = useDataImport(initialYears)
 
-  async function handleLogout() {
-    await signOut({ callbackUrl: '/login' })
-  }
-
   return (
     <div className="space-y-6">
-      {/* 상단: 로그아웃만 */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-4">
-        <div className="flex items-center">
-          <button
-            onClick={handleLogout}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-600 hover:bg-slate-50 transition-colors ml-auto"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
-
       {/* 가계부 데이터 관리 */}
       <div>
         <h3 className="text-xs font-semibold text-slate-500 mb-3">가계부 데이터 관리</h3>
@@ -151,7 +134,7 @@ export default function SettingsClient({ initialYears }: Props) {
                   type="number"
                   value={imp.sheetYear}
                   onChange={(e) => imp.setSheetYear(parseInt(e.target.value) || new Date().getFullYear())}
-                  className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                  className={`w-16 ${field.inputFit}`}
                 />
               </div>
               <button
@@ -175,7 +158,7 @@ export default function SettingsClient({ initialYears }: Props) {
                 type="number"
                 value={imp.uploadYear}
                 onChange={(e) => imp.setUploadYear(parseInt(e.target.value) || new Date().getFullYear())}
-                className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+                className={`w-16 ${field.inputFit}`}
               />
             </div>
             <div
