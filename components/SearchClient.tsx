@@ -178,7 +178,8 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
                   <button
                     key={key}
                     onClick={() => handleSort(key)}
-                    className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey === key ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500'}`}
+                    className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey !== key ? 'bg-slate-100 text-slate-500' : ''}`}
+                    style={sortKey === key ? { background: '#1A237E', color: '#fff' } : undefined}
                   >
                     {{ date: '날짜', category: '분류', detail: '내역', amount: '금액' }[key]}{sortIcon(key)}
                   </button>
@@ -250,9 +251,8 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
                   <button
                     key={size}
                     onClick={() => { setPageSize(size); setPage(1) }}
-                    className={`px-2 py-0.5 rounded text-xs transition-colors ${
-                      pageSize === size ? 'bg-slate-700 text-white font-semibold' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
+                    className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+                    style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}
                   >{size}</button>
                 ))}
               </div>

@@ -33,7 +33,8 @@ export default function SettingsClient({ initialYears }: Props) {
             <p className="text-sm text-slate-700">대출상환 제외</p>
             <button
               onClick={() => setExcludeLoan(!excludeLoan)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? 'bg-slate-800' : 'bg-slate-200'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${excludeLoan ? '' : 'bg-slate-200'}`}
+              style={excludeLoan ? { backgroundColor: '#1A237E' } : undefined}
             >
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
             </button>
@@ -120,7 +121,8 @@ export default function SettingsClient({ initialYears }: Props) {
               <button
                 onClick={() => imp.handleSheetsImport()}
                 disabled={imp.sheetsLoading || !imp.sheetId}
-                className="w-full py-1.5 rounded-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-700 transition-colors disabled:opacity-50"
+                className="w-full py-1.5 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: '#1A237E' }}
               >
                 {imp.sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
               </button>

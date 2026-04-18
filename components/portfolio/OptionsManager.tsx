@@ -17,9 +17,18 @@ type OptionItem = { id: string; type: string; label: string; value: string; colo
 type OptionMap = Record<string, OptionItem[]>
 
 const PRESET_COLORS = [
-  '#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6',
-  '#ec4899','#14b8a6','#f97316','#6366f1','#64748b',
-  '#a3e635','#94a3b8','#0ea5e9','#d946ef','#e11d48',
+  // Blues
+  '#1A237E','#283593','#1565C0','#0277BD','#01579B',
+  // Teals & Greens
+  '#00695C','#00796B','#006064','#00838F','#2E7D32','#33691E',
+  // Purples & Indigo
+  '#4527A0','#311B92','#512DA8','#6A1B9A','#4A148C',
+  // Reds & Oranges
+  '#B71C1C','#C62828','#BF360C','#E65100','#D84315',
+  // Pinks & Rose
+  '#880E4F','#C2185B','#AD1457','#D81B60',
+  // Slates & Browns
+  '#37474F','#455A64','#546E7A','#4A5568','#4E342E',
 ]
 
 const TYPE_LABELS: Record<string, string> = {
@@ -85,8 +94,8 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
           className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2 shadow-xl"
           style={{ top: pos.top, left: pos.left }}
         >
-          {/* 프리셋 — 5열 */}
-          <div className="grid grid-cols-5 gap-1 mb-2">
+          {/* 프리셋 — 6열 */}
+          <div className="grid grid-cols-6 gap-1 mb-2">
             {PRESET_COLORS.map(c => (
               <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
                 className="w-4 h-4 rounded-full border transition-all hover:scale-110"

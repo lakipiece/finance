@@ -7,6 +7,7 @@ export interface Palette {
 }
 
 export const PALETTES: Palette[] = [
+  { id: 'metric-slate', name: 'Metric Slate', colors: ['#1A237E','#B71C1C','#00695C','#E65100'], headerGradient: 'linear-gradient(135deg, #1A237E 0%, #00695C 100%)' },
   { id: 'tableau',    name: 'Tableau 10',     colors: ['#4E79A7','#E15759','#59A14F','#F28E2B'], headerGradient: 'linear-gradient(135deg, #2D3E50 0%, #4E79A7 100%)' },
   { id: 'd3',         name: 'D3 Category10',  colors: ['#1F77B4','#D62728','#2CA02C','#FF7F0E'], headerGradient: 'linear-gradient(135deg, #0D3B6E 0%, #1F77B4 100%)' },
   { id: 'observable', name: 'Observable',     colors: ['#4269D0','#FF725C','#6CC5B0','#EFB118'], headerGradient: 'linear-gradient(135deg, #1A237E 0%, #4269D0 100%)' },
@@ -21,4 +22,4 @@ export const PALETTES: Palette[] = [
   { id: 'retro',      name: 'Retro Studio',   colors: ['#E76F51','#264653','#2A9D8F','#E9C46A'], headerGradient: 'linear-gradient(135deg, #264653 0%, #2A9D8F 100%)' },
 ]
 
-export const DEFAULT_PALETTE = PALETTES.find(p => p.id === 'muted')!
+export const DEFAULT_PALETTE = PALETTES.find(p => p.id === 'metric-slate')!
