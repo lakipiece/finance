@@ -51,18 +51,18 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
   const slice = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
-    <>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
       {/* 헤더: 타이틀 + 검색 + 추가 버튼 */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h3 className="text-sm font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
-        <div className="flex items-center gap-2 flex-1 sm:justify-end">
-          <div className="relative flex-1 sm:w-64 sm:flex-none">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <h3 className="text-base font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
+        <div className="flex items-center gap-2">
+          <div className="relative">
             <input
               type="text"
-              placeholder="내역 / 계좌 / 사용자 / 메모 검색..."
+              placeholder="검색..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              className="w-full border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-200 bg-white"
+              className="w-44 border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-200 bg-white"
             />
             <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -217,8 +217,8 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           <span className="text-slate-200">|</span>
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
-              className={btn.pill(sortMode === mode)}
-              style={sortMode === mode ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${sortMode !== mode ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+              style={sortMode === mode ? { background: '#1A237E', color: '#fff' } : undefined}>
               {mode === 'date' ? '날짜순' : '수령액순'}
             </button>
           ))}
@@ -226,8 +226,8 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           <span>페이지당</span>
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
-              className={btn.pill(pageSize === size)}
-              style={pageSize === size ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+              style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}>
               {size}
             </button>
           ))}
@@ -254,6 +254,6 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
           })}
         </div>
       </div>
-    </>
+    </div>
   )
 }

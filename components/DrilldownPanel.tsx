@@ -412,8 +412,8 @@ function ExpenseTableCard({
           type="text"
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
-          placeholder="내역 / 분류 / 결제수단 / 비고 검색..."
-          className={`${field.input} w-52`}
+          placeholder="검색..."
+          className="w-44 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white"
         />
       </div>
 

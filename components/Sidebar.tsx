@@ -134,7 +134,8 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
   const isPortfolio = pathname.startsWith('/portfolio')
-  const tabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
+  const primaryTabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
+  const secondaryTabs = isPortfolio ? LEDGER_TABS : PORTFOLIO_TABS
 
   const isActive = (href: string) =>
     href === '/expenses' || href === '/portfolio'
@@ -149,8 +150,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* 네비게이션 */}
-      <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
-        {tabs.map((tab) => {
+      <nav className="flex-1 px-3 overflow-y-auto space-y-0.5">
+        {/* 현재 모드 탭 */}
+        {primaryTabs.map((tab) => {
           const active = isActive(tab.href)
           return (
             <Link
@@ -164,7 +166,6 @@ export default function Sidebar({ onClose }: SidebarProps) {
               }`}
               style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
             >
-              {/* active 좌측 인디케이터 */}
               {active && (
                 <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
               )}
@@ -173,6 +174,22 @@ export default function Sidebar({ onClose }: SidebarProps) {
             </Link>
           )
         })}
+
+        {/* 구분선 */}
+        <div className="mx-3 my-2 border-t border-slate-200" />
+
+        {/* 비활성 모드 탭 — 연하게 */}
+        {secondaryTabs.map((tab) => (
+          <Link
+            key={tab.href}
+            href={tab.href}
+            onClick={onClose}
+            className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-colors"
+          >
+            <span className="text-slate-300 opacity-70">{tab.icon}</span>
+            {tab.label}
+          </Link>
+        ))}
       </nav>
 
       {/* 하단: 모드 전환 + 설정 */}
