@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { fmtDate } from '@/lib/portfolio/dividendUtils'
 import { btn, field, modal } from '@/lib/styles'
+import DateInput from '@/components/ui/DateInput'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -261,9 +262,7 @@ export default function DividendFormModal({
           {/* 수령일 */}
           <div>
             <p className={field.label}>수령일</p>
-            <input type="date" required value={form.paid_at}
-              onChange={e => setForm(p => ({ ...p, paid_at: e.target.value }))}
-              className={field.input} />
+            <DateInput value={form.paid_at} onChange={v => setForm(p => ({ ...p, paid_at: v }))} />
           </div>
 
           {/* 통화 */}

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/lib/ThemeContext'
+import DateInput from '@/components/ui/DateInput'
 
 type SnapshotItem = {
   id: string
@@ -230,18 +231,8 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
               <span className="font-medium text-slate-600">{cloneTarget.date}</span> 스냅샷의 모든 보유 내역을 복사합니다.
             </p>
             <div className="mb-4">
-              <label className="text-xs text-slate-500 mb-1.5 block">새 스냅샷 날짜</label>
-              <div className="relative flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white transition-colors">
-                <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-                </svg>
-                <span className="text-xs font-medium text-slate-600 tabular-nums flex-1">
-                  {cloneDate ? cloneDate.replace(/-/g, '. ') : '날짜 선택'}
-                </span>
-                <input type="date" value={cloneDate}
-                  onChange={e => setCloneDate(e.target.value)}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-              </div>
+              <label className="text-[10px] text-slate-400 mb-2 block">새 스냅샷 날짜</label>
+              <DateInput value={cloneDate} onChange={setCloneDate} />
             </div>
             <div className="flex gap-2">
               <button onClick={handleCloneConfirm} disabled={cloning || !cloneDate}

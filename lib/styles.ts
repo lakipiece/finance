@@ -51,29 +51,33 @@ export const card = {
 } as const
 
 // ─── 폼 ───────────────────────────────────────────────────────────────────
-// focus ring: ring-1 ring-blue-300 로 통일
+// 인풋: 박스 테두리 제거, 하단 테두리만 유지 + 포커스 시 테마 색상
 export const field = {
-  // 텍스트 인풋, 셀렉트 공통 기반
+  // 텍스트 인풋 — w-full, 하단 테두리만
   input:
-    'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 ' +
-    'focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white',
-  // select는 현재 input과 동일. 추후 appearance-none 등 분기 시 별도 정의.
+    'w-full border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
+    'focus:outline-none focus:border-[#1A237E] transition-colors placeholder:text-slate-300',
+  // 셀렉트 — 자동 너비, 하단 테두리만
   select:
-    'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 ' +
-    'focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white',
-  // 검색 인풋 — 아이콘용 왼쪽 패딩
+    'border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
+    'focus:outline-none focus:border-[#1A237E] transition-colors appearance-none',
+  // 숫자/짧은 인풋 — 고정 너비 없음 (호출 측에서 w-* 지정)
+  inputFit:
+    'border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
+    'focus:outline-none focus:border-[#1A237E] transition-colors',
+  // 검색 인풋 — 박스 유지 (독립 검색 UI)
   search:
     'w-full border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-500 ' +
-    'placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white',
-  // 텍스트에어리어
+    'placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1A237E]/30 bg-white',
+  // 텍스트에어리어 — 박스 유지 (여러 줄)
   textarea:
-    'w-full border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 ' +
-    'focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white resize-none',
+    'w-full border border-slate-100 rounded-lg px-3 py-2 text-xs text-slate-600 ' +
+    'focus:outline-none focus:border-[#1A237E] focus:ring-0 bg-white resize-none transition-colors',
   // 폼 레이블
-  label: 'block text-xs text-slate-400 mb-1',
-  // 컴팩트 레이블 (공간이 매우 좁을 때)
+  label: 'block text-[10px] text-slate-400 mb-1',
+  // 컴팩트 레이블
   labelSm: 'block text-[10px] text-slate-500 mb-0.5',
-  // 드래그존 (파일 업로드)
+  // 드래그존
   dropzone:
     'border-2 border-dashed border-slate-200 rounded-xl p-6 text-center ' +
     'cursor-pointer hover:border-slate-300 transition-colors',

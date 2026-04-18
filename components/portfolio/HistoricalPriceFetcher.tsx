@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import DateInput from '@/components/ui/DateInput'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -43,25 +44,15 @@ export default function HistoricalPriceFetcher() {
         <p className="text-[10px] text-slate-400">날짜 범위를 지정해 Yahoo Finance / CoinGecko에서 일별 종가를 가져옵니다. 종목이 많거나 기간이 길면 수 분 소요될 수 있습니다.</p>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <label className="text-xs text-slate-500 whitespace-nowrap">시작일</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={e => setStartDate(e.target.value)}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300"
-          />
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 whitespace-nowrap">시작일</span>
+          <DateInput value={startDate} onChange={setStartDate} />
         </div>
-        <span className="text-slate-300 text-xs">~</span>
-        <div className="flex items-center gap-1.5">
-          <label className="text-xs text-slate-500 whitespace-nowrap">종료일</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={e => setEndDate(e.target.value)}
-            className="border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300"
-          />
+        <span className="text-slate-200 text-xs">—</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-slate-400 whitespace-nowrap">종료일</span>
+          <DateInput value={endDate} onChange={setEndDate} />
         </div>
         <button
           onClick={handleFetch}

@@ -147,14 +147,13 @@ export default function Sidebar({ onClose }: SidebarProps) {
       : pathname.startsWith(href)
 
   return (
-    <div className="flex flex-col h-full w-[220px] border-r border-slate-200" style={{ background: '#F8FAFC' }}>
+    <div className="flex flex-col h-full w-[220px]" style={{ background: '#1A237E' }}>
       {/* 로고 + 브랜드 타이틀 */}
       <div className="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <IconLogo />
         <div className="leading-none">
-          <p className="text-[11px] font-bold tracking-widest text-slate-700 uppercase">Lakipiece</p>
-          <p className="text-[11px] font-bold tracking-widest uppercase" style={{ color: '#1A237E' }}>Finance</p>
-          <p className="text-[8px] text-slate-400 tracking-wide mt-0.5">The Precision Curator</p>
+          <p className="text-[13px] font-bold tracking-widest text-white uppercase leading-tight">Lakipiece</p>
+          <p className="text-[13px] font-bold tracking-widest uppercase leading-tight" style={{ color: '#80CBC4' }}>Finance</p>
         </div>
       </div>
 
@@ -170,48 +169,48 @@ export default function Sidebar({ onClose }: SidebarProps) {
               onClick={onClose}
               className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 active
-                  ? 'text-[#1A237E]'
-                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  ? 'text-white'
+                  : 'text-blue-200 hover:text-white hover:bg-white/10'
               }`}
-              style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
+              style={active ? { background: 'rgba(255,255,255,0.15)' } : undefined}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#80CBC4]" />
               )}
-              <span className={active ? 'text-[#1A237E]' : 'text-slate-400'}>{tab.icon}</span>
+              <span className={active ? 'text-white' : 'text-blue-300'}>{tab.icon}</span>
               {tab.label}
             </Link>
           )
         })}
 
         {/* 구분선 */}
-        <div className="mx-3 my-2 border-t border-slate-200" />
+        <div className="mx-3 my-2 border-t border-white/10" />
 
-        {/* 비활성 모드 탭 — 연하게 */}
+        {/* 비활성 모드 탭 */}
         {secondaryTabs.map((tab) => (
           <Link
             key={tab.href}
             href={tab.href}
             onClick={onClose}
-            className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-100 hover:text-slate-500 transition-colors"
+            className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors"
           >
-            <span className="text-slate-300 opacity-70">{tab.icon}</span>
+            <span className="opacity-50">{tab.icon}</span>
             {tab.label}
           </Link>
         ))}
       </nav>
 
       {/* 하단: 모드 전환 + 설정 */}
-      <div className="px-4 pb-6 pt-4 border-t border-slate-200">
+      <div className="px-4 pb-6 pt-4 border-t border-white/10">
         <div className="flex items-center gap-2">
-          <div className="flex-1 flex gap-1 p-1 bg-slate-200 rounded-xl">
+          <div className="flex-1 flex gap-1 p-1 rounded-xl" style={{ background: 'rgba(0,0,0,0.25)' }}>
             <Link
               href="/portfolio"
               onClick={onClose}
               className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 isPortfolio
                   ? 'bg-white text-[#1A237E] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  : 'text-blue-200 hover:text-white'
               }`}
             >
               포트폴리오
@@ -222,7 +221,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
               className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 !isPortfolio
                   ? 'bg-white text-[#1A237E] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                  : 'text-blue-200 hover:text-white'
               }`}
             >
               가계부
@@ -234,10 +233,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
             title="설정"
             className={`p-1.5 rounded-lg transition-colors ${
               pathname === '/settings'
-                ? 'text-[#1A237E]'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                ? 'text-white bg-white/20'
+                : 'text-blue-300 hover:text-white hover:bg-white/10'
             }`}
-            style={pathname === '/settings' ? { background: 'rgba(26,35,126,0.07)' } : undefined}
           >
             <IconSettings />
           </Link>
