@@ -13,6 +13,7 @@ import type { ChartTooltipProps } from '@/lib/chartTypes'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import DividendTable from './DividendTable'
 import DividendFormModal from './DividendFormModal'
+import BulkDividendModal from './BulkDividendModal'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -294,11 +295,22 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         palette={palette}
       />
 
-      {/* 추가/수정 모달 */}
+      {/* 수정 모달 (단건) */}
       <DividendFormModal
-        show={showModal}
+        show={showModal && !!editTarget}
         onClose={() => setShowModal(false)}
         editTarget={editTarget}
+        accounts={accounts}
+        accountSecurities={accountSecurities}
+        securities={securities}
+        owners={owners}
+        palette={palette}
+      />
+
+      {/* 추가 모달 (일괄) */}
+      <BulkDividendModal
+        show={showModal && !editTarget}
+        onClose={() => setShowModal(false)}
         accounts={accounts}
         accountSecurities={accountSecurities}
         securities={securities}
