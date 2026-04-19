@@ -58,9 +58,14 @@ export default function DateInput({ value, onChange, className = '', placeholder
     if (triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect()
       const calWidth = 248
+      const calHeight = 300
       let left = r.left
       if (left + calWidth > window.innerWidth - 8) left = window.innerWidth - calWidth - 8
-      setPos({ top: r.bottom + 6, left })
+      const spaceBelow = window.innerHeight - r.bottom
+      const top = spaceBelow < calHeight + 12
+        ? r.top - calHeight - 6
+        : r.bottom + 6
+      setPos({ top, left })
     }
     const d = parseDate(value)
     if (d) { setViewYear(d.getFullYear()); setViewMonth(d.getMonth()) }
