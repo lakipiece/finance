@@ -96,7 +96,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [accountForm, setAccountForm] = useState({ name: '', broker: '', owner: '', type_id: '' })
+  const [accountForm, setAccountForm] = useState({
+    name: '', broker: '', owner: '', type_id: '',
+    dividend_eligible: true,
+    dividend_tax_rate: '' as string,
+  })
 
   // 모달 열릴 때 최신 계좌유형 옵션 로드
   useEffect(() => {
@@ -196,12 +200,18 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
   async function saveAccount() {
     try {
+      const payload = {
+        ...accountForm,
+        dividend_tax_rate: accountForm.dividend_tax_rate.trim() === ''
+          ? null
+          : Number(accountForm.dividend_tax_rate),
+      }
       if (editingAccountId) {
-        const updated = await apiFetch('/api/portfolio/accounts', 'PATCH', { id: editingAccountId, ...accountForm })
+        const updated = await apiFetch('/api/portfolio/accounts', 'PATCH', { id: editingAccountId, ...payload })
         setAccounts(prev => prev.map(a => a.id === editingAccountId ? updated : a))
         notify('계좌 수정 완료'); setEditingAccountId(null)
       } else {
-        const created = await apiFetch('/api/portfolio/accounts', 'POST', { ...accountForm })
+        const created = await apiFetch('/api/portfolio/accounts', 'POST', payload)
         setAccounts(prev => [...prev, created])
         notify('계좌 추가 완료'); setShowAddModal(false)
       }
@@ -259,13 +269,20 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 linkedCount={links.filter(l => l.account_id === a.id).length}
                 typeColors={typeColors}
                 onCardClick={() => setModalLinkAccountId(a.id)}
-                onEdit={() => { setEditingAccountId(a.id); setAccountForm({ name: a.name, broker: a.broker, owner: a.owner ?? '', type_id: a.type_id ?? '' }) }}
+                onEdit={() => { setEditingAccountId(a.id); setAccountForm({
+                  name: a.name, broker: a.broker, owner: a.owner ?? '', type_id: a.type_id ?? '',
+                  dividend_eligible: a.dividend_eligible ?? true,
+                  dividend_tax_rate: a.dividend_tax_rate != null ? String(a.dividend_tax_rate) : '',
+                }) }}
                 onDelete={() => deleteAccount(a.id)}
               />
             ))}
             {/* 추가 카드 */}
             <button
-              onClick={() => { setShowAddModal(true); setAccountForm({ name: '', broker: '', owner: '', type_id: '' }) }}
+              onClick={() => { setShowAddModal(true); setAccountForm({
+                name: '', broker: '', owner: '', type_id: '',
+                dividend_eligible: true, dividend_tax_rate: '',
+              }) }}
               className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[110px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -393,7 +410,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               {[{key:'name',label:'계좌명 *',placeholder:'종합위탁'},{key:'broker',label:'금융사 *',placeholder:'카카오페이'},{key:'owner',label:'소유자',placeholder:''}].map(f => (
                 <div key={f.key}>
                   <label className={field.label}>{f.label}</label>
-                  <input value={accountForm[f.key as keyof typeof accountForm]}
+                  <input value={String(accountForm[f.key as keyof typeof accountForm])}
                     onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
                     placeholder={f.placeholder} className={field.input} />
                 </div>
@@ -404,6 +421,24 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   <option value="">선택 안함</option>
                   {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input type="checkbox"
+                    checked={accountForm.dividend_eligible}
+                    onChange={e => setAccountForm(p => ({ ...p, dividend_eligible: e.target.checked }))}
+                    className="rounded"
+                  />
+                  배당 대상 계좌
+                </label>
+              </div>
+              <div>
+                <label className={field.label}>배당 세율 (%)</label>
+                <input type="text" inputMode="decimal"
+                  value={accountForm.dividend_tax_rate}
+                  onChange={e => setAccountForm(p => ({ ...p, dividend_tax_rate: e.target.value }))}
+                  placeholder="15.40"
+                  className={field.input} />
               </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
@@ -426,7 +461,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               {[{key:'name',label:'계좌명 *'},{key:'broker',label:'금융사 *'},{key:'owner',label:'소유자'}].map(f => (
                 <div key={f.key}>
                   <label className={field.label}>{f.label}</label>
-                  <input value={accountForm[f.key as keyof typeof accountForm]}
+                  <input value={String(accountForm[f.key as keyof typeof accountForm])}
                     onChange={e => setAccountForm(p => ({ ...p, [f.key]: e.target.value }))}
                     className={field.input} />
                 </div>
@@ -437,6 +472,24 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   <option value="">선택 안함</option>
                   {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                  <input type="checkbox"
+                    checked={accountForm.dividend_eligible}
+                    onChange={e => setAccountForm(p => ({ ...p, dividend_eligible: e.target.checked }))}
+                    className="rounded"
+                  />
+                  배당 대상 계좌
+                </label>
+              </div>
+              <div>
+                <label className={field.label}>배당 세율 (%)</label>
+                <input type="text" inputMode="decimal"
+                  value={accountForm.dividend_tax_rate}
+                  onChange={e => setAccountForm(p => ({ ...p, dividend_tax_rate: e.target.value }))}
+                  placeholder="15.40"
+                  className={field.input} />
               </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>수정</button>
