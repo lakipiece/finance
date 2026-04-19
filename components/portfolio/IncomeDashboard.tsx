@@ -56,6 +56,23 @@ function groupByMonthAndTicker(items: DividendRow[]) {
   return map
 }
 
+function groupByAccount(items: DividendRow[]) {
+  const map: Record<string, number> = {}
+  for (const d of items) {
+    const key = `${d.account.broker} · ${d.account.name}`
+    map[key] = (map[key] ?? 0) + toKrw(d)
+  }
+  return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([label, amount]) => ({ label, amount }))
+}
+
+function groupBySecurity(items: DividendRow[]) {
+  const map: Record<string, number> = {}
+  for (const d of items) {
+    map[d.security.ticker] = (map[d.security.ticker] ?? 0) + toKrw(d)
+  }
+  return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([label, amount]) => ({ label, amount }))
+}
+
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
 
 function CustomTooltip({ active, payload, label, color }: ChartTooltipProps & { color?: string }) {
@@ -79,6 +96,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   const [showModal, setShowModal] = useState(false)
   const [editTarget, setEditTarget] = useState<DividendRow | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+  const [tab, setTab] = useState<'month' | 'account' | 'security'>('month')
 
   const year = thisYear()
 
@@ -91,6 +109,13 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     yearDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
   )
   const monthTickerMap = useMemo(() => groupByMonthAndTicker(yearDividends), [yearDividends])
+
+  const scopedDividends = useMemo(
+    () => selectedMonth
+      ? yearDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
+      : yearDividends,
+    [yearDividends, selectedMonth]
+  )
 
   const owners = useMemo(() => {
     const s = new Set(accounts.map(a => a.owner ?? '').filter(Boolean))
@@ -150,10 +175,27 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         )
       })()}
 
-      {/* 차트 */}
-      {chartData.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-4">{year}년 월별 배당·분배금 수령액</h3>
+      {/* 차트 탭 */}
+      <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-slate-700">
+            {year}년 배당·분배금 집계
+            {selectedMonth && <span className="text-xs text-slate-400 font-normal ml-2">· {selectedMonth}</span>}
+          </h3>
+          <div className="flex gap-1">
+            {(['month', 'account', 'security'] as const).map(k => (
+              <button key={k} onClick={() => setTab(k)}
+                className="px-2.5 py-1 rounded text-xs transition-colors"
+                style={tab === k
+                  ? { background: palette.colors[0], color: '#fff' }
+                  : { background: '#f1f5f9', color: '#64748b' }}>
+                {k === 'month' ? '월별' : k === 'account' ? '계좌별' : '종목별'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {tab === 'month' && chartData.length > 0 && (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
               onClick={(data) => {
@@ -168,8 +210,34 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      )}
+        )}
+
+        {tab === 'account' && (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={groupByAccount(scopedDividends)} layout="vertical"
+              margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={18} fill={palette.colors[0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+
+        {tab === 'security' && (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={groupBySecurity(scopedDividends).slice(0, 15)} layout="vertical"
+              margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={80} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14} fill={palette.colors[0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </div>
 
       {/* 도넛 드릴다운 */}
       {selectedMonth && (() => {
