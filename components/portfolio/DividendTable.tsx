@@ -57,16 +57,16 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
         <h3 className="text-base font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
         <div className="flex items-center gap-2">
           <div className="relative">
+            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
             <input
               type="text"
               placeholder="검색..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              className="w-44 border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-500 placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-200 bg-white"
+              className="w-36 pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors"
             />
-            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
           </div>
           <button
             onClick={openAddModal}
@@ -78,7 +78,7 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
       </div>
 
       {/* 모바일 카드 뷰 */}
-      <div className="sm:hidden space-y-2">
+      <div className="md:hidden space-y-2">
         {filtered.length === 0 && (
           <p className="text-center text-slate-400 text-xs py-8">내역이 없습니다</p>
         )}
@@ -132,7 +132,7 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
       </div>
 
       {/* 데스크탑 테이블 뷰 */}
-      <div className="hidden sm:block overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-100">

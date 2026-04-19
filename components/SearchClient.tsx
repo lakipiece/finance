@@ -124,26 +124,26 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 mb-6">
-        <div className="flex flex-wrap gap-3">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-5 py-4 mb-6">
+        <div className="flex flex-wrap items-end gap-5">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="내역 / 분류 / 결제수단 / 비고 검색..."
-            className="flex-1 min-w-48 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="flex-1 min-w-48 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors"
           />
           <select
             value={selectedYear}
             onChange={(e) => handleYearChange(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none"
           >
             {availableYears.map((y) => <option key={y} value={y}>{y}년</option>)}
           </select>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none"
           >
             <option>전체</option>
             {activeCategories.map((c) => <option key={c}>{c}</option>)}
@@ -151,7 +151,7 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
           <select
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none"
           >
             {MONTH_OPTIONS.map((m) => <option key={m}>{m}</option>)}
           </select>

@@ -657,7 +657,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           </svg>
           <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
             placeholder="티커 또는 종목명 검색"
-            className="w-full pl-7 pr-6 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+            className="w-full pl-7 pr-6 pb-1.5 pt-1 text-xs border-0 border-b border-slate-200 bg-transparent focus:outline-none focus:border-[#1A237E] transition-colors placeholder:text-slate-300" />
           {secSearch && (
             <button onClick={() => setSecSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -665,28 +665,28 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           )}
         </div>
         <select value={secFilter.asset_class} onChange={e => setSecFilter(p => ({ ...p, asset_class: e.target.value }))}
-          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="">전체 자산군</option>
           {assetClasses.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.country} onChange={e => setSecFilter(p => ({ ...p, country: e.target.value }))}
-          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="">전체 국가</option>
           {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.sector} onChange={e => setSecFilter(p => ({ ...p, sector: e.target.value }))}
-          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="">전체 섹터</option>
           {sectors.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.currency} onChange={e => setSecFilter(p => ({ ...p, currency: e.target.value }))}
-          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="">전체 통화</option>
           <option value="KRW">KRW</option>
           <option value="USD">USD</option>
         </select>
         <select value={secSort} onChange={e => setSecSort(e.target.value as 'ticker' | 'name' | 'country_name')}
-          className="border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300 text-slate-600">
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="country_name">국가/이름순</option>
           <option value="ticker">티커순</option>
           <option value="name">이름순</option>
