@@ -8,8 +8,10 @@ CREATE TABLE accounts (
   broker     text NOT NULL,
   owner      text,
   type       text,        -- 종합위탁 / 연금저축 / ISA
-  currency   text NOT NULL DEFAULT 'KRW',
-  created_at timestamptz DEFAULT now()
+  currency          text NOT NULL DEFAULT 'KRW',
+  dividend_eligible boolean NOT NULL DEFAULT true,
+  dividend_tax_rate numeric(5,2),
+  created_at        timestamptz DEFAULT now()
 );
 
 -- 종목 마스터
