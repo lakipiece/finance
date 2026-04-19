@@ -287,6 +287,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       {/* 배당 테이블 */}
       <DividendTable
         dividends={dividends}
+        selectedMonth={selectedMonth}
         onEdit={openEditModal}
         onDelete={handleDelete}
         openAddModal={openAddModal}

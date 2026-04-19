@@ -16,13 +16,14 @@ const PAGE_SIZES = [20, 50, 100] as const
 
 interface Props {
   dividends: DividendRow[]
+  selectedMonth?: string | null
   onEdit: (d: DividendRow) => void
   onDelete: (id: string) => void
   openAddModal: () => void
   palette: { colors: string[] }
 }
 
-export default function DividendTable({ dividends, onEdit, onDelete, openAddModal, palette }: Props) {
+export default function DividendTable({ dividends, selectedMonth, onEdit, onDelete, openAddModal, palette }: Props) {
   const [search, setSearch] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('date')
   const [page, setPage] = useState(1)
@@ -31,6 +32,7 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
     let list = dividends
+    if (selectedMonth) list = list.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
     if (q) list = list.filter(d =>
       d.security.ticker.toLowerCase().includes(q) ||
       d.security.name.toLowerCase().includes(q) ||
@@ -44,7 +46,7 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
         ? toKrw(b) - toKrw(a)
         : fmtDate(b.paid_at).localeCompare(fmtDate(a.paid_at))
     )
-  }, [dividends, search, sortMode])
+  }, [dividends, selectedMonth, search, sortMode])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage = Math.min(page, totalPages)
@@ -56,6 +58,11 @@ export default function DividendTable({ dividends, onEdit, onDelete, openAddModa
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h3 className="text-base font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
         <div className="flex items-center gap-2">
+          {selectedMonth && (
+            <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">
+              {selectedMonth} 필터링중
+            </span>
+          )}
           <div className="relative">
             <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
