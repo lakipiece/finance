@@ -57,7 +57,7 @@ export default function HistoricalPriceFetcher() {
         <button
           onClick={handleFetch}
           disabled={loading || !startDate || !endDate}
-          className="text-white px-4 py-1.5 rounded-lg text-xs hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center gap-1.5"
+          className="text-white px-4 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5"
           style={{ backgroundColor: '#1A237E' }}
         >
           {loading && (

@@ -32,7 +32,7 @@ function RefreshValuesButton() {
         <button
           onClick={handle}
           disabled={refreshing}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+          className="px-3 py-1.5 rounded-lg text-xs font-medium text-white hover:opacity-90 transition-opacity"
           style={{ backgroundColor: '#1A237E' }}
         >
           {refreshing ? '업데이트 중...' : '평가액 업데이트'}

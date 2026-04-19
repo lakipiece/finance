@@ -24,17 +24,11 @@ interface Props {
   accountSecurities: AccountSecurity[]
   typeColors?: Record<string, string>
   accountTypeOptions?: OptionItem[]
+  sectorColors?: Record<string, string>
+  countryColors?: Record<string, string>
+  currencyColors?: Record<string, string>
 }
 
-const COUNTRY_BADGE: Record<string, string> = {
-  '국내':  'bg-emerald-50 text-emerald-700',
-  '미국':  'bg-blue-50 text-blue-700',
-  '글로벌':'bg-amber-50 text-amber-700',
-  '기타':  'bg-slate-100 text-slate-500',
-}
-function countryBadge(country: string | null) {
-  return COUNTRY_BADGE[country ?? ''] ?? 'bg-slate-100 text-slate-500'
-}
 
 function SortableAccountCard({
   id, account, linkedCount, typeColors, onCardClick, onEdit, onDelete,
@@ -91,7 +85,7 @@ function SortableAccountCard({
   )
 }
 
-export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [] }: Props) {
+export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [], sectorColors = {}, countryColors = {}, currencyColors = {} }: Props) {
   const { palette } = useTheme()
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
@@ -322,7 +316,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <div className="flex-1 overflow-y-auto min-h-0">
               {filteredLinkSecurities.map(s => {
                 const checked = pendingIds.has(s.id)
-                const badgeCls = countryBadge(s.country)
+                const sectorColor = s.sector ? sectorColors[s.sector] : undefined
+                const countryColor = s.country ? countryColors[s.country] : undefined
+                const currencyColor = s.currency ? currencyColors[s.currency] : undefined
                 return (
                   <label key={s.id}
                     className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50">
@@ -332,11 +328,26 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         e.target.checked ? next.add(s.id) : next.delete(s.id)
                         return next
                       })}
-                      className="w-3.5 h-3.5 rounded accent-slate-700 cursor-pointer shrink-0" />
-                    <span className={`${badge.ticker} bg-slate-100 text-slate-600 shrink-0`}>{s.ticker}</span>
+                      className="w-3.5 h-3.5 rounded cursor-pointer shrink-0 accent-[#1A237E]" />
+                    <span
+                      className={`${badge.ticker} shrink-0`}
+                      style={sectorColor
+                        ? { backgroundColor: sectorColor + '22', color: sectorColor }
+                        : { backgroundColor: '#f1f5f9', color: '#475569' }}
+                    >{s.ticker}</span>
                     <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
-                    <span className={`${badge.sm} shrink-0 ${badgeCls}`}>{s.country}</span>
-                    <span className="text-[10px] text-slate-400 shrink-0">{s.currency}</span>
+                    {s.country && (
+                      <span
+                        className={`${badge.sm} shrink-0`}
+                        style={countryColor
+                          ? { backgroundColor: countryColor + '18', color: countryColor }
+                          : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+                      >{s.country}</span>
+                    )}
+                    <span
+                      className="text-[10px] shrink-0 font-medium"
+                      style={currencyColor ? { color: currencyColor } : { color: '#94a3b8' }}
+                    >{s.currency}</span>
                   </label>
                 )
               })}

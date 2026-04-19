@@ -99,7 +99,7 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
           <button
             onClick={onConfirm}
             disabled={loading || preview.totalCount === 0}
-            className={`px-4 py-2 rounded-xl text-white text-xs font-semibold transition-colors disabled:opacity-50 ${
+            className={`px-4 py-2 rounded-xl text-white text-xs font-semibold transition-colors ${
               hasExisting ? 'bg-amber-500 hover:bg-amber-600' : 'bg-slate-800 hover:bg-slate-700'
             }`}
           >

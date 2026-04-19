@@ -9,7 +9,7 @@ export const btn = {
   // 주 액션 버튼 — 배경색은 style={{ backgroundColor: palette.colors[0] }}로 지정
   primary:
     'px-4 py-1.5 rounded-lg text-xs font-medium text-white ' +
-    'hover:opacity-90 disabled:opacity-50 transition-opacity whitespace-nowrap',
+    'hover:opacity-90 transition-opacity whitespace-nowrap',
   // 보조 버튼 — 아웃라인
   secondary:
     'px-4 py-1.5 rounded-lg text-xs font-medium border border-slate-200 ' +

@@ -267,7 +267,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             </span>
           )}
           <button onClick={handleSave} disabled={saving}
-            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
             style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : '저장'}
           </button>
@@ -343,7 +343,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
                 <span className="text-[10px] text-slate-400">Tab으로 순서대로 입력</span>
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
-                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: palette.colors[0] }}>
                   {saving ? '저장 중...' : '저장하기'}
                 </button>

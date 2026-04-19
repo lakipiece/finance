@@ -233,7 +233,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             </div>
             <div className="flex gap-2">
               <button onClick={handleCloneConfirm} disabled={cloning || !cloneDate}
-                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: palette.colors[0] }}>
                 {cloning ? '복제 중...' : '복제하기'}
               </button>
