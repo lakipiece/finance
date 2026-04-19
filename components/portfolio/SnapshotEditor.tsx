@@ -25,6 +25,7 @@ interface Props {
   securities: Security[]
   accountSecurities: AccountSecurity[]
   typeColors?: Record<string, string>
+  sectorColors?: Record<string, string>
 }
 
 function formatWithCommas(v: number | null): string {
@@ -67,7 +68,7 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
   )
 }
 
-export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {} }: Props) {
+export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {}, sectorColors = {} }: Props) {
   const router = useRouter()
   const { palette } = useTheme()
   const [saving, setSaving] = useState(false)
@@ -385,7 +386,18 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                             : 'border-slate-100 bg-white opacity-60'
                         }`}>
                         <div className="flex items-center gap-1.5 mb-2.5">
-                          <span className="bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
+                          {(() => {
+                            const color = sec.sector ? sectorColors[sec.sector] : null
+                            return (
+                              <span
+                                className="text-[10px] px-1.5 py-0.5 rounded font-mono"
+                                style={color
+                                  ? { backgroundColor: color + '22', color }
+                                  : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
+                                {sec.ticker}
+                              </span>
+                            )
+                          })()}
                           <span className="text-xs text-slate-600 truncate font-medium flex-1">{sec.name}</span>
                           {row.orphaned && (
                             <span className="text-[10px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
