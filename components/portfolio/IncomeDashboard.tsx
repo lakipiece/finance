@@ -24,7 +24,7 @@ type DividendRow = Dividend & {
 interface Props {
   dividends: DividendRow[]
   securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
-  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner'>[]
+  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>[]
   accountSecurities: AccountSecurity[]
 }
 

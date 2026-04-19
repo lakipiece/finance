@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker' | 'owner'> }
 type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>
-type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner'>
+type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>
 type AccountSecurity = { account_id: string; security_id: string }
 
 export default async function IncomePage() {
@@ -30,7 +30,8 @@ export default async function IncomePage() {
         LEFT JOIN option_list ol ON s.currency_id = ol.id
         ORDER BY s.ticker
       ` as unknown as Promise<SecurityRow[]>,
-      sql`SELECT id, name, broker, owner FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
+      sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate
+          FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
     ])
 
