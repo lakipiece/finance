@@ -140,7 +140,7 @@ export default function SettingsClient({ initialYears }: Props) {
               <button
                 onClick={() => imp.handleSheetsImport()}
                 disabled={imp.sheetsLoading || !imp.sheetId}
-                className="w-full py-1.5 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="w-full py-1.5 rounded-lg text-white text-xs font-medium hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: '#1A237E' }}
               >
                 {imp.sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}

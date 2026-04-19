@@ -196,7 +196,7 @@ function OptionTypeCard({
 }) {
   const { palette } = useTheme()
   const [newLabel, setNewLabel] = useState('')
-  const [newColor, setNewColor] = useState('#3b82f6')
+  const [newColor, setNewColor] = useState(OPTION_COLORS[0])
   const [adding, setAdding] = useState(false)
 
   const sensors = useSensors(

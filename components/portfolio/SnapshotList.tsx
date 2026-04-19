@@ -158,7 +158,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     <p className="text-[10px] text-slate-400 tabular-nums">{fmtKrw(inv)}</p>
                   )}
                   {pnl != null && (
-                    <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
                       {pnlPct != null && (
                         <span className="text-[10px] ml-0.5 opacity-80">
@@ -172,22 +172,19 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
 
               {/* 섹터 비중 — 전체 스크롤 */}
               {sectors.length > 0 && (
-                <div className="mt-4 overflow-y-auto space-y-2 flex-1" style={{ maxHeight: '286px' }}>
-                  {sectors.map(([k, v]) => {
-                    const color = sectorColors[k] ?? '#94a3b8'
-                    return (
-                      <div key={k} className="flex items-center gap-1.5">
-                        <div className="flex items-center gap-1 w-16 shrink-0 min-w-0">
+                <div className="mt-4 overflow-y-auto flex-1 px-2.5" style={{ maxHeight: '286px' }}>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                    {sectors.map(([k, v]) => {
+                      const color = sectorColors[k] ?? '#94a3b8'
+                      return (
+                        <div key={k} className="flex items-center gap-1 min-w-0">
                           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                          <span className="text-[10px] text-slate-600 truncate">{k}</span>
+                          <span className="text-[10px] text-slate-600 truncate flex-1 min-w-0">{k}</span>
+                          <span className="text-[10px] text-slate-400 tabular-nums shrink-0">{v.toFixed(1)}%</span>
                         </div>
-                        <div className="flex-1 h-1 bg-slate-100 rounded-full overflow-hidden mx-2">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(Math.max(v, 0), 100)}%`, backgroundColor: color }} />
-                        </div>
-                        <span className="text-[10px] text-slate-400 w-8 text-right tabular-nums shrink-0">{v.toFixed(1)}%</span>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
               )}
 

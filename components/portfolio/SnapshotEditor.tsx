@@ -217,7 +217,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     if (isDirty) { setShowDirtyAlert(true) } else { setModalAccountId(null) }
   }
 
-  const inputCls = 'w-full border border-slate-200 rounded-md px-2 py-1.5 text-xs text-slate-700 text-right focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white'
+  const inputCls = 'w-full border-0 border-b border-slate-200 bg-transparent pb-1 pt-1 text-xs text-slate-700 text-right focus:outline-none focus:border-[#1A237E] transition-colors'
 
   const accountCounts = useMemo(() => {
     const counts: Record<string, number> = {}

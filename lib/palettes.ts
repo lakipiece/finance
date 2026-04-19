@@ -10,7 +10,7 @@ export const DEFAULT_PALETTE: Palette = {
   id: 'metric-slate',
   name: 'Metric Slate',
   // 가계부 카테고리 색상: [고정비, 대출상환, 변동비, 여행공연비]
-  colors: ['#1A237E', '#690043', '#00695C', '#390069'],
+  colors: ['#1A237E', '#690043', '#00695C', '#5D4037'],
   headerGradient: 'linear-gradient(135deg, #1A237E 0%, #00695C 100%)',
 }
 
@@ -32,6 +32,8 @@ export const OPTION_COLORS: string[] = [
   '#BF360C','#D84315','#E64A19','#E65100',
   // ── Ambers / Oranges (5) ──────────────────────────────
   '#FF6D00','#F57C00','#FF8F00','#F9A825','#E67E22',
+  // ── Browns / Warm Earth (4) ──────────────────────────
+  '#5D4037','#6D4C41','#795548','#8D6E63',
   // ── Yellows / Mustards (4) ────────────────────────────
   '#693D00','#7C4A00','#92600A','#C8961A',
   // ── Olives / Yellow-Greens (4) ───────────────────────

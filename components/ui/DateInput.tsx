@@ -28,7 +28,8 @@ export default function DateInput({ value, onChange, className = '', placeholder
         type="date"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+        style={{ fontSize: '16px' }}
       />
     </div>
   )

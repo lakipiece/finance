@@ -39,7 +39,7 @@ export const CAT_BADGE: Record<string, { bg: string; text: string }> = {
   '고정비':   { bg: 'rgba(26,35,126,0.10)',  text: '#1A237E' },
   '대출상환': { bg: 'rgba(105,0,67,0.10)',   text: '#690043' },
   '변동비':   { bg: 'rgba(0,105,92,0.10)',   text: '#00695C' },
-  '여행공연비':{ bg: 'rgba(57,0,105,0.10)',  text: '#390069' },
+  '여행공연비':{ bg: 'rgba(93,64,55,0.10)',  text: '#5D4037' },
 }
 
 export const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
