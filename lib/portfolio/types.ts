@@ -7,6 +7,8 @@ export interface Account {
   owner: string | null
   type_id: string | null
   currency_id: string | null
+  dividend_eligible: boolean
+  dividend_tax_rate: number | null
   // resolved via JOIN from option_list
   type: string | null
   currency: string
