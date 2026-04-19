@@ -87,10 +87,6 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     [dividends, year]
   )
 
-  const totalGross = yearDividends.reduce((s, d) => s + toKrw(d), 0)
-  const totalTax = yearDividends.reduce((s, d) => s + taxKrw(d), 0)
-  const totalNet = totalGross - totalTax
-
   const chartData = groupByMonth(
     yearDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
   )
@@ -128,20 +124,31 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       </div>
 
       {/* KPI */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 총 수령액</p>
-          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(totalGross)}원</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 납부 세금</p>
-          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(totalTax)}원</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{year}년 세후 수령액</p>
-          <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(totalNet)}원</p>
-        </div>
-      </div>
+      {(() => {
+        const kpiRows = selectedMonth
+          ? yearDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
+          : yearDividends
+        const gross = kpiRows.reduce((s, d) => s + toKrw(d), 0)
+        const tax = kpiRows.reduce((s, d) => s + taxKrw(d), 0)
+        const net = gross - tax
+        const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : `${year}년`
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 수령액</p>
+              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 추정 세금</p>
+              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(tax)}원</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 세후 배당금</p>
+              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(net)}원</p>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* 차트 */}
       {chartData.length > 0 && (
