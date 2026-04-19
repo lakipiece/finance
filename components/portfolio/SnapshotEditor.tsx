@@ -241,6 +241,21 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
   const totalValue = useMemo(() => Object.values(accountValues).reduce((a, b) => a + b, 0), [accountValues])
 
+  const accountInvested = useMemo(() => {
+    const vals: Record<string, number> = {}
+    for (const r of rows) {
+      if (r.quantity > 0 && r.avg_price != null) {
+        vals[r.account_id] = (vals[r.account_id] ?? 0) + r.quantity * r.avg_price
+      }
+    }
+    return vals
+  }, [rows])
+
+  const totalInvested = useMemo(() =>
+    Object.values(accountInvested).reduce((a, b) => a + b, 0),
+    [accountInvested]
+  )
+
   const modalAccount = accMap[modalAccountId ?? '']
   const modalAccountValue = accountValues[modalAccountId ?? ''] ?? 0
 
@@ -263,9 +278,12 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
           {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
           {totalValue > 0 && (
-            <span className="text-sm font-semibold text-slate-600 tabular-nums">
-              {Math.round(totalValue).toLocaleString()}원
-            </span>
+            <div className="text-right leading-tight">
+              <p className="text-[10px] text-slate-400">원금 {Math.round(totalInvested).toLocaleString()}원</p>
+              <p className="text-sm font-semibold text-slate-700 tabular-nums">
+                평가 {Math.round(totalValue).toLocaleString()}원
+              </p>
+            </div>
           )}
           <button onClick={handleSave} disabled={saving}
             className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
@@ -301,15 +319,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   )}
                 </div>
                 <p className="text-xs text-slate-400">{a.broker}</p>
-                {/* 하단: 종목수(좌) + 평가금액(우) */}
-                <div className="flex items-center justify-between mt-auto pt-2">
+                {/* 하단: 종목수 + 원금/평가금액 */}
+                <div className="mt-auto pt-2 space-y-0.5">
                   <p className="text-xs text-slate-400">
                     <span className="font-semibold text-slate-600">{count}</span>/{total}종목
                   </p>
                   {aVal > 0 ? (
-                    <p className="text-xs font-medium text-slate-600 tabular-nums">
-                      {Math.round(aVal).toLocaleString()}원
-                    </p>
+                    <div className="flex justify-between text-[10px] tabular-nums">
+                      <span className="text-slate-400">원금 {Math.round(accountInvested[a.id] ?? 0).toLocaleString()}</span>
+                      <span className="text-slate-600 font-medium">평가 {Math.round(aVal).toLocaleString()}</span>
+                    </div>
                   ) : (
                     <p className="text-xs text-slate-300">—</p>
                   )}
@@ -335,7 +354,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 </p>
                 {modalAccountValue > 0 && (
                   <p className="text-xs text-slate-400 mt-0.5">
-                    평가금액 <span className="font-medium text-slate-600">{Math.round(modalAccountValue).toLocaleString()}원</span>
+                    원금 <span className="font-medium text-slate-600">
+                      {Math.round(accountInvested[modalAccountId ?? ''] ?? 0).toLocaleString()}원
+                    </span>
+                    <span className="mx-1.5 text-slate-300">·</span>
+                    평가금액 <span className="font-medium text-slate-600">
+                      {Math.round(modalAccountValue).toLocaleString()}원
+                    </span>
                   </p>
                 )}
               </div>
