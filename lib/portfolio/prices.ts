@@ -168,7 +168,8 @@ export async function refreshAllPrices(): Promise<{
         SET price = EXCLUDED.price,
             currency = EXCLUDED.currency,
             change_pct = EXCLUDED.change_pct,
-            exchange = EXCLUDED.exchange
+            exchange = EXCLUDED.exchange,
+            created_at = NOW()
     `
   }
 
