@@ -67,11 +67,15 @@ function groupByAccount(items: DividendRow[]) {
 }
 
 function groupBySecurity(items: DividendRow[]) {
-  const map: Record<string, number> = {}
+  const map: Record<string, { name: string; amount: number }> = {}
   for (const d of items) {
-    map[d.security.ticker] = (map[d.security.ticker] ?? 0) + toKrw(d)
+    const ticker = d.security.ticker
+    if (!map[ticker]) map[ticker] = { name: d.security.name || ticker, amount: 0 }
+    map[ticker].amount += toKrw(d)
   }
-  return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([label, amount]) => ({ label, amount }))
+  return Object.entries(map)
+    .sort((a, b) => b[1].amount - a[1].amount)
+    .map(([ticker, { name, amount }]) => ({ label: name, ticker, amount }))
 }
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
@@ -97,6 +101,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   const [showModal, setShowModal] = useState(false)
   const [editTarget, setEditTarget] = useState<DividendRow | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+  const [selectedSecurity, setSelectedSecurity] = useState<string | null>(null)
   const [tab, setTab] = useState<'month' | 'account' | 'security'>('month')
 
   const year = thisYear()
@@ -145,7 +150,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>배당 · 분배금</h1>
-          <p className="text-xs text-slate-400 mt-0.5">연도별 수령 현황 및 세후 집계</p>
+          <p className="text-xs text-slate-400 mt-0.5">연도별 배당·분배금 집계 및 세후 현황</p>
         </div>
       </div>
 
@@ -161,7 +166,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 수령액</p>
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 배당금</p>
               <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>
             </div>
             <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
@@ -227,14 +232,21 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         )}
 
         {tab === 'security' && (
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={Math.max(220, groupBySecurity(scopedDividends).slice(0, 15).length * 24 + 20)}>
             <BarChart data={groupBySecurity(scopedDividends).slice(0, 15)} layout="vertical"
-              margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
+              margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
+              style={{ cursor: 'pointer' }}
+              onClick={(data) => {
+                const ticker = data?.activePayload?.[0]?.payload?.ticker as string | undefined
+                if (ticker) setSelectedSecurity(prev => prev === ticker ? null : ticker)
+              }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={80} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14} fill={palette.colors[0]} />
+              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14}
+                fill={palette.colors[0]}
+                label={false} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -289,6 +301,8 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <DividendTable
         dividends={dividends}
         selectedMonth={selectedMonth}
+        selectedSecurity={selectedSecurity}
+        onClearSecurity={() => setSelectedSecurity(null)}
         onEdit={openEditModal}
         onDelete={handleDelete}
         openAddModal={openAddModal}
