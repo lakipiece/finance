@@ -75,7 +75,7 @@ export default function ExpenseTable({ expenses, selectedCategory, selectedDetai
               {e.method && <span>{e.method}</span>}
             </div>
             {e.memo && (
-              <p className="text-xs text-slate-400 mt-1 truncate" title={e.memo}>{e.memo}</p>
+              <p className="text-xs text-slate-400 mt-1 break-words">{e.memo}</p>
             )}
           </div>
         ))}

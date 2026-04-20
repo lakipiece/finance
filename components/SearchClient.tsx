@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import type { ExpenseItem } from '@/lib/types'
 import { CATEGORIES, formatWonFull, catBadgeStyle } from '@/lib/utils'
 import { useFilter } from '@/lib/FilterContext'
@@ -20,10 +20,10 @@ type SortDir = 'asc' | 'desc'
 export default function SearchClient({ initialExpenses, initialYear, availableYears }: Props) {
   const { excludeLoan } = useFilter()
 
-  // Cache fetched year data
   const [yearCache, setYearCache] = useState<Record<number, ExpenseItem[]>>({ [initialYear]: initialExpenses })
-  const [selectedYear, setSelectedYear] = useState(initialYear)
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all')
   const [loading, setLoading] = useState(false)
+  const fetchedRef = useRef<Set<number>>(new Set([initialYear]))
 
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('전체')
@@ -34,7 +34,8 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
   const fetchYear = useCallback(async (year: number) => {
-    if (yearCache[year]) return
+    if (fetchedRef.current.has(year)) return
+    fetchedRef.current.add(year)
     setLoading(true)
     try {
       const res = await fetch(`/api/year-data?year=${year}`)
@@ -45,16 +46,30 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
     } finally {
       setLoading(false)
     }
-  }, [yearCache])
+  }, [])
 
-  function handleYearChange(year: string) {
-    const y = Number(year)
-    setSelectedYear(y)
+  useEffect(() => {
+    availableYears.forEach(y => fetchYear(y))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function handleYearChange(value: string) {
+    if (value === 'all') {
+      setSelectedYear('all')
+    } else {
+      const y = Number(value)
+      setSelectedYear(y)
+      fetchYear(y)
+    }
     setPage(1)
-    fetchYear(y)
   }
 
-  const allExpenses = yearCache[selectedYear] ?? []
+  const allExpenses = useMemo(
+    () => selectedYear === 'all'
+      ? Object.values(yearCache).flat()
+      : yearCache[selectedYear] ?? [],
+    [selectedYear, yearCache]
+  )
 
   const activeCategories = useMemo(() =>
     excludeLoan ? CATEGORIES.filter(c => c !== '대출상환') : CATEGORIES,
@@ -138,6 +153,7 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
             onChange={(e) => handleYearChange(e.target.value)}
             className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none"
           >
+            <option value="all">전체</option>
             {availableYears.map((y) => <option key={y} value={y}>{y}년</option>)}
           </select>
           <select
@@ -199,7 +215,7 @@ export default function SearchClient({ initialExpenses, initialYear, availableYe
                       <span>{e.date}</span>
                       <span>{e.method}</span>
                     </div>
-                    {e.memo && <p className="text-xs text-slate-400 mt-1 truncate">{e.memo}</p>}
+                    {e.memo && <p className="text-xs text-slate-400 mt-1 break-words">{e.memo}</p>}
                   </div>
                 ))}
               </div>
