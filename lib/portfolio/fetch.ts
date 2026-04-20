@@ -187,7 +187,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       ? (latestPrice.created_at as unknown as Date)
       : new Date(String(latestPrice.created_at))
     const pad = (n: number) => String(n).padStart(2, '0')
-    last_price_updated_at = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+    const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000)
+    last_price_updated_at = `${kst.getUTCFullYear()}-${pad(kst.getUTCMonth() + 1)}-${pad(kst.getUTCDate())} ${pad(kst.getUTCHours())}:${pad(kst.getUTCMinutes())}:${pad(kst.getUTCSeconds())}`
   } else if (latestPrice?.date) {
     const raw = String(latestPrice.date)
     last_price_updated_at = raw.slice(0, 10)
