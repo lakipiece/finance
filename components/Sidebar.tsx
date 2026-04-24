@@ -33,6 +33,14 @@ function IconSearch() {
     </svg>
   )
 }
+function IconTrendingUp() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+      <polyline points="17 6 23 6 23 12" />
+    </svg>
+  )
+}
 function IconSettings() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -117,8 +125,9 @@ function IconLogo() {
 
 const LEDGER_TABS = [
   { label: '대시보드', href: '/expenses',  icon: <IconGrid /> },
+  { label: '수입',     href: '/income',    icon: <IconTrendingUp /> },
   { label: '연도비교', href: '/compare',   icon: <IconBarChart /> },
-  { label: '검색',    href: '/search',    icon: <IconSearch /> },
+  { label: '검색',     href: '/search',    icon: <IconSearch /> },
 ]
 
 const PORTFOLIO_TABS = [

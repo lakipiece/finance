@@ -5,6 +5,7 @@ import type { MonthlyData, ExpenseItem, CategoryTotal } from '@/lib/types'
 import { useFilter } from '@/lib/FilterContext'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
+import { formatWon } from '@/lib/utils'
 import DrilldownPanel from './DrilldownPanel'
 import ExpenseCreateModal from './ExpenseCreateModal'
 
@@ -33,6 +34,7 @@ export default function DashboardClient({ year }: { year: number }) {
   const [summary, setSummary] = useState<SummaryData | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [incomeSummary, setIncomeSummary] = useState<{ totals: { total: number }; monthly: { month: number; total: number }[] } | null>(null)
 
   const [catDetails, setCatDetails] = useState<CategoryDetailsData | null>(null)
   const [catDetailsLoading, setCatDetailsLoading] = useState(false)
@@ -56,6 +58,14 @@ export default function DashboardClient({ year }: { year: number }) {
       })
       .catch(e => setSummaryError(e.message))
       .finally(() => setSummaryLoading(false))
+  }, [year])
+
+  // Fetch income summary on year change
+  useEffect(() => {
+    fetch(`/api/incomes/summary?year=${year}`)
+      .then(r => r.json())
+      .then(data => { if (!data.error) setIncomeSummary(data) })
+      .catch(() => {})
   }, [year])
 
   // Fetch category details when category selected
@@ -164,6 +174,19 @@ export default function DashboardClient({ year }: { year: number }) {
           + 지출 입력
         </button>
       </div>
+      {incomeSummary ? (
+        <div
+          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all cursor-pointer"
+          onClick={() => { window.location.href = `/income?year=${year}` }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full flex-shrink-0 bg-blue-400" />
+            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">연간 수입</p>
+          </div>
+          <p className="text-2xl font-bold mt-1 text-slate-800">{formatWon(Number(incomeSummary.totals.total))}</p>
+          <p className="text-xs text-slate-400 mt-1">{year}년 총 수입</p>
+        </div>
+      ) : null}
       <DrilldownPanel
         monthData={displayMonthData}
         monthlyList={filteredSummary.monthlyList}
