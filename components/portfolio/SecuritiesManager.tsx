@@ -82,6 +82,8 @@ function SecurityModal({ security, onSave, onClose, options }: {
     url:  security?.url ?? '',
     memo: security?.memo ?? '',
   })
+  const [tags, setTags] = useState<string[]>(security?.tags ?? [])
+  const [tagInput, setTagInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
@@ -106,7 +108,22 @@ function SecurityModal({ security, onSave, onClose, options }: {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      onSave(data)
+      // 태그 전체 교체 (기존 삭제 → 재삽입)
+      if (isEdit) {
+        await fetch(`/api/portfolio/securities/${data.id}/tags`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+      }
+      for (const tag of tags) {
+        await fetch(`/api/portfolio/securities/${data.id}/tags`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tag }),
+        })
+      }
+      onSave({ ...data, tags })
     } catch (e: unknown) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
   }
@@ -159,6 +176,36 @@ function SecurityModal({ security, onSave, onClose, options }: {
               <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>
             <div className="col-span-2"><label className={field.labelSm}>메모</label>
               <input value={form.memo} onChange={e => setForm(p => ({ ...p, memo: e.target.value }))} className={field.input} /></div>
+            {/* 태그 */}
+            <div className="col-span-2">
+              <label className={field.label}>태그</label>
+              <div className="flex flex-wrap gap-1.5 mb-2 min-h-[24px]">
+                {tags.map(t => (
+                  <span key={t} className="flex items-center gap-1 bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
+                    {t}
+                    <button
+                      type="button"
+                      onClick={() => setTags(tags.filter(x => x !== t))}
+                      className="text-slate-400 hover:text-slate-700 leading-none"
+                    >×</button>
+                  </span>
+                ))}
+              </div>
+              <input
+                className={field.input}
+                placeholder="태그 입력 후 Enter (예: 월배당, 핵심보유)"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    const t = tagInput.trim().replace(/,$/, '')
+                    if (t && t.length <= 50 && !tags.includes(t)) setTags([...tags, t])
+                    setTagInput('')
+                  }
+                }}
+              />
+            </div>
           </div>
           {err && <p className="text-xs text-red-500">{err}</p>}
         </div>

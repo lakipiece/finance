@@ -30,6 +30,7 @@ export interface Security {
   country: string | null
   sector: string | null
   currency: string
+  tags?: string[]
 }
 
 export interface Holding {
