@@ -79,6 +79,7 @@ export default function DrilldownPanel({
   const { catColors } = useTheme()
   const { excludeLoan } = useFilter()
   const [detailSearch, setDetailSearch] = useState('')
+  const [selectedIncomeCard, setSelectedIncomeCard] = useState<string | null>(null)
 
   const isCategory = selectedCat && selectedCat !== '__all__'
 
@@ -165,13 +166,18 @@ export default function DrilldownPanel({
   const catTotal = isCategory ? (monthData[selectedCat as keyof MonthlyData] as number) : 0
 
   // Display data for horizontal category bars
-  const incomeCategories = (['급여', '보너스', '기타'] as const).filter(c => incomeMonthData[c] > 0)
+  const allIncomeCategories = (['급여', '보너스', '기타'] as const).filter(c => incomeMonthData[c] > 0)
+  const incomeCategories = selectedIncomeCard
+    ? allIncomeCategories.filter(c => c === selectedIncomeCard)
+    : allIncomeCategories
 
   const displayCategories = !isCategory
     ? (drilldownType === 'income' ? incomeCategories : activeCategories)
     : []
   const displayTotal = !isCategory
-    ? (drilldownType === 'income' ? incomeMonthData.total : monthData.total)
+    ? (drilldownType === 'income'
+        ? (selectedIncomeCard ? (incomeMonthData[selectedIncomeCard as '급여'|'보너스'|'기타'] ?? 0) : incomeMonthData.total)
+        : monthData.total)
     : 0
   const getAmount = (cat: string) =>
     drilldownType === 'income'
@@ -207,40 +213,53 @@ export default function DrilldownPanel({
         </div>
       </div>
 
-      {/* KPI Cards — 수입 row */}
+      {/* KPI Cards — 수입 row (grid-cols-5에서 4개만 채움 → 지출과 동일 너비) */}
       <p className="text-[10px] text-slate-400 font-medium mb-1.5 mt-3">수입</p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
-        {/* 전체 수입 카드 */}
-        <button
-          onClick={() => { setDrilldownType('income'); setSelectedCat(null); setSelectedTrendDetail(null) }}
-          className="text-left rounded-xl p-3 transition-all"
-          style={{
-            background: drilldownType === 'income' && (!selectedCat || selectedCat === '__all__')
-              ? 'rgba(59,130,246,0.12)'
-              : 'rgba(59,130,246,0.05)',
-            outline: drilldownType === 'income' && (!selectedCat || selectedCat === '__all__')
-              ? '2px solid #3b82f6'
-              : '2px solid transparent',
-          }}
-        >
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full" style={{ background: '#3b82f6' }} />
-            <span className="text-xs font-medium" style={{ color: '#3b82f6' }}>전체 수입</span>
-          </div>
-          <p className="text-base font-bold text-slate-800">{formatWonFull(incomeMonthData.total)}</p>
-        </button>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-2">
+        {/* 전체 수입 */}
+        {(() => {
+          const isActive = drilldownType === 'income' && selectedIncomeCard === null
+          return (
+            <button
+              onClick={() => {
+                setSelectedIncomeCard(null)
+                setDrilldownType('income')
+                setSelectedCat(null)
+                setSelectedTrendDetail(null)
+              }}
+              className="text-left rounded-xl p-3 transition-all"
+              style={{
+                background: isActive ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.05)',
+                outline: isActive ? '2px solid #3b82f6' : '2px solid transparent',
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#3b82f6' : '#94a3b8' }} />
+                <span className="text-xs font-medium" style={{ color: isActive ? '#3b82f6' : '#64748b' }}>전체 수입</span>
+              </div>
+              <p className="text-base font-bold text-slate-800">{formatWonFull(incomeMonthData.total)}</p>
+            </button>
+          )
+        })()}
         {/* 수입 카테고리 카드 3개 */}
         {(['급여', '보너스', '기타'] as const).map(cat => {
           const amount = incomeMonthData[cat]
           const color = INCOME_CHART_COLORS[cat]
+          const isActive = drilldownType === 'income' && selectedIncomeCard === cat
+          const pct = incomeMonthData.total > 0 ? ((amount / incomeMonthData.total) * 100).toFixed(1) : '0'
           return (
             <button
               key={cat}
-              onClick={() => { setDrilldownType('income') }}
+              onClick={() => {
+                setSelectedIncomeCard(isActive ? null : cat)
+                setDrilldownType('income')
+                setSelectedCat(null)
+                setSelectedTrendDetail(null)
+              }}
               className="text-left rounded-xl p-3 transition-all"
               style={{
-                background: `${color}${drilldownType === 'income' ? '20' : '0d'}`,
-                outline: drilldownType === 'income' ? `2px solid ${color}` : '2px solid transparent',
+                background: `${color}${isActive ? '20' : '0d'}`,
+                outline: isActive ? `2px solid ${color}` : '2px solid transparent',
               }}
             >
               <div className="flex items-center gap-1.5 mb-1">
@@ -248,9 +267,7 @@ export default function DrilldownPanel({
                 <span className="text-xs font-medium" style={{ color }}>{cat}</span>
               </div>
               <p className="text-base font-bold text-slate-800">{formatWonFull(amount)}</p>
-              <p className="text-[10px] text-slate-400">
-                {incomeMonthData.total > 0 ? ((amount / incomeMonthData.total) * 100).toFixed(1) : '0'}%
-              </p>
+              <p className="text-[10px] text-slate-400">{pct}%</p>
             </button>
           )
         })}
@@ -259,34 +276,44 @@ export default function DrilldownPanel({
       {/* KPI Cards — 지출 row */}
       <p className="text-[10px] text-slate-400 font-medium mb-1.5">지출</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-        {/* 전체 지출 카드 */}
-        <button
-          onClick={() => { setDrilldownType('expense'); setSelectedCat(null); setSelectedTrendDetail(null) }}
-          className="text-left rounded-xl p-3 transition-all"
-          style={{
-            background: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')
-              ? 'rgba(26,35,126,0.1)'
-              : 'rgba(26,35,126,0.04)',
-            outline: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')
-              ? '2px solid #1A237E'
-              : '2px solid transparent',
-          }}
-        >
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full" style={{ background: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#94a3b8' }} />
-            <span className="text-xs font-medium" style={{ color: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#64748b' }}>전체 지출</span>
-          </div>
-          <p className="text-base font-bold text-slate-800">{formatWonFull(monthData.total)}</p>
-        </button>
+        {/* 전체 지출 */}
+        {(() => {
+          const isActive = drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')
+          return (
+            <button
+              onClick={() => {
+                setSelectedIncomeCard(null)
+                setDrilldownType('expense')
+                setSelectedCat(null)
+                setSelectedTrendDetail(null)
+              }}
+              className="text-left rounded-xl p-3 transition-all"
+              style={{
+                background: isActive ? 'rgba(26,35,126,0.1)' : 'rgba(26,35,126,0.04)',
+                outline: isActive ? '2px solid #1A237E' : '2px solid transparent',
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#1A237E' : '#94a3b8' }} />
+                <span className="text-xs font-medium" style={{ color: isActive ? '#1A237E' : '#64748b' }}>전체 지출</span>
+              </div>
+              <p className="text-base font-bold text-slate-800">{formatWonFull(monthData.total)}</p>
+            </button>
+          )
+        })()}
         {/* 지출 카테고리 카드 4개 */}
         {activeCategories.map(cat => {
           const amount = monthData[cat as keyof MonthlyData] as number
-          const isSelected = selectedCat === cat
+          const isSelected = drilldownType === 'expense' && selectedCat === cat
           const pct = monthData.total > 0 ? ((amount / monthData.total) * 100).toFixed(1) : '0'
           return (
             <button
               key={cat}
-              onClick={() => { setDrilldownType('expense'); setSelectedCat(isSelected ? null : cat) }}
+              onClick={() => {
+                setSelectedIncomeCard(null)
+                setDrilldownType('expense')
+                setSelectedCat(isSelected ? null : cat)
+              }}
               className="text-left rounded-xl p-3 transition-all"
               style={{
                 background: `${catColors[cat]}${isSelected ? '28' : '14'}`,
