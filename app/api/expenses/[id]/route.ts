@@ -8,6 +8,28 @@ import { invalidateCache } from '@/lib/cache'
 interface MemoInput { label: string; amount?: number | null }
 type Params = { params: Promise<{ id: string }> }
 
+export async function GET(_req: NextRequest, { params }: Params) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { id } = await params
+  const sql = getSql()
+  const [row] = await sql`
+    SELECT id, expense_date, category, detail, method, member, amount, memo
+    FROM expenses WHERE id = ${id}
+  `
+  if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  return NextResponse.json({
+    id: row.id,
+    expense_date: row.expense_date instanceof Date ? row.expense_date.toISOString().slice(0, 10) : row.expense_date,
+    category: row.category ?? '',
+    detail: row.detail ?? '',
+    method: row.method ?? '',
+    member: row.member ?? 'L',
+    amount: row.amount ?? 0,
+    memo: row.memo ?? '',
+  })
+}
+
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

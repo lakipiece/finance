@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import type { MonthlyData, ExpenseItem, CategoryTotal } from '@/lib/types'
 import { useFilter } from '@/lib/FilterContext'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
-import { formatWon } from '@/lib/utils'
 import DrilldownPanel from './DrilldownPanel'
-import ExpenseCreateModal from './ExpenseCreateModal'
+import type { IncomeRow } from './IncomeTableCard'
 
 export interface SummaryData {
   year: number
@@ -25,16 +25,21 @@ export interface CategoryDetailsData {
 export default function DashboardClient({ year }: { year: number }) {
   const { excludeLoan } = useFilter()
   const { palette } = useTheme()
-  const [showCreateModal, setShowCreateModal] = useState(false)
-
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [selectedCat, setSelectedCatRaw] = useState<string | null>(null)
   const [selectedTrendDetail, setSelectedTrendDetail] = useState<string | null>(null)
+  const [drilldownType, setDrilldownType] = useState<'income' | 'expense'>('expense')
 
   const [summary, setSummary] = useState<SummaryData | null>(null)
   const [summaryLoading, setSummaryLoading] = useState(true)
   const [summaryError, setSummaryError] = useState<string | null>(null)
-  const [incomeSummary, setIncomeSummary] = useState<{ totals: { total: number }; monthly: { month: number; total: number }[] } | null>(null)
+  const [incomeSummary, setIncomeSummary] = useState<{
+    total: number
+    categoryTotals: { 급여: number; 보너스: number; 기타: number }
+    monthlyList: Array<{ month: string; total: number; 급여: number; 보너스: number; 기타: number }>
+  } | null>(null)
+  const [incomes, setIncomes] = useState<IncomeRow[] | null>(null)
+  const [incomesLoading, setIncomesLoading] = useState(false)
 
   const [catDetails, setCatDetails] = useState<CategoryDetailsData | null>(null)
   const [catDetailsLoading, setCatDetailsLoading] = useState(false)
@@ -67,6 +72,20 @@ export default function DashboardClient({ year }: { year: number }) {
       .then(data => { if (!data.error) setIncomeSummary(data) })
       .catch(() => {})
   }, [year])
+
+  // Fetch incomes for table whenever month/drilldownType changes
+  useEffect(() => {
+    if (drilldownType !== 'income') return
+    const params = new URLSearchParams({ year: String(year) })
+    if (selectedMonth) params.set('month', String(selectedMonth))
+    setIncomesLoading(true)
+    setIncomes(null)
+    fetch(`/api/incomes?${params}`)
+      .then(r => r.json())
+      .then(data => setIncomes(Array.isArray(data) ? data : []))
+      .catch(() => setIncomes([]))
+      .finally(() => setIncomesLoading(false))
+  }, [year, selectedMonth, drilldownType])
 
   // Fetch category details when category selected
   useEffect(() => {
@@ -164,29 +183,24 @@ export default function DashboardClient({ year }: { year: number }) {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
-          <p className="text-xs text-slate-400 mt-0.5">{year}년 지출 현황</p>
+          <p className="text-xs text-slate-400 mt-0.5">{year}년 수입·지출 현황</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className={btn.primary}
-          style={{ backgroundColor: palette.colors[0] }}
-        >
-          + 지출 입력
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href="/expenses/input"
+            className={btn.secondary}
+          >
+            + 지출 입력
+          </Link>
+          <Link
+            href="/incomes/input"
+            className={btn.primary}
+            style={{ backgroundColor: palette.colors[0] }}
+          >
+            + 수입 입력
+          </Link>
+        </div>
       </div>
-      {incomeSummary ? (
-        <div
-          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all cursor-pointer"
-          onClick={() => { window.location.href = `/income?year=${year}` }}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full flex-shrink-0 bg-blue-400" />
-            <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">연간 수입</p>
-          </div>
-          <p className="text-2xl font-bold mt-1 text-slate-800">{formatWon(Number(incomeSummary.totals.total))}</p>
-          <p className="text-xs text-slate-400 mt-1">{year}년 총 수입</p>
-        </div>
-      ) : null}
       <DrilldownPanel
         monthData={displayMonthData}
         monthlyList={filteredSummary.monthlyList}
@@ -197,24 +211,31 @@ export default function DashboardClient({ year }: { year: number }) {
         setSelectedCat={handleCategorySelect}
         selectedTrendDetail={selectedTrendDetail}
         setSelectedTrendDetail={setSelectedTrendDetail}
+        drilldownType={drilldownType}
+        setDrilldownType={setDrilldownType}
         catDetails={catDetails}
         catDetailsLoading={catDetailsLoading}
         expenses={expenses}
         expensesLoading={expensesLoading}
-      />
-      <ExpenseCreateModal
-        show={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSaved={() => {
-          setSummaryLoading(true)
-          setSummary(null)
-          fetch(`/api/summary?year=${year}`)
-            .then(r => r.json())
-            .then(data => { if (!data.error) setSummary(data) })
-            .catch(() => {})
-            .finally(() => setSummaryLoading(false))
+        incomeMonthData={{
+          total: selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.total ?? 0)
+            : (incomeSummary?.total ?? 0),
+          급여: selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.급여 ?? 0)
+            : (incomeSummary?.categoryTotals.급여 ?? 0),
+          보너스: selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.보너스 ?? 0)
+            : (incomeSummary?.categoryTotals.보너스 ?? 0),
+          기타: selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.기타 ?? 0)
+            : (incomeSummary?.categoryTotals.기타 ?? 0),
         }}
-        palette={palette}
+        incomeMonthlyList={incomeSummary?.monthlyList ?? Array.from({ length: 12 }, (_, i) => ({
+          month: `${i + 1}월`, total: 0, 급여: 0, 보너스: 0, 기타: 0,
+        }))}
+        incomes={incomes}
+        incomesLoading={incomesLoading}
       />
     </div>
   )

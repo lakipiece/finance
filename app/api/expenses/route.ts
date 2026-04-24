@@ -16,17 +16,19 @@ export async function GET(req: NextRequest) {
   const sql = getSql()
 
   const rows = await sql`
-    SELECT year, month, expense_date, category, detail, memo, method, amount, member
+    SELECT id, year, month, expense_date, category, detail, memo, method, amount, member
     FROM expenses
     WHERE year = ${year}
     ${category ? sql`AND category = ${category}` : sql``}
     ${detail ? sql`AND detail = ${detail}` : sql``}
     ${month ? sql`AND month = ${parseInt(month)}` : sql``}
-    ORDER BY expense_date
+    ORDER BY expense_date DESC, id DESC
   `
 
   const expenses = rows.map((e: any) => ({
+    id: e.id,
     year: e.year,
+    expense_date: e.expense_date instanceof Date ? e.expense_date.toISOString().slice(0, 10) : (e.expense_date ?? ''),
     date: e.expense_date instanceof Date ? e.expense_date.toISOString().slice(0, 10) : (e.expense_date ?? ''),
     month: e.month,
     category: e.category ?? '',

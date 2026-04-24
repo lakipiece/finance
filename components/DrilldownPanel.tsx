@@ -9,6 +9,21 @@ import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
 import YearPicker from './YearPicker'
 import { tbl, field } from '@/lib/styles'
+import IncomeTableCard from './IncomeTableCard'
+import type { IncomeRow } from './IncomeTableCard'
+
+const INCOME_CHART_COLORS: Record<string, string> = {
+  '급여': '#3b82f6',
+  '보너스': '#8b5cf6',
+  '기타': '#10b981',
+}
+
+interface IncomeMonthData {
+  total: number
+  급여: number
+  보너스: number
+  기타: number
+}
 
 interface Props {
   monthData: MonthlyData
@@ -23,11 +38,21 @@ interface Props {
   selectedTrendDetail: string | null
   setSelectedTrendDetail: (detail: string | null) => void
 
-  // API data
+  // Drilldown type (lifted state)
+  drilldownType: 'income' | 'expense'
+  setDrilldownType: (t: 'income' | 'expense') => void
+
+  // API data (expense)
   catDetails: CategoryDetailsData | null
   catDetailsLoading: boolean
   expenses: ExpenseItem[] | null
   expensesLoading: boolean
+
+  // API data (income)
+  incomeMonthData: IncomeMonthData
+  incomeMonthlyList: Array<{ month: string; total: number; 급여: number; 보너스: number; 기타: number }>
+  incomes: IncomeRow[] | null
+  incomesLoading: boolean
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
@@ -47,7 +72,9 @@ export default function DrilldownPanel({
   monthData, monthlyList, selectedMonth,
   onClose, onMonthSelect,
   selectedCat, setSelectedCat, selectedTrendDetail, setSelectedTrendDetail,
+  drilldownType, setDrilldownType,
   catDetails, catDetailsLoading, expenses, expensesLoading,
+  incomeMonthData, incomeMonthlyList, incomes, incomesLoading,
 }: Props) {
   const { catColors } = useTheme()
   const { excludeLoan } = useFilter()
@@ -94,12 +121,15 @@ export default function DrilldownPanel({
         return entry
       })
     }
-    // Overall: stacked by category
+    // Overall: stacked income + expense
     return MONTH_LABELS.map((label, i) => ({
       month: label,
-      ...Object.fromEntries(activeCategories.map(cat => [cat, (monthlyList[i]?.[cat as keyof MonthlyData] as number) ?? 0])),
+      수입_급여: incomeMonthlyList[i]?.급여 ?? 0,
+      수입_보너스: incomeMonthlyList[i]?.보너스 ?? 0,
+      수입_기타: incomeMonthlyList[i]?.기타 ?? 0,
+      ...Object.fromEntries(activeCategories.map(cat => [`지출_${cat}`, (monthlyList[i]?.[cat as keyof MonthlyData] as number) ?? 0])),
     }))
-  }, [isCategory, catDetails, selectedTrendDetail, topDetails, activeCategories, monthlyList])
+  }, [isCategory, catDetails, selectedTrendDetail, topDetails, activeCategories, monthlyList, incomeMonthlyList])
 
   const chartKeys = isCategory
     ? (selectedTrendDetail
@@ -134,6 +164,22 @@ export default function DrilldownPanel({
   // Category total for detail % calculation
   const catTotal = isCategory ? (monthData[selectedCat as keyof MonthlyData] as number) : 0
 
+  // Display data for horizontal category bars
+  const incomeCategories = (['급여', '보너스', '기타'] as const).filter(c => incomeMonthData[c] > 0)
+
+  const displayCategories = !isCategory
+    ? (drilldownType === 'income' ? incomeCategories : activeCategories)
+    : []
+  const displayTotal = !isCategory
+    ? (drilldownType === 'income' ? incomeMonthData.total : monthData.total)
+    : 0
+  const getAmount = (cat: string) =>
+    drilldownType === 'income'
+      ? (incomeMonthData[cat as '급여' | '보너스' | '기타'] ?? 0)
+      : (monthData[cat as keyof MonthlyData] as number)
+  const getCatColor = (cat: string) =>
+    drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? '#64748b') : catColors[cat]
+
   return (
   <>
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 mb-4 sm:mb-6">
@@ -141,7 +187,9 @@ export default function DrilldownPanel({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
         <div>
           <h2 className="text-base sm:text-lg font-bold" style={{ color: '#1A237E' }}>{monthData.month} 상세 내역</h2>
-          <p className="text-sm text-slate-400 mt-0.5">총 {formatWonFull(monthData.total)}</p>
+          <p className="text-sm text-slate-400 mt-0.5">
+            수입 {formatWonFull(incomeMonthData.total)} / 지출 {formatWonFull(monthData.total)}
+          </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <YearPicker variant="light" />
@@ -159,22 +207,78 @@ export default function DrilldownPanel({
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      {/* KPI Cards — 수입 row */}
+      <p className="text-[10px] text-slate-400 font-medium mb-1.5 mt-3">수입</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2">
+        {/* 전체 수입 카드 */}
         <button
-          onClick={() => { setSelectedCat(null); setSelectedTrendDetail(null) }}
+          onClick={() => { setDrilldownType('income'); setSelectedCat(null); setSelectedTrendDetail(null) }}
           className="text-left rounded-xl p-3 transition-all"
           style={{
-            background: (!selectedCat || selectedCat === '__all__') ? 'rgba(26,35,126,0.1)' : 'rgba(26,35,126,0.04)',
-            outline: (!selectedCat || selectedCat === '__all__') ? '2px solid #1A237E' : '2px solid transparent',
+            background: drilldownType === 'income' && (!selectedCat || selectedCat === '__all__')
+              ? 'rgba(59,130,246,0.12)'
+              : 'rgba(59,130,246,0.05)',
+            outline: drilldownType === 'income' && (!selectedCat || selectedCat === '__all__')
+              ? '2px solid #3b82f6'
+              : '2px solid transparent',
           }}
         >
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="w-2 h-2 rounded-full" style={{ background: (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#94a3b8' }} />
-            <span className="text-xs font-medium" style={{ color: (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#64748b' }}>전체</span>
+            <span className="w-2 h-2 rounded-full" style={{ background: '#3b82f6' }} />
+            <span className="text-xs font-medium" style={{ color: '#3b82f6' }}>전체 수입</span>
+          </div>
+          <p className="text-base font-bold text-slate-800">{formatWonFull(incomeMonthData.total)}</p>
+        </button>
+        {/* 수입 카테고리 카드 3개 */}
+        {(['급여', '보너스', '기타'] as const).map(cat => {
+          const amount = incomeMonthData[cat]
+          const color = INCOME_CHART_COLORS[cat]
+          return (
+            <button
+              key={cat}
+              onClick={() => { setDrilldownType('income') }}
+              className="text-left rounded-xl p-3 transition-all"
+              style={{
+                background: `${color}${drilldownType === 'income' ? '20' : '0d'}`,
+                outline: drilldownType === 'income' ? `2px solid ${color}` : '2px solid transparent',
+              }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+                <span className="text-xs font-medium" style={{ color }}>{cat}</span>
+              </div>
+              <p className="text-base font-bold text-slate-800">{formatWonFull(amount)}</p>
+              <p className="text-[10px] text-slate-400">
+                {incomeMonthData.total > 0 ? ((amount / incomeMonthData.total) * 100).toFixed(1) : '0'}%
+              </p>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* KPI Cards — 지출 row */}
+      <p className="text-[10px] text-slate-400 font-medium mb-1.5">지출</p>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        {/* 전체 지출 카드 */}
+        <button
+          onClick={() => { setDrilldownType('expense'); setSelectedCat(null); setSelectedTrendDetail(null) }}
+          className="text-left rounded-xl p-3 transition-all"
+          style={{
+            background: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')
+              ? 'rgba(26,35,126,0.1)'
+              : 'rgba(26,35,126,0.04)',
+            outline: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')
+              ? '2px solid #1A237E'
+              : '2px solid transparent',
+          }}
+        >
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className="w-2 h-2 rounded-full" style={{ background: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#94a3b8' }} />
+            <span className="text-xs font-medium" style={{ color: drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__') ? '#1A237E' : '#64748b' }}>전체 지출</span>
           </div>
           <p className="text-base font-bold text-slate-800">{formatWonFull(monthData.total)}</p>
         </button>
+        {/* 지출 카테고리 카드 4개 */}
         {activeCategories.map(cat => {
           const amount = monthData[cat as keyof MonthlyData] as number
           const isSelected = selectedCat === cat
@@ -182,7 +286,7 @@ export default function DrilldownPanel({
           return (
             <button
               key={cat}
-              onClick={() => setSelectedCat(isSelected ? null : cat)}
+              onClick={() => { setDrilldownType('expense'); setSelectedCat(isSelected ? null : cat) }}
               className="text-left rounded-xl p-3 transition-all"
               style={{
                 background: `${catColors[cat]}${isSelected ? '28' : '14'}`,
@@ -204,7 +308,7 @@ export default function DrilldownPanel({
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-semibold text-slate-500">
-            {isCategory ? `${selectedCat} 월별 추이` : '월별 지출 현황'}
+            {isCategory ? `${selectedCat} 월별 추이` : '월별 수입·지출 현황'}
           </p>
           {selectedMonth && (
             <button
@@ -218,7 +322,7 @@ export default function DrilldownPanel({
         </div>
         {isCategory && catDetailsLoading ? (
           <div className="h-[220px] bg-slate-50 rounded-xl animate-pulse" />
-        ) : (
+        ) : isCategory ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -246,24 +350,122 @@ export default function DrilldownPanel({
               ))}
             </BarChart>
           </ResponsiveContainer>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barCategoryGap="20%" barGap={2}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <Tooltip
+                formatter={(value: number, name: string) => [formatWonFull(value), name]}
+                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              {/* 수입 Bars */}
+              <Bar
+                dataKey="수입_급여"
+                stackId="income"
+                name="급여"
+                fill={INCOME_CHART_COLORS['급여']}
+                radius={[0, 0, 0, 0]}
+                cursor="pointer"
+                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
+              >
+                {chartData.map((_, i) => (
+                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                ))}
+              </Bar>
+              <Bar
+                dataKey="수입_보너스"
+                stackId="income"
+                name="보너스"
+                fill={INCOME_CHART_COLORS['보너스']}
+                radius={[0, 0, 0, 0]}
+                cursor="pointer"
+                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
+              >
+                {chartData.map((_, i) => (
+                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                ))}
+              </Bar>
+              <Bar
+                dataKey="수입_기타"
+                stackId="income"
+                name="기타(수입)"
+                fill={INCOME_CHART_COLORS['기타']}
+                radius={[3, 3, 0, 0]}
+                cursor="pointer"
+                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
+              >
+                {chartData.map((_, i) => (
+                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                ))}
+              </Bar>
+              {/* 지출 Bars */}
+              {activeCategories.map((cat, idx) => (
+                <Bar
+                  key={`지출_${cat}`}
+                  dataKey={`지출_${cat}`}
+                  stackId="expense"
+                  name={cat}
+                  fill={catColors[cat] ?? '#6B8CAE'}
+                  radius={idx === activeCategories.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+                  cursor="pointer"
+                  onClick={(_: unknown, index: number) => { setDrilldownType('expense'); onMonthSelect?.(index + 1) }}
+                >
+                  {chartData.map((_, i) => (
+                    <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                  ))}
+                </Bar>
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </div>
+
+      {/* Drilldown type toggle */}
+      {!isCategory && selectedMonth && (
+        <div className="flex gap-1 mb-4">
+          {(['income', 'expense'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setDrilldownType(t)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                drilldownType === t ? 'text-white' : 'bg-slate-100 text-slate-500'
+              }`}
+              style={drilldownType === t ? { background: '#1A237E' } : undefined}
+            >
+              {t === 'income' ? '수입' : '지출'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Category summary (no category selected) */}
       {!isCategory && (
         <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2">
-          {activeCategories.map(cat => {
-            const amount = monthData[cat as keyof MonthlyData] as number
-            const pct = monthData.total > 0 ? Math.round(amount / monthData.total * 100) : 0
+          {displayCategories.map(cat => {
+            const amount = getAmount(cat)
+            const pct = displayTotal > 0 ? Math.round(amount / displayTotal * 100) : 0
+            const color = getCatColor(cat)
             return (
               <div key={cat} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between text-xs mb-0.5">
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(cat)}>{cat}</span>
+                    {drilldownType === 'income' ? (
+                      <span
+                        className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white"
+                        style={{ backgroundColor: color }}
+                      >
+                        {cat}
+                      </span>
+                    ) : (
+                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(cat)}>{cat}</span>
+                    )}
                     <span className="text-slate-400 ml-2 shrink-0">{pct}%</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: catColors[cat] }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-slate-800 shrink-0 w-24 text-right">{formatWonFull(amount)}</span>
@@ -325,15 +527,19 @@ export default function DrilldownPanel({
       )}
     </div>
 
-    {/* Expense Table */}
-    <ExpenseTableCard
-      expenses={expenses}
-      loading={expensesLoading}
-      selectedCat={selectedCat}
-      selectedTrendDetail={selectedTrendDetail}
-      isCategory={!!isCategory}
-      onReset={() => { setSelectedCat(null); setSelectedTrendDetail(null) }}
-    />
+    {/* Table: income or expense */}
+    {drilldownType === 'income' && !isCategory ? (
+      <IncomeTableCard incomes={incomes} loading={incomesLoading} />
+    ) : (
+      <ExpenseTableCard
+        expenses={expenses}
+        loading={expensesLoading}
+        selectedCat={selectedCat}
+        selectedTrendDetail={selectedTrendDetail}
+        isCategory={!!isCategory}
+        onReset={() => { setSelectedCat(null); setSelectedTrendDetail(null) }}
+      />
+    )}
   </>
   )
 }
