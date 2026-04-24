@@ -442,7 +442,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         </div>
         {showPositions && (
           <>
-            {allTags.length > 0 && (
+            {allTags.length > 0 ? (
               <div className="flex flex-wrap gap-2 mb-4">
                 {allTags.map(tag => {
                   const active = selectedTags.includes(tag)
@@ -466,7 +466,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     </button>
                   )
                 })}
-                {selectedTags.length > 0 && (
+                {selectedTags.length > 0 ? (
                   <button
                     type="button"
                     onClick={() => setSelectedTags([])}
@@ -474,9 +474,9 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                   >
                     초기화
                   </button>
-                )}
+                ) : null}
               </div>
-            )}
+            ) : null}
             <PositionCards positions={tagFilteredPositions} totalValue={visibleTotal} sectorColors={sectorColors} />
           </>
         )}
