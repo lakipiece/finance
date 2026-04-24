@@ -11,14 +11,6 @@ function IconGrid() {
     </svg>
   )
 }
-function IconCalendar() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <path d="M16 2v4M8 2v4M3 10h18" />
-    </svg>
-  )
-}
 function IconBarChart() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -102,13 +94,6 @@ function IconScale() {
     </svg>
   )
 }
-function IconPlus() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  )
-}
 function IconBuilding() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -131,29 +116,40 @@ function IconLogo() {
   )
 }
 
-const LEDGER_TABS = [
-  { label: '가계부',   href: '/expenses',  icon: <IconGrid /> },
-  { label: '수입',     href: '/income',    icon: <IconTrendingUp /> },
-  { label: '연도비교', href: '/compare',   icon: <IconBarChart /> },
-  { label: '검색',     href: '/search',    icon: <IconSearch /> },
-]
+interface SectionHeaderProps {
+  href: string
+  icon: React.ReactNode
+  label: string
+  pathname: string
+  inSection: boolean
+  onClose?: () => void
+}
 
-const PORTFOLIO_TABS = [
-  { label: '포트폴리오', href: '/portfolio',             icon: <IconGrid /> },
-  { label: '스냅샷',    href: '/portfolio/snapshots',   icon: <IconCamera /> },
-  { label: '배당',      href: '/portfolio/income',      icon: <IconDollar /> },
-  { label: '계좌',      href: '/portfolio/accounts',    icon: <IconAccount /> },
-  { label: '종목',      href: '/portfolio/securities',  icon: <IconList /> },
-  { label: '옵션',      href: '/portfolio/options',     icon: <IconSliders /> },
-  { label: '리밸런싱',  href: '/portfolio/rebalance',   icon: <IconScale /> },
-]
+function SectionHeader({ href, icon, label, pathname, inSection, onClose }: SectionHeaderProps) {
+  const active = pathname === href
+  return (
+    <Link
+      href={href}
+      onClick={onClose}
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+        active
+          ? 'text-[#1A237E]'
+          : inSection
+          ? 'text-slate-700 hover:bg-slate-50'
+          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+      }`}
+      style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
+    >
+      {active ? (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+      ) : null}
+      <span className={active ? 'text-[#1A237E]' : inSection ? 'text-slate-500' : 'text-slate-400'}>{icon}</span>
+      {label}
+    </Link>
+  )
+}
 
-const COMMON_TABS = [
-  { label: '자산', href: '/assets',    icon: <IconBuilding /> },
-  { label: '설정', href: '/settings',  icon: <IconSettings /> },
-]
-
-interface NavLinkProps {
+interface SubItemProps {
   href: string
   icon: React.ReactNode
   label: string
@@ -161,25 +157,23 @@ interface NavLinkProps {
   onClose?: () => void
 }
 
-function NavLink({ href, icon, label, pathname, onClose }: NavLinkProps) {
-  const active = href === '/expenses' || href === '/portfolio'
-    ? pathname === href
-    : pathname.startsWith(href)
+function SubItem({ href, icon, label, pathname, onClose }: SubItemProps) {
+  const active = pathname.startsWith(href)
   return (
     <Link
       href={href}
       onClick={onClose}
-      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      className={`relative flex items-center gap-2.5 pl-9 pr-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
         active
           ? 'text-[#1A237E]'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+          : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700'
       }`}
       style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
     >
       {active ? (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full" style={{ background: '#00695C' }} />
       ) : null}
-      <span className={active ? 'text-[#1A237E]' : 'text-slate-400'}>{icon}</span>
+      <span className={active ? 'text-[#1A237E]' : 'text-slate-300'}>{icon}</span>
       {label}
     </Link>
   )
@@ -192,9 +186,12 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
 
+  const inLedger = pathname === '/expenses' || ['/income', '/compare', '/search'].some(p => pathname.startsWith(p))
+  const inPortfolio = pathname.startsWith('/portfolio')
+
   return (
     <div className="flex flex-col h-full w-[220px] border-r border-slate-100 bg-white">
-      {/* 로고 + 브랜드 타이틀 */}
+      {/* 로고 */}
       <div className="flex items-center gap-2.5 px-4 pt-5 pb-5">
         <IconLogo />
         <div className="leading-none">
@@ -203,26 +200,33 @@ export default function Sidebar({ onClose }: SidebarProps) {
         </div>
       </div>
 
-      {/* 네비게이션 */}
-      <nav className="flex-1 px-3 overflow-y-auto space-y-0.5">
-        {/* 가계부 그룹 */}
-        {LEDGER_TABS.map(tab => (
-          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
-        ))}
+      <nav className="flex-1 px-3 overflow-y-auto">
+        {/* 가계부 섹션 */}
+        <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
+        <SubItem href="/income"   icon={<IconTrendingUp />} label="수입"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/compare"  icon={<IconBarChart />}   label="연도비교" pathname={pathname} onClose={onClose} />
+        <SubItem href="/search"   icon={<IconSearch />}     label="검색"     pathname={pathname} onClose={onClose} />
 
-        <div className="mx-3 my-2 border-t border-slate-100" />
+        <div className="mx-3 my-3 border-t border-slate-100" />
 
-        {/* 포트폴리오 그룹 */}
-        {PORTFOLIO_TABS.map(tab => (
-          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
-        ))}
+        {/* 포트폴리오 섹션 */}
+        <SectionHeader href="/portfolio" icon={<IconGrid />} label="포트폴리오" pathname={pathname} inSection={inPortfolio} onClose={onClose} />
+        <SubItem href="/portfolio/snapshots"  icon={<IconCamera />}   label="스냅샷"   pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/income"     icon={<IconDollar />}   label="배당"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/accounts"   icon={<IconAccount />}  label="계좌"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/securities" icon={<IconList />}     label="종목"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/options"    icon={<IconSliders />}  label="옵션"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/rebalance"  icon={<IconScale />}    label="리밸런싱" pathname={pathname} onClose={onClose} />
 
-        <div className="mx-3 my-2 border-t border-slate-100" />
+        <div className="mx-3 my-3 border-t border-slate-100" />
 
-        {/* 공통 메뉴 */}
-        {COMMON_TABS.map(tab => (
-          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
-        ))}
+        {/* 자산 섹션 */}
+        <SectionHeader href="/assets" icon={<IconBuilding />} label="자산" pathname={pathname} inSection={pathname === '/assets'} onClose={onClose} />
+
+        <div className="mx-3 my-3 border-t border-slate-100" />
+
+        {/* 설정 */}
+        <SectionHeader href="/settings" icon={<IconSettings />} label="설정" pathname={pathname} inSection={pathname === '/settings'} onClose={onClose} />
       </nav>
     </div>
   )
