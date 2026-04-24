@@ -109,6 +109,14 @@ function IconPlus() {
     </svg>
   )
 }
+function IconBuilding() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  )
+}
 function IconLogo() {
   return (
     <svg className="w-7 h-7" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -207,6 +215,29 @@ export default function Sidebar({ onClose }: SidebarProps) {
             {tab.label}
           </Link>
         ))}
+
+        {/* 두 번째 구분선 */}
+        <div className="mx-3 my-2 border-t border-slate-100" />
+
+        {/* 자산 — 공통 메뉴 */}
+        <Link
+          href="/assets"
+          onClick={onClose}
+          className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+            pathname === '/assets'
+              ? 'text-[#1A237E]'
+              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+          }`}
+          style={pathname === '/assets' ? { background: 'rgba(26,35,126,0.07)' } : undefined}
+        >
+          {pathname === '/assets' ? (
+            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+          ) : null}
+          <span className={pathname === '/assets' ? 'text-[#1A237E]' : 'text-slate-400'}>
+            <IconBuilding />
+          </span>
+          자산
+        </Link>
       </nav>
 
       {/* 하단: 모드 전환 + 설정 */}
