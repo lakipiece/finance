@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react'
 import type { MonthlyData, ExpenseItem, CategoryTotal } from '@/lib/types'
 import { useFilter } from '@/lib/FilterContext'
+import { useTheme } from '@/lib/ThemeContext'
+import { btn } from '@/lib/styles'
 import DrilldownPanel from './DrilldownPanel'
+import ExpenseCreateModal from './ExpenseCreateModal'
 
 export interface SummaryData {
   year: number
@@ -20,6 +23,8 @@ export interface CategoryDetailsData {
 
 export default function DashboardClient({ year }: { year: number }) {
   const { excludeLoan } = useFilter()
+  const { palette } = useTheme()
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [selectedCat, setSelectedCatRaw] = useState<string | null>(null)
@@ -146,9 +151,18 @@ export default function DashboardClient({ year }: { year: number }) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 페이지 헤더 */}
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
-        <p className="text-xs text-slate-400 mt-0.5">{year}년 지출 현황</p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
+          <p className="text-xs text-slate-400 mt-0.5">{year}년 지출 현황</p>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className={btn.primary}
+          style={{ backgroundColor: palette.colors[0] }}
+        >
+          + 지출 입력
+        </button>
       </div>
       <DrilldownPanel
         monthData={displayMonthData}
@@ -164,6 +178,20 @@ export default function DashboardClient({ year }: { year: number }) {
         catDetailsLoading={catDetailsLoading}
         expenses={expenses}
         expensesLoading={expensesLoading}
+      />
+      <ExpenseCreateModal
+        show={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSaved={() => {
+          setSummaryLoading(true)
+          setSummary(null)
+          fetch(`/api/summary?year=${year}`)
+            .then(r => r.json())
+            .then(data => { if (!data.error) setSummary(data) })
+            .catch(() => {})
+            .finally(() => setSummaryLoading(false))
+        }}
+        palette={palette}
       />
     </div>
   )
