@@ -132,21 +132,58 @@ function IconLogo() {
 }
 
 const LEDGER_TABS = [
-  { label: '대시보드', href: '/expenses',  icon: <IconGrid /> },
+  { label: '가계부',   href: '/expenses',  icon: <IconGrid /> },
   { label: '수입',     href: '/income',    icon: <IconTrendingUp /> },
   { label: '연도비교', href: '/compare',   icon: <IconBarChart /> },
   { label: '검색',     href: '/search',    icon: <IconSearch /> },
 ]
 
 const PORTFOLIO_TABS = [
-  { label: '대시보드',  href: '/portfolio',             icon: <IconGrid /> },
-  { label: '스냅샷',   href: '/portfolio/snapshots',   icon: <IconCamera /> },
-  { label: '배당',     href: '/portfolio/income',      icon: <IconDollar /> },
-  { label: '계좌',     href: '/portfolio/accounts',    icon: <IconAccount /> },
-  { label: '종목',     href: '/portfolio/securities',  icon: <IconList /> },
-  { label: '옵션',     href: '/portfolio/options',     icon: <IconSliders /> },
-  { label: '리밸런싱', href: '/portfolio/rebalance',   icon: <IconScale /> },
+  { label: '포트폴리오', href: '/portfolio',             icon: <IconGrid /> },
+  { label: '스냅샷',    href: '/portfolio/snapshots',   icon: <IconCamera /> },
+  { label: '배당',      href: '/portfolio/income',      icon: <IconDollar /> },
+  { label: '계좌',      href: '/portfolio/accounts',    icon: <IconAccount /> },
+  { label: '종목',      href: '/portfolio/securities',  icon: <IconList /> },
+  { label: '옵션',      href: '/portfolio/options',     icon: <IconSliders /> },
+  { label: '리밸런싱',  href: '/portfolio/rebalance',   icon: <IconScale /> },
 ]
+
+const COMMON_TABS = [
+  { label: '자산', href: '/assets',    icon: <IconBuilding /> },
+  { label: '설정', href: '/settings',  icon: <IconSettings /> },
+]
+
+interface NavLinkProps {
+  href: string
+  icon: React.ReactNode
+  label: string
+  pathname: string
+  onClose?: () => void
+}
+
+function NavLink({ href, icon, label, pathname, onClose }: NavLinkProps) {
+  const active = href === '/expenses' || href === '/portfolio'
+    ? pathname === href
+    : pathname.startsWith(href)
+  return (
+    <Link
+      href={href}
+      onClick={onClose}
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+        active
+          ? 'text-[#1A237E]'
+          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+      }`}
+      style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
+    >
+      {active ? (
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+      ) : null}
+      <span className={active ? 'text-[#1A237E]' : 'text-slate-400'}>{icon}</span>
+      {label}
+    </Link>
+  )
+}
 
 interface SidebarProps {
   onClose?: () => void
@@ -154,14 +191,6 @@ interface SidebarProps {
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
-  const isPortfolio = pathname.startsWith('/portfolio')
-  const primaryTabs = isPortfolio ? PORTFOLIO_TABS : LEDGER_TABS
-  const secondaryTabs = isPortfolio ? LEDGER_TABS : PORTFOLIO_TABS
-
-  const isActive = (href: string) =>
-    href === '/expenses' || href === '/portfolio'
-      ? pathname === href
-      : pathname.startsWith(href)
 
   return (
     <div className="flex flex-col h-full w-[220px] border-r border-slate-100 bg-white">
@@ -176,112 +205,25 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
       {/* 네비게이션 */}
       <nav className="flex-1 px-3 overflow-y-auto space-y-0.5">
-        {/* 현재 모드 탭 */}
-        {primaryTabs.map((tab) => {
-          const active = isActive(tab.href)
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              onClick={onClose}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                active
-                  ? 'text-[#1A237E]'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-              }`}
-              style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
-            >
-              {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
-              )}
-              <span className={active ? 'text-[#1A237E]' : 'text-slate-400'}>{tab.icon}</span>
-              {tab.label}
-            </Link>
-          )
-        })}
-
-        {/* 구분선 */}
-        <div className="mx-3 my-2 border-t border-slate-100" />
-
-        {/* 비활성 모드 탭 */}
-        {secondaryTabs.map((tab) => (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            onClick={onClose}
-            className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-300 hover:bg-slate-50 hover:text-slate-500 transition-colors"
-          >
-            <span className="text-slate-300 opacity-70">{tab.icon}</span>
-            {tab.label}
-          </Link>
+        {/* 가계부 그룹 */}
+        {LEDGER_TABS.map(tab => (
+          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
         ))}
 
-        {/* 두 번째 구분선 */}
         <div className="mx-3 my-2 border-t border-slate-100" />
 
-        {/* 자산 — 공통 메뉴 */}
-        <Link
-          href="/assets"
-          onClick={onClose}
-          className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            pathname === '/assets'
-              ? 'text-[#1A237E]'
-              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-          }`}
-          style={pathname === '/assets' ? { background: 'rgba(26,35,126,0.07)' } : undefined}
-        >
-          {pathname === '/assets' ? (
-            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
-          ) : null}
-          <span className={pathname === '/assets' ? 'text-[#1A237E]' : 'text-slate-400'}>
-            <IconBuilding />
-          </span>
-          자산
-        </Link>
-      </nav>
+        {/* 포트폴리오 그룹 */}
+        {PORTFOLIO_TABS.map(tab => (
+          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
+        ))}
 
-      {/* 하단: 모드 전환 + 설정 */}
-      <div className="px-4 pb-6 pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex gap-1 p-1 bg-slate-100 rounded-xl">
-            <Link
-              href="/portfolio"
-              onClick={onClose}
-              className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                isPortfolio
-                  ? 'bg-white text-[#1A237E] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              포트폴리오
-            </Link>
-            <Link
-              href="/expenses"
-              onClick={onClose}
-              className={`flex-1 text-center py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                !isPortfolio
-                  ? 'bg-white text-[#1A237E] shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              가계부
-            </Link>
-          </div>
-          <Link
-            href="/settings"
-            onClick={onClose}
-            title="설정"
-            className={`p-1.5 rounded-lg transition-colors ${
-              pathname === '/settings'
-                ? 'text-[#1A237E]'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-            }`}
-            style={pathname === '/settings' ? { background: 'rgba(26,35,126,0.07)' } : undefined}
-          >
-            <IconSettings />
-          </Link>
-        </div>
-      </div>
+        <div className="mx-3 my-2 border-t border-slate-100" />
+
+        {/* 공통 메뉴 */}
+        {COMMON_TABS.map(tab => (
+          <NavLink key={tab.href} href={tab.href} icon={tab.icon} label={tab.label} pathname={pathname} onClose={onClose} />
+        ))}
+      </nav>
     </div>
   )
 }
