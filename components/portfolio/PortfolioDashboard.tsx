@@ -106,6 +106,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
   const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set())
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [showAccounts, setShowAccounts] = useState(true)
   const [showSectors, setShowSectors] = useState(true)
   const [showCharts, setShowCharts] = useState(true)
@@ -169,6 +170,22 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       ? mergedPositions
       : mergedPositions.filter(p => selectedSectors.has(p.security.sector ?? '기타')),
     [mergedPositions, selectedSectors]
+  )
+
+  const allTags = useMemo(() =>
+    [...new Set(
+      mergedPositions.flatMap(p => p.security.tags ?? [])
+    )].sort(),
+    [mergedPositions]
+  )
+
+  const tagFilteredPositions = useMemo(() =>
+    selectedTags.length === 0
+      ? visibleMerged
+      : visibleMerged.filter(p =>
+          selectedTags.some(t => (p.security.tags ?? []).includes(t))
+        ),
+    [visibleMerged, selectedTags]
   )
 
   const filteredKpi = useMemo(() => {
@@ -424,7 +441,44 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           />
         </div>
         {showPositions && (
-          <PositionCards positions={visibleMerged} totalValue={visibleTotal} sectorColors={sectorColors} />
+          <>
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {allTags.map(tag => {
+                  const active = selectedTags.includes(tag)
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setSelectedTags(
+                        active
+                          ? selectedTags.filter(t => t !== tag)
+                          : [...selectedTags, tag]
+                      )}
+                      className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                        active
+                          ? 'border-transparent text-white'
+                          : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'
+                      }`}
+                      style={active ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}
+                    >
+                      #{tag}
+                    </button>
+                  )
+                })}
+                {selectedTags.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTags([])}
+                    className="text-xs px-2 py-1 text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    초기화
+                  </button>
+                )}
+              </div>
+            )}
+            <PositionCards positions={tagFilteredPositions} totalValue={visibleTotal} sectorColors={sectorColors} />
+          </>
         )}
       </div>
 
