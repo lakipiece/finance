@@ -5,6 +5,7 @@ import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 
+interface MemoInput { label: string; amount?: number | null }
 type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: NextRequest, { params }: Params) {
@@ -15,10 +16,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const { id } = await params
     const body = await req.json()
     const { expense_date, category, detail, method, member, memos } = body
-    const memoList = Array.isArray(memos) ? memos : []
-    const hasAmounts = memoList.some((m: any) => m.amount != null && m.amount > 0)
+    const memoList: MemoInput[] = Array.isArray(memos) ? memos : []
+    const hasAmounts = memoList.some(m => m.amount != null && m.amount > 0)
     const amount = hasAmounts
-      ? memoList.reduce((s: number, m: any) => s + (m.amount ?? 0), 0)
+      ? memoList.reduce((s, m) => s + (m.amount ?? 0), 0)
       : Number(body.amount)
 
     if (!expense_date || !category || !amount || amount <= 0) {
@@ -45,8 +46,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       `
       await tx`DELETE FROM expense_memos WHERE expense_id = ${id}`
       const rows = memoList
-        .filter((m: any) => m.label?.trim())
-        .map((m: any, i: number) => ({
+        .filter(m => m.label?.trim())
+        .map((m, i) => ({
           expense_id: Number(id),
           label: m.label.trim(),
           amount: m.amount ?? null,
