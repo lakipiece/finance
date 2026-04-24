@@ -10,12 +10,17 @@ const SECURITY_WITH_LABELS = `
          ac.value AS asset_class,
          co.value AS country,
          se.value AS sector,
-         cu.value AS currency
+         cu.value AS currency,
+         COALESCE(st.tags, '{}') AS tags
   FROM securities s
   LEFT JOIN option_list ac ON s.asset_class_id = ac.id
   LEFT JOIN option_list co ON s.country_id      = co.id
   LEFT JOIN option_list se ON s.sector_id       = se.id
   LEFT JOIN option_list cu ON s.currency_id     = cu.id
+  LEFT JOIN (
+    SELECT security_id, array_agg(tag ORDER BY tag) AS tags
+    FROM security_tags GROUP BY security_id
+  ) st ON st.security_id = s.id
 `
 
 export async function GET() {
