@@ -55,8 +55,8 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
 
   if (!show) return null
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
     if (!name.trim()) {
       setError('자산명을 입력해주세요.')
       return
@@ -198,7 +198,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
           </button>
           <button
             type="button"
-            onClick={handleSubmit as unknown as React.MouseEventHandler}
+            onClick={() => handleSubmit()}
             disabled={saving}
             className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}

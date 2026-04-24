@@ -279,10 +279,8 @@ export default function AssetsClient() {
     setShowValModal(true)
   }
 
-  function handleSaved(item: AssetItem) {
+  function handleSaved(_item: AssetItem) {
     loadData()
-    // editItem이 있으면 items 업데이트, 없으면 새 아이템이므로 loadData로 처리
-    void item
   }
 
   // KPI 계산

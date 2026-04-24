@@ -36,8 +36,8 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
 
   if (!show) return null
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit(e?: React.FormEvent) {
+    e?.preventDefault()
     const parsedAmount = Number(amount)
     if (!valDate || isNaN(parsedAmount) || parsedAmount <= 0) {
       setError('평가일과 추정 시세를 올바르게 입력해주세요.')
@@ -133,7 +133,7 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
           </button>
           <button
             type="button"
-            onClick={handleSubmit as unknown as React.MouseEventHandler}
+            onClick={() => handleSubmit()}
             disabled={saving}
             className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}
