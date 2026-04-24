@@ -1,4 +1,4 @@
--- Supabase SQL Editor에 붙여넣고 실행하세요
+-- 가계부 기본 스키마
 
 CREATE TABLE expenses (
   id        BIGSERIAL PRIMARY KEY,
@@ -10,9 +10,3 @@ CREATE TABLE expenses (
   method    TEXT DEFAULT '',        -- 현금 | 카드
   amount    INTEGER NOT NULL
 );
-
--- 공개 읽기 허용 (개인 대시보드용)
-ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow public read"
-  ON expenses FOR SELECT TO anon USING (true);

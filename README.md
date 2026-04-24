@@ -62,7 +62,7 @@ mkdir -p data/postgres
 docker compose up db -d
 sleep 5
 
-cat docs/supabase-schema.sql | docker compose exec -T db psql -U finance finance
+cat docs/schema.sql | docker compose exec -T db psql -U finance finance
 cat docs/portfolio-schema.sql | docker compose exec -T db psql -U finance finance
 ```
 
@@ -178,7 +178,7 @@ docker compose start db
 │   └── auth.ts                 # 인증 설정
 ├── docs/
 │   ├── portfolio-schema.sql    # 포트폴리오 스키마
-│   └── supabase-schema.sql     # 가계부 스키마
+│   └── schema.sql              # 가계부 기본 스키마
 ├── scripts/
 │   └── setup-auth.ts           # 관리자 계정 생성
 ├── docker-compose.yml
