@@ -21,7 +21,3 @@ CREATE TABLE IF NOT EXISTS asset_valuations (
   UNIQUE(asset_id, val_date)
 );
 
-ALTER TABLE tangible_assets  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE asset_valuations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read tangible_assets"  ON tangible_assets  FOR SELECT TO anon USING (true);
-CREATE POLICY "public read asset_valuations" ON asset_valuations FOR SELECT TO anon USING (true);

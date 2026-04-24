@@ -7,5 +7,3 @@ CREATE TABLE IF NOT EXISTS security_tags (
   UNIQUE(security_id, tag)
 );
 
-ALTER TABLE security_tags ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read security_tags" ON security_tags FOR SELECT TO anon USING (true);

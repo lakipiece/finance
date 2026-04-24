@@ -12,5 +12,3 @@ CREATE TABLE IF NOT EXISTS incomes (
   created_at   TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE incomes ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read incomes" ON incomes FOR SELECT TO anon USING (true);

@@ -9,5 +9,3 @@ CREATE TABLE IF NOT EXISTS expense_memos (
   sort_order SMALLINT DEFAULT 0
 );
 
-ALTER TABLE expense_memos ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read expense_memos" ON expense_memos FOR SELECT TO anon USING (true);
