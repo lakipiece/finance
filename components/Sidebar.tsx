@@ -197,7 +197,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
         <SubItem href="/input"   icon={<IconPlusCircle />} label="수입 지출 관리" pathname={pathname} onClose={onClose} />
         <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
-        <SubItem href="/options" icon={<IconSettings />}   label="가계부 옵션"    pathname={pathname} onClose={onClose} />
+        <SubItem href="/options" icon={<IconSettings />}   label="옵션"          pathname={pathname} onClose={onClose} />
 
         <div className="mx-3 my-3 border-t border-slate-100" />
 
