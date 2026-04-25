@@ -44,12 +44,12 @@ function parseAmount(v: string) {
   return parseInt(v.replace(/[^0-9]/g, '')) || 0
 }
 
-function hasOperator(v: string) {
-  return /[+\-*/]/.test(v.replace(/,/g, ''))
+function isFormula(v: string) {
+  return v.trimStart().startsWith('=')
 }
 
 function evalFormula(expr: string): number | null {
-  const clean = expr.replace(/,/g, '').trim()
+  const clean = expr.replace(/^=/, '').replace(/,/g, '').trim()
   if (!clean) return null
   if (!/^[\d\s+\-*/().]+$/.test(clean)) return null
   try {
@@ -196,18 +196,19 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
   function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
-    setAmount(hasOperator(v) ? v : fmtAmount(v))
+    setAmount(isFormula(v) ? v : fmtAmount(v))
   }
   function resolveAmount() {
-    if (hasOperator(amount)) {
+    if (isFormula(amount)) {
       const r = evalFormula(amount)
       if (r !== null) setAmount(r.toLocaleString('ko-KR'))
     }
   }
+  const formulaResult = isFormula(amount) ? evalFormula(amount) : null
 
   async function handleSave() {
     resolveAmount()
-    const raw = hasOperator(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
+    const raw = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || raw <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
@@ -262,7 +263,12 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
             onChange={handleAmountChange}
             onBlur={resolveAmount}
             onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
-            placeholder="0" className={`${field.input} text-right`} />
+            placeholder="0 또는 =수식" className={`${field.input} text-right`} />
+          {isFormula(amount) && (
+            <span className={`text-[10px] text-right tabular-nums ${formulaResult !== null ? 'text-blue-500' : 'text-rose-400'}`}>
+              {formulaResult !== null ? `= ${formulaResult.toLocaleString('ko-KR')}원` : '수식 오류'}
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
@@ -305,18 +311,19 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
   function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
   function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
     const v = e.target.value
-    setAmount(hasOperator(v) ? v : fmtAmount(v))
+    setAmount(isFormula(v) ? v : fmtAmount(v))
   }
   function resolveAmount() {
-    if (hasOperator(amount)) {
+    if (isFormula(amount)) {
       const r = evalFormula(amount)
       if (r !== null) setAmount(r.toLocaleString('ko-KR'))
     }
   }
+  const formulaResult = isFormula(amount) ? evalFormula(amount) : null
 
   async function handleSave() {
     resolveAmount()
-    const raw = hasOperator(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
+    const raw = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || !description || raw <= 0) { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
@@ -368,7 +375,12 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
             onChange={handleAmountChange}
             onBlur={resolveAmount}
             onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
-            placeholder="0" className={`${field.input} text-right`} />
+            placeholder="0 또는 =수식" className={`${field.input} text-right`} />
+          {isFormula(amount) && (
+            <span className={`text-[10px] text-right tabular-nums ${formulaResult !== null ? 'text-blue-500' : 'text-rose-400'}`}>
+              {formulaResult !== null ? `= ${formulaResult.toLocaleString('ko-KR')}원` : '수식 오류'}
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
