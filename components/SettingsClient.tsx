@@ -203,17 +203,21 @@ export default function SettingsClient({ initialYears }: Props) {
       <div>
         <h3 className="text-xs font-semibold text-slate-500 mb-3">옵션 색상 팔레트</h3>
         <div className="bg-white rounded-2xl border border-slate-100 p-4">
-          <p className="text-[10px] text-slate-400 mb-3">옵션 항목에서 사용 가능한 30가지 색상입니다. 항목의 색상 점을 클릭해 변경할 수 있습니다.</p>
-          <div className="grid grid-cols-10 gap-1.5">
+          <p className="text-[10px] text-slate-400 mb-3">클릭하면 HEX 코드가 클립보드에 복사됩니다.</p>
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
             {OPTION_COLORS.map((c) => (
-              <div key={c} className="flex flex-col items-center gap-0.5">
-                <div
-                  className="w-5 h-5 rounded-full border border-slate-100 shadow-sm"
-                  style={{ backgroundColor: c }}
-                  title={c}
-                />
-                <span className="text-[7px] text-slate-400 font-mono leading-none">{c.slice(1)}</span>
-              </div>
+              <button
+                key={c}
+                type="button"
+                title={`복사: ${c}`}
+                onClick={() => navigator.clipboard.writeText(c).catch(() => {})}
+                className="relative group rounded-md overflow-hidden border border-white/20 shadow-sm hover:scale-110 transition-transform aspect-square flex items-end justify-center pb-0.5"
+                style={{ backgroundColor: c }}
+              >
+                <span className="text-[7px] font-mono leading-none text-white/80 group-hover:text-white drop-shadow">
+                  {c.slice(1).toUpperCase()}
+                </span>
+              </button>
             ))}
           </div>
         </div>

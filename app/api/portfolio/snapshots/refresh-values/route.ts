@@ -102,17 +102,17 @@ export async function POST() {
       if (!sec) continue
       const clean = sec.ticker.startsWith('KRX:') ? sec.ticker.slice(4) : sec.ticker
       const isKrx = sec.country === '국내'
-      // 국내 종목은 .KS 우선, 없으면 bare (코인/현금 등은 bare로 저장)
+      const avgPrice = Number(h.avg_price ?? 0)
+      // 국내 종목은 .KS 우선, 없으면 bare; 가격 없으면 avg_price 폴백 (코인 등)
       const rawPrice = isKrx
-        ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? 0)
-        : (priceMap[clean] ?? 0)
+        ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? avgPrice)
+        : (priceMap[clean] ?? avgPrice)
       const isKrw = isKrx || sec.currency === 'KRW'
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
 
       const qty = Number(h.quantity)
       totalMarketValue += priceKrw * qty
 
-      const avgPrice = Number(h.avg_price ?? 0)
       totalInvested += isKrw ? avgPrice * qty : avgPrice * exchangeRate * qty
 
       const key = sec.sector || sec.asset_class || '기타'

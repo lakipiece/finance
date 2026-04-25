@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend, LineChart, Line } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import type { CategoryDetailsData } from './DashboardClient'
 import { formatWonFull, catBadgeStyle, CATEGORIES } from '@/lib/utils'
@@ -77,6 +77,7 @@ export default function DrilldownPanel({
   const { excludeLoan } = useFilter()
   const [detailSearch, setDetailSearch] = useState('')
   const [selectedIncomeCard, setSelectedIncomeCard] = useState<string | null>(null)
+  const [cumulative, setCumulative] = useState(false)
 
   const isCategory = selectedCat && selectedCat !== '__all__'
 
@@ -317,6 +318,12 @@ export default function DrilldownPanel({
             {isCategory ? `${selectedCat} 월별 추이` : selectedIncomeCard ? `${selectedIncomeCard} 월별 추이` : '월별 수입·지출 현황'}
           </p>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCumulative(v => !v)}
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+            >
+              {cumulative ? '누적' : '월별'}
+            </button>
             {selectedMonth && (
               <button
                 onClick={() => onMonthSelect?.(selectedMonth)}
@@ -341,6 +348,55 @@ export default function DrilldownPanel({
         </div>
         {isCategory && catDetailsLoading ? (
           <div className="h-[220px] bg-slate-50 rounded-xl animate-pulse" />
+        ) : cumulative ? (
+          // 누적 라인 차트
+          (() => {
+            // 누적 합계 계산
+            const cumulData = (chartData as Array<Record<string, number | string>>).reduce<Array<Record<string, number | string>>>((acc, row, i) => {
+              const prev = acc[i - 1] ?? {}
+              const entry: Record<string, number | string> = { month: row.month }
+              if (selectedIncomeCard) {
+                entry['누적'] = ((prev['누적'] as number) ?? 0) + ((row[selectedIncomeCard] as number) ?? 0)
+              } else if (isCategory) {
+                for (const key of chartKeys) {
+                  entry[key] = ((prev[key] as number) ?? 0) + ((row[key] as number) ?? 0)
+                }
+              } else {
+                const incomeTotal = ((row['수입_급여'] as number) ?? 0) + ((row['수입_기타'] as number) ?? 0)
+                const expenseTotal = activeCategories.reduce((s, cat) => s + ((row[`지출_${cat}`] as number) ?? 0), 0)
+                entry['수입'] = ((prev['수입'] as number) ?? 0) + incomeTotal
+                entry['지출'] = ((prev['지출'] as number) ?? 0) + expenseTotal
+              }
+              return [...acc, entry]
+            }, [])
+
+            const lineKeys = selectedIncomeCard
+              ? ['누적']
+              : isCategory ? chartKeys : ['수입', '지출']
+            const lineColors: Record<string, string> = selectedIncomeCard
+              ? { '누적': INCOME_CHART_COLORS[selectedIncomeCard] ?? '#6B8CAE' }
+              : isCategory ? chartColors
+              : { '수입': '#4527A0', '지출': '#1A237E' }
+
+            return (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={cumulData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+                  <Tooltip
+                    formatter={(value: number, name: string) => [formatWonFull(value), name]}
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                  />
+                  {lineKeys.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} />}
+                  {lineKeys.map(key => (
+                    <Line key={key} type="monotone" dataKey={key} stroke={lineColors[key] ?? '#6B8CAE'}
+                      strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            )
+          })()
         ) : selectedIncomeCard ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>

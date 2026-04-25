@@ -140,7 +140,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
               onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
               className={`bg-white rounded-2xl px-6 py-5 cursor-pointer hover:shadow-sm transition-all group relative flex flex-col ${
                 i === 0
-                  ? 'border-2 border-[#1A237E]/40 shadow-sm'
+                  ? 'border-2 border-[#1A237E] shadow-sm'
                   : 'border border-slate-100 hover:border-slate-200'
               }`}>
 

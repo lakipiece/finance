@@ -103,6 +103,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [selectedSecurity, setSelectedSecurity] = useState<string | null>(null)
   const [tab, setTab] = useState<'month' | 'account' | 'security'>('month')
+  const [taxUpdating, setTaxUpdating] = useState(false)
 
   const year = thisYear()
 
@@ -144,6 +145,20 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     router.refresh()
   }
 
+  async function handleUpdateTax() {
+    if (!confirm('세금이 0인 배당 건에 대해 계좌 세율로 자동 계산하여 저장합니다.\n계속하시겠습니까?')) return
+    setTaxUpdating(true)
+    const res = await fetch('/api/portfolio/dividends/update-tax', { method: 'POST' })
+    const data = await res.json().catch(() => ({}))
+    setTaxUpdating(false)
+    if (res.ok) {
+      alert(`${data.updated ?? 0}건 업데이트 완료`)
+      router.refresh()
+    } else {
+      alert('업데이트 실패')
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
@@ -152,6 +167,13 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>배당 · 분배금</h1>
           <p className="text-xs text-slate-400 mt-0.5">연도별 배당·분배금 집계 및 세후 현황</p>
         </div>
+        <button
+          onClick={handleUpdateTax}
+          disabled={taxUpdating}
+          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 disabled:opacity-50 transition-colors"
+        >
+          {taxUpdating ? '계산 중…' : '세금 자동계산'}
+        </button>
       </div>
 
       {/* KPI */}
