@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import type { MonthlyData, ExpenseItem, CategoryTotal } from '@/lib/types'
 import { useFilter } from '@/lib/FilterContext'
-import { useTheme } from '@/lib/ThemeContext'
-import { btn } from '@/lib/styles'
 import DrilldownPanel from './DrilldownPanel'
+import YearPicker from './YearPicker'
 import type { IncomeRow } from './IncomeTableCard'
 
 export interface SummaryData {
@@ -24,7 +22,6 @@ export interface CategoryDetailsData {
 
 export default function DashboardClient({ year }: { year: number }) {
   const { excludeLoan } = useFilter()
-  const { palette } = useTheme()
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [selectedCat, setSelectedCatRaw] = useState<string | null>(null)
   const [selectedTrendDetail, setSelectedTrendDetail] = useState<string | null>(null)
@@ -181,19 +178,8 @@ export default function DashboardClient({ year }: { year: number }) {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 페이지 헤더 */}
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
-          <p className="text-xs text-slate-400 mt-0.5">{year}년 수입·지출 현황</p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/input"
-            className={btn.primary}
-            style={{ backgroundColor: palette.colors[0] }}
-          >
-            + 수입/지출 입력
-          </Link>
-        </div>
+        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
+        <YearPicker variant="light" />
       </div>
       <DrilldownPanel
         monthData={displayMonthData}

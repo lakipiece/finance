@@ -102,20 +102,20 @@ export default function CompareClient({ availableYears }: Props) {
 
       {/* Year selector */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4 sm:gap-6 flex-wrap">
-        <span className="hidden sm:inline text-sm font-semibold text-slate-600">연도 선택</span>
-        <div className="flex gap-3 flex-wrap">
+        <span className="hidden sm:inline text-xs font-semibold text-slate-600">연도 선택</span>
+        <div className="flex gap-2 flex-wrap">
           {availableYears.map((y) => {
             const isSelected = selectedYears.includes(y.year)
             const color = colorMap[y.year]
             const isLoading = loading[y.year]
             return (
               <button key={y.year} onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${isSelected ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isSelected ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
                 style={isSelected ? { background: color } : {}}>
-                <span className="w-3 h-3 rounded-full flex-shrink-0"
+                <span className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
                 {y.year}
-                {isLoading && <span className="text-xs opacity-70">...</span>}
+                {isLoading && <span className="opacity-70">...</span>}
               </button>
             )
           })}
@@ -126,33 +126,33 @@ export default function CompareClient({ availableYears }: Props) {
       {selectedYears.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-slate-600">카테고리</span>
+            <span className="text-xs font-semibold text-slate-600">카테고리</span>
             <button onClick={() => setCumulative(prev => !prev)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
               {cumulative ? '누적 보기' : '월별 보기'}
             </button>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex gap-1.5 flex-wrap items-center">
             <button
               onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
               전체 지출
             </button>
             {expenseCategories.map(cat => (
               <button key={cat}
                 onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                 {cat}
               </button>
             ))}
-            <span className="text-slate-200 mx-1">|</span>
+            <span className="text-slate-200 mx-0.5">|</span>
             {/* 수입 카테고리 */}
             {INCOME_CATEGORIES.map(cat => (
               <button key={cat}
                 onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors text-white`}
+                className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors"
                 style={selectedCategory === cat
-                  ? { backgroundColor: INCOME_COLORS[cat] }
+                  ? { backgroundColor: INCOME_COLORS[cat], color: '#fff' }
                   : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
                 }>
                 {cat}

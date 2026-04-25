@@ -53,6 +53,15 @@ const PENSION_COLOR = '#8b5cf6'
 const FINANCIAL_COLOR = '#10b981'
 
 // ── Utility ──────────────────────────────────────────────
+function fmtAmt(n: number | null | undefined): string {
+  if (n == null) return '-'
+  return formatWonFull(Math.round(n))
+}
+
+function sliceDate(v: unknown): string {
+  return String(v ?? '').slice(0, 10)
+}
+
 function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -80,7 +89,7 @@ function KpiCard({ label, value, sub, color, tooltip }: {
           )}
         </div>
       </div>
-      <p className="text-xl font-bold mt-1 text-slate-800">{value}</p>
+      <p className="text-base font-bold mt-1 text-slate-800">{value}</p>
       <p className="text-xs text-slate-400 mt-1">{sub}</p>
     </div>
   )
@@ -141,12 +150,12 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
             </div>
             {item.description ? <p className="text-xs text-slate-400 mb-2">{item.description}</p> : null}
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span>취득가: {item.acquisition_price != null ? formatWonFull(item.acquisition_price) : '-'}</span>
+              <span>취득가: {item.acquisition_price != null ? fmtAmt(item.acquisition_price) : '-'}</span>
               <span className="text-slate-300">→</span>
-              <span>현재: {item.current_value != null ? formatWonFull(item.current_value) : '-'}</span>
+              <span>현재: {item.current_value != null ? fmtAmt(item.current_value) : '-'}</span>
               {gainPct !== null && (
                 <span className="font-medium" style={{ color: gainColor }}>
-                  ({gain !== null && gain >= 0 ? '+' : ''}{formatWonFull(gain ?? 0)}, {gainPct.toFixed(1)}%)
+                  ({gain !== null && gain >= 0 ? '+' : ''}{fmtAmt(gain ?? 0)}, {gainPct.toFixed(1)}%)
                 </span>
               )}
             </div>
@@ -419,7 +428,7 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
             {item.description && <p className="text-xs text-slate-400 mb-2">{item.description}</p>}
             <div className="text-xs text-slate-500">
               {item.current_amount != null
-                ? <span className="font-medium text-slate-700">{formatWonFull(item.current_amount)}</span>
+                ? <span className="font-medium text-slate-700">{fmtAmt(item.current_amount)}</span>
                 : <span className="text-slate-300">스냅샷 없음</span>
               }
             </div>
@@ -480,7 +489,7 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
                 {[...(snapshots ?? [])].sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date)).map(s => (
                   <div key={s.id} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 last:border-0">
                     <span className="text-slate-400">{s.snapshot_date}</span>
-                    <span className="font-semibold text-slate-700">{formatWonFull(s.amount)}</span>
+                    <span className="font-semibold text-slate-700">{fmtAmt(s.amount)}</span>
                     {s.note && <span className="text-slate-300 truncate max-w-[120px]">{s.note}</span>}
                     <button onClick={() => handleDeleteSnapshot(s.id)}
                       className="text-slate-200 hover:text-rose-400 transition-colors ml-2 opacity-0 group-hover:opacity-100">
@@ -541,32 +550,27 @@ function FinancialSection() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-xs text-slate-400">최신 포트폴리오 스냅샷</p>
-            <p className="text-[10px] text-slate-300 mt-0.5">{snapshot.date}</p>
+            <a href="/portfolio/snapshots"
+              className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors">
+              최신 포트폴리오 스냅샷 →
+            </a>
+            <p className="text-[10px] text-slate-300 mt-0.5">{sliceDate(snapshot.date)}</p>
           </div>
-          <a href="/portfolio/snapshots"
-            className="text-xs text-blue-400 hover:text-blue-600 font-medium transition-colors">
-            포트폴리오 →
-          </a>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <p className="text-[10px] text-slate-400 mb-0.5">평가액</p>
-            <p className="text-lg font-bold text-slate-800">
-              {snapshot.total_market_value != null ? formatWonFull(snapshot.total_market_value) : '-'}
-            </p>
+            <p className="text-base font-bold text-slate-800">{fmtAmt(snapshot.total_market_value)}</p>
           </div>
           <div>
             <p className="text-[10px] text-slate-400 mb-0.5">투자원금</p>
-            <p className="text-lg font-bold text-slate-800">
-              {snapshot.total_invested != null ? formatWonFull(snapshot.total_invested) : '-'}
-            </p>
+            <p className="text-base font-bold text-slate-800">{fmtAmt(snapshot.total_invested)}</p>
           </div>
           <div>
             <p className="text-[10px] text-slate-400 mb-0.5">평가손익</p>
-            <p className="text-lg font-bold" style={{ color: gainColor }}>
-              {gain != null ? `${gain >= 0 ? '+' : ''}${formatWonFull(gain)}` : '-'}
-              {gainPct != null && <span className="text-sm font-medium ml-1">({gainPct.toFixed(1)}%)</span>}
+            <p className="text-base font-bold" style={{ color: gainColor }}>
+              {gain != null ? `${gain >= 0 ? '+' : ''}${fmtAmt(gain)}` : '-'}
+              {gainPct != null && <span className="text-xs font-medium ml-1">({gainPct.toFixed(1)}%)</span>}
             </p>
           </div>
         </div>
@@ -678,13 +682,13 @@ export default function AssetsClient() {
 
       {/* 전체 KPI */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <KpiCard label="총 자산" value={formatWonFull(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
+        <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
-        <KpiCard label="유형자산" value={formatWonFull(tangibleTotal)} sub="부동산·차량" color="#0ea5e9"
-          tooltip="부동산, 차량의 현재 평가액 합계" />
-        <KpiCard label="연금자산" value={formatWonFull(pensionTotal)} sub="연금 최신 잔액" color={PENSION_COLOR}
+        <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#0ea5e9"
+          tooltip="부동산, 자동차의 현재 평가액 합계" />
+        <KpiCard label="연금자산" value={fmtAmt(pensionTotal)} sub="연금 최신 잔액" color={PENSION_COLOR}
           tooltip="등록된 연금 항목의 최신 스냅샷 금액 합계" />
-        <KpiCard label="금융자산" value={formatWonFull(financialTotal)} sub="포트폴리오 최신" color={FINANCIAL_COLOR}
+        <KpiCard label="금융자산" value={fmtAmt(financialTotal)} sub="포트폴리오 최신" color={FINANCIAL_COLOR}
           tooltip="포트폴리오 최신 스냅샷의 총 평가액" />
       </div>
 

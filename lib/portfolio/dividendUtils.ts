@@ -6,10 +6,21 @@ export function toKrw(d: Pick<Dividend, 'amount' | 'currency' | 'exchange_rate'>
     : Number(d.amount) * (Number(d.exchange_rate) || 1)
 }
 
-export function taxKrw(d: Pick<Dividend, 'tax' | 'currency' | 'exchange_rate'>): number {
-  return d.currency === 'KRW'
-    ? Number(d.tax)
-    : Number(d.tax) * (Number(d.exchange_rate) || 1)
+export function taxKrw(
+  d: Pick<Dividend, 'amount' | 'tax' | 'currency' | 'exchange_rate'> & {
+    account?: { dividend_tax_rate?: number | null }
+  }
+): number {
+  const raw = Number(d.tax)
+  if (raw > 0) {
+    return d.currency === 'KRW' ? raw : raw * (Number(d.exchange_rate) || 1)
+  }
+  // tax=0인 경우 계좌 세율로 자동 계산
+  const rate = d.account?.dividend_tax_rate
+  if (rate) {
+    return Math.round(toKrw(d) * Number(rate) / 100)
+  }
+  return 0
 }
 
 export function fmtDate(val: unknown): string {

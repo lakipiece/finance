@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, catBadgeStyle, formatWonFull } from '@/lib/utils'
 import { field } from '@/lib/styles'
@@ -523,11 +523,14 @@ export default function InputPage() {
   const [loading, setLoading] = useState(true)
   const [editRecord, setEditRecord] = useState<AnyRecord | null>(null)
   const [details, setDetails] = useState<string[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const formKey = useRef(0)
 
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
-  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1)
+  const [viewMonth, setViewMonth] = useState<number | null>(now.getMonth() + 1)
+  const [editingYear, setEditingYear] = useState(false)
+  const [yearInput, setYearInput] = useState(String(now.getFullYear()))
 
   useEffect(() => {
     fetch('/api/expenses/suggestions')
@@ -539,8 +542,8 @@ export default function InputPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true)
     const [expRes, incRes] = await Promise.all([
-      fetch(`/api/expenses?year=${viewYear}&month=${viewMonth}`),
-      fetch(`/api/incomes?year=${viewYear}&month=${viewMonth}`),
+      fetch(`/api/expenses?year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`),
+      fetch(`/api/incomes?year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`),
     ])
     const [expData, incData] = await Promise.all([expRes.json(), incRes.json()])
     const expenses: ExpenseRecord[] = (expData.expenses ?? []).map((e: {
@@ -583,22 +586,27 @@ export default function InputPage() {
     fetchAll()
   }
 
-  function prevMonth() {
-    if (viewMonth === 1) { setViewYear(y => y - 1); setViewMonth(12) }
-    else setViewMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (viewMonth === 12) { setViewYear(y => y + 1); setViewMonth(1) }
-    else setViewMonth(m => m + 1)
-  }
-
   const expenseCount = records.filter(r => r.type === 'expense').length
   const incomeCount = records.filter(r => r.type === 'income').length
+
+  const filteredRecords = useMemo(() => {
+    if (!searchQuery.trim()) return records
+    const q = searchQuery.toLowerCase().trim()
+    return records.filter(r => {
+      const label = r.type === 'expense' ? ((r as ExpenseRecord).detail || r.category) : (r as IncomeRecord).description
+      return label.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q) ||
+        (r.memo ?? '').toLowerCase().includes(q) ||
+        (r.member ?? '').toLowerCase().includes(q) ||
+        r.date.includes(q) ||
+        (r.type === 'expense' && (r as ExpenseRecord).method.toLowerCase().includes(q))
+    })
+  }, [records, searchQuery])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입/지출 입력</h1>
+        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
       </div>
 
       {/* Form card */}
@@ -621,29 +629,71 @@ export default function InputPage() {
 
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        {/* Header with month navigation */}
-        <div className="flex items-center justify-between mb-4">
+        {/* Header with year/month selector + search */}
+        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <button onClick={prevMonth} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <h2 className="text-sm font-semibold text-slate-700 min-w-[80px] text-center">{viewYear}년 {viewMonth}월</h2>
-            <button onClick={nextMonth} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-            </button>
+            {editingYear ? (
+              <input
+                type="number"
+                value={yearInput}
+                onChange={e => setYearInput(e.target.value)}
+                onBlur={() => {
+                  const y = parseInt(yearInput)
+                  if (y >= 2000 && y <= 2099) setViewYear(y)
+                  else setYearInput(String(viewYear))
+                  setEditingYear(false)
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                  if (e.key === 'Escape') { setYearInput(String(viewYear)); setEditingYear(false) }
+                }}
+                className="w-16 text-sm font-semibold text-slate-700 border-b border-slate-300 focus:outline-none focus:border-blue-400 text-center bg-transparent"
+                autoFocus
+              />
+            ) : (
+              <button onClick={() => { setEditingYear(true); setYearInput(String(viewYear)) }}
+                className="text-sm font-semibold text-slate-700 hover:text-blue-600 transition-colors">
+                {viewYear}년
+              </button>
+            )}
+            <select
+              value={viewMonth ?? ''}
+              onChange={e => setViewMonth(e.target.value === '' ? null : Number(e.target.value))}
+              className="text-sm font-medium text-slate-600 border-0 border-b border-slate-200 bg-transparent focus:outline-none focus:border-blue-400 cursor-pointer py-0.5">
+              <option value="">전체</option>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>{i + 1}월</option>
+              ))}
+            </select>
           </div>
-          <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="검색..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-32"
+              />
+            </div>
+            <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
+          </div>
         </div>
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 bg-slate-50 rounded-xl animate-pulse" />)}
           </div>
-        ) : records.length === 0 ? (
-          <p className="text-xs text-slate-400 py-8 text-center">{viewMonth}월 내역이 없습니다.</p>
+        ) : filteredRecords.length === 0 ? (
+          <p className="text-xs text-slate-400 py-8 text-center">
+            {searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {records.map(r => (
+            {filteredRecords.map(r => (
               <RecordCard key={`${r.type}-${r.id}`} record={r} onClick={() => setEditRecord(r)} />
             ))}
           </div>

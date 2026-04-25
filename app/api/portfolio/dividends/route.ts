@@ -8,8 +8,8 @@ export async function GET() {
   const sql = getSql()
   const data = await sql`
     SELECT d.*,
-      json_build_object('ticker', s.ticker, 'name', s.name) as security,
-      json_build_object('name', a.name, 'broker', a.broker) as account
+      json_build_object('ticker', s.ticker, 'name', s.name, 'currency', s.currency) as security,
+      json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner, 'dividend_tax_rate', a.dividend_tax_rate) as account
     FROM dividends d
     JOIN securities s ON s.id = d.security_id
     JOIN accounts a ON a.id = d.account_id

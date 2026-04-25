@@ -8,7 +8,7 @@ import { btn, tbl } from '@/lib/styles'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
-  account: Pick<Account, 'name' | 'broker' | 'owner'>
+  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate'>
 }
 
 type SortMode = 'date' | 'amount'
@@ -119,7 +119,9 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               </div>
               {d.account.owner && (
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{d.account.owner}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                    d.account.owner === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
+                  }`}>{d.account.owner}</span>
                 </div>
               )}
               <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-slate-50 text-[10px] text-slate-400 tabular-nums">
@@ -186,7 +188,9 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                   </td>
                   <td className="py-2 px-3">
                     {d.account.owner
-                      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600">{d.account.owner}</span>
+                      ? <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                          d.account.owner === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
+                        }`}>{d.account.owner}</span>
                       : <span className="text-slate-300 text-xs">-</span>}
                   </td>
                   <td className="py-2.5 px-3 text-slate-400 text-xs max-w-[160px]">

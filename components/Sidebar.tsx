@@ -202,7 +202,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <nav className="flex-1 px-3 overflow-y-auto">
         {/* 가계부 섹션 */}
         <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
-        <SubItem href="/input"   icon={<IconPlusCircle />} label="수입/지출 입력" pathname={pathname} onClose={onClose} />
+        <SubItem href="/input"   icon={<IconPlusCircle />} label="수입 지출 관리" pathname={pathname} onClose={onClose} />
         <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
         <SubItem href="/search"  icon={<IconSearch />}     label="검색"           pathname={pathname} onClose={onClose} />
 

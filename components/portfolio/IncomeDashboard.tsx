@@ -19,7 +19,7 @@ interface AccountSecurity { account_id: string; security_id: string }
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
-  account: Pick<Account, 'name' | 'broker' | 'owner'>
+  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate'>
 }
 
 interface Props {
@@ -224,7 +224,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
@@ -242,7 +242,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14}
                 fill={palette.colors[0]}
