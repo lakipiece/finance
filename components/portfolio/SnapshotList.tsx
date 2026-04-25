@@ -138,7 +138,11 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           return (
             <div key={snap.id}
               onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-              className="bg-white rounded-2xl border border-slate-100 px-6 py-5 cursor-pointer hover:shadow-sm hover:border-slate-200 transition-all group relative flex flex-col">
+              className={`bg-white rounded-2xl px-6 py-5 cursor-pointer hover:shadow-sm transition-all group relative flex flex-col ${
+                i === 0
+                  ? 'border-2 border-[#1A237E]/40 shadow-sm'
+                  : 'border border-slate-100 hover:border-slate-200'
+              }`}>
 
               {/* 상단: 날짜(좌) + 평가액(우) */}
               <div className="flex items-start justify-between gap-2">
@@ -148,15 +152,12 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                       {datePart.slice(0, 7)}
                     </p>
                     {suffix && <span className="text-xs font-normal text-slate-400">{suffix}</span>}
-                    {i === 0 && (
-                      <span className="text-[10px] bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-full font-medium">최신</span>
-                    )}
                   </div>
                   <p className="text-[10px] text-slate-400 mt-0.5">{datePart}</p>
                 </div>
                 <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
                   {mv != null ? (
-                    <p className="text-lg font-bold text-slate-400 leading-tight tabular-nums">{fmtKrw(mv)}</p>
+                    <p className="text-lg font-bold text-slate-600 leading-tight tabular-nums">{fmtKrw(mv)}</p>
                   ) : (
                     <p className="text-sm text-slate-300">—</p>
                   )}

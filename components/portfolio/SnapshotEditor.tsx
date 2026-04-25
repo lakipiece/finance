@@ -76,6 +76,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   const [snapshotDate, setSnapshotDate] = useState(snapshot.date)
   const [isDirty, setIsDirty] = useState(false)
   const [secPrices, setSecPrices] = useState<Record<string, number>>({})
+  const [exchangeRate, setExchangeRate] = useState<number>(1350)
 
   const [modalAccountId, setModalAccountId] = useState<string | null>(null)
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
@@ -131,6 +132,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       if (res.ok) {
         const data = await res.json()
         setSecPrices(data.secPrices ?? {})
+        setExchangeRate(data.exchangeRate ?? 1350)
       }
     } catch { /* silent */ }
   }, [])
@@ -245,11 +247,14 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     const vals: Record<string, number> = {}
     for (const r of rows) {
       if (r.quantity > 0 && r.avg_price != null) {
-        vals[r.account_id] = (vals[r.account_id] ?? 0) + r.quantity * r.avg_price
+        const sec = secMap[r.security_id]
+        const isKrw = !sec || sec.currency === 'KRW' || sec.country === '국내'
+        const priceKrw = isKrw ? r.avg_price : r.avg_price * exchangeRate
+        vals[r.account_id] = (vals[r.account_id] ?? 0) + r.quantity * priceKrw
       }
     }
     return vals
-  }, [rows])
+  }, [rows, secMap, exchangeRate])
 
   const totalInvested = useMemo(() =>
     Object.values(accountInvested).reduce((a, b) => a + b, 0),
