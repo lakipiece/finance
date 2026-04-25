@@ -13,8 +13,8 @@ import IncomeTableCard from './IncomeTableCard'
 import type { IncomeRow } from './IncomeTableCard'
 
 const INCOME_CHART_COLORS: Record<string, string> = {
-  '급여':    '#3b82f6',
-  '급여 외': '#8b5cf6',
+  '급여':    '#4527A0',
+  '급여 외': '#5A6476',
 }
 
 interface IncomeMonthData {

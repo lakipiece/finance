@@ -57,6 +57,23 @@ function TrashIcon() {
   )
 }
 
+/* ── Icons ── */
+function IncomeIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+    </svg>
+  )
+}
+
+function ExpenseIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7l-7 7-7-7" />
+    </svg>
+  )
+}
+
 /* ── Types ── */
 interface ExpenseRecord {
   type: 'expense'
@@ -70,7 +87,7 @@ interface IncomeRecord {
 }
 type AnyRecord = ExpenseRecord | IncomeRecord
 
-/* ── Compact Expense Form ── */
+/* ── Compact Expense Form (2-row layout) ── */
 function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details: string[] }) {
   const [date, setDate] = useState(todayStr)
   const [member, setMember] = useState('L')
@@ -101,59 +118,53 @@ function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details
   }
 
   return (
-    <div className="space-y-4">
-      {/* 날짜 + 작성자 */}
-      <div className="flex flex-wrap gap-6 items-end">
+    <div className="space-y-3">
+      {/* Row 1: 날짜 | 지출유형 | 세부유형 | 결제수단 */}
+      <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
         </div>
         <div className="flex flex-col gap-1">
+          <label className={field.label}>지출유형</label>
+          <div className="flex flex-wrap gap-1.5">
+            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)}>{c}</PillBtn>)}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-36">
+          <label className={field.label}>세부유형</label>
+          <input type="text" value={detail} onChange={e => setDetail(e.target.value)}
+            list="detail-suggestions" placeholder="식비, 교통비…" maxLength={30} className={field.input} />
+          <datalist id="detail-suggestions">
+            {details.map(d => <option key={d} value={d} />)}
+          </datalist>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className={field.label}>결제수단</label>
+          <div className="flex flex-wrap gap-1.5">
+            {METHODS.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+          </div>
+        </div>
+      </div>
+
+      {/* Row 2: 작성자 | 금액 | 비고 */}
+      <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
           <MemberToggle value={member} onChange={setMember} />
         </div>
-      </div>
-
-      {/* 지출유형 */}
-      <div>
-        <label className={field.label}>지출유형</label>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)}>{c}</PillBtn>)}
+        <div className="flex flex-col gap-1 w-44">
+          <label className={field.label}>금액 (원)</label>
+          <input type="text" inputMode="numeric" value={amount}
+            onChange={e => setAmount(fmtAmount(e.target.value))}
+            placeholder="0" className={`${field.input} text-right`} />
         </div>
-      </div>
-
-      {/* 세부유형 */}
-      <div>
-        <label className={field.label}>세부유형</label>
-        <input type="text" value={detail} onChange={e => setDetail(e.target.value)}
-          list="detail-suggestions" placeholder="식비, 교통비…" maxLength={30} className={field.input} />
-        <datalist id="detail-suggestions">
-          {details.map(d => <option key={d} value={d} />)}
-        </datalist>
-      </div>
-
-      {/* 결제수단 */}
-      <div>
-        <label className={field.label}>결제수단</label>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {METHODS.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+        <div className="flex flex-col gap-1 flex-1 min-w-48">
+          <label className={field.label}>비고</label>
+          <textarea value={memo} onChange={e => setMemo(e.target.value)}
+            placeholder="메모" rows={2}
+            className={`${field.input} resize-none leading-snug`} />
         </div>
-      </div>
-
-      {/* 금액 */}
-      <div>
-        <label className={field.label}>금액 (원)</label>
-        <input type="text" inputMode="numeric" value={amount}
-          onChange={e => setAmount(fmtAmount(e.target.value))}
-          placeholder="0" className={`${field.input} text-right`} />
-      </div>
-
-      {/* 비고 */}
-      <div>
-        <label className={field.label}>비고</label>
-        <textarea value={memo} onChange={e => setMemo(e.target.value)}
-          placeholder="메모" rows={2}
-          className={`${field.input} resize-none leading-snug`} />
       </div>
 
       {err && <p className="text-xs text-rose-500">{err}</p>}
@@ -168,7 +179,7 @@ function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details
   )
 }
 
-/* ── Compact Income Form ── */
+/* ── Compact Income Form (2-row layout) ── */
 function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
   const [date, setDate] = useState(todayStr)
   const [member, setMember] = useState<'L' | 'P'>('L')
@@ -198,50 +209,46 @@ function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* 날짜 + 작성자 */}
-      <div className="flex flex-wrap gap-6 items-end">
+    <div className="space-y-3">
+      {/* Row 1: 날짜 | 카테고리 | 설명 */}
+      <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
         </div>
         <div className="flex flex-col gap-1">
+          <label className={field.label}>카테고리</label>
+          <div className="flex flex-wrap gap-1.5">
+            {INCOME_CATEGORIES.map(c => (
+              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]}>{c}</PillBtn>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-36">
+          <label className={field.label}>설명</label>
+          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+            placeholder="수입 내용" maxLength={50} className={field.input} />
+        </div>
+      </div>
+
+      {/* Row 2: 작성자 | 금액 | 비고 */}
+      <div className="flex flex-wrap gap-4 items-end">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
           <MemberToggle value={member} onChange={v => setMember(v as 'L' | 'P')} />
         </div>
-      </div>
-
-      {/* 카테고리 */}
-      <div>
-        <label className={field.label}>카테고리</label>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {INCOME_CATEGORIES.map(c => (
-            <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]}>{c}</PillBtn>
-          ))}
+        <div className="flex flex-col gap-1 w-44">
+          <label className={field.label}>금액 (원)</label>
+          <input type="text" inputMode="numeric" value={amount}
+            onChange={e => setAmount(fmtAmount(e.target.value))}
+            placeholder="0" className={`${field.input} text-right`} />
         </div>
-      </div>
-
-      {/* 설명 */}
-      <div>
-        <label className={field.label}>설명</label>
-        <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-          placeholder="수입 내용" maxLength={50} className={field.input} />
-      </div>
-
-      {/* 금액 */}
-      <div>
-        <label className={field.label}>금액 (원)</label>
-        <input type="text" inputMode="numeric" value={amount}
-          onChange={e => setAmount(fmtAmount(e.target.value))}
-          placeholder="0" className={`${field.input} text-right`} />
-      </div>
-
-      {/* 비고 */}
-      <div>
-        <label className={field.label}>비고</label>
-        <textarea value={memo} onChange={e => setMemo(e.target.value)}
-          placeholder="메모" rows={2}
-          className={`${field.input} resize-none leading-snug`} />
+        <div className="flex flex-col gap-1 flex-1 min-w-48">
+          <label className={field.label}>비고</label>
+          <textarea value={memo} onChange={e => setMemo(e.target.value)}
+            placeholder="메모" rows={2}
+            className={`${field.input} resize-none leading-snug`} />
+        </div>
       </div>
 
       {err && <p className="text-xs text-rose-500">{err}</p>}
@@ -459,23 +466,34 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => void }) {
   const isExpense = record.type === 'expense'
   const label = isExpense ? (record.detail || record.category) : (record as IncomeRecord).description
-  const color = !isExpense ? (INCOME_COLORS[record.category] ?? '#64748b') : undefined
+  const incomeColor = !isExpense ? (INCOME_COLORS[record.category] ?? '#5A6476') : undefined
 
   return (
     <button onClick={onClick}
-      className="text-left w-full bg-white rounded-xl border border-slate-100 p-3 hover:border-slate-300 hover:shadow-sm transition-all">
+      className={`text-left w-full bg-white rounded-xl border p-3 hover:shadow-sm transition-all ${
+        isExpense
+          ? 'border-slate-100 hover:border-slate-300'
+          : 'border-l-4 border-slate-100 hover:border-slate-200'
+      }`}
+      style={!isExpense ? { borderLeftColor: incomeColor } : undefined}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isExpense ? 'bg-slate-100 text-slate-500' : 'bg-blue-50 text-blue-600'}`}>
-            {isExpense ? '지출' : '수입'}
+          {/* 수입/지출 아이콘 */}
+          <span className={`flex items-center justify-center w-5 h-5 rounded-full ${
+            isExpense ? 'bg-slate-100 text-slate-400' : 'text-white'
+          }`} style={!isExpense ? { backgroundColor: incomeColor } : undefined}>
+            {isExpense ? <ExpenseIcon /> : <IncomeIcon />}
           </span>
           {isExpense ? (
             <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(record.category)}>{record.category}</span>
           ) : (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: color }}>{record.category}</span>
+            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
           )}
         </div>
-        <span className={`text-sm font-bold shrink-0 ${isExpense ? 'text-slate-800' : 'text-blue-700'}`}>{formatWonFull(record.amount)}</span>
+        <span className={`text-sm font-bold shrink-0 ${isExpense ? 'text-slate-800' : ''}`}
+          style={!isExpense ? { color: incomeColor } : undefined}>
+          {formatWonFull(record.amount)}
+        </span>
       </div>
       <p className="text-xs text-slate-700 font-medium truncate mb-1">{label}</p>
       {record.memo && (
@@ -504,8 +522,9 @@ export default function InputPage() {
   const [details, setDetails] = useState<string[]>([])
   const formKey = useRef(0)
 
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
+  const now = new Date()
+  const [viewYear, setViewYear] = useState(now.getFullYear())
+  const [viewMonth, setViewMonth] = useState(now.getMonth() + 1)
 
   useEffect(() => {
     fetch('/api/expenses/suggestions')
@@ -517,8 +536,8 @@ export default function InputPage() {
   const fetchAll = useCallback(async () => {
     setLoading(true)
     const [expRes, incRes] = await Promise.all([
-      fetch(`/api/expenses?year=${currentYear}&month=${currentMonth}`),
-      fetch(`/api/incomes?year=${currentYear}&month=${currentMonth}`),
+      fetch(`/api/expenses?year=${viewYear}&month=${viewMonth}`),
+      fetch(`/api/incomes?year=${viewYear}&month=${viewMonth}`),
     ])
     const [expData, incData] = await Promise.all([expRes.json(), incRes.json()])
     const expenses: ExpenseRecord[] = (expData.expenses ?? []).map((e: {
@@ -538,7 +557,7 @@ export default function InputPage() {
     const combined = [...expenses, ...incomes].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
     setRecords(combined)
     setLoading(false)
-  }, [currentYear, currentMonth])
+  }, [viewYear, viewMonth])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
@@ -561,6 +580,15 @@ export default function InputPage() {
     fetchAll()
   }
 
+  function prevMonth() {
+    if (viewMonth === 1) { setViewYear(y => y - 1); setViewMonth(12) }
+    else setViewMonth(m => m - 1)
+  }
+  function nextMonth() {
+    if (viewMonth === 12) { setViewYear(y => y + 1); setViewMonth(1) }
+    else setViewMonth(m => m + 1)
+  }
+
   const expenseCount = records.filter(r => r.type === 'expense').length
   const incomeCount = records.filter(r => r.type === 'income').length
 
@@ -568,7 +596,6 @@ export default function InputPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입/지출 입력</h1>
-        <p className="text-xs text-slate-400 mt-0.5">{currentYear}년 {currentMonth}월</p>
       </div>
 
       {/* Form card */}
@@ -591,8 +618,17 @@ export default function InputPage() {
 
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        {/* Header with month navigation */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-slate-700">{currentMonth}월 내역</h2>
+          <div className="flex items-center gap-2">
+            <button onClick={prevMonth} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <h2 className="text-sm font-semibold text-slate-700 min-w-[80px] text-center">{viewYear}년 {viewMonth}월</h2>
+            <button onClick={nextMonth} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+            </button>
+          </div>
           <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
         </div>
 
@@ -601,7 +637,7 @@ export default function InputPage() {
             {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 bg-slate-50 rounded-xl animate-pulse" />)}
           </div>
         ) : records.length === 0 ? (
-          <p className="text-xs text-slate-400 py-8 text-center">이번 달 내역이 없습니다.</p>
+          <p className="text-xs text-slate-400 py-8 text-center">{viewMonth}월 내역이 없습니다.</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {records.map(r => (

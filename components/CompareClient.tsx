@@ -6,46 +6,61 @@ import type { DashboardData } from '@/lib/types'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
+import { INCOME_CATEGORIES, INCOME_COLORS } from '@/lib/utils'
 
 const CompareCharts = dynamic(() => import('./CompareCharts'), {
   ssr: false,
   loading: () => <div className="animate-pulse bg-slate-100 rounded-xl h-64" />,
 })
 
+interface IncomeSummary {
+  year: number
+  total: number
+  categoryTotals: { 급여: number; '급여 외': number }
+  monthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
+}
+
 interface Props {
   availableYears: YearSummary[]
 }
 
-const ALL_CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
-type Category = typeof ALL_CATEGORIES[number]
+const ALL_EXPENSE_CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
+type ExpenseCategory = typeof ALL_EXPENSE_CATEGORIES[number]
 
 export default function CompareClient({ availableYears }: Props) {
   const { palette } = useTheme()
   const { excludeLoan } = useFilter()
-  const CATEGORIES = useMemo(() =>
-    excludeLoan ? ALL_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_CATEGORIES],
+  const expenseCategories = useMemo(() =>
+    excludeLoan ? ALL_EXPENSE_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_EXPENSE_CATEGORIES],
     [excludeLoan]
   )
   const defaultYear = availableYears[0]?.year
   const [selectedYears, setSelectedYears] = useState<number[]>(defaultYear ? [defaultYear] : [])
   const [yearData, setYearData] = useState<Record<number, DashboardData>>({})
+  const [incomeYearData, setIncomeYearData] = useState<Record<number, IncomeSummary>>({})
   const [loading, setLoading] = useState<Record<number, boolean>>({})
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null)
   const [cumulative, setCumulative] = useState(false)
 
   async function fetchYear(year: number) {
     if (yearData[year]) return
     setLoading(prev => ({ ...prev, [year]: true }))
-    const res = await fetch(`/api/year-data?year=${year}`)
-    if (res.ok) {
-      const data = await res.json()
+    const [expRes, incRes] = await Promise.all([
+      fetch(`/api/year-data?year=${year}`),
+      fetch(`/api/incomes/summary?year=${year}`),
+    ])
+    if (expRes.ok) {
+      const data = await expRes.json()
       setYearData(prev => ({ ...prev, [year]: data }))
+    }
+    if (incRes.ok) {
+      const data = await incRes.json()
+      setIncomeYearData(prev => ({ ...prev, [year]: data }))
     }
     setLoading(prev => ({ ...prev, [year]: false }))
   }
 
-  // Fetch initial year on mount
   useEffect(() => {
     if (defaultYear) fetchYear(defaultYear)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -74,13 +89,14 @@ export default function CompareClient({ availableYears }: Props) {
     )
   }
 
+  const isIncomeCategory = (cat: string | null) => cat !== null && (INCOME_CATEGORIES as readonly string[]).includes(cat)
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {/* 페이지 헤더 */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>연도 비교</h1>
-          <p className="text-xs text-slate-400 mt-0.5">연도별 지출 패턴 비교 분석</p>
+          <p className="text-xs text-slate-400 mt-0.5">연도별 수입·지출 패턴 비교 분석</p>
         </div>
       </div>
 
@@ -93,18 +109,11 @@ export default function CompareClient({ availableYears }: Props) {
             const color = colorMap[y.year]
             const isLoading = loading[y.year]
             return (
-              <button
-                key={y.year}
-                onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  isSelected ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-                style={isSelected ? { background: color } : {}}
-              >
-                <span
-                  className="w-3 h-3 rounded-full flex-shrink-0"
-                  style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }}
-                />
+              <button key={y.year} onClick={() => toggleYear(y.year)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${isSelected ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                style={isSelected ? { background: color } : {}}>
+                <span className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
                 {y.year}
                 {isLoading && <span className="text-xs opacity-70">...</span>}
               </button>
@@ -118,32 +127,34 @@ export default function CompareClient({ availableYears }: Props) {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-slate-600">카테고리</span>
-            <button
-              onClick={() => setCumulative(prev => !prev)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-            >
+            <button onClick={() => setCumulative(prev => !prev)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
               {cumulative ? '누적 보기' : '월별 보기'}
             </button>
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap items-center">
             <button
               onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-            >
-              전체
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              전체 지출
             </button>
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
+            {expenseCategories.map(cat => (
+              <button key={cat}
                 onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                  selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                }`}
-              >
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                {cat}
+              </button>
+            ))}
+            <span className="text-slate-200 mx-1">|</span>
+            {/* 수입 카테고리 */}
+            {INCOME_CATEGORIES.map(cat => (
+              <button key={cat}
+                onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors text-white`}
+                style={selectedCategory === cat
+                  ? { backgroundColor: INCOME_COLORS[cat] }
+                  : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
+                }>
                 {cat}
               </button>
             ))}
@@ -159,12 +170,14 @@ export default function CompareClient({ availableYears }: Props) {
         <CompareCharts
           selectedYears={selectedYears}
           yearData={yearData}
+          incomeYearData={incomeYearData}
           colorMap={colorMap}
           loading={loading}
           selectedCategory={selectedCategory}
           selectedDetail={selectedDetail}
           onDetailSelect={setSelectedDetail}
           cumulative={cumulative}
+          isIncomeCategory={isIncomeCategory(selectedCategory)}
         />
       )}
     </div>

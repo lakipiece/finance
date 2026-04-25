@@ -35,6 +35,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   const [open, setOpen] = useState(false)
   const [hexInput, setHexInput] = useState(color)
   const [pos, setPos] = useState({ top: 0, left: 0 })
+  const [copied, setCopied] = useState<string | null>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const nativeRef = useRef<HTMLInputElement>(null)
@@ -56,8 +57,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   function handleOpen() {
     if (!open && triggerRef.current) {
       const r = triggerRef.current.getBoundingClientRect()
-      // 드롭다운 너비 ~148px, 화면 우측 넘침 방지
-      const left = Math.min(r.left, window.innerWidth - 156)
+      const left = Math.min(r.left, window.innerWidth - 300)
       setPos({ top: r.bottom + 4, left })
     }
     setOpen(v => !v)
@@ -66,6 +66,14 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   function handleHexChange(v: string) {
     setHexInput(v)
     if (isValidHex(v)) onChange(v)
+  }
+
+  function handlePresetClick(c: string) {
+    onChange(c)
+    setHexInput(c)
+    navigator.clipboard.writeText(c).catch(() => {})
+    setCopied(c)
+    setTimeout(() => setCopied(prev => prev === c ? null : prev), 1200)
   }
 
   return (
@@ -79,26 +87,34 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
       {open && (
         <div
           ref={dropdownRef}
-          className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2 shadow-xl"
+          className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2.5 shadow-xl"
           style={{ top: pos.top, left: pos.left }}
         >
-          {/* 프리셋 — 7열 (70색 = 10행) */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
+          {/* 프리셋 — 8열 사각형 그리드 */}
+          <div className="grid grid-cols-8 gap-1.5 mb-2.5" style={{ width: 272 }}>
             {PRESET_COLORS.map(c => (
-              <button key={c} onClick={() => { onChange(c); setHexInput(c) }}
-                className="w-4 h-4 rounded-full border transition-all hover:scale-110"
+              <button key={c} onClick={() => handlePresetClick(c)}
+                title={c}
+                className="w-7 h-7 rounded-md border-2 transition-all hover:scale-110 relative"
                 style={{
                   backgroundColor: c,
                   borderColor: color === c ? '#1e293b' : 'transparent',
-                  borderWidth: color === c ? '1.5px' : '1px',
                 }}
-              />
+              >
+                {copied === c && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                )}
+              </button>
             ))}
           </div>
           {/* HEX 입력 + 네이티브 피커 */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
             <div
-              className="w-5 h-5 rounded-md border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
+              className="w-6 h-6 rounded-md border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
               style={{ backgroundColor: color }}
               onClick={() => nativeRef.current?.click()}
             >
@@ -114,9 +130,10 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
               value={hexInput}
               onChange={e => handleHexChange(e.target.value)}
               placeholder="#3b82f6"
-              className="w-[72px] border border-slate-200 rounded-md px-1.5 py-0.5 text-[10px] text-slate-300 font-sans focus:outline-none focus:ring-1 focus:ring-blue-300"
+              className="w-[80px] border border-slate-200 rounded-md px-1.5 py-0.5 text-[10px] text-slate-500 font-mono focus:outline-none focus:ring-1 focus:ring-blue-300"
               maxLength={7}
             />
+            <span className="text-[9px] text-slate-300">클릭→복사</span>
           </div>
         </div>
       )}
