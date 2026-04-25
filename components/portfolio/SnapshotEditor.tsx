@@ -363,25 +363,27 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   {modalAccount?.broker} · {modalAccount?.name}
                 </p>
                 {modalAccountValue > 0 && (
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    원금 <span className="font-medium text-slate-600">
-                      {Math.round(accountInvested[modalAccountId ?? ''] ?? 0).toLocaleString()}원
-                    </span>
-                    <span className="mx-1.5 text-slate-300">·</span>
-                    평가금액 <span className="font-medium text-slate-600">
-                      {Math.round(modalAccountValue).toLocaleString()}원
-                    </span>
-                  </p>
+                  <div className="mt-0.5 space-y-0">
+                    <p className="text-xs text-slate-400">
+                      원금 <span className="font-medium text-slate-600">
+                        {Math.round(accountInvested[modalAccountId ?? ''] ?? 0).toLocaleString()}원
+                      </span>
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      평가금액 <span className="font-medium text-slate-600">
+                        {Math.round(modalAccountValue).toLocaleString()}원
+                      </span>
+                    </p>
+                  </div>
                 )}
               </div>
               <div className="flex items-center gap-2">
                 {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
                 {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
-                <span className="text-[10px] text-slate-400">Tab으로 순서대로 입력</span>
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
                   className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: palette.colors[0] }}>
-                  {saving ? '저장 중...' : '저장하기'}
+                  {saving ? '저장 중...' : '저장'}
                 </button>
                 <button onClick={handleModalClose}
                   className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
