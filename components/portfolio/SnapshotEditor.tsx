@@ -417,7 +417,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
                     return (
                       <div key={`${row.account_id}__${row.security_id}`}
-                        className={`rounded-xl border p-3 transition-all ${
+                        className={`group rounded-xl border p-3 transition-all ${
                           currentRow.quantity > 0
                             ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-slate-200 bg-white'
                             : 'border-slate-100 bg-white opacity-60'
@@ -441,7 +441,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                           )}
                           <button
                             onClick={() => deleteHolding(row.account_id, row.security_id)}
-                            className="p-0.5 rounded hover:bg-red-50 text-slate-300 hover:text-red-400 transition-colors shrink-0"
+                            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 text-slate-200 hover:text-red-400 transition-all shrink-0"
                             title="홀딩 삭제">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
