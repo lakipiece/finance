@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, badge, field, modal } from '@/lib/styles'
@@ -72,11 +73,11 @@ function KpiCard({ label, value, sub, color, tooltip }: {
   label: string; value: string; sub: string; color: string; tooltip?: string
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 hover:-translate-y-0.5 transition-all">
+      <div className="flex items-center gap-1.5 mb-1">
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
         <div className="relative group flex items-center gap-1">
-          <p className="text-xs text-slate-400 font-medium">{label}</p>
+          <p className="text-[10px] text-slate-400 font-medium">{label}</p>
           {tooltip && (
             <>
               <svg className="w-3 h-3 text-slate-300 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -89,8 +90,8 @@ function KpiCard({ label, value, sub, color, tooltip }: {
           )}
         </div>
       </div>
-      <p className="text-base font-bold mt-1 text-slate-800">{value}</p>
-      <p className="text-xs text-slate-400 mt-1">{sub}</p>
+      <p className="text-base font-bold mt-0.5 text-slate-800">{value}</p>
+      <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>
     </div>
   )
 }
@@ -545,37 +546,26 @@ function FinancialSection() {
     ? (gain / snapshot.total_invested) * 100 : null
   const gainColor = gain === null ? '#64748b' : gain >= 0 ? '#ef4444' : '#3b82f6'
 
+  const gainSign = gain != null && gain >= 0 ? '+' : ''
+
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <a href="/portfolio/snapshots"
-              className="text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors">
-              최신 포트폴리오 스냅샷 →
-            </a>
-            <p className="text-[10px] text-slate-300 mt-0.5">{sliceDate(snapshot.date)}</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <p className="text-[10px] text-slate-400 mb-0.5">평가액</p>
-            <p className="text-base font-bold text-slate-800">{fmtAmt(snapshot.total_market_value)}</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-slate-400 mb-0.5">투자원금</p>
-            <p className="text-base font-bold text-slate-800">{fmtAmt(snapshot.total_invested)}</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-slate-400 mb-0.5">평가손익</p>
-            <p className="text-base font-bold" style={{ color: gainColor }}>
-              {gain != null ? `${gain >= 0 ? '+' : ''}${fmtAmt(gain)}` : '-'}
-              {gainPct != null && <span className="text-xs font-medium ml-1">({gainPct.toFixed(1)}%)</span>}
-            </p>
-          </div>
-        </div>
-        {snapshot.memo && <p className="text-xs text-slate-400 mt-3">{snapshot.memo}</p>}
+    <div className="space-y-3">
+      <div className="flex items-center justify-end">
+        <a href="/portfolio/snapshots"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group">
+          <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-700">최신 포트폴리오 스냅샷</span>
+          <span className="text-[10px] text-slate-400">{sliceDate(snapshot.date)}</span>
+          <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <KpiCard label="평가액" value={fmtAmt(snapshot.total_market_value)} sub={sliceDate(snapshot.date)} color={FINANCIAL_COLOR} />
+        <KpiCard label="투자원금" value={fmtAmt(snapshot.total_invested)} sub="누적 투자금" color={FINANCIAL_COLOR} />
+        <KpiCard label="평가손익" value={gain != null ? `${gainSign}${fmtAmt(gain)}` : '-'} sub={gainPct != null ? `${gainSign}${gainPct.toFixed(1)}%` : '-'} color={gainColor} />
+      </div>
+      {snapshot.memo && <p className="text-xs text-slate-400">{snapshot.memo}</p>}
     </div>
   )
 }
@@ -639,6 +629,12 @@ export default function AssetsClient() {
   const financialTotal = Number(portfolioSnapshot?.total_market_value ?? 0)
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
+  const donutData = [
+    { name: '유형자산', value: tangibleTotal, color: '#1A237E' },
+    { name: '연금자산', value: pensionTotal, color: PENSION_COLOR },
+    { name: '금융자산', value: financialTotal, color: FINANCIAL_COLOR },
+  ].filter(d => d.value > 0)
+
   const TABS = [
     { key: 'tangible' as const, label: '유형자산', color: '#1A237E' },
     { key: 'pension' as const, label: '연금자산', color: PENSION_COLOR },
@@ -681,7 +677,7 @@ export default function AssetsClient() {
       </div>
 
       {/* 전체 KPI */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
         <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#1A237E"
@@ -691,6 +687,38 @@ export default function AssetsClient() {
         <KpiCard label="금융자산" value={fmtAmt(financialTotal)} sub="포트폴리오 최신" color={FINANCIAL_COLOR}
           tooltip="포트폴리오 최신 스냅샷의 총 평가액" />
       </div>
+
+      {/* 자산 구성 도넛 차트 */}
+      {grandTotal > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
+          <p className="text-xs font-semibold text-slate-500 mb-3">자산 구성</p>
+          <div className="flex items-center gap-6">
+            <div className="flex-shrink-0">
+              <PieChart width={140} height={140}>
+                <Pie data={donutData} cx={65} cy={65} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" stroke="none">
+                  {donutData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </div>
+            <div className="flex-1 space-y-2">
+              {donutData.map(d => (
+                <div key={d.name} className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+                    <span className="text-xs text-slate-600">{d.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold text-slate-700">{fmtAmt(d.value)}</span>
+                    <span className="text-[10px] text-slate-400 ml-1.5">{((d.value / grandTotal) * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 탭 */}
       <div className="flex gap-0.5 bg-slate-100 rounded-xl p-1 w-fit">
