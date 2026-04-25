@@ -6,8 +6,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
-  const { name } = await req.json()
-  const [row] = await sql`UPDATE payment_methods SET name = ${name} WHERE id = ${params.id} RETURNING *`
+  const { name, color } = await req.json()
+  const [row] = await sql`UPDATE payment_methods SET name = ${name}, color = ${color ?? '#94a3b8'} WHERE id = ${params.id} RETURNING *`
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(row)
 }

@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from 'react'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field } from '@/lib/styles'
 import { OPTION_COLORS } from '@/lib/palettes'
-import { CATEGORIES } from '@/lib/utils'
+import { CATEGORIES, CAT_COLORS } from '@/lib/utils'
 
 interface Member { code: string; display_name: string; color: string }
-interface PaymentMethod { id: number; name: string; order_idx: number }
-interface DetailOption { id: number; name: string; category: string }
+interface PaymentMethod { id: number; name: string; order_idx: number; color: string }
+interface DetailOption { id: number; name: string; category: string; color: string }
 
 interface Props {
   initialMembers: Member[]
@@ -16,7 +16,7 @@ interface Props {
   initialDetails: DetailOption[]
 }
 
-// ── ColorPicker (OptionsManager와 동일한 패턴) ───────────────────────────────
+// ── ColorPicker ───────────────────────────────────────────────────────────────
 
 function isValidHex(s: string) { return /^#[0-9a-fA-F]{6}$/.test(s) }
 
@@ -121,11 +121,14 @@ function OptionCard({ title, count, children, footer }: {
   )
 }
 
-function OptionRow({ label, color, onDelete, extra, onLabelChange }: {
+// ── 행 공통: 인라인 편집 + ColorPicker ───────────────────────────────────────
+
+function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange }: {
   label: string; color?: string
   onDelete: () => void
   extra?: React.ReactNode
   onLabelChange?: (v: string) => void
+  onColorChange?: (c: string) => void
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(label)
@@ -140,7 +143,11 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange }: {
 
   return (
     <div className="flex items-center gap-1.5 group py-0.5">
-      {color !== undefined && <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />}
+      {color !== undefined && (
+        onColorChange
+          ? <ColorPicker color={color} onChange={onColorChange} />
+          : <div className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      )}
       {editing ? (
         <input ref={inputRef} value={draft}
           onChange={e => setDraft(e.target.value)}
@@ -166,6 +173,52 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange }: {
   )
 }
 
+// ── 사용자 행: code(고정) + display_name(편집 가능) ──────────────────────────
+
+function MemberRow({ member, onColorChange, onNameChange, onDelete }: {
+  member: Member
+  onColorChange: (c: string) => void
+  onNameChange: (name: string) => void
+  onDelete: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(member.display_name)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  function startEdit() { setDraft(member.display_name); setEditing(true); setTimeout(() => inputRef.current?.select(), 0) }
+  function commit() {
+    setEditing(false)
+    if (draft.trim() && draft.trim() !== member.display_name) onNameChange(draft.trim())
+    else setDraft(member.display_name)
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 group py-0.5">
+      <ColorPicker color={member.color} onChange={onColorChange} />
+      <span className="text-[10px] font-mono font-semibold text-slate-400 w-8 shrink-0">{member.code}</span>
+      {editing ? (
+        <input ref={inputRef} value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setEditing(false); setDraft(member.display_name) } }}
+          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          autoFocus />
+      ) : (
+        <span onClick={startEdit} title="클릭하여 편집"
+          className="text-xs font-medium text-slate-600 flex-1 truncate cursor-text hover:text-blue-600 transition-colors">
+          {member.display_name}
+        </span>
+      )}
+      <button onClick={onDelete}
+        className="p-0.5 text-slate-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 // ── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export default function OptionsClient({ initialMembers, initialMethods, initialDetails }: Props) {
@@ -177,9 +230,6 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   /* ── 사용자 ── */
   const [newMemberCode, setNewMemberCode] = useState('')
   const [newMemberColor, setNewMemberColor] = useState(OPTION_COLORS[0])
-  const [memberColors, setMemberColors] = useState<Record<string, string>>(
-    Object.fromEntries(initialMembers.map(m => [m.code, m.color]))
-  )
 
   async function addMember() {
     if (!newMemberCode.trim()) return
@@ -192,13 +242,11 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     if (res.ok) {
       const row = await res.json()
       setMembers(prev => [...prev.filter(m => m.code !== row.code), row].sort((a, b) => a.code.localeCompare(b.code)))
-      setMemberColors(prev => ({ ...prev, [row.code]: row.color }))
       setNewMemberCode('')
     }
   }
 
   async function updateMemberColor(code: string, color: string) {
-    setMemberColors(prev => ({ ...prev, [code]: color }))
     setMembers(prev => prev.map(m => m.code === code ? { ...m, color } : m))
     await fetch(`/api/options/members/${code}`, {
       method: 'PATCH',
@@ -212,7 +260,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     await fetch(`/api/options/members/${code}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ display_name, color: memberColors[code] ?? '#64748b' }),
+      body: JSON.stringify({ display_name, color: members.find(m => m.code === code)?.color ?? '#64748b' }),
     })
   }
 
@@ -224,6 +272,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
 
   /* ── 결제수단 ── */
   const [newMethod, setNewMethod] = useState('')
+  const [newMethodColor, setNewMethodColor] = useState(OPTION_COLORS[2])
   const [adding, setAdding] = useState(false)
 
   async function addMethod() {
@@ -232,7 +281,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     const res = await fetch('/api/options/methods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newMethod.trim() }),
+      body: JSON.stringify({ name: newMethod.trim(), color: newMethodColor }),
     })
     if (res.ok) {
       const row = await res.json()
@@ -242,12 +291,12 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     setAdding(false)
   }
 
-  async function updateMethodName(id: number, name: string) {
-    setMethods(prev => prev.map(m => m.id === id ? { ...m, name } : m))
+  async function updateMethod(id: number, name: string, color: string) {
+    setMethods(prev => prev.map(m => m.id === id ? { ...m, name, color } : m))
     await fetch(`/api/options/methods/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, color }),
     })
   }
 
@@ -266,10 +315,11 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   async function addDetail() {
     if (!newDetailName.trim()) return
     setAddingDetail(true)
+    const defaultColor = (CAT_COLORS as Record<string, string>)[newDetailCat] ?? '#94a3b8'
     const res = await fetch('/api/options/details', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newDetailName.trim(), category: newDetailCat }),
+      body: JSON.stringify({ name: newDetailName.trim(), category: newDetailCat, color: defaultColor }),
     })
     if (res.ok) {
       const row = await res.json()
@@ -279,14 +329,12 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     setAddingDetail(false)
   }
 
-  async function updateDetailName(id: number, name: string) {
-    const d = details.find(x => x.id === id)
-    if (!d) return
-    setDetails(prev => prev.map(x => x.id === id ? { ...x, name } : x))
+  async function updateDetail(id: number, name: string, category: string, color: string) {
+    setDetails(prev => prev.map(x => x.id === id ? { ...x, name, category, color } : x))
     await fetch(`/api/options/details/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, category: d.category }),
+      body: JSON.stringify({ name, category, color }),
     })
   }
 
@@ -326,17 +374,10 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             </div>
           }>
           {members.map(m => (
-            <div key={m.code} className="flex items-center gap-1.5 group py-0.5">
-              <ColorPicker color={memberColors[m.code] ?? m.color} onChange={c => updateMemberColor(m.code, c)} />
-              <span className="text-[10px] font-mono font-semibold text-slate-400 w-8 shrink-0">{m.code}</span>
-              <span className="text-xs font-medium text-slate-600 flex-1 truncate">{m.display_name}</span>
-              <button onClick={() => deleteMember(m.code)}
-                className="p-0.5 text-slate-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
-                <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <MemberRow key={m.code} member={m}
+              onColorChange={c => updateMemberColor(m.code, c)}
+              onNameChange={name => updateMemberName(m.code, name)}
+              onDelete={() => deleteMember(m.code)} />
           ))}
           {members.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
         </OptionCard>
@@ -345,6 +386,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
         <OptionCard title="결제수단" count={methods.length}
           footer={
             <div className="flex items-center gap-1.5">
+              <ColorPicker color={newMethodColor} onChange={setNewMethodColor} />
               <input value={newMethod} onChange={e => setNewMethod(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addMethod()}
                 placeholder="새 결제수단" maxLength={20}
@@ -355,8 +397,9 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             </div>
           }>
           {methods.map(m => (
-            <OptionRow key={m.id} label={m.name}
-              onLabelChange={name => updateMethodName(m.id, name)}
+            <OptionRow key={m.id} label={m.name} color={m.color}
+              onColorChange={c => updateMethod(m.id, m.name, c)}
+              onLabelChange={name => updateMethod(m.id, name, m.color)}
               onDelete={() => deleteMethod(m.id)} />
           ))}
           {methods.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
@@ -399,8 +442,9 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             </div>
           }>
           {visibleDetails.map(d => (
-            <OptionRow key={d.id} label={d.name}
-              onLabelChange={name => updateDetailName(d.id, name)}
+            <OptionRow key={d.id} label={d.name} color={d.color}
+              onColorChange={c => updateDetail(d.id, d.name, d.category, c)}
+              onLabelChange={name => updateDetail(d.id, name, d.category, d.color)}
               onDelete={() => deleteDetail(d.id)}
               extra={d.category
                 ? <span className="text-[9px] px-1 py-0.5 rounded bg-slate-100 text-slate-400 shrink-0">{d.category}</span>
