@@ -13,9 +13,14 @@ const DEFAULT_MEMBERS: MemberOpt[] = [
   { code: 'P', display_name: 'P', color: '#AD1457' },
 ]
 const DEFAULT_METHODS = ['카드', '현금', '지역화폐']
-const FormCtx = createContext<{ memberOpts: MemberOpt[]; methodOpts: string[] }>({
+const FormCtx = createContext<{
+  memberOpts: MemberOpt[]
+  methodOpts: string[]
+  detailsByCategory: Record<string, string[]>
+}>({
   memberOpts: DEFAULT_MEMBERS,
   methodOpts: DEFAULT_METHODS,
+  detailsByCategory: {},
 })
 
 /* ── Helpers ── */
@@ -145,9 +150,9 @@ interface IncomeRecord {
 type AnyRecord = ExpenseRecord | IncomeRecord
 
 /* ── Compact Expense Form (2-row layout) ── */
-function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details: string[] }) {
+function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
   const { catColors } = useTheme()
-  const { memberOpts, methodOpts } = useContext(FormCtx)
+  const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
   const [date, setDate] = useState(todayStr)
   const [member, setMember] = useState(() => DEFAULT_MEMBERS[0].code)
   const [category, setCategory] = useState('변동비')
@@ -192,7 +197,7 @@ function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-36">
           <label className={field.label}>세부유형</label>
-          <DetailSearchInput value={detail} onChange={setDetail} suggestions={details} />
+          <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>결제수단</label>
@@ -348,11 +353,11 @@ function ModalShell({ onClose, title, onDelete, children }: {
 }
 
 /* ── Expense Edit Modal ── */
-function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
-  record: ExpenseRecord; onClose: () => void; onSaved: () => void; onDelete: () => void; details: string[]
+function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
+  record: ExpenseRecord; onClose: () => void; onSaved: () => void; onDelete: () => void
 }) {
   const { catColors } = useTheme()
-  const { methodOpts } = useContext(FormCtx)
+  const { methodOpts, detailsByCategory } = useContext(FormCtx)
   const [date, setDate] = useState(record.date)
   const [member, setMember] = useState(record.member)
   const [category, setCategory] = useState(record.category)
@@ -401,7 +406,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
         </div>
         <div>
           <label className={field.label}>세부유형</label>
-          <DetailSearchInput value={detail} onChange={setDetail} suggestions={details} />
+          <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
         <div>
           <label className={field.label}>결제수단</label>
@@ -575,7 +580,7 @@ export default function InputPage() {
   const [records, setRecords] = useState<AnyRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [editRecord, setEditRecord] = useState<AnyRecord | null>(null)
-  const [details, setDetails] = useState<string[]>([])
+  const [detailsByCategory, setDetailsByCategory] = useState<Record<string, string[]>>({})
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>(DEFAULT_MEMBERS)
   const [methodOpts, setMethodOpts] = useState<string[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
@@ -588,7 +593,13 @@ export default function InputPage() {
   const [yearInput, setYearInput] = useState(String(now.getFullYear()))
 
   useEffect(() => {
-    fetch('/api/expenses/suggestions').then(r => r.json()).then(data => { if (!data.error) setDetails(data.details ?? []) }).catch(() => {})
+    fetch('/api/options/details').then(r => r.json()).then((data: { name: string; category: string }[]) => {
+      if (Array.isArray(data)) {
+        const grouped: Record<string, string[]> = {}
+        for (const d of data) { const cat = d.category || '미분류'; (grouped[cat] ??= []).push(d.name) }
+        setDetailsByCategory(grouped)
+      }
+    }).catch(() => {})
     fetch('/api/options/members').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMemberOpts(data) }).catch(() => {})
     fetch('/api/options/methods').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMethodOpts(data.map((m: { name: string }) => m.name)) }).catch(() => {})
   }, [])
@@ -625,10 +636,6 @@ export default function InputPage() {
     fetchAll()
     setEditRecord(null)
     formKey.current += 1
-    fetch('/api/expenses/suggestions')
-      .then(r => r.json())
-      .then(data => { if (!data.error) setDetails(data.details ?? []) })
-      .catch(() => {})
   }
 
   async function handleDelete() {
@@ -679,7 +686,7 @@ export default function InputPage() {
   }, [records, typeFilter, categoryFilter, searchQuery, sortMode])
 
   return (
-    <FormCtx.Provider value={{ memberOpts, methodOpts }}>
+    <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
@@ -698,7 +705,7 @@ export default function InputPage() {
         </div>
 
         {tab === 'expense'
-          ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved} details={details} />
+          ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved} />
           : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved} />
         }
       </div>
@@ -816,7 +823,7 @@ export default function InputPage() {
 
       {editRecord?.type === 'expense' && (
         <ExpenseEditModal record={editRecord} onClose={() => setEditRecord(null)}
-          onSaved={handleSaved} onDelete={handleDelete} details={details} />
+          onSaved={handleSaved} onDelete={handleDelete} />
       )}
       {editRecord?.type === 'income' && (
         <IncomeEditModal record={editRecord} onClose={() => setEditRecord(null)}

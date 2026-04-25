@@ -14,6 +14,7 @@ interface Props {
   initialMembers: Member[]
   initialMethods: PaymentMethod[]
   initialDetails: DetailOption[]
+  initialCatColors: Record<string, string>
 }
 
 // ── ColorPicker ───────────────────────────────────────────────────────────────
@@ -102,14 +103,19 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
 
 // ── 공통 카드 ────────────────────────────────────────────────────────────────
 
-function OptionCard({ title, count, accentColor, children, footer }: {
-  title: string; count: number; accentColor?: string; children: React.ReactNode; footer: React.ReactNode
+function OptionCard({ title, count, accentColor, onAccentColorChange, children, footer }: {
+  title: string; count: number; accentColor?: string; onAccentColorChange?: (c: string) => void
+  children: React.ReactNode; footer: React.ReactNode
 }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col h-full">
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-1.5">
-          {accentColor && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />}
+          {accentColor !== undefined && (
+            onAccentColorChange
+              ? <ColorPicker color={accentColor} onChange={onAccentColorChange} />
+              : <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />
+          )}
           <h4 className="text-xs font-semibold text-slate-700">{title}</h4>
         </div>
         <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{count}개</span>
@@ -224,10 +230,11 @@ function MemberRow({ member, onUpdate, onDelete }: {
 
 // ── 카테고리별 세부유형 카드 ──────────────────────────────────────────────────
 
-function CategoryDetailCard({ category, details, accentColor, onAdd, onUpdate, onDelete, paletteColor }: {
+function CategoryDetailCard({ category, details, accentColor, onCategoryColorChange, onAdd, onUpdate, onDelete, paletteColor }: {
   category: string
   details: DetailOption[]
   accentColor: string
+  onCategoryColorChange: (color: string) => void
   onAdd: (name: string, category: string, color: string) => void
   onUpdate: (id: number, name: string, category: string, color: string) => void
   onDelete: (id: number) => void
@@ -243,7 +250,7 @@ function CategoryDetailCard({ category, details, accentColor, onAdd, onUpdate, o
   }
 
   return (
-    <OptionCard title={category} count={details.length} accentColor={accentColor}
+    <OptionCard title={category} count={details.length} accentColor={accentColor} onAccentColorChange={onCategoryColorChange}
       footer={
         <div className="flex items-center gap-1.5">
           <input value={newName} onChange={e => setNewName(e.target.value)}
@@ -268,11 +275,12 @@ function CategoryDetailCard({ category, details, accentColor, onAdd, onUpdate, o
 
 // ── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
-export default function OptionsClient({ initialMembers, initialMethods, initialDetails }: Props) {
+export default function OptionsClient({ initialMembers, initialMethods, initialDetails, initialCatColors }: Props) {
   const { palette } = useTheme()
   const [members, setMembers] = useState<Member[]>(initialMembers)
   const [methods, setMethods] = useState<PaymentMethod[]>(initialMethods)
   const [details, setDetails] = useState<DetailOption[]>(initialDetails)
+  const [catColors, setCatColors] = useState<Record<string, string>>(initialCatColors)
 
   /* ── 사용자 ── */
   const [newMemberCode, setNewMemberCode] = useState('')
@@ -343,6 +351,16 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     if (!confirm('결제수단을 삭제하시겠습니까?')) return
     await fetch(`/api/options/methods/${id}`, { method: 'DELETE' })
     setMethods(prev => prev.filter(m => m.id !== id))
+  }
+
+  /* ── 카테고리 색상 ── */
+  async function updateCategoryColor(name: string, color: string) {
+    setCatColors(prev => ({ ...prev, [name]: color }))
+    await fetch(`/api/options/categories/${encodeURIComponent(name)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ color }),
+    })
   }
 
   /* ── 세부유형 ── */
@@ -433,7 +451,8 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             key={cat}
             category={cat}
             details={details.filter(d => d.category === cat)}
-            accentColor={(CAT_COLORS as Record<string, string>)[cat] ?? '#94a3b8'}
+            accentColor={catColors[cat] ?? (CAT_COLORS as Record<string, string>)[cat] ?? '#94a3b8'}
+            onCategoryColorChange={color => updateCategoryColor(cat, color)}
             onAdd={addDetail}
             onUpdate={updateDetail}
             onDelete={deleteDetail}
