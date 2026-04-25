@@ -132,9 +132,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
               className={`${field.select} w-full`}
             >
               <option value="부동산">부동산</option>
-              <option value="연금">연금</option>
-              <option value="차량">차량</option>
-              <option value="기타">기타</option>
+              <option value="자동차">자동차</option>
             </select>
           </div>
 
