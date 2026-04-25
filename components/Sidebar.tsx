@@ -25,14 +25,6 @@ function IconSearch() {
     </svg>
   )
 }
-function IconTrendingUp() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
-  )
-}
 function IconPlusCircle() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -193,7 +185,7 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
 
-  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/compare', '/search'].some(p => pathname.startsWith(p))
+  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/input', '/compare', '/search'].some(p => pathname.startsWith(p))
   const inPortfolio = pathname.startsWith('/portfolio')
 
   return (
@@ -210,10 +202,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
       <nav className="flex-1 px-3 overflow-y-auto">
         {/* 가계부 섹션 */}
         <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
-        <SubItem href="/expenses/input" icon={<IconPlusCircle />} label="지출 입력" pathname={pathname} onClose={onClose} />
-        <SubItem href="/incomes/input"  icon={<IconTrendingUp />} label="수입 입력" pathname={pathname} onClose={onClose} />
-        <SubItem href="/compare"        icon={<IconBarChart />}   label="연도비교"  pathname={pathname} onClose={onClose} />
-        <SubItem href="/search"         icon={<IconSearch />}     label="검색"      pathname={pathname} onClose={onClose} />
+        <SubItem href="/input"   icon={<IconPlusCircle />} label="수입/지출 입력" pathname={pathname} onClose={onClose} />
+        <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
+        <SubItem href="/search"  icon={<IconSearch />}     label="검색"           pathname={pathname} onClose={onClose} />
 
         <div className="mx-3 my-3 border-t border-slate-100" />
 

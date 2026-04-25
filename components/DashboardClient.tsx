@@ -35,8 +35,8 @@ export default function DashboardClient({ year }: { year: number }) {
   const [summaryError, setSummaryError] = useState<string | null>(null)
   const [incomeSummary, setIncomeSummary] = useState<{
     total: number
-    categoryTotals: { 급여: number; 보너스: number; 기타: number }
-    monthlyList: Array<{ month: string; total: number; 급여: number; 보너스: number; 기타: number }>
+    categoryTotals: { 급여: number; '급여 외': number }
+    monthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
   } | null>(null)
   const [incomes, setIncomes] = useState<IncomeRow[] | null>(null)
   const [incomesLoading, setIncomesLoading] = useState(false)
@@ -187,17 +187,11 @@ export default function DashboardClient({ year }: { year: number }) {
         </div>
         <div className="flex gap-2">
           <Link
-            href="/expenses/input"
-            className={btn.secondary}
-          >
-            + 지출 입력
-          </Link>
-          <Link
-            href="/incomes/input"
+            href="/input"
             className={btn.primary}
             style={{ backgroundColor: palette.colors[0] }}
           >
-            + 수입 입력
+            + 수입/지출 입력
           </Link>
         </div>
       </div>
@@ -224,15 +218,12 @@ export default function DashboardClient({ year }: { year: number }) {
           급여: selectedMonth
             ? (incomeSummary?.monthlyList[selectedMonth - 1]?.급여 ?? 0)
             : (incomeSummary?.categoryTotals.급여 ?? 0),
-          보너스: selectedMonth
-            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.보너스 ?? 0)
-            : (incomeSummary?.categoryTotals.보너스 ?? 0),
-          기타: selectedMonth
-            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.기타 ?? 0)
-            : (incomeSummary?.categoryTotals.기타 ?? 0),
+          '급여 외': selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.['급여 외'] ?? 0)
+            : (incomeSummary?.categoryTotals['급여 외'] ?? 0),
         }}
         incomeMonthlyList={incomeSummary?.monthlyList ?? Array.from({ length: 12 }, (_, i) => ({
-          month: `${i + 1}월`, total: 0, 급여: 0, 보너스: 0, 기타: 0,
+          month: `${i + 1}월`, total: 0, 급여: 0, '급여 외': 0,
         }))}
         incomes={incomes}
         incomesLoading={incomesLoading}

@@ -13,16 +13,14 @@ import IncomeTableCard from './IncomeTableCard'
 import type { IncomeRow } from './IncomeTableCard'
 
 const INCOME_CHART_COLORS: Record<string, string> = {
-  '급여': '#3b82f6',
-  '보너스': '#8b5cf6',
-  '기타': '#10b981',
+  '급여':    '#3b82f6',
+  '급여 외': '#8b5cf6',
 }
 
 interface IncomeMonthData {
   total: number
   급여: number
-  보너스: number
-  기타: number
+  '급여 외': number
 }
 
 interface Props {
@@ -50,7 +48,7 @@ interface Props {
 
   // API data (income)
   incomeMonthData: IncomeMonthData
-  incomeMonthlyList: Array<{ month: string; total: number; 급여: number; 보너스: number; 기타: number }>
+  incomeMonthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
   incomes: IncomeRow[] | null
   incomesLoading: boolean
 }
@@ -122,15 +120,21 @@ export default function DrilldownPanel({
         return entry
       })
     }
+    // Income category selected → single category monthly trend
+    if (selectedIncomeCard) {
+      return MONTH_LABELS.map((label, i) => ({
+        month: label,
+        [selectedIncomeCard]: incomeMonthlyList[i]?.[selectedIncomeCard as '급여'|'급여 외'] ?? 0,
+      }))
+    }
     // Overall: stacked income + expense
     return MONTH_LABELS.map((label, i) => ({
       month: label,
-      수입_급여: incomeMonthlyList[i]?.급여 ?? 0,
-      수입_보너스: incomeMonthlyList[i]?.보너스 ?? 0,
-      수입_기타: incomeMonthlyList[i]?.기타 ?? 0,
+      수입_급여:    incomeMonthlyList[i]?.급여 ?? 0,
+      '수입_급여 외': incomeMonthlyList[i]?.['급여 외'] ?? 0,
       ...Object.fromEntries(activeCategories.map(cat => [`지출_${cat}`, (monthlyList[i]?.[cat as keyof MonthlyData] as number) ?? 0])),
     }))
-  }, [isCategory, catDetails, selectedTrendDetail, topDetails, activeCategories, monthlyList, incomeMonthlyList])
+  }, [isCategory, catDetails, selectedTrendDetail, topDetails, activeCategories, monthlyList, incomeMonthlyList, selectedIncomeCard])
 
   const chartKeys = isCategory
     ? (selectedTrendDetail
@@ -166,7 +170,7 @@ export default function DrilldownPanel({
   const catTotal = isCategory ? (monthData[selectedCat as keyof MonthlyData] as number) : 0
 
   // Display data for horizontal category bars
-  const allIncomeCategories = (['급여', '보너스', '기타'] as const).filter(c => incomeMonthData[c] > 0)
+  const allIncomeCategories = (['급여', '급여 외'] as const).filter(c => incomeMonthData[c] > 0)
   const incomeCategories = selectedIncomeCard
     ? allIncomeCategories.filter(c => c === selectedIncomeCard)
     : allIncomeCategories
@@ -176,12 +180,12 @@ export default function DrilldownPanel({
     : []
   const displayTotal = !isCategory
     ? (drilldownType === 'income'
-        ? (selectedIncomeCard ? (incomeMonthData[selectedIncomeCard as '급여'|'보너스'|'기타'] ?? 0) : incomeMonthData.total)
+        ? (selectedIncomeCard ? (incomeMonthData[selectedIncomeCard as '급여'|'급여 외'] ?? 0) : incomeMonthData.total)
         : monthData.total)
     : 0
   const getAmount = (cat: string) =>
     drilldownType === 'income'
-      ? (incomeMonthData[cat as '급여' | '보너스' | '기타'] ?? 0)
+      ? (incomeMonthData[cat as '급여' | '급여 외'] ?? 0)
       : (monthData[cat as keyof MonthlyData] as number)
   const getCatColor = (cat: string) =>
     drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? '#64748b') : catColors[cat]
@@ -241,8 +245,8 @@ export default function DrilldownPanel({
             </button>
           )
         })()}
-        {/* 수입 카테고리 카드 3개 */}
-        {(['급여', '보너스', '기타'] as const).map(cat => {
+        {/* 수입 카테고리 카드 2개 */}
+        {(['급여', '급여 외'] as const).map(cat => {
           const amount = incomeMonthData[cat]
           const color = INCOME_CHART_COLORS[cat]
           const isActive = drilldownType === 'income' && selectedIncomeCard === cat
@@ -335,7 +339,7 @@ export default function DrilldownPanel({
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-semibold text-slate-500">
-            {isCategory ? `${selectedCat} 월별 추이` : '월별 수입·지출 현황'}
+            {isCategory ? `${selectedCat} 월별 추이` : selectedIncomeCard ? `${selectedIncomeCard} 월별 추이` : '월별 수입·지출 현황'}
           </p>
           {selectedMonth && (
             <button
@@ -349,6 +353,30 @@ export default function DrilldownPanel({
         </div>
         {isCategory && catDetailsLoading ? (
           <div className="h-[220px] bg-slate-50 rounded-xl animate-pulse" />
+        ) : selectedIncomeCard ? (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <Tooltip
+                formatter={(value: number) => [formatWonFull(value), selectedIncomeCard]}
+                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+              />
+              <Bar
+                dataKey={selectedIncomeCard}
+                stackId="a"
+                fill={INCOME_CHART_COLORS[selectedIncomeCard] ?? '#64748b'}
+                radius={[3, 3, 0, 0]}
+                cursor="pointer"
+                onClick={(_: unknown, index: number) => onMonthSelect?.(index + 1)}
+              >
+                {chartData.map((_, i) => (
+                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         ) : isCategory ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
@@ -403,23 +431,10 @@ export default function DrilldownPanel({
                 ))}
               </Bar>
               <Bar
-                dataKey="수입_보너스"
+                dataKey="수입_급여 외"
                 stackId="income"
-                name="보너스"
-                fill={INCOME_CHART_COLORS['보너스']}
-                radius={[0, 0, 0, 0]}
-                cursor="pointer"
-                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
-              >
-                {chartData.map((_, i) => (
-                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
-                ))}
-              </Bar>
-              <Bar
-                dataKey="수입_기타"
-                stackId="income"
-                name="기타(수입)"
-                fill={INCOME_CHART_COLORS['기타']}
+                name="급여 외"
+                fill={INCOME_CHART_COLORS['급여 외']}
                 radius={[3, 3, 0, 0]}
                 cursor="pointer"
                 onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
