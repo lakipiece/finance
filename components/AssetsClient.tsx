@@ -640,7 +640,7 @@ export default function AssetsClient() {
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
   const TABS = [
-    { key: 'tangible' as const, label: '유형자산', color: '#0ea5e9' },
+    { key: 'tangible' as const, label: '유형자산', color: '#1A237E' },
     { key: 'pension' as const, label: '연금자산', color: PENSION_COLOR },
     { key: 'financial' as const, label: '금융자산', color: FINANCIAL_COLOR },
   ]
@@ -693,12 +693,12 @@ export default function AssetsClient() {
       </div>
 
       {/* 탭 */}
-      <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-0.5 bg-slate-100 rounded-xl p-1 w-fit">
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all"
+            className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
             style={activeTab === tab.key
-              ? { background: '#fff', color: tab.color, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+              ? { background: '#fff', color: tab.color, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
               : { color: '#94a3b8' }
             }>
             {tab.label}
