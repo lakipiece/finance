@@ -102,13 +102,16 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
 
 // ── 공통 카드 ────────────────────────────────────────────────────────────────
 
-function OptionCard({ title, count, children, footer }: {
-  title: string; count: number; children: React.ReactNode; footer: React.ReactNode
+function OptionCard({ title, count, accentColor, children, footer }: {
+  title: string; count: number; accentColor?: string; children: React.ReactNode; footer: React.ReactNode
 }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col h-full">
       <div className="flex items-center justify-between mb-2.5">
-        <h4 className="text-xs font-semibold text-slate-700">{title}</h4>
+        <div className="flex items-center gap-1.5">
+          {accentColor && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />}
+          <h4 className="text-xs font-semibold text-slate-700">{title}</h4>
+        </div>
         <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{count}개</span>
       </div>
       <div className="space-y-0.5 mb-3 overflow-y-auto flex-1" style={{ maxHeight: 240 }}>
@@ -121,7 +124,7 @@ function OptionCard({ title, count, children, footer }: {
   )
 }
 
-// ── 행 공통: 인라인 편집 + ColorPicker ───────────────────────────────────────
+// ── 공통 행: 인라인 편집 + 선택적 ColorPicker ────────────────────────────────
 
 function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange }: {
   label: string; color?: string
@@ -173,12 +176,11 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange
   )
 }
 
-// ── 사용자 행: code(고정) + display_name(편집 가능) ──────────────────────────
+// ── 사용자 행: code(고정) + display_name(클릭 편집) ──────────────────────────
 
-function MemberRow({ member, onColorChange, onNameChange, onDelete }: {
+function MemberRow({ member, onUpdate, onDelete }: {
   member: Member
-  onColorChange: (c: string) => void
-  onNameChange: (name: string) => void
+  onUpdate: (display_name: string, color: string) => void
   onDelete: () => void
 }) {
   const [editing, setEditing] = useState(false)
@@ -188,13 +190,14 @@ function MemberRow({ member, onColorChange, onNameChange, onDelete }: {
   function startEdit() { setDraft(member.display_name); setEditing(true); setTimeout(() => inputRef.current?.select(), 0) }
   function commit() {
     setEditing(false)
-    if (draft.trim() && draft.trim() !== member.display_name) onNameChange(draft.trim())
+    const trimmed = draft.trim()
+    if (trimmed && trimmed !== member.display_name) onUpdate(trimmed, member.color)
     else setDraft(member.display_name)
   }
 
   return (
     <div className="flex items-center gap-1.5 group py-0.5">
-      <ColorPicker color={member.color} onChange={onColorChange} />
+      <ColorPicker color={member.color} onChange={c => onUpdate(member.display_name, c)} />
       <span className="text-[10px] font-mono font-semibold text-slate-400 w-8 shrink-0">{member.code}</span>
       {editing ? (
         <input ref={inputRef} value={draft}
@@ -216,6 +219,50 @@ function MemberRow({ member, onColorChange, onNameChange, onDelete }: {
         </svg>
       </button>
     </div>
+  )
+}
+
+// ── 카테고리별 세부유형 카드 ──────────────────────────────────────────────────
+
+function CategoryDetailCard({ category, details, accentColor, onAdd, onUpdate, onDelete, paletteColor }: {
+  category: string
+  details: DetailOption[]
+  accentColor: string
+  onAdd: (name: string, category: string, color: string) => void
+  onUpdate: (id: number, name: string, category: string, color: string) => void
+  onDelete: (id: number) => void
+  paletteColor: string
+}) {
+  const [newName, setNewName] = useState('')
+
+  function handleAdd() {
+    const name = newName.trim()
+    if (!name) return
+    onAdd(name, category, accentColor)
+    setNewName('')
+  }
+
+  return (
+    <OptionCard title={category} count={details.length} accentColor={accentColor}
+      footer={
+        <div className="flex items-center gap-1.5">
+          <input value={newName} onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder={`새 ${category} 항목`} maxLength={30}
+            className={`${field.input} min-w-0`} />
+          <button onClick={handleAdd} disabled={!newName.trim()}
+            className={`${btn.primary} shrink-0`}
+            style={{ backgroundColor: paletteColor }}>추가</button>
+        </div>
+      }>
+      {details.map(d => (
+        <OptionRow key={d.id} label={d.name} color={d.color}
+          onColorChange={c => onUpdate(d.id, d.name, d.category, c)}
+          onLabelChange={name => onUpdate(d.id, name, d.category, d.color)}
+          onDelete={() => onDelete(d.id)} />
+      ))}
+      {details.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+    </OptionCard>
   )
 }
 
@@ -246,21 +293,13 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     }
   }
 
-  async function updateMemberColor(code: string, color: string) {
-    setMembers(prev => prev.map(m => m.code === code ? { ...m, color } : m))
+  // display_name + color를 하나의 함수로 통합해 stale closure 방지
+  async function updateMember(code: string, display_name: string, color: string) {
+    setMembers(prev => prev.map(m => m.code === code ? { ...m, display_name, color } : m))
     await fetch(`/api/options/members/${code}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ display_name: members.find(m => m.code === code)?.display_name ?? code, color }),
-    })
-  }
-
-  async function updateMemberName(code: string, display_name: string) {
-    setMembers(prev => prev.map(m => m.code === code ? { ...m, display_name } : m))
-    await fetch(`/api/options/members/${code}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ display_name, color: members.find(m => m.code === code)?.color ?? '#64748b' }),
+      body: JSON.stringify({ display_name, color }),
     })
   }
 
@@ -273,11 +312,11 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   /* ── 결제수단 ── */
   const [newMethod, setNewMethod] = useState('')
   const [newMethodColor, setNewMethodColor] = useState(OPTION_COLORS[2])
-  const [adding, setAdding] = useState(false)
+  const [addingMethod, setAddingMethod] = useState(false)
 
   async function addMethod() {
     if (!newMethod.trim()) return
-    setAdding(true)
+    setAddingMethod(true)
     const res = await fetch('/api/options/methods', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -288,7 +327,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
       setMethods(prev => [...prev.filter(m => m.id !== row.id), row])
       setNewMethod('')
     }
-    setAdding(false)
+    setAddingMethod(false)
   }
 
   async function updateMethod(id: number, name: string, color: string) {
@@ -307,26 +346,16 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   }
 
   /* ── 세부유형 ── */
-  const [newDetailName, setNewDetailName] = useState('')
-  const [newDetailCat, setNewDetailCat] = useState('')
-  const [detailCatFilter, setDetailCatFilter] = useState('')
-  const [addingDetail, setAddingDetail] = useState(false)
-
-  async function addDetail() {
-    if (!newDetailName.trim()) return
-    setAddingDetail(true)
-    const defaultColor = (CAT_COLORS as Record<string, string>)[newDetailCat] ?? '#94a3b8'
+  async function addDetail(name: string, category: string, color: string) {
     const res = await fetch('/api/options/details', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newDetailName.trim(), category: newDetailCat, color: defaultColor }),
+      body: JSON.stringify({ name, category, color }),
     })
     if (res.ok) {
       const row = await res.json()
       setDetails(prev => [...prev.filter(d => d.id !== row.id), row])
-      setNewDetailName('')
     }
-    setAddingDetail(false)
   }
 
   async function updateDetail(id: number, name: string, category: string, color: string) {
@@ -344,22 +373,16 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     setDetails(prev => prev.filter(d => d.id !== id))
   }
 
-  const visibleDetails = detailCatFilter
-    ? details.filter(d => d.category === detailCatFilter || (detailCatFilter === '__none' && d.category === ''))
-    : details
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>옵션 관리</h1>
-          <p className="text-xs text-slate-400 mt-0.5">사용자, 결제수단, 세부유형 설정</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>옵션 관리</h1>
+        <p className="text-xs text-slate-400 mt-0.5">사용자, 결제수단, 세부유형 설정</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
-        {/* ── 사용자 카드 ── */}
+        {/* ── 사용자 ── */}
         <OptionCard title="사용자" count={members.length}
           footer={
             <div className="flex items-center gap-1.5">
@@ -375,14 +398,13 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
           }>
           {members.map(m => (
             <MemberRow key={m.code} member={m}
-              onColorChange={c => updateMemberColor(m.code, c)}
-              onNameChange={name => updateMemberName(m.code, name)}
+              onUpdate={(display_name, color) => updateMember(m.code, display_name, color)}
               onDelete={() => deleteMember(m.code)} />
           ))}
           {members.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
         </OptionCard>
 
-        {/* ── 결제수단 카드 ── */}
+        {/* ── 결제수단 ── */}
         <OptionCard title="결제수단" count={methods.length}
           footer={
             <div className="flex items-center gap-1.5">
@@ -391,7 +413,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
                 onKeyDown={e => e.key === 'Enter' && addMethod()}
                 placeholder="새 결제수단" maxLength={20}
                 className={`${field.input} min-w-0`} />
-              <button onClick={addMethod} disabled={adding || !newMethod.trim()}
+              <button onClick={addMethod} disabled={addingMethod || !newMethod.trim()}
                 className={`${btn.primary} shrink-0`}
                 style={{ backgroundColor: palette.colors[0] }}>추가</button>
             </div>
@@ -405,54 +427,19 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
           {methods.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
         </OptionCard>
 
-        {/* ── 세부유형 카드 ── */}
-        <OptionCard title="세부유형" count={visibleDetails.length}
-          footer={
-            <div className="space-y-1.5">
-              <div className="flex gap-1 flex-wrap">
-                <button onClick={() => setDetailCatFilter('')}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${!detailCatFilter ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                  전체
-                </button>
-                {CATEGORIES.map(c => (
-                  <button key={c} onClick={() => setDetailCatFilter(prev => prev === c ? '' : c)}
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${detailCatFilter === c ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                    {c}
-                  </button>
-                ))}
-                <button onClick={() => setDetailCatFilter(prev => prev === '__none' ? '' : '__none')}
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors ${detailCatFilter === '__none' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                  미분류
-                </button>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <input value={newDetailName} onChange={e => setNewDetailName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addDetail()}
-                  placeholder="새 세부유형" maxLength={30}
-                  className={`${field.input} min-w-0`} />
-                <select value={newDetailCat} onChange={e => setNewDetailCat(e.target.value)}
-                  className="text-xs border border-slate-200 rounded-md px-1.5 py-1.5 bg-white focus:outline-none shrink-0">
-                  <option value="">미분류</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-                <button onClick={addDetail} disabled={addingDetail || !newDetailName.trim()}
-                  className={`${btn.primary} shrink-0`}
-                  style={{ backgroundColor: palette.colors[0] }}>추가</button>
-              </div>
-            </div>
-          }>
-          {visibleDetails.map(d => (
-            <OptionRow key={d.id} label={d.name} color={d.color}
-              onColorChange={c => updateDetail(d.id, d.name, d.category, c)}
-              onLabelChange={name => updateDetail(d.id, name, d.category, d.color)}
-              onDelete={() => deleteDetail(d.id)}
-              extra={d.category
-                ? <span className="text-[9px] px-1 py-0.5 rounded bg-slate-100 text-slate-400 shrink-0">{d.category}</span>
-                : undefined}
-            />
-          ))}
-          {visibleDetails.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
-        </OptionCard>
+        {/* ── 카테고리별 세부유형 ── */}
+        {CATEGORIES.map(cat => (
+          <CategoryDetailCard
+            key={cat}
+            category={cat}
+            details={details.filter(d => d.category === cat)}
+            accentColor={(CAT_COLORS as Record<string, string>)[cat] ?? '#94a3b8'}
+            onAdd={addDetail}
+            onUpdate={updateDetail}
+            onDelete={deleteDetail}
+            paletteColor={palette.colors[0]}
+          />
+        ))}
 
       </div>
     </div>
