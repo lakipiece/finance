@@ -32,8 +32,8 @@ export default function DashboardClient({ year }: { year: number }) {
   const [summaryError, setSummaryError] = useState<string | null>(null)
   const [incomeSummary, setIncomeSummary] = useState<{
     total: number
-    categoryTotals: { 급여: number; '급여 외': number }
-    monthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
+    categoryTotals: { 급여: number; 기타: number }
+    monthlyList: Array<{ month: string; total: number; 급여: number; 기타: number }>
   } | null>(null)
   const [incomes, setIncomes] = useState<IncomeRow[] | null>(null)
   const [incomesLoading, setIncomesLoading] = useState(false)
@@ -204,12 +204,12 @@ export default function DashboardClient({ year }: { year: number }) {
           급여: selectedMonth
             ? (incomeSummary?.monthlyList[selectedMonth - 1]?.급여 ?? 0)
             : (incomeSummary?.categoryTotals.급여 ?? 0),
-          '급여 외': selectedMonth
-            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.['급여 외'] ?? 0)
-            : (incomeSummary?.categoryTotals['급여 외'] ?? 0),
+          기타: selectedMonth
+            ? (incomeSummary?.monthlyList[selectedMonth - 1]?.기타 ?? 0)
+            : (incomeSummary?.categoryTotals.기타 ?? 0),
         }}
         incomeMonthlyList={incomeSummary?.monthlyList ?? Array.from({ length: 12 }, (_, i) => ({
-          month: `${i + 1}월`, total: 0, 급여: 0, '급여 외': 0,
+          month: `${i + 1}월`, total: 0, 급여: 0, 기타: 0,
         }))}
         incomes={incomes}
         incomesLoading={incomesLoading}

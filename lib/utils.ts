@@ -45,12 +45,12 @@ export const CAT_BADGE: Record<string, { bg: string; text: string }> = {
 export const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
 export type Category = typeof CATEGORIES[number]
 
-export const INCOME_CATEGORIES = ['급여', '급여 외'] as const
+export const INCOME_CATEGORIES = ['급여', '기타'] as const
 export type IncomeCategory = typeof INCOME_CATEGORIES[number]
 
 export const INCOME_COLORS: Record<string, string> = {
-  '급여':    '#4527A0',
-  '급여 외': '#5A6476',
+  '급여': '#4527A0',
+  '기타': '#5A6476',
 }
 
 export function catBadgeStyle(cat: string): CSSProperties {

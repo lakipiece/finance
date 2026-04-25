@@ -18,13 +18,6 @@ function IconBarChart() {
     </svg>
   )
 }
-function IconSearch() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-    </svg>
-  )
-}
 function IconPlusCircle() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -185,7 +178,7 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
 
-  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/input', '/compare', '/search'].some(p => pathname.startsWith(p))
+  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/input', '/compare', '/options'].some(p => pathname.startsWith(p))
   const inPortfolio = pathname.startsWith('/portfolio')
 
   return (
@@ -204,7 +197,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
         <SubItem href="/input"   icon={<IconPlusCircle />} label="수입 지출 관리" pathname={pathname} onClose={onClose} />
         <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
-        <SubItem href="/search"  icon={<IconSearch />}     label="검색"           pathname={pathname} onClose={onClose} />
+        <SubItem href="/options" icon={<IconSettings />}   label="가계부 옵션"    pathname={pathname} onClose={onClose} />
 
         <div className="mx-3 my-3 border-t border-slate-100" />
 

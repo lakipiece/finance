@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 const LEDGER_TABS = [
   { label: '대시보드', short: '홈',  href: '/expenses' },
   { label: '연도비교', short: '비교', href: '/compare' },
-  { label: '검색',    short: '검색', href: '/search' },
+  { label: '가계부 옵션', short: '옵션', href: '/options' },
   { label: '설정',    short: '설정', href: '/settings' },
 ]
 

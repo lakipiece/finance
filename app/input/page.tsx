@@ -1,14 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, catBadgeStyle, formatWonFull } from '@/lib/utils'
 import { field } from '@/lib/styles'
 import { useTheme } from '@/lib/ThemeContext'
 
 /* ── Constants ── */
-const METHODS = ['카드', '현금', '지역화폐'] as const
-const MEMBER_COLORS: Record<string, string> = { L: '#1565C0', P: '#AD1457' }
+interface MemberOpt { code: string; display_name: string; color: string }
+const DEFAULT_MEMBERS: MemberOpt[] = [
+  { code: 'L', display_name: 'L', color: '#1565C0' },
+  { code: 'P', display_name: 'P', color: '#AD1457' },
+]
+const DEFAULT_METHODS = ['카드', '현금', '지역화폐']
+const FormCtx = createContext<{ memberOpts: MemberOpt[]; methodOpts: string[] }>({
+  memberOpts: DEFAULT_MEMBERS,
+  methodOpts: DEFAULT_METHODS,
+})
 
 /* ── Helpers ── */
 function todayStr() {
@@ -43,9 +51,14 @@ function PillBtn({ active, onClick, children, color }: {
 }
 
 function MemberToggle({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { memberOpts } = useContext(FormCtx)
   return (
     <div className="flex gap-1">
-      {['L', 'P'].map(m => <PillBtn key={m} active={value === m} onClick={() => onChange(m)} color={MEMBER_COLORS[m]}>{m}</PillBtn>)}
+      {memberOpts.map(m => (
+        <PillBtn key={m.code} active={value === m.code} onClick={() => onChange(m.code)} color={m.color}>
+          {m.display_name}
+        </PillBtn>
+      ))}
     </div>
   )
 }
@@ -91,11 +104,12 @@ type AnyRecord = ExpenseRecord | IncomeRecord
 /* ── Compact Expense Form (2-row layout) ── */
 function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details: string[] }) {
   const { catColors } = useTheme()
+  const { memberOpts, methodOpts } = useContext(FormCtx)
   const [date, setDate] = useState(todayStr)
-  const [member, setMember] = useState('L')
+  const [member, setMember] = useState(() => DEFAULT_MEMBERS[0].code)
   const [category, setCategory] = useState('변동비')
   const [detail, setDetail] = useState('')
-  const [method, setMethod] = useState('카드')
+  const [method, setMethod] = useState(() => DEFAULT_METHODS[0])
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
@@ -144,7 +158,7 @@ function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details
         <div className="flex flex-col gap-1">
           <label className={field.label}>결제수단</label>
           <div className="flex flex-wrap gap-1.5">
-            {METHODS.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+            {methodOpts.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
           </div>
         </div>
       </div>
@@ -299,6 +313,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
   record: ExpenseRecord; onClose: () => void; onSaved: () => void; onDelete: () => void; details: string[]
 }) {
   const { catColors } = useTheme()
+  const { methodOpts } = useContext(FormCtx)
   const [date, setDate] = useState(record.date)
   const [member, setMember] = useState(record.member)
   const [category, setCategory] = useState(record.category)
@@ -356,7 +371,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
         <div>
           <label className={field.label}>결제수단</label>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {METHODS.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+            {methodOpts.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
           </div>
         </div>
         <div>
@@ -467,9 +482,11 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 
 /* ── Record Card ── */
 function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => void }) {
+  const { memberOpts } = useContext(FormCtx)
   const isExpense = record.type === 'expense'
   const label = isExpense ? (record.detail || record.category) : (record as IncomeRecord).description
   const incomeColor = !isExpense ? (INCOME_COLORS[record.category] ?? '#5A6476') : undefined
+  const memberColor = record.member ? (memberOpts.find(m => m.code === record.member)?.color ?? '#64748b') : undefined
 
   return (
     <button onClick={onClick}
@@ -506,8 +523,9 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
         <span className="text-[10px] text-slate-400">{record.date}</span>
         <div className="flex items-center gap-1.5">
           {isExpense && record.method && <span className="text-[10px] text-slate-400">{record.method}</span>}
-          {record.member && (
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${record.member === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>{record.member}</span>
+          {record.member && memberColor && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: `${memberColor}22`, color: memberColor }}>{record.member}</span>
           )}
         </div>
       </div>
@@ -523,6 +541,8 @@ export default function InputPage() {
   const [loading, setLoading] = useState(true)
   const [editRecord, setEditRecord] = useState<AnyRecord | null>(null)
   const [details, setDetails] = useState<string[]>([])
+  const [memberOpts, setMemberOpts] = useState<MemberOpt[]>(DEFAULT_MEMBERS)
+  const [methodOpts, setMethodOpts] = useState<string[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
   const formKey = useRef(0)
 
@@ -533,10 +553,9 @@ export default function InputPage() {
   const [yearInput, setYearInput] = useState(String(now.getFullYear()))
 
   useEffect(() => {
-    fetch('/api/expenses/suggestions')
-      .then(r => r.json())
-      .then(data => { if (!data.error) setDetails(data.details ?? []) })
-      .catch(() => {})
+    fetch('/api/expenses/suggestions').then(r => r.json()).then(data => { if (!data.error) setDetails(data.details ?? []) }).catch(() => {})
+    fetch('/api/options/members').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMemberOpts(data) }).catch(() => {})
+    fetch('/api/options/methods').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMethodOpts(data.map((m: { name: string }) => m.name)) }).catch(() => {})
   }, [])
 
   const fetchAll = useCallback(async () => {
@@ -586,24 +605,46 @@ export default function InputPage() {
     fetchAll()
   }
 
+  const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc')
+
   const expenseCount = records.filter(r => r.type === 'expense').length
   const incomeCount = records.filter(r => r.type === 'income').length
 
+  const availableCategories = useMemo(() => {
+    if (typeFilter === 'expense') return CATEGORIES as readonly string[]
+    if (typeFilter === 'income') return INCOME_CATEGORIES as readonly string[]
+    return [...CATEGORIES, ...INCOME_CATEGORIES] as string[]
+  }, [typeFilter])
+
   const filteredRecords = useMemo(() => {
-    if (!searchQuery.trim()) return records
-    const q = searchQuery.toLowerCase().trim()
-    return records.filter(r => {
-      const label = r.type === 'expense' ? ((r as ExpenseRecord).detail || r.category) : (r as IncomeRecord).description
-      return label.toLowerCase().includes(q) ||
-        r.category.toLowerCase().includes(q) ||
-        (r.memo ?? '').toLowerCase().includes(q) ||
-        (r.member ?? '').toLowerCase().includes(q) ||
-        r.date.includes(q) ||
-        (r.type === 'expense' && (r as ExpenseRecord).method.toLowerCase().includes(q))
+    let list = records
+    if (typeFilter !== 'all') list = list.filter(r => r.type === typeFilter)
+    if (categoryFilter) list = list.filter(r => r.category === categoryFilter)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim()
+      list = list.filter(r => {
+        const label = r.type === 'expense' ? ((r as ExpenseRecord).detail || r.category) : (r as IncomeRecord).description
+        return label.toLowerCase().includes(q) ||
+          r.category.toLowerCase().includes(q) ||
+          (r.memo ?? '').toLowerCase().includes(q) ||
+          (r.member ?? '').toLowerCase().includes(q) ||
+          r.date.includes(q) ||
+          (r.type === 'expense' && (r as ExpenseRecord).method.toLowerCase().includes(q))
+      })
+    }
+    return [...list].sort((a, b) => {
+      if (sortMode === 'date_asc') return a.date.localeCompare(b.date) || a.id - b.id
+      if (sortMode === 'date_desc') return b.date.localeCompare(a.date) || b.id - a.id
+      if (sortMode === 'amount_asc') return a.amount - b.amount
+      if (sortMode === 'amount_desc') return b.amount - a.amount
+      return 0
     })
-  }, [records, searchQuery])
+  }, [records, typeFilter, categoryFilter, searchQuery, sortMode])
 
   return (
+    <FormCtx.Provider value={{ memberOpts, methodOpts }}>
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
@@ -676,10 +717,48 @@ export default function InputPage() {
                 placeholder="검색..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-32"
+                className="pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
               />
             </div>
             <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
+          </div>
+        </div>
+
+        {/* Filter + Sort row */}
+        <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-50">
+          {/* Type filter */}
+          <div className="flex gap-1">
+            {(['all', 'expense', 'income'] as const).map(t => (
+              <button key={t} onClick={() => { setTypeFilter(t); setCategoryFilter(null) }}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                {t === 'all' ? '전체' : t === 'expense' ? '지출' : '수입'}
+              </button>
+            ))}
+          </div>
+          <span className="text-slate-200 text-xs">|</span>
+          {/* Category filter */}
+          <div className="flex gap-1 flex-wrap">
+            {availableCategories.map(cat => (
+              <button key={cat} onClick={() => setCategoryFilter(prev => prev === cat ? null : cat)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${categoryFilter === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                {cat}
+              </button>
+            ))}
+          </div>
+          <span className="text-slate-200 text-xs">|</span>
+          {/* Sort buttons */}
+          <div className="flex gap-1 ml-auto">
+            {([
+              { mode: 'date_desc', label: '날짜↓' },
+              { mode: 'date_asc', label: '날짜↑' },
+              { mode: 'amount_desc', label: '금액↓' },
+              { mode: 'amount_asc', label: '금액↑' },
+            ] as const).map(({ mode, label }) => (
+              <button key={mode} onClick={() => setSortMode(mode)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${sortMode === mode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -709,5 +788,6 @@ export default function InputPage() {
           onSaved={handleSaved} onDelete={handleDelete} />
       )}
     </div>
+    </FormCtx.Provider>
   )
 }

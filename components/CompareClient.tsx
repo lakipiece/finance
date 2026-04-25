@@ -16,8 +16,8 @@ const CompareCharts = dynamic(() => import('./CompareCharts'), {
 interface IncomeSummary {
   year: number
   total: number
-  categoryTotals: { 급여: number; '급여 외': number }
-  monthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
+  categoryTotals: { 급여: number; 기타: number }
+  monthlyList: Array<{ month: string; total: number; 급여: number; 기타: number }>
 }
 
 interface Props {

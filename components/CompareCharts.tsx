@@ -16,8 +16,8 @@ type Category = typeof ALL_CATEGORIES[number]
 interface IncomeSummary {
   year: number
   total: number
-  categoryTotals: { 급여: number; '급여 외': number }
-  monthlyList: Array<{ month: string; total: number; 급여: number; '급여 외': number }>
+  categoryTotals: { 급여: number; 기타: number }
+  monthlyList: Array<{ month: string; total: number; 급여: number; 기타: number }>
 }
 
 interface Props {
@@ -58,11 +58,11 @@ export default function CompareCharts({
       if (isIncomeCategory && incomeYearData[year]) {
         const monthRow = incomeYearData[year].monthlyList[i]
         const val = selectedCategory === '급여' ? (monthRow?.급여 ?? 0)
-          : selectedCategory === '급여 외' ? (monthRow?.['급여 외'] ?? 0)
+          : selectedCategory === '기타' ? (monthRow?.기타 ?? 0)
           : (monthRow?.total ?? 0)
         entry[year] = cumulative
           ? incomeYearData[year].monthlyList.slice(0, i + 1).reduce((s, m) => {
-              const v = selectedCategory === '급여' ? m.급여 : selectedCategory === '급여 외' ? m['급여 외'] : m.total
+              const v = selectedCategory === '급여' ? m.급여 : selectedCategory === '기타' ? m.기타 : m.total
               return s + v
             }, 0)
           : val
@@ -103,7 +103,7 @@ export default function CompareCharts({
 
   // Income category bar chart (when no specific income cat selected, show totals)
   const incomeCategoryData = isIncomeCategory
-    ? (['급여', '급여 외'] as const).map(cat => {
+    ? (['급여', '기타'] as const).map(cat => {
         const entry: Record<string, any> = { category: cat }
         for (const year of readyYears) {
           entry[year] = incomeYearData[year]?.categoryTotals[cat] ?? 0
