@@ -7,7 +7,6 @@ import type { CategoryDetailsData } from './DashboardClient'
 import { formatWonFull, catBadgeStyle, CATEGORIES } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
-import YearPicker from './YearPicker'
 import { tbl, field } from '@/lib/styles'
 import IncomeTableCard from './IncomeTableCard'
 import type { IncomeRow } from './IncomeTableCard'
@@ -193,31 +192,7 @@ export default function DrilldownPanel({
   return (
   <>
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 mb-4 sm:mb-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold" style={{ color: '#1A237E' }}>{monthData.month} 상세 내역</h2>
-          <p className="text-sm text-slate-400 mt-0.5">
-            수입 {formatWonFull(incomeMonthData.total)} / 지출 {formatWonFull(monthData.total)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <YearPicker variant="light" />
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-lg hover:bg-slate-100"
-              aria-label="닫기"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* KPI Cards — 수입 row (grid-cols-5에서 4개만 채움 → 지출과 동일 너비) */}
+      {/* KPI Cards — 수입 row */}
       <p className="text-[10px] text-slate-400 font-medium mb-1.5 mt-3">수입</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-2">
         {/* 전체 수입 */}
@@ -341,15 +316,28 @@ export default function DrilldownPanel({
           <p className="text-xs font-semibold text-slate-500">
             {isCategory ? `${selectedCat} 월별 추이` : selectedIncomeCard ? `${selectedIncomeCard} 월별 추이` : '월별 수입·지출 현황'}
           </p>
-          {selectedMonth && (
-            <button
-              onClick={() => onMonthSelect?.(selectedMonth)}
-              className="text-xs font-medium"
-              style={{ color: '#1A237E' }}
-            >
-              월 필터 해제
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {selectedMonth && (
+              <button
+                onClick={() => onMonthSelect?.(selectedMonth)}
+                className="text-xs font-medium"
+                style={{ color: '#1A237E' }}
+              >
+                월 필터 해제
+              </button>
+            )}
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-slate-300 hover:text-slate-500 transition-colors p-1 rounded-lg hover:bg-slate-100"
+                aria-label="닫기"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
         {isCategory && catDetailsLoading ? (
           <div className="h-[220px] bg-slate-50 rounded-xl animate-pulse" />
@@ -416,33 +404,37 @@ export default function DrilldownPanel({
                 contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              {/* 수입 Bars */}
-              <Bar
-                dataKey="수입_급여"
-                stackId="income"
-                name="급여"
-                fill={INCOME_CHART_COLORS['급여']}
-                radius={[0, 0, 0, 0]}
-                cursor="pointer"
-                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
-              >
-                {chartData.map((_, i) => (
-                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
-                ))}
-              </Bar>
-              <Bar
-                dataKey="수입_급여 외"
-                stackId="income"
-                name="급여 외"
-                fill={INCOME_CHART_COLORS['급여 외']}
-                radius={[3, 3, 0, 0]}
-                cursor="pointer"
-                onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
-              >
-                {chartData.map((_, i) => (
-                  <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
-                ))}
-              </Bar>
+              {/* 수입 Bars — 전체 수입 선택 시에만 표시 */}
+              {drilldownType === 'income' && (
+                <>
+                  <Bar
+                    dataKey="수입_급여"
+                    stackId="income"
+                    name="급여"
+                    fill={INCOME_CHART_COLORS['급여']}
+                    radius={[0, 0, 0, 0]}
+                    cursor="pointer"
+                    onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
+                  >
+                    {chartData.map((_, i) => (
+                      <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                    ))}
+                  </Bar>
+                  <Bar
+                    dataKey="수입_급여 외"
+                    stackId="income"
+                    name="급여 외"
+                    fill={INCOME_CHART_COLORS['급여 외']}
+                    radius={[3, 3, 0, 0]}
+                    cursor="pointer"
+                    onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
+                  >
+                    {chartData.map((_, i) => (
+                      <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
+                    ))}
+                  </Bar>
+                </>
+              )}
               {/* 지출 Bars */}
               {activeCategories.map((cat, idx) => (
                 <Bar

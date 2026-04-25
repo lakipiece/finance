@@ -35,16 +35,29 @@ interface KpiCardProps {
   value: string
   sub: string
   color: string
+  tooltip?: string
 }
 
-function KpiCard({ label, value, sub, color }: KpiCardProps) {
+function KpiCard({ label, value, sub, color, tooltip }: KpiCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 hover:-translate-y-0.5 transition-all">
       <div className="flex items-center gap-2 mb-1">
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-        <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">{label}</p>
+        <div className="relative group flex items-center gap-1">
+          <p className="text-xs text-slate-400 font-medium">{label}</p>
+          {tooltip && (
+            <>
+              <svg className="w-3 h-3 text-slate-300 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-10 w-48 bg-slate-800 text-white text-[11px] rounded-lg px-2.5 py-1.5 shadow-lg pointer-events-none">
+                {tooltip}
+              </div>
+            </>
+          )}
+        </div>
       </div>
-      <p className="text-2xl font-bold mt-1 text-slate-800">{value}</p>
+      <p className="text-xl font-bold mt-1 text-slate-800">{value}</p>
       <p className="text-xs text-slate-400 mt-1">{sub}</p>
     </div>
   )
@@ -204,15 +217,8 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: AssetCardPr
                   tick={{ fontSize: 10, fill: '#94a3b8' }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={v => v.slice(2)}
                 />
-                <YAxis
-                  tickFormatter={v => `${Math.round(v / 10000)}만`}
-                  tick={{ fontSize: 10, fill: '#94a3b8' }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={44}
-                />
+                <YAxis hide domain={['auto', 'auto']} />
                 <Tooltip
                   formatter={(value: number) => [formatWonFull(value), '시세']}
                   labelStyle={{ fontSize: 11, color: '#64748b' }}
@@ -331,21 +337,24 @@ export default function AssetsClient() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
           label="유형자산 총액"
-          value={formatWon(totalCurrentValue)}
+          value={formatWonFull(totalCurrentValue)}
           sub="현재 평가액 합산"
           color="#0ea5e9"
+          tooltip="등록된 모든 자산의 현재 평가액 합계"
         />
         <KpiCard
           label="총 취득가액"
-          value={formatWon(totalAcquisition)}
+          value={formatWonFull(totalAcquisition)}
           sub="취득가액 합산"
           color="#8b5cf6"
+          tooltip="등록된 모든 자산의 최초 취득가액(매입가) 합계"
         />
         <KpiCard
           label="총 평가손익"
-          value={(totalGain >= 0 ? '+' : '') + formatWon(totalGain)}
+          value={(totalGain >= 0 ? '+' : '') + formatWonFull(totalGain)}
           sub="총액 − 취득가액"
           color={totalGain >= 0 ? '#ef4444' : '#3b82f6'}
+          tooltip="현재 평가액 합계에서 취득가액 합계를 뺀 평가 손익"
         />
       </div>
 
