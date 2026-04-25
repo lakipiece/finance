@@ -6,6 +6,7 @@ import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull } from '@/l
 import DateInput from '@/components/ui/DateInput'
 import { field } from '@/lib/styles'
 import { useTheme } from '@/lib/ThemeContext'
+import { useFilter } from '@/lib/FilterContext'
 
 /* ── Constants ── */
 interface MemberOpt { code: string; display_name: string; color: string }
@@ -41,6 +42,21 @@ function fmtAmount(v: string) {
 
 function parseAmount(v: string) {
   return parseInt(v.replace(/[^0-9]/g, '')) || 0
+}
+
+function hasOperator(v: string) {
+  return /[+\-*/]/.test(v.replace(/,/g, ''))
+}
+
+function evalFormula(expr: string): number | null {
+  const clean = expr.replace(/,/g, '').trim()
+  if (!clean) return null
+  if (!/^[\d\s+\-*/().]+$/.test(clean)) return null
+  try {
+    // eslint-disable-next-line no-new-func
+    const result = new Function(`"use strict"; return (${clean})`)()
+    return typeof result === 'number' && isFinite(result) && result > 0 ? Math.round(result) : null
+  } catch { return null }
 }
 
 /* ── Small components ── */
@@ -155,11 +171,19 @@ interface IncomeRecord {
 type AnyRecord = ExpenseRecord | IncomeRecord
 
 /* ── Compact Expense Form (2-row layout) ── */
-function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
+function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
+  onSaved: () => void
+  initialDate: string
+  initialMember: string
+  onDateChange: (d: string) => void
+  onMemberChange: (m: string) => void
+}) {
   const { catColors } = useTheme()
+  const { excludeLoan } = useFilter()
   const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
-  const [date, setDate] = useState(todayStr)
-  const [member, setMember] = useState(() => DEFAULT_MEMBERS[0].code)
+  const visibleCategories = CATEGORIES.filter(c => !(excludeLoan && c === '대출상환'))
+  const [date, setDate] = useState(initialDate)
+  const [member, setMember] = useState(initialMember)
   const [category, setCategory] = useState('변동비')
   const [detail, setDetail] = useState('')
   const [method, setMethod] = useState(() => DEFAULT_METHODS[0].name)
@@ -168,15 +192,29 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
+  function handleDateChange(d: string) { setDate(d); onDateChange(d) }
+  function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value
+    setAmount(hasOperator(v) ? v : fmtAmount(v))
+  }
+  function resolveAmount() {
+    if (hasOperator(amount)) {
+      const r = evalFormula(amount)
+      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
+    }
+  }
+
   async function handleSave() {
-    const amt = parseAmount(amount)
-    if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    resolveAmount()
+    const raw = hasOperator(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
+    if (!date || !category || raw <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo, memos: [] }),
+        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: raw, memo, memos: [] }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
@@ -192,12 +230,12 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={setDate} className="w-36" />
+          <DateInput value={date} onChange={handleDateChange} className="w-36" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>지출유형</label>
           <div className="flex flex-wrap gap-1.5">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
           </div>
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-36">
@@ -216,12 +254,14 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={setMember} />
+          <MemberToggle value={member} onChange={handleMemberChange} />
         </div>
         <div className="flex flex-col gap-1 w-44">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
-            onChange={e => setAmount(fmtAmount(e.target.value))}
+            onChange={handleAmountChange}
+            onBlur={resolveAmount}
+            onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
             placeholder="0" className={`${field.input} text-right`} />
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
@@ -245,9 +285,15 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
 }
 
 /* ── Compact Income Form (2-row layout) ── */
-function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
-  const [date, setDate] = useState(todayStr)
-  const [member, setMember] = useState<'L' | 'P'>('L')
+function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
+  onSaved: () => void
+  initialDate: string
+  initialMember: string
+  onDateChange: (d: string) => void
+  onMemberChange: (m: string) => void
+}) {
+  const [date, setDate] = useState(initialDate)
+  const [member, setMember] = useState(initialMember)
   const [category, setCategory] = useState<string>(INCOME_CATEGORIES[0])
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -255,15 +301,29 @@ function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
+  function handleDateChange(d: string) { setDate(d); onDateChange(d) }
+  function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
+  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value
+    setAmount(hasOperator(v) ? v : fmtAmount(v))
+  }
+  function resolveAmount() {
+    if (hasOperator(amount)) {
+      const r = evalFormula(amount)
+      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
+    }
+  }
+
   async function handleSave() {
-    const amt = parseAmount(amount)
-    if (!date || !category || !description || amt <= 0) { setErr('모든 필드를 입력해주세요.'); return }
+    resolveAmount()
+    const raw = hasOperator(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
+    if (!date || !category || !description || raw <= 0) { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/incomes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ income_date: date, category, description, amount: amt, member, memo }),
+        body: JSON.stringify({ income_date: date, category, description, amount: raw, member, memo }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
@@ -279,7 +339,7 @@ function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={setDate} className="w-36" />
+          <DateInput value={date} onChange={handleDateChange} className="w-36" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>카테고리</label>
@@ -300,12 +360,14 @@ function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={v => setMember(v as 'L' | 'P')} />
+          <MemberToggle value={member} onChange={handleMemberChange} />
         </div>
         <div className="flex flex-col gap-1 w-44">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
-            onChange={e => setAmount(fmtAmount(e.target.value))}
+            onChange={handleAmountChange}
+            onBlur={resolveAmount}
+            onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
             placeholder="0" className={`${field.input} text-right`} />
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
@@ -592,6 +654,10 @@ export default function InputPage() {
   const [methodOpts, setMethodOpts] = useState<MethodOpt[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
   const formKey = useRef(0)
+  const lastExpenseDate = useRef(todayStr())
+  const lastExpenseMember = useRef(DEFAULT_MEMBERS[0].code)
+  const lastIncomeDate = useRef(todayStr())
+  const lastIncomeMember = useRef(DEFAULT_MEMBERS[0].code)
 
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
@@ -714,8 +780,14 @@ export default function InputPage() {
         </div>
 
         {tab === 'expense'
-          ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved} />
-          : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved} />
+          ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved}
+              initialDate={lastExpenseDate.current} initialMember={lastExpenseMember.current}
+              onDateChange={d => { lastExpenseDate.current = d }}
+              onMemberChange={m => { lastExpenseMember.current = m }} />
+          : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved}
+              initialDate={lastIncomeDate.current} initialMember={lastIncomeMember.current}
+              onDateChange={d => { lastIncomeDate.current = d }}
+              onMemberChange={m => { lastIncomeMember.current = m }} />
         }
       </div>
 
@@ -759,7 +831,7 @@ export default function InputPage() {
             </select>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative flex items-center">
               <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
@@ -768,8 +840,16 @@ export default function InputPage() {
                 placeholder="검색..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
+                className="pl-5 pr-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
               />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
             </div>
             <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
           </div>
