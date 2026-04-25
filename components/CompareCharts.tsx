@@ -80,10 +80,17 @@ export default function CompareCharts({
         } else if (cumulative) {
           entry[year] = yearData[year]?.monthlyList
             .slice(0, i + 1)
-            .reduce((s, m) => s + (selectedCategory ? (m?.[selectedCategory as Category] ?? 0) : (m?.total ?? 0)), 0) ?? 0
+            .reduce((s, m) => {
+              const v = selectedCategory
+                ? (m?.[selectedCategory as Category] ?? 0)
+                : (m?.total ?? 0) - (excludeLoan ? (m?.대출상환 ?? 0) : 0)
+              return s + v
+            }, 0) ?? 0
         } else {
           const m = yearData[year]?.monthlyList[i]
-          entry[year] = selectedCategory ? (m?.[selectedCategory as Category] ?? 0) : (m?.total ?? 0)
+          entry[year] = selectedCategory
+            ? (m?.[selectedCategory as Category] ?? 0)
+            : (m?.total ?? 0) - (excludeLoan ? (m?.대출상환 ?? 0) : 0)
         }
       }
     }

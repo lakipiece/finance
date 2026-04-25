@@ -645,6 +645,7 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
 /* ── Main Page ── */
 export default function InputPage() {
   const { palette, catColors } = useTheme()
+  const { excludeLoan } = useFilter()
   const [tab, setTab] = useState<'expense' | 'income'>('expense')
   const [records, setRecords] = useState<AnyRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -725,17 +726,23 @@ export default function InputPage() {
   const [memberFilter, setMemberFilter] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc')
 
-  const expenseCount = records.filter(r => r.type === 'expense').length
+  const visibleExpenseCategories = useMemo(
+    () => CATEGORIES.filter(c => !(excludeLoan && c === '대출상환')),
+    [excludeLoan]
+  )
+
+  const expenseCount = records.filter(r => r.type === 'expense' && !(excludeLoan && r.category === '대출상환')).length
   const incomeCount = records.filter(r => r.type === 'income').length
 
   const availableCategories = useMemo(() => {
-    if (typeFilter === 'expense') return CATEGORIES as readonly string[]
+    if (typeFilter === 'expense') return visibleExpenseCategories
     if (typeFilter === 'income') return INCOME_CATEGORIES as readonly string[]
-    return [...CATEGORIES, ...INCOME_CATEGORIES] as string[]
-  }, [typeFilter])
+    return [...visibleExpenseCategories, ...INCOME_CATEGORIES] as string[]
+  }, [typeFilter, visibleExpenseCategories])
 
   const filteredRecords = useMemo(() => {
     let list = records
+    if (excludeLoan) list = list.filter(r => !(r.type === 'expense' && r.category === '대출상환'))
     if (typeFilter !== 'all') list = list.filter(r => r.type === typeFilter)
     if (categoryFilter) list = list.filter(r => r.category === categoryFilter)
     if (memberFilter) list = list.filter(r => r.member === memberFilter)
@@ -758,7 +765,7 @@ export default function InputPage() {
       if (sortMode === 'amount_desc') return b.amount - a.amount
       return 0
     })
-  }, [records, typeFilter, categoryFilter, memberFilter, searchQuery, sortMode])
+  }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery, sortMode])
 
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
