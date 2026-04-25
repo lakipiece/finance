@@ -112,9 +112,9 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
 
 // ── OptionCard ────────────────────────────────────────────────────────────────
 
-function OptionCard({ title, count, accentColor, onAccentColorChange, children, footer }: {
+function OptionCard({ title, count, accentColor, onAccentColorChange, children, footer, headerExtra }: {
   title: string; count: number; accentColor?: string; onAccentColorChange?: (c: string) => void
-  children: React.ReactNode; footer: React.ReactNode
+  children: React.ReactNode; footer: React.ReactNode; headerExtra?: React.ReactNode
 }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col h-full">
@@ -127,7 +127,10 @@ function OptionCard({ title, count, accentColor, onAccentColorChange, children, 
           )}
           <h4 className="text-xs font-semibold text-slate-700">{title}</h4>
         </div>
-        <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{count}개</span>
+        <div className="flex items-center gap-1.5">
+          {headerExtra}
+          <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{count}개</span>
+        </div>
       </div>
       <div className="space-y-0.5 mb-3 overflow-y-auto flex-1" style={{ maxHeight: 240 }}>
         {children}
@@ -275,7 +278,7 @@ function MemberRow({ member, onUpdate, onDelete }: {
 
 // ── CategoryDetailCard (with DndContext) ──────────────────────────────────────
 
-function CategoryDetailCard({ category, details, accentColor, onCategoryColorChange, onAdd, onUpdate, onDelete, onDragEnd, paletteColor }: {
+function CategoryDetailCard({ category, details, accentColor, onCategoryColorChange, onAdd, onUpdate, onDelete, onDragEnd, onApplyColorToAll, paletteColor }: {
   category: string
   details: DetailOption[]
   accentColor: string
@@ -284,6 +287,7 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
   onUpdate: (id: number, name: string, category: string, color: string) => void
   onDelete: (id: number) => void
   onDragEnd: (event: DragEndEvent) => void
+  onApplyColorToAll: () => void
   paletteColor: string
 }) {
   const [newName, setNewName] = useState('')
@@ -302,6 +306,13 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
       <OptionCard title={category} count={details.length} accentColor={accentColor} onAccentColorChange={onCategoryColorChange}
+        headerExtra={details.length > 0 && (
+          <button onClick={onApplyColorToAll}
+            title="세부유형 전체에 이 색상 적용"
+            className="text-[10px] text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-400 rounded-md px-1.5 py-0.5 transition-colors whitespace-nowrap">
+            전체 적용
+          </button>
+        )}
         footer={
           <div className="flex items-center gap-1.5">
             <input value={newName} onChange={e => setNewName(e.target.value)}
@@ -461,6 +472,19 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     })
   }
 
+  async function applyColorToAll(category: string) {
+    const color = catColors[category] ?? '#94a3b8'
+    const targets = details.filter(d => d.category === category)
+    setDetails(prev => prev.map(d => d.category === category ? { ...d, color } : d))
+    await Promise.all(targets.map(d =>
+      fetch(`/api/options/details/${d.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: d.name, category: d.category, color }),
+      })
+    ))
+  }
+
   async function deleteDetail(id: number) {
     if (!confirm('세부유형을 삭제하시겠습니까?')) return
     await fetch(`/api/options/details/${id}`, { method: 'DELETE' })
@@ -556,6 +580,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             onUpdate={updateDetail}
             onDelete={deleteDetail}
             onDragEnd={e => handleDetailDragEnd(cat, e)}
+            onApplyColorToAll={() => applyColorToAll(cat)}
             paletteColor={palette.colors[0]}
           />
         ))}
