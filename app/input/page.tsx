@@ -656,6 +656,7 @@ export default function InputPage() {
 
   const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [memberFilter, setMemberFilter] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc')
 
   const expenseCount = records.filter(r => r.type === 'expense').length
@@ -671,6 +672,7 @@ export default function InputPage() {
     let list = records
     if (typeFilter !== 'all') list = list.filter(r => r.type === typeFilter)
     if (categoryFilter) list = list.filter(r => r.category === categoryFilter)
+    if (memberFilter) list = list.filter(r => r.member === memberFilter)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
       list = list.filter(r => {
@@ -690,7 +692,7 @@ export default function InputPage() {
       if (sortMode === 'amount_desc') return b.amount - a.amount
       return 0
     })
-  }, [records, typeFilter, categoryFilter, searchQuery, sortMode])
+  }, [records, typeFilter, categoryFilter, memberFilter, searchQuery, sortMode])
 
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
@@ -783,6 +785,20 @@ export default function InputPage() {
                 {t === 'all' ? '전체' : t === 'expense' ? '지출' : '수입'}
               </button>
             ))}
+          </div>
+          <span className="text-slate-200 text-xs">|</span>
+          {/* Member filter */}
+          <div className="flex gap-1">
+            {memberOpts.map(m => {
+              const isActive = memberFilter === m.code
+              return (
+                <button key={m.code} onClick={() => setMemberFilter(prev => prev === m.code ? null : m.code)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  style={isActive ? { backgroundColor: m.color } : undefined}>
+                  {m.display_name}
+                </button>
+              )
+            })}
           </div>
           <span className="text-slate-200 text-xs">|</span>
           {/* Category filter */}
