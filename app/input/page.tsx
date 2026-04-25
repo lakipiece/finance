@@ -59,6 +59,26 @@ function evalFormula(expr: string): number | null {
   } catch { return null }
 }
 
+/* ── Auto-resize textarea ── */
+function AutoResizeMemo({ value, onChange, placeholder, className }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; className?: string
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+  return (
+    <textarea ref={ref} value={value} rows={1}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`${className} resize-none overflow-hidden`}
+      style={{ minHeight: '2rem' }} />
+  )
+}
+
 /* ── Small components ── */
 function PillBtn({ active, onClick, children, color }: {
   active: boolean; onClick: () => void; children: React.ReactNode; color?: string
@@ -252,7 +272,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
       </div>
 
       {/* Row 2: 작성자 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-end">
+      <div className="flex flex-wrap gap-4 items-start">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
           <MemberToggle value={member} onChange={handleMemberChange} />
@@ -272,9 +292,8 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
-          <textarea value={memo} onChange={e => setMemo(e.target.value)}
-            placeholder="메모" rows={2}
-            className={`${field.input} resize-none leading-snug`} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
+            className={field.input} />
         </div>
       </div>
 
@@ -364,7 +383,7 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
       </div>
 
       {/* Row 2: 작성자 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-end">
+      <div className="flex flex-wrap gap-4 items-start">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
           <MemberToggle value={member} onChange={handleMemberChange} />
@@ -384,9 +403,8 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
-          <textarea value={memo} onChange={e => setMemo(e.target.value)}
-            placeholder="메모" rows={2}
-            className={`${field.input} resize-none leading-snug`} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
+            className={field.input} />
         </div>
       </div>
 
@@ -501,8 +519,8 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <textarea value={memo} onChange={e => setMemo(e.target.value)}
-            rows={2} className={`${field.input} resize-none leading-snug`} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
+            className={field.input} />
         </div>
         {err && <p className="text-xs text-rose-500">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
@@ -582,8 +600,8 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <textarea value={memo} onChange={e => setMemo(e.target.value)}
-            rows={2} className={`${field.input} resize-none leading-snug`} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
+            className={field.input} />
         </div>
         {err && <p className="text-xs text-rose-500">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
