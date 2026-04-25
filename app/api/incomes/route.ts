@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const sql = getSql()
     const month = monthParam ? parseInt(monthParam) : null
     const rows = await sql`
-      SELECT id, income_date, year, month, category, description, amount, member
+      SELECT id, income_date, year, month, category, description, amount, member, memo
       FROM incomes
       WHERE year = ${parseInt(year)}
       ${month ? sql`AND month = ${month}` : sql``}
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
-    const { income_date, category, description, amount, member } = await req.json()
+    const { income_date, category, description, amount, member, memo } = await req.json()
     if (!income_date || !category || !amount || amount <= 0) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
     }
@@ -42,9 +42,9 @@ export async function POST(req: NextRequest) {
     if (isNaN(d.getTime())) return NextResponse.json({ error: '잘못된 날짜' }, { status: 400 })
     const sql = getSql()
     const [row] = await sql`
-      INSERT INTO incomes (income_date, year, month, category, description, amount, member)
-      VALUES (${income_date}, ${d.getFullYear()}, ${d.getMonth() + 1}, ${category}, ${description ?? ''}, ${amount}, ${member ?? null})
-      RETURNING id, income_date, year, month, category, description, amount, member
+      INSERT INTO incomes (income_date, year, month, category, description, amount, member, memo)
+      VALUES (${income_date}, ${d.getFullYear()}, ${d.getMonth() + 1}, ${category}, ${description ?? ''}, ${amount}, ${member ?? null}, ${memo ?? ''})
+      RETURNING id, income_date, year, month, category, description, amount, member, memo
     `
     return NextResponse.json({
       ...row,
