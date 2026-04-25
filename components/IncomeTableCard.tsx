@@ -13,6 +13,7 @@ export interface IncomeRow {
   description: string
   amount: number
   member: string | null
+  memo: string
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
@@ -31,12 +32,8 @@ export default function IncomeTableCard({
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
 
   function handleSort(key: typeof sortKey) {
-    if (sortKey === key) {
-      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortKey(key)
-      setSortDir(key === 'amount' ? 'desc' : 'asc')
-    }
+    if (sortKey === key) setSortDir(prev => prev === 'asc' ? 'desc' : 'asc')
+    else { setSortKey(key); setSortDir(key === 'amount' ? 'desc' : 'asc') }
     setPage(1)
   }
 
@@ -49,7 +46,8 @@ export default function IncomeTableCard({
       const q = searchQuery.trim().toLowerCase()
       result = result.filter(e =>
         e.description.toLowerCase().includes(q) ||
-        e.category.toLowerCase().includes(q)
+        e.category.toLowerCase().includes(q) ||
+        (e.memo ?? '').toLowerCase().includes(q)
       )
     }
     const dir = sortDir === 'asc' ? 1 : -1
@@ -76,8 +74,7 @@ export default function IncomeTableCard({
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h3 className="text-base font-semibold text-slate-700">수입 내역</h3>
         <input
-          type="text"
-          value={searchQuery}
+          type="text" value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="검색..."
           className="w-44 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white"
@@ -85,21 +82,16 @@ export default function IncomeTableCard({
       </div>
 
       {loading ? (
-        <div className="space-y-2">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-slate-50 rounded-lg animate-pulse" />)}
-        </div>
+        <div className="space-y-2">{[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-slate-50 rounded-lg animate-pulse" />)}</div>
       ) : (
         <>
           {/* Mobile: card list */}
           <div className="md:hidden space-y-2">
             <div className="flex gap-2 mb-3 flex-wrap">
               {(['date', 'category', 'description', 'amount'] as const).map(key => (
-                <button
-                  key={key}
-                  onClick={() => handleSort(key)}
+                <button key={key} onClick={() => handleSort(key)}
                   className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey !== key ? 'bg-slate-100 text-slate-500' : ''}`}
-                  style={sortKey === key ? { background: '#1A237E', color: '#fff' } : undefined}
-                >
+                  style={sortKey === key ? { background: '#1A237E', color: '#fff' } : undefined}>
                   {{ date: '날짜', category: '분류', description: '설명', amount: '금액' }[key]}{sortIcon(key)}
                 </button>
               ))}
@@ -110,19 +102,16 @@ export default function IncomeTableCard({
                 <div key={item.id} className="border border-slate-100 rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: color }}>
-                        {item.category}
-                      </span>
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white" style={{ backgroundColor: color }}>{item.category}</span>
                       <span className="text-xs text-slate-600">{item.description}</span>
                     </div>
                     <span className="font-semibold text-slate-800 text-sm">{formatWonFull(item.amount)}</span>
                   </div>
+                  {item.memo && <p className="text-[10px] text-slate-400 mb-1 break-words">{item.memo}</p>}
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>{item.income_date}</span>
                     {item.member && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                        item.member === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
-                      }`}>{item.member}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>{item.member}</span>
                     )}
                   </div>
                 </div>
@@ -139,6 +128,7 @@ export default function IncomeTableCard({
                   <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
                   <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
                   <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('description')}>설명{sortIcon('description')}</th>
+                  <th className={tbl.th}>비고</th>
                   <th className={tbl.th}>작성자</th>
                   <th className={`${tbl.thRight} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
                 </tr>
@@ -151,17 +141,16 @@ export default function IncomeTableCard({
                       <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
                       <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{item.income_date}</td>
                       <td className="py-2 px-3">
-                        <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: color }}>
-                          {item.category}
-                        </span>
+                        <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: color }}>{item.category}</span>
                       </td>
                       <td className="py-2 px-3 text-xs text-slate-600">{item.description}</td>
+                      <td className="py-2 px-3 text-xs text-slate-400 max-w-[180px]">
+                        {item.memo ? <span className="block truncate" title={item.memo}>{item.memo}</span> : <span className="text-slate-200">—</span>}
+                      </td>
                       <td className="py-2 px-3">
-                        {item.member ? (
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                            item.member === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'
-                          }`}>{item.member}</span>
-                        ) : <span className="text-slate-300 text-xs">—</span>}
+                        {item.member
+                          ? <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-blue-50 text-blue-600' : 'bg-pink-50 text-pink-600'}`}>{item.member}</span>
+                          : <span className="text-slate-300 text-xs">—</span>}
                       </td>
                       <td className="py-2 px-3 text-right font-semibold text-slate-800 text-xs whitespace-nowrap">{formatWonFull(item.amount)}</td>
                     </tr>
@@ -177,20 +166,17 @@ export default function IncomeTableCard({
               <span className="text-slate-200">|</span>
               <span>페이지당</span>
               {PAGE_SIZES.map(size => (
-                <button
-                  key={size}
-                  onClick={() => { setPageSize(size); setPage(1) }}
+                <button key={size} onClick={() => { setPageSize(size); setPage(1) }}
                   className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
-                  style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}
-                >{size}</button>
+                  style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}>{size}</button>
               ))}
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">처음</button>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">이전</button>
+              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50">처음</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50">이전</button>
               <span className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
-              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">끝</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50">다음</button>
+              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50">끝</button>
             </div>
           </div>
         </>

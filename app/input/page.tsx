@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/ThemeContext'
 
 /* ── Constants ── */
 const METHODS = ['카드', '현금', '지역화폐'] as const
+const MEMBER_COLORS: Record<string, string> = { L: '#1565C0', P: '#AD1457' }
 
 /* ── Helpers ── */
 function todayStr() {
@@ -44,7 +45,7 @@ function PillBtn({ active, onClick, children, color }: {
 function MemberToggle({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="flex gap-1">
-      {['L', 'P'].map(m => <PillBtn key={m} active={value === m} onClick={() => onChange(m)}>{m}</PillBtn>)}
+      {['L', 'P'].map(m => <PillBtn key={m} active={value === m} onClick={() => onChange(m)} color={MEMBER_COLORS[m]}>{m}</PillBtn>)}
     </div>
   )
 }
@@ -89,6 +90,7 @@ type AnyRecord = ExpenseRecord | IncomeRecord
 
 /* ── Compact Expense Form (2-row layout) ── */
 function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details: string[] }) {
+  const { catColors } = useTheme()
   const [date, setDate] = useState(todayStr)
   const [member, setMember] = useState('L')
   const [category, setCategory] = useState('변동비')
@@ -128,7 +130,7 @@ function CompactExpenseForm({ onSaved, details }: { onSaved: () => void; details
         <div className="flex flex-col gap-1">
           <label className={field.label}>지출유형</label>
           <div className="flex flex-wrap gap-1.5">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)}>{c}</PillBtn>)}
+            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
           </div>
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-36">
@@ -296,6 +298,7 @@ function ModalShell({ onClose, title, onDelete, children }: {
 function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
   record: ExpenseRecord; onClose: () => void; onSaved: () => void; onDelete: () => void; details: string[]
 }) {
+  const { catColors } = useTheme()
   const [date, setDate] = useState(record.date)
   const [member, setMember] = useState(record.member)
   const [category, setCategory] = useState(record.category)
@@ -339,7 +342,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete, details }: {
         <div>
           <label className={field.label}>지출유형</label>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)}>{c}</PillBtn>)}
+            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
           </div>
         </div>
         <div>
