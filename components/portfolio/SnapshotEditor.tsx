@@ -119,8 +119,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   const selectedRows = useMemo(() =>
     rows
       .filter(r => r.account_id === modalAccountId)
-      .sort((a, b) => (secMap[a.security_id]?.ticker ?? '').localeCompare(secMap[b.security_id]?.ticker ?? '')),
-    [rows, modalAccountId, secMap]
+      .sort((a, b) => {
+        const valA = a.quantity * (secPrices[a.security_id] ?? 0)
+        const valB = b.quantity * (secPrices[b.security_id] ?? 0)
+        if (valB !== valA) return valB - valA
+        return (secMap[a.security_id]?.ticker ?? '').localeCompare(secMap[b.security_id]?.ticker ?? '')
+      }),
+    [rows, modalAccountId, secMap, secPrices]
   )
 
   const lastTabIndex = selectedRows.length * 2
@@ -331,8 +336,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   </p>
                   {aVal > 0 ? (
                     <div className="flex justify-between text-[10px] tabular-nums">
-                      <span className="text-slate-400">원금 {Math.round(accountInvested[a.id] ?? 0).toLocaleString()}</span>
-                      <span className="text-slate-600 font-medium">평가 {Math.round(aVal).toLocaleString()}</span>
+                      <span className="text-slate-400">원금 {Math.round(accountInvested[a.id] ?? 0).toLocaleString()}원</span>
+                      <span className="text-slate-600 font-medium">평가 {Math.round(aVal).toLocaleString()}원</span>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-300">—</p>

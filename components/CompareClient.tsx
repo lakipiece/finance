@@ -28,7 +28,7 @@ const ALL_EXPENSE_CATEGORIES = ['고정비', '대출상환', '변동비', '여�
 type ExpenseCategory = typeof ALL_EXPENSE_CATEGORIES[number]
 
 export default function CompareClient({ availableYears }: Props) {
-  const { palette } = useTheme()
+  const { palette, catColors } = useTheme()
   const { excludeLoan } = useFilter()
   const expenseCategories = useMemo(() =>
     excludeLoan ? ALL_EXPENSE_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_EXPENSE_CATEGORIES],
@@ -138,13 +138,20 @@ export default function CompareClient({ availableYears }: Props) {
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
               전체 지출
             </button>
-            {expenseCategories.map(cat => (
-              <button key={cat}
-                onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                {cat}
-              </button>
-            ))}
+            {expenseCategories.map(cat => {
+              const color = catColors[cat]
+              const isActive = selectedCategory === cat
+              return (
+                <button key={cat}
+                  onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}
+                  style={isActive && color ? { backgroundColor: color } : undefined}>
+                  {cat}
+                </button>
+              )
+            })}
             <span className="text-slate-200 mx-0.5">|</span>
             {/* 수입 카테고리 */}
             {INCOME_CATEGORIES.map(cat => (

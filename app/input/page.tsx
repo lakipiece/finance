@@ -761,9 +761,6 @@ export default function InputPage() {
     [excludeLoan]
   )
 
-  const expenseCount = records.filter(r => r.type === 'expense' && !(excludeLoan && r.category === '대출상환')).length
-  const incomeCount = records.filter(r => r.type === 'income').length
-
   const availableCategories = useMemo(() => {
     if (typeFilter === 'expense') return visibleExpenseCategories
     if (typeFilter === 'income') return INCOME_CATEGORIES as readonly string[]
@@ -796,6 +793,11 @@ export default function InputPage() {
       return 0
     })
   }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery, sortMode])
+
+  const expenseCount = filteredRecords.filter(r => r.type === 'expense').length
+  const incomeCount = filteredRecords.filter(r => r.type === 'income').length
+  const expenseTotal = filteredRecords.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0)
+  const incomeTotal = filteredRecords.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
 
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
@@ -888,7 +890,17 @@ export default function InputPage() {
                 </button>
               )}
             </div>
-            <span className="text-xs text-slate-400">지출 {expenseCount}건 · 수입 {incomeCount}건</span>
+            <div className="text-right">
+              {expenseCount > 0 && (
+                <p className="text-xs text-slate-400">지출 {expenseCount}건 <span className="tabular-nums text-slate-500 font-medium">{expenseTotal.toLocaleString('ko-KR')}원</span></p>
+              )}
+              {incomeCount > 0 && (
+                <p className="text-xs text-slate-400">수입 {incomeCount}건 <span className="tabular-nums text-slate-500 font-medium">{incomeTotal.toLocaleString('ko-KR')}원</span></p>
+              )}
+              {expenseCount === 0 && incomeCount === 0 && (
+                <span className="text-xs text-slate-300">내역 없음</span>
+              )}
+            </div>
           </div>
         </div>
 
