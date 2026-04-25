@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
-import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, catBadgeStyle, formatWonFull } from '@/lib/utils'
+import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull } from '@/lib/utils'
+import DateInput from '@/components/ui/DateInput'
 import { field } from '@/lib/styles'
 import { useTheme } from '@/lib/ThemeContext'
 
@@ -191,7 +192,7 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
+          <DateInput value={date} onChange={setDate} className="w-36" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>지출유형</label>
@@ -278,7 +279,7 @@ function CompactIncomeForm({ onSaved }: { onSaved: () => void }) {
       <div className="flex flex-wrap gap-4 items-end">
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
+          <DateInput value={date} onChange={setDate} className="w-36" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>카테고리</label>
@@ -395,7 +396,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
         <div className="flex flex-wrap gap-6 items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
+            <DateInput value={date} onChange={setDate} className="w-36" />
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
@@ -479,7 +480,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
         <div className="flex flex-wrap gap-6 items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`${field.input} w-36`} />
+            <DateInput value={date} onChange={setDate} className="w-36" />
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
@@ -527,6 +528,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 /* ── Record Card ── */
 function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => void }) {
   const { memberOpts } = useContext(FormCtx)
+  const { catColors } = useTheme()
   const isExpense = record.type === 'expense'
   const label = isExpense ? (record.detail || record.category) : (record as IncomeRecord).description
   const incomeColor = !isExpense ? (INCOME_COLORS[record.category] ?? '#5A6476') : undefined
@@ -549,7 +551,8 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
             {isExpense ? <ExpenseIcon /> : <IncomeIcon />}
           </span>
           {isExpense ? (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(record.category)}>{record.category}</span>
+            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white"
+              style={{ backgroundColor: catColors[record.category] ?? '#94a3b8' }}>{record.category}</span>
           ) : (
             <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
           )}
@@ -579,7 +582,7 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
 
 /* ── Main Page ── */
 export default function InputPage() {
-  const { palette } = useTheme()
+  const { palette, catColors } = useTheme()
   const [tab, setTab] = useState<'expense' | 'income'>('expense')
   const [records, setRecords] = useState<AnyRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -784,12 +787,19 @@ export default function InputPage() {
           <span className="text-slate-200 text-xs">|</span>
           {/* Category filter */}
           <div className="flex gap-1 flex-wrap">
-            {availableCategories.map(cat => (
-              <button key={cat} onClick={() => setCategoryFilter(prev => prev === cat ? null : cat)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${categoryFilter === cat ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                {cat}
-              </button>
-            ))}
+            {availableCategories.map(cat => {
+              const color = catColors[cat] ?? INCOME_COLORS[cat]
+              const isActive = categoryFilter === cat
+              return (
+                <button key={cat} onClick={() => setCategoryFilter(prev => prev === cat ? null : cat)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}
+                  style={isActive && color ? { backgroundColor: color } : undefined}>
+                  {cat}
+                </button>
+              )
+            })}
           </div>
           <span className="text-slate-200 text-xs">|</span>
           {/* Sort buttons */}

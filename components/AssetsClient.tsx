@@ -46,11 +46,11 @@ interface PortfolioSnapshot {
 
 // ── Constants ────────────────────────────────────────────
 const TYPE_COLORS: Record<string, string> = {
-  '부동산': '#0ea5e9',
+  '부동산': '#1A237E',
   '자동차': '#f59e0b',
 }
-const PENSION_COLOR = '#8b5cf6'
-const FINANCIAL_COLOR = '#10b981'
+const PENSION_COLOR = '#00695C'
+const FINANCIAL_COLOR = '#4527A0'
 
 // ── Utility ──────────────────────────────────────────────
 function fmtAmt(n: number | null | undefined): string {
@@ -149,15 +149,15 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
               <span className="text-sm font-semibold text-slate-800 truncate">{item.name}</span>
             </div>
             {item.description ? <p className="text-xs text-slate-400 mb-2">{item.description}</p> : null}
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span>취득가: {item.acquisition_price != null ? fmtAmt(item.acquisition_price) : '-'}</span>
-              <span className="text-slate-300">→</span>
-              <span>현재: {item.current_value != null ? fmtAmt(item.current_value) : '-'}</span>
-              {gainPct !== null && (
-                <span className="font-medium" style={{ color: gainColor }}>
-                  ({gain !== null && gain >= 0 ? '+' : ''}{fmtAmt(gain ?? 0)}, {gainPct.toFixed(1)}%)
-                </span>
-              )}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
+              <span>취득가 <span className="font-medium text-slate-700">{item.acquisition_price != null ? fmtAmt(item.acquisition_price) : '-'}</span></span>
+              <span className="text-slate-200">·</span>
+              <span>현재 <span className="font-medium text-slate-700">{item.current_value != null ? fmtAmt(item.current_value) : '-'}</span></span>
+              <span className="text-slate-200">·</span>
+              <span>시세차익 <span className="font-medium" style={{ color: gainColor }}>
+                {gain != null ? `${gain >= 0 ? '+' : ''}${fmtAmt(gain)}` : '-'}
+                {gainPct !== null ? ` (${gainPct.toFixed(1)}%)` : ''}
+              </span></span>
             </div>
             <p className="text-[10px] text-slate-300 mt-1">마지막 평가일: {item.last_val_date ?? '-'}</p>
           </div>
@@ -166,7 +166,7 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
-        <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-2 mt-3" onClick={e => e.stopPropagation()}>
           <button onClick={() => onValuation(item)}
             className="px-3 py-1 rounded-lg text-[10px] font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 transition-colors">
             평가액 업데이트
@@ -633,10 +633,10 @@ export default function AssetsClient() {
   }, [])
 
   // KPI calculations
-  const tangibleTotal = tangibleItems.reduce((s, i) => i.current_value != null ? s + i.current_value : s, 0)
-  const tangibleAcq = tangibleItems.reduce((s, i) => i.acquisition_price != null ? s + i.acquisition_price : s, 0)
-  const pensionTotal = pensionItems.reduce((s, i) => i.current_amount != null ? s + i.current_amount : s, 0)
-  const financialTotal = portfolioSnapshot?.total_market_value ?? 0
+  const tangibleTotal = tangibleItems.reduce((s, i) => s + Number(i.current_value ?? 0), 0)
+  const tangibleAcq = tangibleItems.reduce((s, i) => s + Number(i.acquisition_price ?? 0), 0)
+  const pensionTotal = pensionItems.reduce((s, i) => s + Number(i.current_amount ?? 0), 0)
+  const financialTotal = Number(portfolioSnapshot?.total_market_value ?? 0)
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
   const TABS = [
@@ -684,7 +684,7 @@ export default function AssetsClient() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
-        <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#0ea5e9"
+        <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#1A237E"
           tooltip="부동산, 자동차의 현재 평가액 합계" />
         <KpiCard label="연금자산" value={fmtAmt(pensionTotal)} sub="연금 최신 잔액" color={PENSION_COLOR}
           tooltip="등록된 연금 항목의 최신 스냅샷 금액 합계" />

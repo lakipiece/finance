@@ -1,6 +1,15 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors, type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  useSortable, verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field } from '@/lib/styles'
 import { OPTION_COLORS } from '@/lib/palettes'
@@ -101,7 +110,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   )
 }
 
-// ── 공통 카드 ────────────────────────────────────────────────────────────────
+// ── OptionCard ────────────────────────────────────────────────────────────────
 
 function OptionCard({ title, count, accentColor, onAccentColorChange, children, footer }: {
   title: string; count: number; accentColor?: string; onAccentColorChange?: (c: string) => void
@@ -130,14 +139,28 @@ function OptionCard({ title, count, accentColor, onAccentColorChange, children, 
   )
 }
 
-// ── 공통 행: 인라인 편집 + 선택적 ColorPicker ────────────────────────────────
+// ── DragHandle ────────────────────────────────────────────────────────────────
 
-function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange }: {
+function DragHandle(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button {...props}
+      className="text-slate-300 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5 shrink-0 touch-none">
+      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+      </svg>
+    </button>
+  )
+}
+
+// ── OptionRow (with optional before slot for drag handle) ─────────────────────
+
+function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange, before }: {
   label: string; color?: string
   onDelete: () => void
   extra?: React.ReactNode
   onLabelChange?: (v: string) => void
   onColorChange?: (c: string) => void
+  before?: React.ReactNode
 }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(label)
@@ -152,6 +175,7 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange
 
   return (
     <div className="flex items-center gap-1.5 group py-0.5">
+      {before}
       {color !== undefined && (
         onColorChange
           ? <ColorPicker color={color} onChange={onColorChange} />
@@ -182,7 +206,28 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange
   )
 }
 
-// ── 사용자 행: code(고정) + display_name(클릭 편집) ──────────────────────────
+// ── SortableOptionRow ─────────────────────────────────────────────────────────
+
+interface RowProps {
+  label: string; color?: string
+  onDelete: () => void
+  extra?: React.ReactNode
+  onLabelChange?: (v: string) => void
+  onColorChange?: (c: string) => void
+}
+
+function SortableOptionRow({ sortId, ...rowProps }: { sortId: number } & RowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: sortId })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <OptionRow {...rowProps} before={<DragHandle {...attributes} {...listeners} />} />
+    </div>
+  )
+}
+
+// ── MemberRow ─────────────────────────────────────────────────────────────────
 
 function MemberRow({ member, onUpdate, onDelete }: {
   member: Member
@@ -228,9 +273,9 @@ function MemberRow({ member, onUpdate, onDelete }: {
   )
 }
 
-// ── 카테고리별 세부유형 카드 ──────────────────────────────────────────────────
+// ── CategoryDetailCard (with DndContext) ──────────────────────────────────────
 
-function CategoryDetailCard({ category, details, accentColor, onCategoryColorChange, onAdd, onUpdate, onDelete, paletteColor }: {
+function CategoryDetailCard({ category, details, accentColor, onCategoryColorChange, onAdd, onUpdate, onDelete, onDragEnd, paletteColor }: {
   category: string
   details: DetailOption[]
   accentColor: string
@@ -238,9 +283,14 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
   onAdd: (name: string, category: string, color: string) => void
   onUpdate: (id: number, name: string, category: string, color: string) => void
   onDelete: (id: number) => void
+  onDragEnd: (event: DragEndEvent) => void
   paletteColor: string
 }) {
   const [newName, setNewName] = useState('')
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   function handleAdd() {
     const name = newName.trim()
@@ -250,30 +300,34 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
   }
 
   return (
-    <OptionCard title={category} count={details.length} accentColor={accentColor} onAccentColorChange={onCategoryColorChange}
-      footer={
-        <div className="flex items-center gap-1.5">
-          <input value={newName} onChange={e => setNewName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-            placeholder={`새 ${category} 항목`} maxLength={30}
-            className={`${field.input} min-w-0`} />
-          <button onClick={handleAdd} disabled={!newName.trim()}
-            className={`${btn.primary} shrink-0`}
-            style={{ backgroundColor: paletteColor }}>추가</button>
-        </div>
-      }>
-      {details.map(d => (
-        <OptionRow key={d.id} label={d.name} color={d.color}
-          onColorChange={c => onUpdate(d.id, d.name, d.category, c)}
-          onLabelChange={name => onUpdate(d.id, name, d.category, d.color)}
-          onDelete={() => onDelete(d.id)} />
-      ))}
-      {details.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
-    </OptionCard>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <OptionCard title={category} count={details.length} accentColor={accentColor} onAccentColorChange={onCategoryColorChange}
+        footer={
+          <div className="flex items-center gap-1.5">
+            <input value={newName} onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAdd()}
+              placeholder={`새 ${category} 항목`} maxLength={30}
+              className={`${field.input} min-w-0`} />
+            <button onClick={handleAdd} disabled={!newName.trim()}
+              className={`${btn.primary} shrink-0`}
+              style={{ backgroundColor: paletteColor }}>추가</button>
+          </div>
+        }>
+        <SortableContext items={details.map(d => d.id)} strategy={verticalListSortingStrategy}>
+          {details.map(d => (
+            <SortableOptionRow key={d.id} sortId={d.id} label={d.name} color={d.color}
+              onColorChange={c => onUpdate(d.id, d.name, d.category, c)}
+              onLabelChange={name => onUpdate(d.id, name, d.category, d.color)}
+              onDelete={() => onDelete(d.id)} />
+          ))}
+          {details.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+        </SortableContext>
+      </OptionCard>
+    </DndContext>
   )
 }
 
-// ── 메인 컴포넌트 ────────────────────────────────────────────────────────────
+// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function OptionsClient({ initialMembers, initialMethods, initialDetails, initialCatColors }: Props) {
   const { palette } = useTheme()
@@ -281,6 +335,11 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   const [methods, setMethods] = useState<PaymentMethod[]>(initialMethods)
   const [details, setDetails] = useState<DetailOption[]>(initialDetails)
   const [catColors, setCatColors] = useState<Record<string, string>>(initialCatColors)
+
+  const methodSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   /* ── 사용자 ── */
   const [newMemberCode, setNewMemberCode] = useState('')
@@ -301,7 +360,6 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     }
   }
 
-  // display_name + color를 하나의 함수로 통합해 stale closure 방지
   async function updateMember(code: string, display_name: string, color: string) {
     setMembers(prev => prev.map(m => m.code === code ? { ...m, display_name, color } : m))
     await fetch(`/api/options/members/${code}`, {
@@ -353,6 +411,24 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     setMethods(prev => prev.filter(m => m.id !== id))
   }
 
+  async function handleMethodDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = methods.findIndex(m => m.id === active.id)
+    const newIndex = methods.findIndex(m => m.id === over.id)
+    const reordered = arrayMove(methods, oldIndex, newIndex)
+    setMethods(reordered)
+    await Promise.all(
+      reordered.map((m, i) =>
+        fetch(`/api/options/methods/${m.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: m.name, color: m.color, order_idx: i }),
+        })
+      )
+    )
+  }
+
   /* ── 카테고리 색상 ── */
   async function updateCategoryColor(name: string, color: string) {
     setCatColors(prev => ({ ...prev, [name]: color }))
@@ -391,6 +467,25 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     setDetails(prev => prev.filter(d => d.id !== id))
   }
 
+  async function handleDetailDragEnd(category: string, event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const catDetails = details.filter(d => d.category === category)
+    const oldIndex = catDetails.findIndex(d => d.id === active.id)
+    const newIndex = catDetails.findIndex(d => d.id === over.id)
+    const reordered = arrayMove(catDetails, oldIndex, newIndex)
+    setDetails(prev => [...prev.filter(d => d.category !== category), ...reordered])
+    await Promise.all(
+      reordered.map((d, i) =>
+        fetch(`/api/options/details/${d.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: d.name, category: d.category, color: d.color, order_idx: i }),
+        })
+      )
+    )
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
@@ -398,7 +493,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
         <p className="text-xs text-slate-400 mt-0.5">사용자, 결제수단, 세부유형 설정</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* ── 사용자 ── */}
         <OptionCard title="사용자" count={members.length}
@@ -422,30 +517,34 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
           {members.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
         </OptionCard>
 
-        {/* ── 결제수단 ── */}
-        <OptionCard title="결제수단" count={methods.length}
-          footer={
-            <div className="flex items-center gap-1.5">
-              <ColorPicker color={newMethodColor} onChange={setNewMethodColor} />
-              <input value={newMethod} onChange={e => setNewMethod(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && addMethod()}
-                placeholder="새 결제수단" maxLength={20}
-                className={`${field.input} min-w-0`} />
-              <button onClick={addMethod} disabled={addingMethod || !newMethod.trim()}
-                className={`${btn.primary} shrink-0`}
-                style={{ backgroundColor: palette.colors[0] }}>추가</button>
-            </div>
-          }>
-          {methods.map(m => (
-            <OptionRow key={m.id} label={m.name} color={m.color}
-              onColorChange={c => updateMethod(m.id, m.name, c)}
-              onLabelChange={name => updateMethod(m.id, name, m.color)}
-              onDelete={() => deleteMethod(m.id)} />
-          ))}
-          {methods.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
-        </OptionCard>
+        {/* ── 결제수단 (드래그 정렬) ── */}
+        <DndContext sensors={methodSensors} collisionDetection={closestCenter} onDragEnd={handleMethodDragEnd}>
+          <SortableContext items={methods.map(m => m.id)} strategy={verticalListSortingStrategy}>
+            <OptionCard title="결제수단" count={methods.length}
+              footer={
+                <div className="flex items-center gap-1.5">
+                  <ColorPicker color={newMethodColor} onChange={setNewMethodColor} />
+                  <input value={newMethod} onChange={e => setNewMethod(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addMethod()}
+                    placeholder="새 결제수단" maxLength={20}
+                    className={`${field.input} min-w-0`} />
+                  <button onClick={addMethod} disabled={addingMethod || !newMethod.trim()}
+                    className={`${btn.primary} shrink-0`}
+                    style={{ backgroundColor: palette.colors[0] }}>추가</button>
+                </div>
+              }>
+              {methods.map(m => (
+                <SortableOptionRow key={m.id} sortId={m.id} label={m.name} color={m.color}
+                  onColorChange={c => updateMethod(m.id, m.name, c)}
+                  onLabelChange={name => updateMethod(m.id, name, m.color)}
+                  onDelete={() => deleteMethod(m.id)} />
+              ))}
+              {methods.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+            </OptionCard>
+          </SortableContext>
+        </DndContext>
 
-        {/* ── 카테고리별 세부유형 ── */}
+        {/* ── 카테고리별 세부유형 (드래그 정렬) ── */}
         {CATEGORIES.map(cat => (
           <CategoryDetailCard
             key={cat}
@@ -456,6 +555,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             onAdd={addDetail}
             onUpdate={updateDetail}
             onDelete={deleteDetail}
+            onDragEnd={e => handleDetailDragEnd(cat, e)}
             paletteColor={palette.colors[0]}
           />
         ))}

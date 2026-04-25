@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 import type { Palette } from './palettes'
 import { DEFAULT_PALETTE } from './palettes'
 import { CATEGORIES } from './utils'
@@ -11,20 +11,35 @@ interface ThemeCtx {
   catColors: Record<string, string>
 }
 
-const catColors = Object.fromEntries(
+const defaultCatColors = Object.fromEntries(
   CATEGORIES.map((cat, i) => [cat, DEFAULT_PALETTE.colors[i]])
 )
 
-const ctx: ThemeCtx = {
+const ThemeContext = createContext<ThemeCtx>({
   palette: DEFAULT_PALETTE,
   setPalette: () => {},
-  catColors,
-}
-
-const ThemeContext = createContext<ThemeCtx>(ctx)
+  catColors: defaultCatColors,
+})
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  return <ThemeContext.Provider value={ctx}>{children}</ThemeContext.Provider>
+  const [catColors, setCatColors] = useState<Record<string, string>>(defaultCatColors)
+
+  useEffect(() => {
+    fetch('/api/options/categories')
+      .then(r => r.json())
+      .then((data: { name: string; color: string }[]) => {
+        if (Array.isArray(data) && data.length) {
+          setCatColors(Object.fromEntries(data.map(c => [c.name, c.color])))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  return (
+    <ThemeContext.Provider value={{ palette: DEFAULT_PALETTE, setPalette: () => {}, catColors }}>
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
 export function useTheme() {

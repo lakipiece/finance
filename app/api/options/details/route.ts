@@ -13,7 +13,7 @@ const CAT_DEFAULT_COLORS: Record<string, string> = {
 
 export async function GET() {
   const sql = getSql()
-  const rows = await sql`SELECT id, name, category, color FROM detail_options WHERE is_active = true ORDER BY category NULLS LAST, name`
+  const rows = await sql`SELECT id, name, category, color FROM detail_options WHERE is_active = true ORDER BY category NULLS LAST, order_idx, name`
   return NextResponse.json(rows)
 }
 
