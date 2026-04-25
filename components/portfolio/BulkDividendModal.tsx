@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Security, Account } from '@/lib/portfolio/types'
 import { btn, field, modal } from '@/lib/styles'
@@ -43,17 +43,26 @@ function parseNum(s: string) {
   return parseFloat(s.replace(/,/g, '')) || 0
 }
 
+interface MemberOpt { code: string; color: string }
+
 export default function BulkDividendModal({
   show, onClose, accounts, accountSecurities, securities, owners, palette,
 }: Props) {
   const router = useRouter()
   const [modalOwner, setModalOwner] = useState('')
   const [accountId, setAccountId] = useState('')
+  const [memberOpts, setMemberOpts] = useState<MemberOpt[]>([])
   const [paidAt, setPaidAt] = useState(todayStr())
   const [currency, setCurrency] = useState<'KRW' | 'USD'>('KRW')
   const [exchangeRate, setExchangeRate] = useState('')
   const [rows, setRows] = useState<RowInput[]>([])
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/options/members').then(r => r.json()).then(data => {
+      if (Array.isArray(data) && data.length) setMemberOpts(data)
+    }).catch(() => {})
+  }, [])
 
   // Reset state when modal opens
   useEffect(() => {
@@ -65,6 +74,10 @@ export default function BulkDividendModal({
     setExchangeRate('')
     setRows([])
   }, [show])
+
+  function ownerColor(code: string): string {
+    return memberOpts.find(m => m.code === code)?.color ?? '#64748b'
+  }
 
   const modalAccounts = useMemo(() =>
     accounts
@@ -146,29 +159,35 @@ export default function BulkDividendModal({
           {/* 사용자 선택 */}
           {owners.length > 0 && (
             <div>
-              <p className={field.label}>계좌 사용자</p>
+              <p className={field.label}>사용자</p>
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
                   onClick={() => { setModalOwner(''); setAccountId('') }}
-                  className={btn.pill(modalOwner === '')}
-                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+                  className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0], color: '#fff' } : { backgroundColor: '#f8fafc', borderColor: '#e2e8f0', color: '#64748b' }}>
                   전체
                 </button>
-                {owners.map(o => (
-                  <button type="button" key={o}
-                    onClick={() => { setModalOwner(o); setAccountId('') }}
-                    className={btn.pill(modalOwner === o)}
-                    style={modalOwner === o ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
-                    {o}
-                  </button>
-                ))}
+                {owners.map(o => {
+                  const color = ownerColor(o)
+                  const isActive = modalOwner === o
+                  return (
+                    <button type="button" key={o}
+                      onClick={() => { setModalOwner(o); setAccountId('') }}
+                      className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                      style={isActive
+                        ? { backgroundColor: color, borderColor: color, color: '#fff' }
+                        : { backgroundColor: `${color}18`, borderColor: `${color}40`, color }}>
+                      {o}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           )}
 
           {/* 계좌 선택 */}
           <div>
-            <p className={field.label}>계좌 (배당 대상만 표시)</p>
+            <p className={field.label}>계좌</p>
             <select required value={accountId}
               onChange={e => setAccountId(e.target.value)}
               className={field.select}>
@@ -229,9 +248,9 @@ export default function BulkDividendModal({
                 if (!sec) return null
                 return (
                   <div key={row.security_id} className="border border-slate-100 rounded-xl p-3">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <span className="bg-slate-100 text-slate-600 text-[10px] px-1.5 py-0.5 rounded font-mono">{sec.ticker}</span>
-                      <span className="text-xs text-slate-600 font-medium flex-1 truncate">{sec.name}</span>
+                    <div className="mb-2">
+                      <span className="block text-[10px] font-mono text-slate-500 mb-0.5">{sec.ticker}</span>
+                      <span className="text-xs text-slate-700 font-medium truncate block">{sec.name}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
