@@ -60,6 +60,8 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
     })
     if (!res.ok) { setCreating(false); return }
     const snap = await res.json()
+    // 생성 직후 전체 스냅샷 값 계산
+    await fetch('/api/portfolio/snapshots/refresh-values', { method: 'POST' })
     setCreating(false)
     router.push(`/portfolio/snapshots/${snap.id}`)
   }
@@ -108,6 +110,10 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           <p className="text-xs text-slate-400 mt-0.5">포트폴리오 시점별 기록</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={handleRefreshValues} disabled={refreshing}
+            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
+            {refreshing ? '계산 중…' : '값 갱신'}
+          </button>
           <button onClick={() => router.push('/portfolio/snapshots/charts')}
             className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50">
             차트보기
