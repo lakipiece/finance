@@ -8,14 +8,18 @@ import { useTheme } from '@/lib/ThemeContext'
 
 /* ── Constants ── */
 interface MemberOpt { code: string; display_name: string; color: string }
+interface MethodOpt { name: string; color: string }
 const DEFAULT_MEMBERS: MemberOpt[] = [
   { code: 'L', display_name: 'L', color: '#1565C0' },
   { code: 'P', display_name: 'P', color: '#AD1457' },
 ]
-const DEFAULT_METHODS = ['카드', '현금', '지역화폐']
+const DEFAULT_METHODS: MethodOpt[] = [
+  { name: '카드', color: '#94a3b8' },
+  { name: '현금', color: '#94a3b8' },
+]
 const FormCtx = createContext<{
   memberOpts: MemberOpt[]
-  methodOpts: string[]
+  methodOpts: MethodOpt[]
   detailsByCategory: Record<string, string[]>
 }>({
   memberOpts: DEFAULT_MEMBERS,
@@ -157,7 +161,7 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
   const [member, setMember] = useState(() => DEFAULT_MEMBERS[0].code)
   const [category, setCategory] = useState('변동비')
   const [detail, setDetail] = useState('')
-  const [method, setMethod] = useState(() => DEFAULT_METHODS[0])
+  const [method, setMethod] = useState(() => DEFAULT_METHODS[0].name)
   const [amount, setAmount] = useState('')
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
@@ -202,7 +206,7 @@ function CompactExpenseForm({ onSaved }: { onSaved: () => void }) {
         <div className="flex flex-col gap-1">
           <label className={field.label}>결제수단</label>
           <div className="flex flex-wrap gap-1.5">
-            {methodOpts.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color}>{m.name}</PillBtn>)}
           </div>
         </div>
       </div>
@@ -411,7 +415,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
         <div>
           <label className={field.label}>결제수단</label>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {methodOpts.map(m => <PillBtn key={m} active={method === m} onClick={() => setMethod(m)}>{m}</PillBtn>)}
+            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color}>{m.name}</PillBtn>)}
           </div>
         </div>
         <div>
@@ -582,7 +586,7 @@ export default function InputPage() {
   const [editRecord, setEditRecord] = useState<AnyRecord | null>(null)
   const [detailsByCategory, setDetailsByCategory] = useState<Record<string, string[]>>({})
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>(DEFAULT_MEMBERS)
-  const [methodOpts, setMethodOpts] = useState<string[]>(DEFAULT_METHODS)
+  const [methodOpts, setMethodOpts] = useState<MethodOpt[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
   const formKey = useRef(0)
 
@@ -601,7 +605,7 @@ export default function InputPage() {
       }
     }).catch(() => {})
     fetch('/api/options/members').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMemberOpts(data) }).catch(() => {})
-    fetch('/api/options/methods').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMethodOpts(data.map((m: { name: string }) => m.name)) }).catch(() => {})
+    fetch('/api/options/methods').then(r => r.json()).then((data: MethodOpt[]) => { if (Array.isArray(data) && data.length) setMethodOpts(data.map(m => ({ name: m.name, color: m.color ?? '#94a3b8' }))) }).catch(() => {})
   }, [])
 
   const fetchAll = useCallback(async () => {
