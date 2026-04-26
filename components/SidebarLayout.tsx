@@ -55,7 +55,8 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 */}
       <div className="md:pl-[220px] min-h-screen flex flex-col">
         {/* 모바일 햄버거 바 */}
-        <div className="md:hidden flex items-center h-12 px-4 sticky top-0 z-30 border-b border-slate-200" style={{ background: '#F8FAFC', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="md:hidden sticky top-0 z-30 border-b border-slate-200" style={{ background: '#F8FAFC', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="flex items-center h-12 px-4">
           <button
             onClick={() => setOpen(true)}
             className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
@@ -67,6 +68,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
+        </div>
         </div>
 
         <main className="flex-1">{children}</main>
