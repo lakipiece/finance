@@ -841,54 +841,50 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
   expenseCount: number; expenseTotal: number; incomeCount: number; incomeTotal: number
   onAddExpense: () => void; onAddIncome: () => void
 }) {
-  const { palette } = useTheme()
-  const bg = palette.colors[0] ?? '#1A237E'
   return (
-    <div className="rounded-xl overflow-hidden flex" style={{ backgroundColor: bg }}>
-      {/* 지출 */}
-      <div className="flex-1 flex flex-col justify-between p-3">
-        <div>
-          <div className="flex items-center gap-1 mb-1.5">
-            <svg className="w-3 h-3 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden flex">
+      {/* 지출 절반 */}
+      <button onClick={onAddExpense}
+        className="flex-1 p-3 text-left hover:bg-rose-50/50 transition-colors group">
+        <div className="flex items-center justify-between mb-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-600">
+            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7l-7 7-7-7" />
             </svg>
-            <span className="text-[11px] font-semibold text-white/80">지출</span>
-          </div>
-          <p className="text-[10px] text-white/50 mb-0.5">{expenseCount}건</p>
-          <p className="text-xs font-bold text-white tabular-nums leading-tight">
-            {expenseTotal.toLocaleString('ko-KR')}원
-          </p>
-        </div>
-        <button onClick={onAddExpense}
-          className="mt-3 flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors mx-auto">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            지출
+          </span>
+          <svg className="w-3 h-3 text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-        </button>
-      </div>
-      {/* 구분선 */}
-      <div className="w-px bg-white/20 my-3" />
-      {/* 수입 */}
-      <div className="flex-1 flex flex-col justify-between p-3">
-        <div>
-          <div className="flex items-center gap-1 mb-1.5">
-            <svg className="w-3 h-3 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        </div>
+        <p className="text-[10px] text-slate-400 mb-0.5">{expenseCount}건</p>
+        <p className="text-xs font-bold text-slate-800 tabular-nums leading-tight">
+          {expenseTotal.toLocaleString('ko-KR')}원
+        </p>
+      </button>
+      {/* 중앙 구분선 */}
+      <div className="w-px bg-slate-100 my-3" />
+      {/* 수입 절반 */}
+      <button onClick={onAddIncome}
+        className="flex-1 p-3 text-left hover:bg-emerald-50/50 transition-colors group">
+        <div className="flex items-center justify-between mb-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-600">
+            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
             </svg>
-            <span className="text-[11px] font-semibold text-white/80">수입</span>
-          </div>
-          <p className="text-[10px] text-white/50 mb-0.5">{incomeCount}건</p>
-          <p className="text-xs font-bold text-white tabular-nums leading-tight">
-            {incomeTotal.toLocaleString('ko-KR')}원
-          </p>
-        </div>
-        <button onClick={onAddIncome}
-          className="mt-3 flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors mx-auto">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            수입
+          </span>
+          <svg className="w-3 h-3 text-emerald-300 opacity-0 group-hover:opacity-100 transition-opacity"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-        </button>
-      </div>
+        </div>
+        <p className="text-[10px] text-slate-400 mb-0.5">{incomeCount}건</p>
+        <p className="text-xs font-bold text-slate-800 tabular-nums leading-tight">
+          {incomeTotal.toLocaleString('ko-KR')}원
+        </p>
+      </button>
     </div>
   )
 }
