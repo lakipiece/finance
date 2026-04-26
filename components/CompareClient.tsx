@@ -89,7 +89,7 @@ export default function CompareClient({ availableYears }: Props) {
     )
   }
 
-  const isIncomeCategory = (cat: string | null) => cat !== null && (INCOME_CATEGORIES as readonly string[]).includes(cat)
+  const isIncomeCategory = (cat: string | null) => cat !== null && ((INCOME_CATEGORIES as readonly string[]).includes(cat) || cat === '전체수입')
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
@@ -153,6 +153,12 @@ export default function CompareClient({ availableYears }: Props) {
               )
             })}
             <span className="text-slate-200 mx-0.5">|</span>
+            {/* 전체 수입 */}
+            <button
+              onClick={() => { setSelectedCategory(prev => prev === '전체수입' ? null : '전체수입'); setSelectedDetail(null) }}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === '전체수입' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              전체 수입
+            </button>
             {/* 수입 카테고리 */}
             {INCOME_CATEGORIES.map(cat => (
               <button key={cat}

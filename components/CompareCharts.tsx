@@ -154,7 +154,9 @@ export default function CompareCharts({
   }
 
   const chartTitle = isIncomeCategory
-    ? `수입 ${cumulative ? '누적' : '비교'}${selectedCategory ? ` — ${selectedCategory}` : ''}`
+    ? selectedCategory === '전체수입'
+      ? `전체 수입 ${cumulative ? '누적' : '비교'}`
+      : `수입 ${cumulative ? '누적' : '비교'}${selectedCategory ? ` — ${selectedCategory}` : ''}`
     : `월별 지출 ${cumulative ? '누적' : '비교'}${selectedCategory ? ` — ${selectedCategory}` : ''}${selectedDetail ? ` > ${selectedDetail}` : ''}`
 
   return (
@@ -223,7 +225,9 @@ export default function CompareCharts({
           </>
         ) : isIncomeCategory && incomeCategoryData ? (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">수입 카테고리별 연도 비교</h2>
+            <h2 className="text-base font-semibold text-slate-700 mb-1">
+              {selectedCategory === '전체수입' ? '전체 수입 — 급여 / 기타' : '수입 카테고리별 연도 비교'}
+            </h2>
             <p className="text-xs text-slate-400 mb-4">카테고리별 연간 수입 합계</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={incomeCategoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
