@@ -289,9 +289,9 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
           {totalValue > 0 && (
             <div className="text-right leading-tight">
-              <p className="text-[10px] text-slate-400">원금 {Math.round(totalInvested).toLocaleString()}원</p>
+              <p className="text-[10px] text-slate-400 tabular-nums">{Math.round(totalInvested).toLocaleString()}원</p>
               <p className="text-sm font-semibold text-slate-700 tabular-nums">
-                평가 {Math.round(totalValue).toLocaleString()}원
+                평가금액 {Math.round(totalValue).toLocaleString()}원
               </p>
             </div>
           )}
@@ -331,13 +331,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 <p className="text-xs text-slate-400">{a.broker}</p>
                 {/* 하단: 종목수 + 원금/평가금액 */}
                 <div className="mt-auto pt-2 space-y-0.5">
-                  <p className="text-xs text-slate-400">
-                    <span className="font-semibold text-slate-600">{count}</span>/{total}종목
+                  <p className="text-[10px] text-slate-400">
+                    <span className="font-semibold text-slate-600 text-[10px]">{count}</span>종목
                   </p>
                   {aVal > 0 ? (
                     <div className="flex justify-between text-[10px] tabular-nums">
-                      <span className="text-slate-400">원금 {Math.round(accountInvested[a.id] ?? 0).toLocaleString()}원</span>
-                      <span className="text-slate-600 font-medium">평가 {Math.round(aVal).toLocaleString()}원</span>
+                      <span className="text-slate-400">{Math.round(accountInvested[a.id] ?? 0).toLocaleString()}원</span>
+                      <span className="text-slate-600 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-300">—</p>
@@ -359,21 +359,24 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             {/* Modal Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
               <div>
-                <p className="font-semibold text-slate-700">
-                  {modalAccount?.broker} · {modalAccount?.name}
-                </p>
+                <p className="font-bold text-slate-800 text-base leading-tight">{modalAccount?.name}</p>
+                {modalAccount?.broker && (
+                  <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 bg-slate-100">{modalAccount.broker}</span>
+                )}
                 {modalAccountValue > 0 && (
-                  <div className="mt-0.5 space-y-0">
-                    <p className="text-xs text-slate-400">
-                      원금 <span className="font-medium text-slate-600">
+                  <div className="mt-2 space-y-0.5 min-w-[160px]">
+                    <div className="flex items-center justify-between gap-6 text-xs">
+                      <span className="text-slate-400 shrink-0">원금</span>
+                      <span className="font-medium text-slate-600 tabular-nums">
                         {Math.round(accountInvested[modalAccountId ?? ''] ?? 0).toLocaleString()}원
                       </span>
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      평가금액 <span className="font-medium text-slate-600">
+                    </div>
+                    <div className="flex items-center justify-between gap-6 text-xs">
+                      <span className="text-slate-400 shrink-0">평가금액</span>
+                      <span className="font-medium text-slate-600 tabular-nums">
                         {Math.round(modalAccountValue).toLocaleString()}원
                       </span>
-                    </p>
+                    </div>
                   </div>
                 )}
               </div>
