@@ -782,34 +782,55 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
 }
 
 /* ── Category Breakdown Panel ── */
-function CategoryBreakdown({ category, items, color }: {
+function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: {
   category: string
   items: { name: string; amount: number; pct: number }[]
   color?: string
+  activeItem: string | null
+  onItemClick: (name: string) => void
 }) {
   const maxPct = items[0]?.pct ?? 1
   return (
     <div className="mb-4 px-4 py-3 bg-slate-50 rounded-xl">
-      <p className="text-[11px] font-semibold text-slate-500 mb-3">{category} 항목별 집계</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-2.5">
-        {items.map((item, idx) => (
-          <div key={item.name} className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] text-slate-300 w-3.5 shrink-0 text-right">{idx + 1}</span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="text-[11px] text-slate-600 truncate">{item.name}</span>
-                <span className="text-[10px] text-slate-400 shrink-0">{Math.round(item.pct * 100)}%</span>
+      <div className="flex items-center gap-2 mb-3">
+        <p className="text-[11px] font-semibold text-slate-500">{category} 항목별 집계</p>
+        {activeItem && (
+          <button onClick={() => onItemClick(activeItem)}
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white border border-slate-200 text-slate-500 hover:text-slate-700 transition-colors">
+            {activeItem}
+            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-1.5">
+        {items.map((item, idx) => {
+          const isActive = activeItem === item.name
+          return (
+            <button key={item.name} onClick={() => onItemClick(item.name)}
+              className={`flex items-center gap-2 min-w-0 w-full text-left rounded-lg px-1.5 py-1 transition-colors ${
+                isActive ? 'bg-white shadow-sm ring-1 ring-slate-200' : 'hover:bg-white/70'
+              }`}>
+              <span className="text-[10px] text-slate-300 w-3.5 shrink-0 text-right">{idx + 1}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1 mb-0.5">
+                  <span className={`text-[11px] truncate ${isActive ? 'font-semibold' : 'text-slate-600'}`}
+                    style={isActive ? { color } : undefined}>{item.name}</span>
+                  <span className="text-[10px] text-slate-400 shrink-0">{Math.round(item.pct * 100)}%</span>
+                </div>
+                <div className="h-0.5 bg-slate-200 rounded-full">
+                  <div className="h-full rounded-full transition-all"
+                    style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: isActive ? (color ?? '#94a3b8') : '#cbd5e1' }} />
+                </div>
               </div>
-              <div className="h-0.5 bg-slate-200 rounded-full">
-                <div className="h-full rounded-full transition-all"
-                  style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#94a3b8' }} />
-              </div>
-            </div>
-            <span className="text-[11px] font-semibold text-slate-700 shrink-0 tabular-nums">
-              {item.amount.toLocaleString('ko-KR')}원
-            </span>
-          </div>
-        ))}
+              <span className={`text-[11px] font-semibold shrink-0 tabular-nums ${isActive ? '' : 'text-slate-700'}`}
+                style={isActive ? { color } : undefined}>
+                {item.amount.toLocaleString('ko-KR')}원
+              </span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -879,55 +900,48 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
   onAddExpense: () => void; onAddIncome: () => void
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden flex">
+    <div className="rounded-xl overflow-hidden flex">
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
-        className="flex-1 p-3 text-left transition-colors group"
-        style={{ ['--hover-bg' as string]: `${EXPENSE_COLOR}08` }}
-        onMouseEnter={e => (e.currentTarget.style.backgroundColor = `${EXPENSE_COLOR}08`)}
-        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
+        className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
+        style={{ backgroundColor: EXPENSE_COLOR }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{ backgroundColor: `${EXPENSE_COLOR}15`, color: EXPENSE_COLOR }}>
-            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7l-7 7-7-7" />
             </svg>
             지출
           </span>
-          <svg className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-            style={{ color: EXPENSE_COLOR }}>
+          <svg className="w-3.5 h-3.5 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <p className="text-[10px] text-slate-400 mb-0.5 text-right">{expenseCount}건</p>
-        <p className="text-xs font-bold tabular-nums leading-tight text-right" style={{ color: EXPENSE_COLOR }}>
+        <p className="text-xs text-white/60 mb-0.5 text-right">{expenseCount}건</p>
+        <p className="text-sm font-bold text-white tabular-nums leading-tight text-right">
           {expenseTotal.toLocaleString('ko-KR')}원
         </p>
       </button>
       {/* 중앙 구분선 */}
-      <div className="w-px bg-slate-100 my-3" />
+      <div className="w-px bg-white/20 my-3" />
       {/* 수입 절반 */}
       <button onClick={onAddIncome}
-        className="flex-1 p-3 text-left transition-colors group"
-        onMouseEnter={e => (e.currentTarget.style.backgroundColor = `${INCOME_COLOR}08`)}
-        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
+        className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
+        style={{ backgroundColor: INCOME_COLOR }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{ backgroundColor: `${INCOME_COLOR}15`, color: INCOME_COLOR }}>
-            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
             </svg>
             수입
           </span>
-          <svg className="w-3 h-3 opacity-0 group-hover:opacity-40 transition-opacity"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-            style={{ color: INCOME_COLOR }}>
+          <svg className="w-3.5 h-3.5 text-white/50 opacity-0 group-hover:opacity-100 transition-opacity"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <p className="text-[10px] text-slate-400 mb-0.5 text-right">{incomeCount}건</p>
-        <p className="text-xs font-bold tabular-nums leading-tight text-right" style={{ color: INCOME_COLOR }}>
+        <p className="text-xs text-white/60 mb-0.5 text-right">{incomeCount}건</p>
+        <p className="text-sm font-bold text-white tabular-nums leading-tight text-right">
           {incomeTotal.toLocaleString('ko-KR')}원
         </p>
       </button>
@@ -1011,6 +1025,7 @@ export default function InputPage() {
 
   const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all')
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
+  const [detailFilter, setDetailFilter] = useState<string | null>(null)
   const [memberFilter, setMemberFilter] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<'date_desc' | 'date_asc' | 'amount_desc' | 'amount_asc'>('date_desc')
 
@@ -1025,7 +1040,8 @@ export default function InputPage() {
     return [...visibleExpenseCategories, ...INCOME_CATEGORIES] as string[]
   }, [typeFilter, visibleExpenseCategories])
 
-  const filteredRecords = useMemo(() => {
+  // Base list before detailFilter (used for breakdown computation)
+  const baseFilteredList = useMemo(() => {
     let list = records
     if (excludeLoan) list = list.filter(r => !(r.type === 'expense' && r.category === '대출상환'))
     if (typeFilter !== 'all') list = list.filter(r => r.type === typeFilter)
@@ -1043,6 +1059,19 @@ export default function InputPage() {
           (r.type === 'expense' && (r as ExpenseRecord).method.toLowerCase().includes(q))
       })
     }
+    return list
+  }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery])
+
+  const filteredRecords = useMemo(() => {
+    let list = baseFilteredList
+    if (detailFilter) {
+      list = list.filter(r => {
+        const key = r.type === 'expense'
+          ? ((r as ExpenseRecord).detail || '(미분류)')
+          : (r as IncomeRecord).description || '(미분류)'
+        return key === detailFilter
+      })
+    }
     return [...list].sort((a, b) => {
       if (sortMode === 'date_asc') return a.date.localeCompare(b.date) || a.id - b.id
       if (sortMode === 'date_desc') return b.date.localeCompare(a.date) || b.id - a.id
@@ -1050,7 +1079,7 @@ export default function InputPage() {
       if (sortMode === 'amount_desc') return b.amount - a.amount
       return 0
     })
-  }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery, sortMode])
+  }, [baseFilteredList, detailFilter, sortMode])
 
   const expenseCount = filteredRecords.filter(r => r.type === 'expense').length
   const incomeCount = filteredRecords.filter(r => r.type === 'income').length
@@ -1059,10 +1088,10 @@ export default function InputPage() {
 
   const breakdown = useMemo(() => {
     if (!categoryFilter) return []
-    const total = filteredRecords.reduce((s, r) => s + r.amount, 0)
+    const total = baseFilteredList.reduce((s, r) => s + r.amount, 0)
     if (total === 0) return []
     const groups: Record<string, number> = {}
-    for (const r of filteredRecords) {
+    for (const r of baseFilteredList) {
       const key = r.type === 'expense'
         ? ((r as ExpenseRecord).detail || '(미분류)')
         : (r as IncomeRecord).description || '(미분류)'
@@ -1071,7 +1100,7 @@ export default function InputPage() {
     return Object.entries(groups)
       .sort((a, b) => b[1] - a[1])
       .map(([name, amount]) => ({ name, amount, pct: amount / total }))
-  }, [filteredRecords, categoryFilter])
+  }, [baseFilteredList, categoryFilter])
 
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
@@ -1146,7 +1175,7 @@ export default function InputPage() {
           {/* Type filter */}
           <div className="flex gap-1">
             {(['all', 'expense', 'income'] as const).map(t => (
-              <button key={t} onClick={() => { setTypeFilter(t); setCategoryFilter(null) }}
+              <button key={t} onClick={() => { setTypeFilter(t); setCategoryFilter(null); setDetailFilter(null) }}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                 {t === 'all' ? '전체' : t === 'expense' ? '지출' : '수입'}
               </button>
@@ -1173,7 +1202,7 @@ export default function InputPage() {
               const color = catColors[cat] ?? INCOME_COLORS[cat]
               const isActive = categoryFilter === cat
               return (
-                <button key={cat} onClick={() => setCategoryFilter(prev => prev === cat ? null : cat)}
+                <button key={cat} onClick={() => { setCategoryFilter(prev => prev === cat ? null : cat); setDetailFilter(null) }}
                   className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
                     isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                   }`}
@@ -1209,6 +1238,8 @@ export default function InputPage() {
             category={categoryFilter}
             items={breakdown}
             color={catColors[categoryFilter] ?? INCOME_COLORS[categoryFilter]}
+            activeItem={detailFilter}
+            onItemClick={name => setDetailFilter(prev => prev === name ? null : name)}
           />
         )}
 
