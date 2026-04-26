@@ -184,7 +184,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   return (
     <div className="flex flex-col h-full w-[220px] border-r border-slate-100 bg-white">
       {/* 로고 */}
-      <div className="flex items-center gap-2.5 px-4 pb-5" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)' }}>
+      <div className="flex items-center gap-2.5 px-4 pb-5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <IconLogo />
         <div className="leading-none">
           <p className="text-[13px] font-bold tracking-widest text-slate-700 uppercase leading-tight">Lakipiece</p>
