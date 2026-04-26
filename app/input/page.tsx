@@ -80,14 +80,15 @@ function AutoResizeMemo({ value, onChange, placeholder, className }: {
 }
 
 /* ── Small components ── */
-function PillBtn({ active, onClick, children, color }: {
-  active: boolean; onClick: () => void; children: React.ReactNode; color?: string
+function PillBtn({ active, onClick, children, color, size = 'md' }: {
+  active: boolean; onClick: () => void; children: React.ReactNode; color?: string; size?: 'sm' | 'md'
 }) {
   const { palette } = useTheme()
   const bg = active ? (color ?? palette.colors[0]) : undefined
+  const sizeClass = size === 'sm' ? 'px-2 py-0.5 rounded-md text-[11px]' : 'px-3 py-1 rounded-lg text-xs'
   return (
     <button type="button" onClick={onClick}
-      className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all whitespace-nowrap ${
+      className={`${sizeClass} font-medium border transition-all whitespace-nowrap ${
         active ? 'text-white border-transparent' : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
       }`}
       style={bg ? { backgroundColor: bg, borderColor: bg } : undefined}>
@@ -96,12 +97,14 @@ function PillBtn({ active, onClick, children, color }: {
   )
 }
 
-function MemberToggle({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function MemberToggle({ value, onChange, size = 'md' }: {
+  value: string; onChange: (v: string) => void; size?: 'sm' | 'md'
+}) {
   const { memberOpts } = useContext(FormCtx)
   return (
     <div className="flex gap-1">
       {memberOpts.map(m => (
-        <PillBtn key={m.code} active={value === m.code} onClick={() => onChange(m.code)} color={m.color}>
+        <PillBtn key={m.code} active={value === m.code} onClick={() => onChange(m.code)} color={m.color} size={size}>
           {m.display_name}
         </PillBtn>
       ))}
@@ -247,33 +250,32 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
 
   return (
     <div className="space-y-3">
-      {/* 한 행: 작성자 | 날짜 | 지출유형 | 세부유형 | 결제수단 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-start">
+      <div className="grid grid-cols-4 gap-3 items-start">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} />
+          <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-32" />
+          <DateInput value={date} onChange={handleDateChange} className="w-full" />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="col-span-2 flex flex-col gap-1">
           <label className={field.label}>지출유형</label>
-          <div className="flex flex-wrap gap-1.5">
-            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
+          <div className="flex flex-wrap gap-1">
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
           </div>
         </div>
-        <div className="flex flex-col gap-1 min-w-32 w-36">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>세부유형</label>
           <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>결제수단</label>
-          <div className="flex flex-wrap gap-1.5">
-            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color}>{m.name}</PillBtn>)}
+          <div className="flex flex-wrap gap-1">
+            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
           </div>
         </div>
-        <div className="flex flex-col gap-1 w-40">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
             onChange={handleAmountChange}
@@ -286,7 +288,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
             </span>
           )}
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-48">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>비고</label>
           <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
@@ -356,30 +358,29 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
 
   return (
     <div className="space-y-3">
-      {/* 한 행: 작성자 | 날짜 | 카테고리 | 설명 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-start">
+      <div className="grid grid-cols-4 gap-3 items-start">
         <div className="flex flex-col gap-1">
           <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} />
+          <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-32" />
+          <DateInput value={date} onChange={handleDateChange} className="w-full" />
         </div>
-        <div className="flex flex-col gap-1">
+        <div className="col-span-2 flex flex-col gap-1">
           <label className={field.label}>카테고리</label>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1">
             {INCOME_CATEGORIES.map(c => (
-              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]}>{c}</PillBtn>
+              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]} size="sm">{c}</PillBtn>
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-1 min-w-32 w-36">
+        <div className="col-span-2 flex flex-col gap-1">
           <label className={field.label}>설명</label>
           <input type="text" value={description} onChange={e => setDescription(e.target.value)}
             placeholder="수입 내용" maxLength={50} className={field.input} />
         </div>
-        <div className="flex flex-col gap-1 w-40">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
             onChange={handleAmountChange}
@@ -392,7 +393,7 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
             </span>
           )}
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-48">
+        <div className="flex flex-col gap-1">
           <label className={field.label}>비고</label>
           <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
@@ -668,29 +669,20 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal }: {
 }) {
   const net = incomeTotal - expenseTotal
   return (
-    <div className="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-2">
-      <p className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">요약</p>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400 shrink-0">
-            <ExpenseIcon />
-          </span>
-          <span className="text-[11px] text-slate-500">지출 {expenseCount}건</span>
+    <div className="bg-white rounded-xl border border-slate-100 p-3 flex flex-col justify-between gap-3">
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-baseline">
+          <span className="text-[11px] text-slate-400">지출 {expenseCount}건</span>
+          <span className="text-xs font-semibold text-slate-600 tabular-nums">{expenseTotal.toLocaleString('ko-KR')}원</span>
         </div>
-        <span className="text-xs font-bold text-slate-800 tabular-nums">{expenseTotal.toLocaleString('ko-KR')}원</span>
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="flex items-center justify-center w-5 h-5 rounded-full text-white shrink-0" style={{ backgroundColor: '#3b82f6' }}>
-            <IncomeIcon />
-          </span>
-          <span className="text-[11px] text-slate-500">수입 {incomeCount}건</span>
+        <div className="flex justify-between items-baseline">
+          <span className="text-[11px] text-slate-400">수입 {incomeCount}건</span>
+          <span className="text-xs font-semibold text-slate-600 tabular-nums">{incomeTotal.toLocaleString('ko-KR')}원</span>
         </div>
-        <span className="text-xs font-bold tabular-nums" style={{ color: '#3b82f6' }}>{incomeTotal.toLocaleString('ko-KR')}원</span>
       </div>
-      <div className="flex items-center justify-between pt-1 border-t border-slate-50">
-        <span className="text-[11px] text-slate-400">순수입</span>
-        <span className={`text-xs font-bold tabular-nums ${net >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+      <div className="flex justify-between items-baseline pt-2 border-t border-slate-50">
+        <span className="text-[11px] text-slate-300">순수입</span>
+        <span className="text-xs text-slate-400 tabular-nums">
           {net >= 0 ? '+' : ''}{net.toLocaleString('ko-KR')}원
         </span>
       </div>
