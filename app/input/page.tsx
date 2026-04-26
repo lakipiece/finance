@@ -193,8 +193,8 @@ interface IncomeRecord {
 }
 type AnyRecord = ExpenseRecord | IncomeRecord
 
-/* ── Compact Expense Form (2-row layout) ── */
-function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
+/* ── (unused - kept for reference) ── */
+function _CompactExpenseForm_unused({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
   onSaved: () => void
   initialDate: string
   initialMember: string
@@ -306,8 +306,8 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
   )
 }
 
-/* ── Compact Income Form ── */
-function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
+/* ── (unused - kept for reference) ── */
+function _CompactIncomeForm_unused({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
   onSaved: () => void
   initialDate: string
   initialMember: string
@@ -413,7 +413,7 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
 
 /* ── Modal Shell ── */
 function ModalShell({ onClose, title, onDelete, children }: {
-  onClose: () => void; title: string; onDelete: () => void; children: React.ReactNode
+  onClose: () => void; title: string; onDelete?: () => void; children: React.ReactNode
 }) {
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
@@ -421,13 +421,11 @@ function ModalShell({ onClose, title, onDelete, children }: {
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
           <div className="flex items-center gap-1">
-            <button
-              onClick={onDelete}
-              title="삭제"
-              className="p-1.5 rounded-lg text-slate-200 hover:text-rose-400 hover:bg-rose-50 transition-all"
-            >
-              <TrashIcon />
-            </button>
+            {onDelete && (
+              <button onClick={onDelete} title="삭제" className="p-1.5 rounded-lg text-slate-200 hover:text-rose-400 hover:bg-rose-50 transition-all">
+                <TrashIcon />
+              </button>
+            )}
             <button onClick={onClose} className="p-1.5 rounded-lg text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-all">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -483,30 +481,32 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={setMember} />
+            <MemberToggle value={member} onChange={setMember} size="sm" />
           </div>
         </div>
         <div>
           <label className={field.label}>지출유형</label>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
+          <div className="flex flex-wrap gap-1 mt-1">
+            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
           </div>
         </div>
         <div>
           <label className={field.label}>세부유형</label>
           <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
-        <div>
-          <label className={field.label}>결제수단</label>
-          <div className="flex flex-wrap gap-1.5 mt-1">
-            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color}>{m.name}</PillBtn>)}
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <label className={field.label}>결제수단</label>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
+            </div>
           </div>
-        </div>
-        <div>
-          <label className={field.label}>금액 (원)</label>
-          <input type="text" inputMode="numeric" value={amount}
-            onChange={e => setAmount(fmtAmount(e.target.value))}
-            className={`${field.input} text-right`} />
+          <div className="w-36">
+            <label className={field.label}>금액 (원)</label>
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              className={`${field.input} text-right`} />
+          </div>
         </div>
         <div>
           <label className={field.label}>비고</label>
@@ -567,14 +567,14 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={v => setMember(v)} />
+            <MemberToggle value={member} onChange={v => setMember(v)} size="sm" />
           </div>
         </div>
         <div>
           <label className={field.label}>카테고리</label>
-          <div className="flex flex-wrap gap-1.5 mt-1">
+          <div className="flex flex-wrap gap-1 mt-1">
             {INCOME_CATEGORIES.map(c => (
-              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]}>{c}</PillBtn>
+              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]} size="sm">{c}</PillBtn>
             ))}
           </div>
         </div>
@@ -601,6 +601,171 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
             className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
             style={{ backgroundColor: '#1A237E' }}>
             {saving ? '저장 중…' : '수정'}
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  )
+}
+
+/* ── Expense Create Modal ── */
+function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const { catColors } = useTheme()
+  const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
+  const [date, setDate] = useState(todayStr())
+  const [member, setMember] = useState(memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
+  const [category, setCategory] = useState('변동비')
+  const [detail, setDetail] = useState('')
+  const [method, setMethod] = useState(methodOpts[0]?.name ?? DEFAULT_METHODS[0].name)
+  const [amount, setAmount] = useState('')
+  const [memo, setMemo] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function handleSave() {
+    const amt = parseAmount(amount)
+    if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    setSaving(true); setErr('')
+    try {
+      const res = await fetch('/api/expenses/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo, memos: [] }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? '저장 실패')
+      onSaved()
+    } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <ModalShell onClose={onClose} title="지출 입력">
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>날짜</label>
+            <DateInput value={date} onChange={setDate} className="w-36" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>작성자</label>
+            <MemberToggle value={member} onChange={setMember} size="sm" />
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>지출유형</label>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>세부유형</label>
+          <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
+        </div>
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <label className={field.label}>결제수단</label>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
+            </div>
+          </div>
+          <div className="w-36">
+            <label className={field.label}>금액 (원)</label>
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              className={`${field.input} text-right`} />
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>비고</label>
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
+        </div>
+        {err && <p className="text-xs text-rose-500">{err}</p>}
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
+          <button onClick={handleSave} disabled={saving}
+            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: '#1A237E' }}>
+            {saving ? '저장 중…' : '저장'}
+          </button>
+        </div>
+      </div>
+    </ModalShell>
+  )
+}
+
+/* ── Income Create Modal ── */
+function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const { memberOpts } = useContext(FormCtx)
+  const [date, setDate] = useState(todayStr())
+  const [member, setMember] = useState(memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
+  const [category, setCategory] = useState<string>(INCOME_CATEGORIES[0])
+  const [description, setDescription] = useState('')
+  const [amount, setAmount] = useState('')
+  const [memo, setMemo] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState('')
+
+  async function handleSave() {
+    const amt = parseAmount(amount)
+    if (!date || !category || !description || amt <= 0) { setErr('모든 필드를 입력해주세요.'); return }
+    setSaving(true); setErr('')
+    try {
+      const res = await fetch('/api/incomes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ income_date: date, category, description, amount: amt, member, memo }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? '저장 실패')
+      onSaved()
+    } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <ModalShell onClose={onClose} title="수입 입력">
+      <div className="space-y-4">
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>날짜</label>
+            <DateInput value={date} onChange={setDate} className="w-36" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>작성자</label>
+            <MemberToggle value={member} onChange={setMember} size="sm" />
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>카테고리</label>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {INCOME_CATEGORIES.map(c => (
+              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]} size="sm">{c}</PillBtn>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>설명</label>
+          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+            placeholder="수입 내용" maxLength={50} className={field.input} />
+        </div>
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <input type="text" inputMode="numeric" value={amount}
+            onChange={e => setAmount(fmtAmount(e.target.value))}
+            className={`${field.input} text-right`} />
+        </div>
+        <div>
+          <label className={field.label}>비고</label>
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
+        </div>
+        {err && <p className="text-xs text-rose-500">{err}</p>}
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
+          <button onClick={handleSave} disabled={saving}
+            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: '#1A237E' }}>
+            {saving ? '저장 중…' : '저장'}
           </button>
         </div>
       </div>
@@ -694,8 +859,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal }: {
 export default function InputPage() {
   const { palette, catColors } = useTheme()
   const { excludeLoan } = useFilter()
-  const [formOpen, setFormOpen] = useState(false)
-  const [tab, setTab] = useState<'expense' | 'income'>('expense')
+  const [createType, setCreateType] = useState<'expense' | 'income' | null>(null)
   const [records, setRecords] = useState<AnyRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [editRecord, setEditRecord] = useState<AnyRecord | null>(null)
@@ -703,11 +867,6 @@ export default function InputPage() {
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>(DEFAULT_MEMBERS)
   const [methodOpts, setMethodOpts] = useState<MethodOpt[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
-  const formKey = useRef(0)
-  const lastExpenseDate = useRef(todayStr())
-  const lastExpenseMember = useRef(DEFAULT_MEMBERS[0].code)
-  const lastIncomeDate = useRef(todayStr())
-  const lastIncomeMember = useRef(DEFAULT_MEMBERS[0].code)
 
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
@@ -758,7 +917,7 @@ export default function InputPage() {
   function handleSaved() {
     fetchAll()
     setEditRecord(null)
-    formKey.current += 1
+    setCreateType(null)
   }
 
   async function handleDelete() {
@@ -825,52 +984,23 @@ export default function InputPage() {
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
       </div>
 
-      {/* Form card (collapsible) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setFormOpen(o => !o)}
-          className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-base leading-none"
-              style={{ backgroundColor: palette.colors[0] }}>
-              {formOpen ? '−' : '+'}
-            </div>
-            <span className="text-sm font-semibold text-slate-700">
-              {tab === 'expense' ? '지출' : '수입'} 입력
-            </span>
-          </div>
-          <svg className={`w-4 h-4 text-slate-300 transition-transform duration-200 ${formOpen ? 'rotate-180' : ''}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 mb-6">
+        <button onClick={() => setCreateType('expense')}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
+          style={{ backgroundColor: '#1A237E' }}>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
+          지출 입력
         </button>
-
-        {formOpen && (
-          <div className="px-5 pb-5 border-t border-slate-50">
-            <div className="flex gap-1 mt-4 mb-5">
-              {(['expense', 'income'] as const).map(t => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${tab === t ? 'text-white' : 'bg-slate-100 text-slate-500'}`}
-                  style={tab === t ? { backgroundColor: palette.colors[0] } : undefined}>
-                  {t === 'expense' ? '지출' : '수입'}
-                </button>
-              ))}
-            </div>
-
-            {tab === 'expense'
-              ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved}
-                  initialDate={lastExpenseDate.current} initialMember={lastExpenseMember.current}
-                  onDateChange={d => { lastExpenseDate.current = d }}
-                  onMemberChange={m => { lastExpenseMember.current = m }} />
-              : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved}
-                  initialDate={lastIncomeDate.current} initialMember={lastIncomeMember.current}
-                  onDateChange={d => { lastIncomeDate.current = d }}
-                  onMemberChange={m => { lastIncomeMember.current = m }} />
-            }
-          </div>
-        )}
+        <button onClick={() => setCreateType('income')}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 bg-white shadow-sm hover:bg-slate-50 transition-colors">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          수입 입력
+        </button>
       </div>
 
       {/* Records */}
@@ -977,19 +1107,22 @@ export default function InputPage() {
             })}
           </div>
           <span className="text-slate-200 text-xs">|</span>
-          {/* Sort buttons */}
+          {/* Sort toggle buttons */}
           <div className="flex gap-1 ml-auto">
-            {([
-              { mode: 'date_desc', label: '날짜↓' },
-              { mode: 'date_asc', label: '날짜↑' },
-              { mode: 'amount_desc', label: '금액↓' },
-              { mode: 'amount_asc', label: '금액↑' },
-            ] as const).map(({ mode, label }) => (
-              <button key={mode} onClick={() => setSortMode(mode)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${sortMode === mode ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-                {label}
-              </button>
-            ))}
+            <button
+              onClick={() => setSortMode(m => m === 'date_desc' ? 'date_asc' : 'date_desc')}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                sortMode === 'date_desc' || sortMode === 'date_asc' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}>
+              날짜{sortMode === 'date_desc' ? ' ↓' : sortMode === 'date_asc' ? ' ↑' : ' ↕'}
+            </button>
+            <button
+              onClick={() => setSortMode(m => m === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                sortMode === 'amount_desc' || sortMode === 'amount_asc' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              }`}>
+              금액{sortMode === 'amount_desc' ? ' ↓' : sortMode === 'amount_asc' ? ' ↑' : ' ↕'}
+            </button>
           </div>
         </div>
 
@@ -1021,6 +1154,12 @@ export default function InputPage() {
       {editRecord?.type === 'income' && (
         <IncomeEditModal record={editRecord} onClose={() => setEditRecord(null)}
           onSaved={handleSaved} onDelete={handleDelete} />
+      )}
+      {createType === 'expense' && (
+        <ExpenseCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} />
+      )}
+      {createType === 'income' && (
+        <IncomeCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} />
       )}
     </div>
     </FormCtx.Provider>

@@ -361,22 +361,31 @@ export default function DrilldownPanel({
                 for (const key of chartKeys) {
                   entry[key] = ((prev[key] as number) ?? 0) + ((row[key] as number) ?? 0)
                 }
+              } else if (drilldownType === 'expense') {
+                for (const cat of activeCategories) {
+                  entry[cat] = ((prev[cat] as number) ?? 0) + ((row[`지출_${cat}`] as number) ?? 0)
+                }
               } else {
                 const incomeTotal = ((row['수입_급여'] as number) ?? 0) + ((row['수입_기타'] as number) ?? 0)
-                const expenseTotal = activeCategories.reduce((s, cat) => s + ((row[`지출_${cat}`] as number) ?? 0), 0)
                 entry['수입'] = ((prev['수입'] as number) ?? 0) + incomeTotal
-                entry['지출'] = ((prev['지출'] as number) ?? 0) + expenseTotal
               }
               return [...acc, entry]
             }, [])
 
             const lineKeys = selectedIncomeCard
               ? ['누적']
-              : isCategory ? chartKeys : ['수입', '지출']
+              : isCategory
+                ? chartKeys
+                : drilldownType === 'expense'
+                  ? activeCategories
+                  : ['수입']
             const lineColors: Record<string, string> = selectedIncomeCard
               ? { '누적': INCOME_CHART_COLORS[selectedIncomeCard] ?? '#6B8CAE' }
-              : isCategory ? chartColors
-              : { '수입': '#4527A0', '지출': '#1A237E' }
+              : isCategory
+                ? chartColors
+                : drilldownType === 'expense'
+                  ? Object.fromEntries(activeCategories.map(cat => [cat, catColors[cat] ?? '#6B8CAE']))
+                  : { '수입': '#4527A0' }
 
             return (
               <ResponsiveContainer width="100%" height={220}>
