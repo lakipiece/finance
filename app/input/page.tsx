@@ -837,27 +837,57 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
 }
 
 /* ── Summary Card ── */
-function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal }: {
+function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onAddExpense, onAddIncome }: {
   expenseCount: number; expenseTotal: number; incomeCount: number; incomeTotal: number
+  onAddExpense: () => void; onAddIncome: () => void
 }) {
-  const net = incomeTotal - expenseTotal
+  const { palette } = useTheme()
+  const bg = palette.colors[0] ?? '#1A237E'
   return (
-    <div className="bg-white rounded-xl border border-slate-100 p-3 flex flex-col justify-between gap-3">
-      <div className="space-y-1.5">
-        <div className="flex justify-between items-baseline">
-          <span className="text-[11px] text-slate-400">지출 {expenseCount}건</span>
-          <span className="text-xs font-semibold text-slate-600 tabular-nums">{expenseTotal.toLocaleString('ko-KR')}원</span>
+    <div className="rounded-xl overflow-hidden flex" style={{ backgroundColor: bg }}>
+      {/* 지출 */}
+      <div className="flex-1 flex flex-col justify-between p-3">
+        <div>
+          <div className="flex items-center gap-1 mb-1.5">
+            <svg className="w-3 h-3 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7l-7 7-7-7" />
+            </svg>
+            <span className="text-[11px] font-semibold text-white/80">지출</span>
+          </div>
+          <p className="text-[10px] text-white/50 mb-0.5">{expenseCount}건</p>
+          <p className="text-xs font-bold text-white tabular-nums leading-tight">
+            {expenseTotal.toLocaleString('ko-KR')}원
+          </p>
         </div>
-        <div className="flex justify-between items-baseline">
-          <span className="text-[11px] text-slate-400">수입 {incomeCount}건</span>
-          <span className="text-xs font-semibold text-slate-600 tabular-nums">{incomeTotal.toLocaleString('ko-KR')}원</span>
-        </div>
+        <button onClick={onAddExpense}
+          className="mt-3 flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors mx-auto">
+          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
       </div>
-      <div className="flex justify-between items-baseline pt-2 border-t border-slate-50">
-        <span className="text-[11px] text-slate-300">순수입</span>
-        <span className="text-xs text-slate-400 tabular-nums">
-          {net >= 0 ? '+' : ''}{net.toLocaleString('ko-KR')}원
-        </span>
+      {/* 구분선 */}
+      <div className="w-px bg-white/20 my-3" />
+      {/* 수입 */}
+      <div className="flex-1 flex flex-col justify-between p-3">
+        <div>
+          <div className="flex items-center gap-1 mb-1.5">
+            <svg className="w-3 h-3 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
+            </svg>
+            <span className="text-[11px] font-semibold text-white/80">수입</span>
+          </div>
+          <p className="text-[10px] text-white/50 mb-0.5">{incomeCount}건</p>
+          <p className="text-xs font-bold text-white tabular-nums leading-tight">
+            {incomeTotal.toLocaleString('ko-KR')}원
+          </p>
+        </div>
+        <button onClick={onAddIncome}
+          className="mt-3 flex items-center justify-center w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 transition-colors mx-auto">
+          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
       </div>
     </div>
   )
@@ -992,25 +1022,6 @@ export default function InputPage() {
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-2 mb-6">
-        <button onClick={() => setCreateType('expense')}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white shadow-sm hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: '#1A237E' }}>
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          지출 입력
-        </button>
-        <button onClick={() => setCreateType('income')}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border border-slate-200 text-slate-600 bg-white shadow-sm hover:bg-slate-50 transition-colors">
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          수입 입력
-        </button>
-      </div>
-
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         {/* Header with year/month selector + search */}
@@ -1141,7 +1152,8 @@ export default function InputPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              <SummaryCard expenseCount={expenseCount} expenseTotal={expenseTotal} incomeCount={incomeCount} incomeTotal={incomeTotal} />
+              <SummaryCard expenseCount={expenseCount} expenseTotal={expenseTotal} incomeCount={incomeCount} incomeTotal={incomeTotal}
+                onAddExpense={() => setCreateType('expense')} onAddIncome={() => setCreateType('income')} />
               {filteredRecords.map(r => (
                 <RecordCard key={`${r.type}-${r.id}`} record={r} onClick={() => setEditRecord(r)} />
               ))}
