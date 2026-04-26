@@ -821,7 +821,7 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
                 </div>
                 <div className="h-0.5 bg-slate-200 rounded-full">
                   <div className="h-full rounded-full transition-all"
-                    style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: isActive ? (color ?? '#94a3b8') : '#cbd5e1' }} />
+                    style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#94a3b8', opacity: isActive ? 1 : 0.45 }} />
                 </div>
               </div>
               <span className={`text-[11px] font-semibold shrink-0 tabular-nums ${isActive ? '' : 'text-slate-700'}`}
