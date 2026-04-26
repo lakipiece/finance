@@ -900,11 +900,12 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
   onAddExpense: () => void; onAddIncome: () => void
 }) {
   return (
-    <div className="rounded-xl overflow-hidden flex">
+    <div className="rounded-xl overflow-hidden flex"
+      style={{ background: `linear-gradient(to right, ${EXPENSE_COLOR}, ${INCOME_COLOR})` }}>
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
         className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
-        style={{ backgroundColor: EXPENSE_COLOR }}>
+        style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -927,7 +928,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
       {/* 수입 절반 */}
       <button onClick={onAddIncome}
         className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
-        style={{ backgroundColor: INCOME_COLOR }}>
+        style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
