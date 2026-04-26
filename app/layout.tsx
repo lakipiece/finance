@@ -14,7 +14,16 @@ const notoSans = Noto_Sans_KR({
 export const metadata: Metadata = {
   title: 'Lakipiece Finance',
   description: 'The Precision Curator — 포트폴리오 & 가계부 관리',
-  icons: { icon: '/icon.svg', shortcut: '/icon.svg' },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'Finance',
+    statusBarStyle: 'black-translucent',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
