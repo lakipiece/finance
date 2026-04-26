@@ -443,7 +443,9 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
   record: ExpenseRecord; onClose: () => void; onSaved: () => void; onDelete: () => void
 }) {
   const { catColors } = useTheme()
+  const { excludeLoan } = useFilter()
   const { methodOpts, detailsByCategory } = useContext(FormCtx)
+  const visibleCategories = CATEGORIES.filter(c => !(excludeLoan && c === '대출상환'))
   const [date, setDate] = useState(record.date)
   const [member, setMember] = useState(record.member)
   const [category, setCategory] = useState(record.category)
@@ -487,7 +489,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
         <div>
           <label className={field.label}>지출유형</label>
           <div className="flex flex-wrap gap-1 mt-1">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
           </div>
         </div>
         <div>
@@ -578,16 +580,18 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
             ))}
           </div>
         </div>
-        <div>
-          <label className={field.label}>설명</label>
-          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-            maxLength={50} className={field.input} />
-        </div>
-        <div>
-          <label className={field.label}>금액 (원)</label>
-          <input type="text" inputMode="numeric" value={amount}
-            onChange={e => setAmount(fmtAmount(e.target.value))}
-            className={`${field.input} text-right`} />
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <label className={field.label}>설명</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+              maxLength={50} className={field.input} />
+          </div>
+          <div className="w-36">
+            <label className={field.label}>금액 (원)</label>
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              className={`${field.input} text-right`} />
+          </div>
         </div>
         <div>
           <label className={field.label}>비고</label>
@@ -611,7 +615,9 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 /* ── Expense Create Modal ── */
 function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
   const { catColors } = useTheme()
+  const { excludeLoan } = useFilter()
   const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
+  const visibleCategories = CATEGORIES.filter(c => !(excludeLoan && c === '대출상환'))
   const [date, setDate] = useState(todayStr())
   const [member, setMember] = useState(memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
   const [category, setCategory] = useState('변동비')
@@ -655,7 +661,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
         <div>
           <label className={field.label}>지출유형</label>
           <div className="flex flex-wrap gap-1 mt-1">
-            {CATEGORIES.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
           </div>
         </div>
         <div>
@@ -744,16 +750,18 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
             ))}
           </div>
         </div>
-        <div>
-          <label className={field.label}>설명</label>
-          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-            placeholder="수입 내용" maxLength={50} className={field.input} />
-        </div>
-        <div>
-          <label className={field.label}>금액 (원)</label>
-          <input type="text" inputMode="numeric" value={amount}
-            onChange={e => setAmount(fmtAmount(e.target.value))}
-            className={`${field.input} text-right`} />
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <label className={field.label}>설명</label>
+            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+              placeholder="수입 내용" maxLength={50} className={field.input} />
+          </div>
+          <div className="w-36">
+            <label className={field.label}>금액 (원)</label>
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              className={`${field.input} text-right`} />
+          </div>
         </div>
         <div>
           <label className={field.label}>비고</label>
