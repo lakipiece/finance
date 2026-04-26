@@ -781,6 +781,40 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
   )
 }
 
+/* ── Category Breakdown Panel ── */
+function CategoryBreakdown({ category, items, color }: {
+  category: string
+  items: { name: string; amount: number; pct: number }[]
+  color?: string
+}) {
+  const maxPct = items[0]?.pct ?? 1
+  return (
+    <div className="mb-4 px-4 py-3 bg-slate-50 rounded-xl">
+      <p className="text-[11px] font-semibold text-slate-500 mb-3">{category} 항목별 집계</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-2.5">
+        {items.map((item, idx) => (
+          <div key={item.name} className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] text-slate-300 w-3.5 shrink-0 text-right">{idx + 1}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1 mb-0.5">
+                <span className="text-[11px] text-slate-600 truncate">{item.name}</span>
+                <span className="text-[10px] text-slate-400 shrink-0">{Math.round(item.pct * 100)}%</span>
+              </div>
+              <div className="h-0.5 bg-slate-200 rounded-full">
+                <div className="h-full rounded-full transition-all"
+                  style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#94a3b8' }} />
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-slate-700 shrink-0 tabular-nums">
+              {item.amount.toLocaleString('ko-KR')}원
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ── Record Card ── */
 function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => void }) {
   const { memberOpts } = useContext(FormCtx)
@@ -1011,6 +1045,22 @@ export default function InputPage() {
   const expenseTotal = filteredRecords.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0)
   const incomeTotal = filteredRecords.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
 
+  const breakdown = useMemo(() => {
+    if (!categoryFilter) return []
+    const total = filteredRecords.reduce((s, r) => s + r.amount, 0)
+    if (total === 0) return []
+    const groups: Record<string, number> = {}
+    for (const r of filteredRecords) {
+      const key = r.type === 'expense'
+        ? ((r as ExpenseRecord).detail || '(미분류)')
+        : (r as IncomeRecord).description || '(미분류)'
+      groups[key] = (groups[key] ?? 0) + r.amount
+    }
+    return Object.entries(groups)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, amount]) => ({ name, amount, pct: amount / total }))
+  }, [filteredRecords, categoryFilter])
+
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -1080,7 +1130,7 @@ export default function InputPage() {
         </div>
 
         {/* Filter + Sort row */}
-        <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-50 mb-5">
+        <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-50 mb-4">
           {/* Type filter */}
           <div className="flex gap-1">
             {(['all', 'expense', 'income'] as const).map(t => (
@@ -1140,6 +1190,15 @@ export default function InputPage() {
             </button>
           </div>
         </div>
+
+        {/* Category breakdown panel */}
+        {categoryFilter && breakdown.length > 0 && (
+          <CategoryBreakdown
+            category={categoryFilter}
+            items={breakdown}
+            color={catColors[categoryFilter] ?? INCOME_COLORS[categoryFilter]}
+          />
+        )}
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
