@@ -6,21 +6,23 @@ import { auth } from '@/lib/auth'
 
 const SECURITY_WITH_LABELS = `
   SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
-         s.asset_class_id, s.country_id, s.sector_id, s.currency_id,
+         s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
          ac.value AS asset_class,
          co.value AS country,
          se.value AS sector,
+         es.value AS etf_style,
          cu.value AS currency,
-         COALESCE(st.tags, '{}') AS tags
+         COALESCE(tg.tags, '{}') AS tags
   FROM securities s
   LEFT JOIN option_list ac ON s.asset_class_id = ac.id
   LEFT JOIN option_list co ON s.country_id      = co.id
   LEFT JOIN option_list se ON s.sector_id       = se.id
+  LEFT JOIN option_list es ON s.style_id        = es.id
   LEFT JOIN option_list cu ON s.currency_id     = cu.id
   LEFT JOIN (
     SELECT security_id, array_agg(tag ORDER BY tag) AS tags
     FROM security_tags GROUP BY security_id
-  ) st ON st.security_id = s.id
+  ) tg ON tg.security_id = s.id
 `
 
 export async function GET() {
@@ -33,13 +35,13 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id } = await req.json()
+  const { ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id, style_id } = await req.json()
   const sql = getSql()
 
   const [row] = await sql`
-    INSERT INTO securities (ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id)
+    INSERT INTO securities (ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id, style_id)
     VALUES (${ticker}, ${name}, ${style ?? null}, ${url ?? null}, ${memo ?? null},
-            ${asset_class_id ?? null}, ${country_id ?? null}, ${sector_id ?? null}, ${currency_id ?? null})
+            ${asset_class_id ?? null}, ${country_id ?? null}, ${sector_id ?? null}, ${currency_id ?? null}, ${style_id ?? null})
     ON CONFLICT (ticker) DO UPDATE SET
       name          = EXCLUDED.name,
       style         = EXCLUDED.style,
@@ -48,7 +50,8 @@ export async function POST(req: NextRequest) {
       asset_class_id = EXCLUDED.asset_class_id,
       country_id    = EXCLUDED.country_id,
       sector_id     = EXCLUDED.sector_id,
-      currency_id   = EXCLUDED.currency_id
+      currency_id   = EXCLUDED.currency_id,
+      style_id      = EXCLUDED.style_id
     RETURNING id
   `
   if (!row) return NextResponse.json({ error: '생성 실패' }, { status: 500 })
@@ -63,7 +66,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = await req.json()
   const sql = getSql()
 
-  const allowed = ['name', 'style', 'url', 'memo', 'asset_class_id', 'country_id', 'sector_id', 'currency_id']
+  const allowed = ['name', 'style', 'url', 'memo', 'asset_class_id', 'country_id', 'sector_id', 'currency_id', 'style_id']
   const fields = Object.entries(updates)
     .filter(([k]) => allowed.includes(k))
     .map(([k, v]) => sql`${sql(k)} = ${v as string}`)

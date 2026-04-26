@@ -22,13 +22,14 @@ export async function fetchSecurities(): Promise<Security[]> {
   const sql = getSql()
   const data = await sql<Security[]>`
     SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
-           s.asset_class_id, s.country_id, s.sector_id, s.currency_id,
+           s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
            ac.value AS asset_class, co.value AS country,
-           se.value AS sector,      cu.value AS currency
+           se.value AS sector,      st.value AS etf_style, cu.value AS currency
     FROM securities s
     LEFT JOIN option_list ac ON s.asset_class_id = ac.id
     LEFT JOIN option_list co ON s.country_id      = co.id
     LEFT JOIN option_list se ON s.sector_id       = se.id
+    LEFT JOIN option_list st ON s.style_id        = st.id
     LEFT JOIN option_list cu ON s.currency_id     = cu.id
     ORDER BY s.ticker
   `

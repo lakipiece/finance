@@ -53,6 +53,7 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
   const total = summary.total_market_value
 
   const byAssetClass = groupPct(summary.positions, p => p.security.asset_class ?? '기타', total)
+  const byStyle = groupPct(summary.positions, p => p.security.etf_style ?? '미분류', total)
   const byTicker = groupPct(summary.positions, p => p.security.ticker, total)
 
   function getTarget(level: string, key: string) {
@@ -147,6 +148,12 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
       <Section
         title="자산군 목표 비율"
         rows={byAssetClass.map(r => ({ ...r, level: 'asset_class' }))}
+      />
+      <Section
+        title="스타일 목표 비율"
+        rows={byStyle
+          .sort((a, b) => b.market_value - a.market_value)
+          .map(r => ({ ...r, level: 'style' }))}
       />
       <Section
         title="종목별 목표 비율"

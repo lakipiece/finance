@@ -883,9 +883,11 @@ function YearMonthPicker({ year, month, onChange }: {
 }) {
   const [open, setOpen] = useState(false)
   const [tempYear, setTempYear] = useState(year)
+  const [yearInput, setYearInput] = useState(String(year))
+  const [editingYear, setEditingYear] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setTempYear(year) }, [year])
+  useEffect(() => { setTempYear(year); setYearInput(String(year)) }, [year])
 
   useEffect(() => {
     if (!open) return
@@ -895,6 +897,16 @@ function YearMonthPicker({ year, month, onChange }: {
     document.addEventListener('mousedown', onDown)
     return () => document.removeEventListener('mousedown', onDown)
   }, [open])
+
+  function commitYearInput() {
+    const parsed = parseInt(yearInput, 10)
+    if (!isNaN(parsed) && parsed >= 2000 && parsed <= 2100) {
+      setTempYear(parsed)
+    } else {
+      setYearInput(String(tempYear))
+    }
+    setEditingYear(false)
+  }
 
   const label = month ? `${year}년 ${month}월` : `${year}년 전체`
 
@@ -918,7 +930,23 @@ function YearMonthPicker({ year, month, onChange }: {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
-            <span className="text-sm font-bold text-slate-700">{tempYear}년</span>
+            {editingYear ? (
+              <input
+                type="text"
+                inputMode="numeric"
+                value={yearInput}
+                onChange={e => setYearInput(e.target.value)}
+                onBlur={commitYearInput}
+                onKeyDown={e => { if (e.key === 'Enter') commitYearInput(); if (e.key === 'Escape') { setYearInput(String(tempYear)); setEditingYear(false) } }}
+                className="w-16 text-center text-sm font-bold text-slate-700 border-b border-slate-300 focus:outline-none focus:border-[#1A237E] bg-transparent"
+                autoFocus
+              />
+            ) : (
+              <button onClick={() => { setEditingYear(true); setYearInput(String(tempYear)) }}
+                className="text-sm font-bold text-slate-700 hover:text-[#1A237E] transition-colors px-2 py-0.5 rounded hover:bg-slate-50">
+                {tempYear}년
+              </button>
+            )}
             <button onClick={() => setTempYear(y => y + 1)}
               className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

@@ -8,7 +8,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 
-type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
+type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number; is_hidden?: boolean }
 
 type HoldingRow = {
   security_id: string
@@ -77,6 +77,7 @@ function SecurityModal({ security, onSave, onClose, options }: {
     asset_class_id: security?.asset_class_id ?? (options.asset_class?.find(o => o.value === '주식')?.id ?? ''),
     country_id:    security?.country_id     ?? (options.country?.find(o => o.value === '미국')?.id ?? ''),
     style:         security?.style ?? '',
+    style_id:      security?.style_id       ?? '',
     sector_id:     security?.sector_id      ?? '',
     currency_id:   security?.currency_id    ?? (options.currency?.find(o => o.value === 'USD')?.id ?? ''),
     url:  security?.url ?? '',
@@ -100,6 +101,7 @@ function SecurityModal({ security, onSave, onClose, options }: {
           asset_class_id: form.asset_class_id || null,
           country_id:     form.country_id     || null,
           style:          form.style          || null,
+          style_id:       form.style_id       || null,
           sector_id:      form.sector_id      || null,
           currency_id:    form.currency_id    || null,
           url:  form.url  || null,
@@ -167,10 +169,15 @@ function SecurityModal({ security, onSave, onClose, options }: {
                 <option value="">선택 안함</option>
                 {(options.asset_class ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
               </select></div>
-            <div><label className={field.labelSm}>섹터</label>
+            <div><label className={field.labelSm}>운용 스타일</label>
+              <select value={form.style_id} onChange={e => setForm(p => ({ ...p, style_id: e.target.value }))} className={field.input}>
+                <option value="">선택 안함</option>
+                {(options.style ?? []).filter(o => !o.is_hidden).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select></div>
+            <div><label className={field.labelSm}>섹터 (GICS)</label>
               <select value={form.sector_id} onChange={e => setForm(p => ({ ...p, sector_id: e.target.value }))} className={field.input}>
                 <option value="">선택 안함</option>
-                {(options.sector ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                {(options.sector ?? []).filter(o => !o.is_hidden).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
               </select></div>
             <div className="col-span-2"><label className={field.labelSm}>URL</label>
               <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>
@@ -580,7 +587,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [showAddModal, setShowAddModal] = useState(false)
   const [historyModalSecurity, setHistoryModalSecurity] = useState<Security | null>(null)
   const [secSearch, setSecSearch] = useState('')
-  const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string }>({ country: '', currency: '', asset_class: '', sector: '' })
+  const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string; style: string }>({ country: '', currency: '', asset_class: '', sector: '', style: '' })
   const [secSort, setSecSort] = useState<'ticker' | 'name' | 'country_name'>('country_name')
 
   const [syncing, setSyncing] = useState<string | null>(null)
@@ -655,6 +662,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const countries = [...new Set(securities.map(s => s.country).filter(Boolean))] as string[]
   const assetClasses = [...new Set(securities.map(s => s.asset_class).filter(Boolean))] as string[]
   const sectors = [...new Set(securities.map(s => s.sector).filter(Boolean))] as string[]
+  const etfStyles = [...new Set(securities.map(s => s.etf_style).filter(Boolean))] as string[]
 
   const filteredSecurities = useMemo(() => {
     let list = [...securities]
@@ -666,6 +674,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
     if (secFilter.currency) list = list.filter(s => s.currency === secFilter.currency)
     if (secFilter.asset_class) list = list.filter(s => s.asset_class === secFilter.asset_class)
     if (secFilter.sector) list = list.filter(s => s.sector === secFilter.sector)
+    if (secFilter.style) list = list.filter(s => s.etf_style === secFilter.style)
     list.sort((a, b) => {
       if (secSort === 'ticker') return a.ticker.localeCompare(b.ticker)
       if (secSort === 'name') return a.name.localeCompare(b.name)
@@ -721,6 +730,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           <option value="">전체 국가</option>
           {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
+        <select value={secFilter.style} onChange={e => setSecFilter(p => ({ ...p, style: e.target.value }))}
+          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          <option value="">전체 스타일</option>
+          {etfStyles.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
         <select value={secFilter.sector} onChange={e => setSecFilter(p => ({ ...p, sector: e.target.value }))}
           className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
           <option value="">전체 섹터</option>
@@ -738,8 +752,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           <option value="ticker">티커순</option>
           <option value="name">이름순</option>
         </select>
-        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency) && (
-          <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '' }) }}
+        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) && (
+          <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
             className="text-[10px] text-slate-400 hover:text-slate-600 border border-slate-200 rounded-lg px-2 py-1.5 hover:bg-slate-50 transition-colors whitespace-nowrap">
             필터 초기화
           </button>
@@ -843,6 +857,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     className="text-[10px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.country}
+                  </button>
+                )}
+                {s.etf_style && (
+                  <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
+                    className="text-[10px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    {s.etf_style}
                   </button>
                 )}
                 {s.sector && (

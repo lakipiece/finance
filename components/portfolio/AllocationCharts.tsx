@@ -146,6 +146,7 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
   const bySector = groupBy(positions, p => p.security.sector ?? '기타', vk).slice(0, 12)
   const byCountry = groupBy(positions, p => p.security.country ?? '기타', vk).slice(0, 10)
   const byAssetClass = groupBy(positions, p => p.security.asset_class ?? '기타', vk).slice(0, 8)
+  const byStyle = groupBy(positions, p => p.security.etf_style ?? '미분류', vk).slice(0, 12)
 
   const sectorSegments = toSegments(bySector, filteredTotal,
     (name, i) => sectorColors[name] ?? PALETTE[i % PALETTE.length])
@@ -153,12 +154,15 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
     (_, i) => PALETTE[i % PALETTE.length])
   const assetClassSegments = toSegments(byAssetClass, filteredTotal,
     (_, i) => PALETTE[i % PALETTE.length])
+  const styleSegments = toSegments(byStyle, filteredTotal,
+    (_, i) => PALETTE[i % PALETTE.length])
 
   const rows: DimRow[] = [
     { label: '계좌별', segments: accountSegments, total: allTotal },
-    { label: '섹터별', segments: sectorSegments, total: filteredTotal },
-    { label: '국가별', segments: countrySegments, total: filteredTotal },
     { label: '자산군별', segments: assetClassSegments, total: filteredTotal },
+    { label: '스타일별', segments: styleSegments, total: filteredTotal },
+    { label: '국가별', segments: countrySegments, total: filteredTotal },
+    { label: '섹터별', segments: sectorSegments, total: filteredTotal },
   ]
 
   function toggle(label: string) {

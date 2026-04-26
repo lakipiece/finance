@@ -21,6 +21,7 @@ export interface Security {
   asset_class_id: string | null
   country_id: string | null
   sector_id: string | null
+  style_id: string | null
   currency_id: string | null
   style: string | null
   url: string | null
@@ -29,6 +30,7 @@ export interface Security {
   asset_class: string | null
   country: string | null
   sector: string | null
+  etf_style: string | null  // style 차원 (style 텍스트 필드와 구분)
   currency: string
   tags?: string[]
 }
@@ -77,7 +79,7 @@ export interface Dividend {
 
 export interface TargetAllocation {
   id: string
-  level: 'asset_class' | 'sector' | 'ticker'
+  level: 'asset_class' | 'country' | 'style' | 'sector' | 'ticker'
   key: string
   target_pct: number
 }
