@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/ThemeContext'
@@ -14,6 +14,7 @@ const notoSans = Noto_Sans_KR({
 export const metadata: Metadata = {
   title: 'Lakipiece Finance',
   description: 'The Precision Curator — 포트폴리오 & 가계부 관리',
+  manifest: '/manifest.json',
   icons: {
     icon: '/icon.svg',
     shortcut: '/icon.svg',
@@ -24,6 +25,12 @@ export const metadata: Metadata = {
     title: 'Finance',
     statusBarStyle: 'black-translucent',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

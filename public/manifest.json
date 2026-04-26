@@ -1,0 +1,18 @@
+{
+  "name": "Lakipiece Finance",
+  "short_name": "Finance",
+  "description": "포트폴리오 & 가계부 관리",
+  "start_url": "/portfolio",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

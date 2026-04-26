@@ -1,13 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function SidebarLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const isLogin = pathname === '/login'
+
+  // iOS standalone PWA: prevent <a> clicks from opening Safari
+  useEffect(() => {
+    if (!(window.navigator as Navigator & { standalone?: boolean }).standalone) return
+    function handleClick(e: MouseEvent) {
+      const anchor = (e.target as Element).closest('a[href]') as HTMLAnchorElement | null
+      if (!anchor) return
+      const url = new URL(anchor.href, window.location.href)
+      if (url.origin !== window.location.origin) return
+      if (anchor.target === '_blank') return
+      e.preventDefault()
+      router.push(url.pathname + url.search + url.hash)
+    }
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [router])
 
   if (isLogin) return <>{children}</>
 
