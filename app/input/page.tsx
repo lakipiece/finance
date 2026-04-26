@@ -456,8 +456,17 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
+  function resolveExpenseEditAmount() {
+    if (isFormula(amount)) {
+      const r = evalFormula(amount)
+      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
+    }
+  }
+  const expenseEditFormulaResult = isFormula(amount) ? evalFormula(amount) : null
+
   async function handleSave() {
-    const amt = parseAmount(amount)
+    resolveExpenseEditAmount()
+    const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
@@ -505,9 +514,20 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
           </div>
           <div className="w-36">
             <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmount(e.target.value))}
+            <input type="text" inputMode="text" value={amount}
+              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
+              onBlur={resolveExpenseEditAmount}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); resolveExpenseEditAmount() } }}
+              placeholder="0 또는 =수식"
               className={`${field.input} text-right`} />
+            {isFormula(amount) && expenseEditFormulaResult !== null && (
+              <span className="text-[10px] text-right tabular-nums block text-blue-500 mt-0.5">
+                = {expenseEditFormulaResult.toLocaleString('ko-KR')}원
+              </span>
+            )}
+            {isFormula(amount) && expenseEditFormulaResult === null && (
+              <span className="text-[10px] text-right block text-rose-400 mt-0.5">수식 오류</span>
+            )}
           </div>
         </div>
         <div>
@@ -628,8 +648,17 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
+  function resolveCreateAmount() {
+    if (isFormula(amount)) {
+      const r = evalFormula(amount)
+      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
+    }
+  }
+  const createFormulaResult = isFormula(amount) ? evalFormula(amount) : null
+
   async function handleSave() {
-    const amt = parseAmount(amount)
+    resolveCreateAmount()
+    const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
@@ -677,9 +706,20 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
           </div>
           <div className="w-36">
             <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmount(e.target.value))}
+            <input type="text" inputMode="text" value={amount}
+              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
+              onBlur={resolveCreateAmount}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); resolveCreateAmount() } }}
+              placeholder="0 또는 =수식"
               className={`${field.input} text-right`} />
+            {isFormula(amount) && createFormulaResult !== null && (
+              <span className="text-[10px] text-right tabular-nums block text-blue-500 mt-0.5">
+                = {createFormulaResult.toLocaleString('ko-KR')}원
+              </span>
+            )}
+            {isFormula(amount) && createFormulaResult === null && (
+              <span className="text-[10px] text-right block text-rose-400 mt-0.5">수식 오류</span>
+            )}
           </div>
         </div>
         <div>
