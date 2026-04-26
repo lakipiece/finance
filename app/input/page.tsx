@@ -247,11 +247,15 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
 
   return (
     <div className="space-y-3">
-      {/* Row 1: 날짜 | 지출유형 | 세부유형 | 결제수단 */}
-      <div className="flex flex-wrap gap-4 items-end">
+      {/* 한 행: 작성자 | 날짜 | 지출유형 | 세부유형 | 결제수단 | 금액 | 비고 */}
+      <div className="flex flex-wrap gap-4 items-start">
+        <div className="flex flex-col gap-1">
+          <label className={field.label}>작성자</label>
+          <MemberToggle value={member} onChange={handleMemberChange} />
+        </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-36" />
+          <DateInput value={date} onChange={handleDateChange} className="w-32" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>지출유형</label>
@@ -259,7 +263,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
             {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]}>{c}</PillBtn>)}
           </div>
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-36">
+        <div className="flex flex-col gap-1 min-w-32 w-36">
           <label className={field.label}>세부유형</label>
           <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
@@ -269,15 +273,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
             {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color}>{m.name}</PillBtn>)}
           </div>
         </div>
-      </div>
-
-      {/* Row 2: 작성자 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-start">
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} />
-        </div>
-        <div className="flex flex-col gap-1 w-44">
+        <div className="flex flex-col gap-1 w-40">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
             onChange={handleAmountChange}
@@ -292,8 +288,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
-            className={field.input} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
       </div>
 
@@ -309,7 +304,7 @@ function CompactExpenseForm({ onSaved, initialDate, initialMember, onDateChange,
   )
 }
 
-/* ── Compact Income Form (2-row layout) ── */
+/* ── Compact Income Form ── */
 function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
   onSaved: () => void
   initialDate: string
@@ -361,11 +356,15 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
 
   return (
     <div className="space-y-3">
-      {/* Row 1: 날짜 | 카테고리 | 설명 */}
-      <div className="flex flex-wrap gap-4 items-end">
+      {/* 한 행: 작성자 | 날짜 | 카테고리 | 설명 | 금액 | 비고 */}
+      <div className="flex flex-wrap gap-4 items-start">
+        <div className="flex flex-col gap-1">
+          <label className={field.label}>작성자</label>
+          <MemberToggle value={member} onChange={handleMemberChange} />
+        </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-36" />
+          <DateInput value={date} onChange={handleDateChange} className="w-32" />
         </div>
         <div className="flex flex-col gap-1">
           <label className={field.label}>카테고리</label>
@@ -375,20 +374,12 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-36">
+        <div className="flex flex-col gap-1 min-w-32 w-36">
           <label className={field.label}>설명</label>
           <input type="text" value={description} onChange={e => setDescription(e.target.value)}
             placeholder="수입 내용" maxLength={50} className={field.input} />
         </div>
-      </div>
-
-      {/* Row 2: 작성자 | 금액 | 비고 */}
-      <div className="flex flex-wrap gap-4 items-start">
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} />
-        </div>
-        <div className="flex flex-col gap-1 w-44">
+        <div className="flex flex-col gap-1 w-40">
           <label className={field.label}>금액 (원)</label>
           <input type="text" inputMode="numeric" value={amount}
             onChange={handleAmountChange}
@@ -403,8 +394,7 @@ function CompactIncomeForm({ onSaved, initialDate, initialMember, onDateChange, 
         </div>
         <div className="flex flex-col gap-1 flex-1 min-w-48">
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
-            className={field.input} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
       </div>
 
@@ -672,10 +662,47 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
   )
 }
 
+/* ── Summary Card ── */
+function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal }: {
+  expenseCount: number; expenseTotal: number; incomeCount: number; incomeTotal: number
+}) {
+  const net = incomeTotal - expenseTotal
+  return (
+    <div className="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-2">
+      <p className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">요약</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-100 text-slate-400 shrink-0">
+            <ExpenseIcon />
+          </span>
+          <span className="text-[11px] text-slate-500">지출 {expenseCount}건</span>
+        </div>
+        <span className="text-xs font-bold text-slate-800 tabular-nums">{expenseTotal.toLocaleString('ko-KR')}원</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center justify-center w-5 h-5 rounded-full text-white shrink-0" style={{ backgroundColor: '#3b82f6' }}>
+            <IncomeIcon />
+          </span>
+          <span className="text-[11px] text-slate-500">수입 {incomeCount}건</span>
+        </div>
+        <span className="text-xs font-bold tabular-nums" style={{ color: '#3b82f6' }}>{incomeTotal.toLocaleString('ko-KR')}원</span>
+      </div>
+      <div className="flex items-center justify-between pt-1 border-t border-slate-50">
+        <span className="text-[11px] text-slate-400">순수입</span>
+        <span className={`text-xs font-bold tabular-nums ${net >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+          {net >= 0 ? '+' : ''}{net.toLocaleString('ko-KR')}원
+        </span>
+      </div>
+    </div>
+  )
+}
+
 /* ── Main Page ── */
 export default function InputPage() {
   const { palette, catColors } = useTheme()
   const { excludeLoan } = useFilter()
+  const [formOpen, setFormOpen] = useState(false)
   const [tab, setTab] = useState<'expense' | 'income'>('expense')
   const [records, setRecords] = useState<AnyRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -806,28 +833,52 @@ export default function InputPage() {
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
       </div>
 
-      {/* Form card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-6">
-        <div className="flex gap-1 mb-5">
-          {(['expense', 'income'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${tab === t ? 'text-white' : 'bg-slate-100 text-slate-500'}`}
-              style={tab === t ? { backgroundColor: palette.colors[0] } : undefined}>
-              {t === 'expense' ? '지출' : '수입'}
-            </button>
-          ))}
-        </div>
+      {/* Form card (collapsible) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setFormOpen(o => !o)}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-base leading-none"
+              style={{ backgroundColor: palette.colors[0] }}>
+              {formOpen ? '−' : '+'}
+            </div>
+            <span className="text-sm font-semibold text-slate-700">
+              {tab === 'expense' ? '지출' : '수입'} 입력
+            </span>
+          </div>
+          <svg className={`w-4 h-4 text-slate-300 transition-transform duration-200 ${formOpen ? 'rotate-180' : ''}`}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
 
-        {tab === 'expense'
-          ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved}
-              initialDate={lastExpenseDate.current} initialMember={lastExpenseMember.current}
-              onDateChange={d => { lastExpenseDate.current = d }}
-              onMemberChange={m => { lastExpenseMember.current = m }} />
-          : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved}
-              initialDate={lastIncomeDate.current} initialMember={lastIncomeMember.current}
-              onDateChange={d => { lastIncomeDate.current = d }}
-              onMemberChange={m => { lastIncomeMember.current = m }} />
-        }
+        {formOpen && (
+          <div className="px-5 pb-5 border-t border-slate-50">
+            <div className="flex gap-1 mt-4 mb-5">
+              {(['expense', 'income'] as const).map(t => (
+                <button key={t} onClick={() => setTab(t)}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${tab === t ? 'text-white' : 'bg-slate-100 text-slate-500'}`}
+                  style={tab === t ? { backgroundColor: palette.colors[0] } : undefined}>
+                  {t === 'expense' ? '지출' : '수입'}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'expense'
+              ? <CompactExpenseForm key={`expense-${formKey.current}`} onSaved={handleSaved}
+                  initialDate={lastExpenseDate.current} initialMember={lastExpenseMember.current}
+                  onDateChange={d => { lastExpenseDate.current = d }}
+                  onMemberChange={m => { lastExpenseMember.current = m }} />
+              : <CompactIncomeForm key={`income-${formKey.current}`} onSaved={handleSaved}
+                  initialDate={lastIncomeDate.current} initialMember={lastIncomeMember.current}
+                  onDateChange={d => { lastIncomeDate.current = d }}
+                  onMemberChange={m => { lastIncomeMember.current = m }} />
+            }
+          </div>
+        )}
       </div>
 
       {/* Records */}
@@ -869,38 +920,25 @@ export default function InputPage() {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center">
-              <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                type="text"
-                placeholder="검색..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="pl-5 pr-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-            <div className="text-right">
-              {expenseCount > 0 && (
-                <p className="text-xs text-slate-400">지출 {expenseCount}건 <span className="tabular-nums text-slate-500 font-medium">{expenseTotal.toLocaleString('ko-KR')}원</span></p>
-              )}
-              {incomeCount > 0 && (
-                <p className="text-xs text-slate-400">수입 {incomeCount}건 <span className="tabular-nums text-slate-500 font-medium">{incomeTotal.toLocaleString('ko-KR')}원</span></p>
-              )}
-              {expenseCount === 0 && incomeCount === 0 && (
-                <span className="text-xs text-slate-300">내역 없음</span>
-              )}
-            </div>
+          <div className="relative flex items-center">
+            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="검색..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-5 pr-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -967,16 +1005,20 @@ export default function InputPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 bg-slate-50 rounded-xl animate-pulse" />)}
           </div>
-        ) : filteredRecords.length === 0 ? (
-          <p className="text-xs text-slate-400 py-8 text-center">
-            {searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
-          </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {filteredRecords.map(r => (
-              <RecordCard key={`${r.type}-${r.id}`} record={r} onClick={() => setEditRecord(r)} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              <SummaryCard expenseCount={expenseCount} expenseTotal={expenseTotal} incomeCount={incomeCount} incomeTotal={incomeTotal} />
+              {filteredRecords.map(r => (
+                <RecordCard key={`${r.type}-${r.id}`} record={r} onClick={() => setEditRecord(r)} />
+              ))}
+            </div>
+            {filteredRecords.length === 0 && (
+              <p className="text-xs text-slate-400 py-8 text-center">
+                {searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
+              </p>
+            )}
+          </>
         )}
       </div>
 
