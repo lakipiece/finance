@@ -17,6 +17,7 @@ interface IncomeSummary {
   year: number
   total: number
   categoryTotals: { 급여: number; 기타: number }
+  memberTotals: Record<string, Record<string, number>>
   monthlyList: Array<{ month: string; total: number; 급여: number; 기타: number }>
 }
 

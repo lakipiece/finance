@@ -24,6 +24,14 @@ export async function GET(req: NextRequest) {
       FROM incomes WHERE year = ${parseInt(year)}
       GROUP BY month ORDER BY month
     `
+    const memberRaw = await sql`
+      SELECT
+        CASE WHEN category = '급여' THEN '급여' ELSE '기타' END AS cat,
+        COALESCE(member, '미분류') AS member,
+        SUM(amount)::int AS total
+      FROM incomes WHERE year = ${parseInt(year)}
+      GROUP BY cat, member
+    `
 
     const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 
@@ -39,6 +47,13 @@ export async function GET(req: NextRequest) {
       }
     })
 
+    type MemberRow = { cat: string; member: string; total: number }
+    const memberTotals: Record<string, Record<string, number>> = { 급여: {}, 기타: {} }
+    for (const row of memberRaw as unknown as MemberRow[]) {
+      if (!memberTotals[row.cat]) memberTotals[row.cat] = {}
+      memberTotals[row.cat][row.member] = Number(row.total)
+    }
+
     return NextResponse.json({
       year: parseInt(year),
       total: Number(totals.total),
@@ -46,6 +61,7 @@ export async function GET(req: NextRequest) {
         급여: Number(totals['급여']),
         기타: Number(totals['기타']),
       },
+      memberTotals,
       monthlyList,
     })
   } catch (e) {

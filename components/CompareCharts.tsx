@@ -17,6 +17,7 @@ interface IncomeSummary {
   year: number
   total: number
   categoryTotals: { 급여: number; 기타: number }
+  memberTotals: Record<string, Record<string, number>>
   monthlyList: Array<{ month: string; total: number; 급여: number; 기타: number }>
 }
 
@@ -118,6 +119,23 @@ export default function CompareCharts({
         return entry
       })
     : null
+
+  // Member bar chart (when specific income category selected)
+  const memberData = (() => {
+    if (!selectedCategory || selectedCategory === '전체수입' || !isIncomeCategory) return null
+    const allMembers = new Set<string>()
+    for (const year of readyYears) {
+      const mt = incomeYearData[year]?.memberTotals?.[selectedCategory] ?? {}
+      Object.keys(mt).forEach(m => allMembers.add(m))
+    }
+    return Array.from(allMembers).sort().map(member => {
+      const entry: Record<string, any> = { member }
+      for (const year of readyYears) {
+        entry[year] = incomeYearData[year]?.memberTotals?.[selectedCategory]?.[member] ?? 0
+      }
+      return entry
+    })
+  })()
 
   // Sub-detail bar chart
   const subDetailData = (() => {
@@ -223,11 +241,26 @@ export default function CompareCharts({
               </BarChart>
             </ResponsiveContainer>
           </>
+        ) : isIncomeCategory && memberData ? (
+          <>
+            <h2 className="text-base font-semibold text-slate-700 mb-1">{selectedCategory} — 사용자별 연도 비교</h2>
+            <p className="text-xs text-slate-400 mb-4">사용자별 연간 {selectedCategory} 합계</p>
+            <ResponsiveContainer width="100%" height={Math.max(200, memberData.length * 56)}>
+              <BarChart data={memberData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="member" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} width={32} />
+                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }} />
+                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                {readyYears.map((year) => (
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[0, 4, 4, 0]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </>
         ) : isIncomeCategory && incomeCategoryData ? (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">
-              {selectedCategory === '전체수입' ? '전체 수입 — 급여 / 기타' : '수입 카테고리별 연도 비교'}
-            </h2>
+            <h2 className="text-base font-semibold text-slate-700 mb-1">전체 수입 — 급여 / 기타</h2>
             <p className="text-xs text-slate-400 mb-4">카테고리별 연간 수입 합계</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={incomeCategoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
