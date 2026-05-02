@@ -41,8 +41,9 @@ function fmtAmount(v: string) {
 }
 
 function parseAmount(v: string) {
-  const cleaned = v.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '')
-  return parseInt(cleaned) || 0
+  const isNegative = v.trimStart().startsWith('-')
+  const digits = parseInt(v.replace(/[^0-9]/g, '')) || 0
+  return isNegative ? -digits : digits
 }
 
 function isFormula(v: string) {

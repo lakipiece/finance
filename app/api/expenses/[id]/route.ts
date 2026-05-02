@@ -39,12 +39,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const body = await req.json()
     const { expense_date, category, detail, method, member, memos } = body
     const memoList: MemoInput[] = Array.isArray(memos) ? memos : []
-    const hasAmounts = memoList.some(m => m.amount != null && m.amount > 0)
+    const hasAmounts = memoList.some(m => m.amount != null)
     const amount = hasAmounts
       ? memoList.reduce((s, m) => s + (m.amount ?? 0), 0)
       : Number(body.amount)
 
-    if (!expense_date || !category || !amount || amount <= 0) {
+    if (!expense_date || !category || isNaN(amount)) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
     }
 
