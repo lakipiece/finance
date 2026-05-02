@@ -36,8 +36,10 @@ function todayStr() {
 }
 
 function fmtAmount(v: string) {
+  const isNegative = v.trimStart().startsWith('-')
   const n = v.replace(/[^0-9]/g, '')
-  return n ? Number(n).toLocaleString('ko-KR') : ''
+  if (!n) return isNegative ? '-' : ''
+  return (isNegative ? '-' : '') + Number(n).toLocaleString('ko-KR')
 }
 
 function parseAmount(v: string) {
