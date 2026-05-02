@@ -41,7 +41,8 @@ function fmtAmount(v: string) {
 }
 
 function parseAmount(v: string) {
-  return parseInt(v.replace(/[^0-9]/g, '')) || 0
+  const cleaned = v.replace(/[^0-9-]/g, '').replace(/(?!^)-/g, '')
+  return parseInt(cleaned) || 0
 }
 
 function isFormula(v: string) {
@@ -232,7 +233,7 @@ function _CompactExpenseForm_unused({ onSaved, initialDate, initialMember, onDat
   async function handleSave() {
     resolveAmount()
     const raw = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
-    if (!date || !category || raw <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
@@ -467,7 +468,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
   async function handleSave() {
     resolveExpenseEditAmount()
     const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
-    if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch(`/api/expenses/${record.id}`, {
@@ -659,7 +660,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   async function handleSave() {
     resolveCreateAmount()
     const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
-    if (!date || !category || amt <= 0) { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
