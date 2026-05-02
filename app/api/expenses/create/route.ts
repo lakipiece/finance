@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
     const memoList: MemoInput[] = Array.isArray(memos) ? memos : []
 
     // 금액 결정: memos에 amount가 하나라도 있으면 합산, 없으면 body.amount 사용
-    const hasAmounts = memoList.some(m => m.amount != null && m.amount > 0)
+    const hasAmounts = memoList.some(m => m.amount != null)
     const amount = hasAmounts
       ? memoList.reduce((s, m) => s + (m.amount ?? 0), 0)
       : Number(body.amount)
 
-    if (!expense_date || !category || !amount || amount <= 0) {
+    if (!expense_date || !category || isNaN(amount)) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
     }
 
