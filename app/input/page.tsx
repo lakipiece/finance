@@ -159,6 +159,65 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
   )
 }
 
+function MemoSuggestInput({ value, onChange, className }: {
+  value: string; onChange: (v: string) => void; className?: string
+}) {
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    const el = taRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [value])
+
+  useEffect(() => {
+    if (value.length < 2) { setSuggestions([]); setOpen(false); return }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/expenses/memos?q=${encodeURIComponent(value)}`)
+        const data = await res.json()
+        setSuggestions(data.memos ?? [])
+        setOpen((data.memos ?? []).length > 0)
+      } catch { setSuggestions([]) }
+    }, 200)
+    return () => clearTimeout(timer)
+  }, [value])
+
+  useEffect(() => {
+    function onMouseDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onMouseDown)
+    return () => document.removeEventListener('mousedown', onMouseDown)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <textarea ref={taRef} value={value} rows={1}
+        onChange={e => onChange(e.target.value)}
+        placeholder="메모"
+        className={`${className} resize-none overflow-hidden`}
+        style={{ minHeight: '2rem' }} />
+      {open && suggestions.length > 0 && (
+        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-44 overflow-y-auto">
+          {suggestions.map(s => (
+            <button key={s} type="button"
+              onMouseDown={e => e.preventDefault()}
+              onClick={() => { onChange(s); setOpen(false) }}
+              className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-slate-700">
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TrashIcon() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -642,8 +701,8 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   const { excludeLoan } = useFilter()
   const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
   const visibleCategories = CATEGORIES.filter(c => !(excludeLoan && c === '대출상환'))
-  const [date, setDate] = useState(todayStr())
-  const [member, setMember] = useState(memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
+  const [date, setDate] = useState(() => sessionStorage.getItem('exp-date') ?? todayStr())
+  const [member, setMember] = useState(() => sessionStorage.getItem('exp-member') ?? memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
   const [category, setCategory] = useState('변동비')
   const [detail, setDetail] = useState('')
   const [method, setMethod] = useState(methodOpts[0]?.name ?? DEFAULT_METHODS[0].name)
@@ -651,6 +710,9 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+
+  function handleDateChange(v: string) { setDate(v); sessionStorage.setItem('exp-date', v) }
+  function handleMemberChange(v: string) { setMember(v); sessionStorage.setItem('exp-member', v) }
 
   function resolveCreateAmount() {
     if (isFormula(amount)) {
@@ -684,11 +746,11 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
         <div className="flex flex-wrap gap-6 items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
-            <DateInput value={date} onChange={setDate} className="w-36" />
+            <DateInput value={date} onChange={handleDateChange} className="w-36" />
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={setMember} size="sm" />
+            <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
           </div>
         </div>
         <div>
@@ -728,7 +790,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
+          <MemoSuggestInput value={memo} onChange={setMemo} className={field.input} />
         </div>
         {err && <p className="text-xs text-rose-500">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
