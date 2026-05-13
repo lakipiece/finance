@@ -106,10 +106,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [lastUpdated, setLastUpdated] = useState<string | null>(summary.last_price_updated_at)
   const [selectedAccountIds, setSelectedAccountIds] = useState<Set<string>>(new Set())
   const [selectedSectors, setSelectedSectors] = useState<Set<string>>(new Set())
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
   const [showAccounts, setShowAccounts] = useState(true)
   const [showSectors, setShowSectors] = useState(true)
-  const [showCharts, setShowCharts] = useState(true)
+  const [showTags, setShowTags] = useState(true)
+  const [showCharts, setShowCharts] = useState(false)
   const [showPositions, setShowPositions] = useState(true)
 
   const accountGroups = useMemo(() =>
@@ -151,6 +152,27 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
     })
   }
 
+  function toggleTag(tag: string) {
+    setSelectedTags(prev => {
+      const next = new Set(prev)
+      if (next.has(tag)) next.delete(tag)
+      else next.add(tag)
+      return next
+    })
+  }
+
+  function splitTags(raw: string[] | undefined): string[] {
+    if (!raw || raw.length === 0) return []
+    const out: string[] = []
+    for (const r of raw) {
+      for (const t of String(r).split(',')) {
+        const v = t.trim()
+        if (v) out.push(v)
+      }
+    }
+    return out
+  }
+
   const accountFiltered = useMemo(() =>
     selectedAccountIds.size === 0
       ? summary.positions
@@ -174,25 +196,27 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
   const allTags = useMemo(() =>
     [...new Set(
-      mergedPositions.flatMap(p => p.security.tags ?? [])
+      mergedPositions.flatMap(p => splitTags(p.security.tags))
     )].sort(),
     [mergedPositions]
   )
 
   const tagFilteredPositions = useMemo(() =>
-    selectedTags.length === 0
+    selectedTags.size === 0
       ? visibleMerged
-      : visibleMerged.filter(p =>
-          selectedTags.some(t => (p.security.tags ?? []).includes(t))
-        ),
+      : visibleMerged.filter(p => {
+          const tags = splitTags(p.security.tags)
+          for (const t of tags) if (selectedTags.has(t)) return true
+          return false
+        }),
     [visibleMerged, selectedTags]
   )
 
   const filteredKpi = useMemo(() => {
-    const mv = visibleMerged.reduce((s, p) => s + p.market_value, 0)
-    const inv = visibleMerged.reduce((s, p) => s + p.total_invested, 0)
-    const pnl = visibleMerged.reduce((s, p) => s + p.unrealized_pnl, 0)
-    const div = visibleMerged.reduce((s, p) => s + p.total_dividends, 0)
+    const mv = tagFilteredPositions.reduce((s, p) => s + p.market_value, 0)
+    const inv = tagFilteredPositions.reduce((s, p) => s + p.total_invested, 0)
+    const pnl = tagFilteredPositions.reduce((s, p) => s + p.unrealized_pnl, 0)
+    const div = tagFilteredPositions.reduce((s, p) => s + p.total_dividends, 0)
     return {
       total_market_value: mv,
       total_invested: inv,
@@ -202,18 +226,25 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       positions: accountFiltered,
       last_price_updated_at: summary.last_price_updated_at,
     }
-  }, [visibleMerged, accountFiltered, summary.last_price_updated_at])
+  }, [tagFilteredPositions, accountFiltered, summary.last_price_updated_at])
 
   const visibleTotal = useMemo(
-    () => visibleMerged.reduce((s, p) => s + p.market_value, 0),
-    [visibleMerged]
+    () => tagFilteredPositions.reduce((s, p) => s + p.market_value, 0),
+    [tagFilteredPositions]
   )
 
   const chartPositions = useMemo(() =>
-    accountFiltered.filter(p =>
-      selectedSectors.size === 0 || selectedSectors.has(p.security.sector ?? '기타')
-    ),
-    [accountFiltered, selectedSectors]
+    accountFiltered.filter(p => {
+      if (selectedSectors.size > 0 && !selectedSectors.has(p.security.sector ?? '기타')) return false
+      if (selectedTags.size > 0) {
+        const tags = splitTags(p.security.tags)
+        let hit = false
+        for (const t of tags) if (selectedTags.has(t)) { hit = true; break }
+        if (!hit) return false
+      }
+      return true
+    }),
+    [accountFiltered, selectedSectors, selectedTags]
   )
 
   async function handleRefresh() {
@@ -412,6 +443,51 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         )}
       </div>
 
+      {/* 태그 섹션 */}
+      <div>
+        <div className="mb-2">
+          <SectionHeader
+            label="태그"
+            open={showTags}
+            onToggle={() => setShowTags(v => !v)}
+            badge={selectedTags.size}
+          />
+        </div>
+        {showTags && (
+          allTags.length > 0 ? (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                onClick={() => setSelectedTags(new Set())}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                  selectedTags.size === 0
+                    ? 'bg-slate-50 text-slate-700 font-medium'
+                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                }`}
+                style={selectedTags.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
+                전체
+              </button>
+              {allTags.map(t => {
+                const isSelected = selectedTags.has(t)
+                return (
+                  <button key={t}
+                    onClick={() => toggleTag(t)}
+                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      isSelected
+                        ? 'bg-slate-50 text-slate-700 font-medium'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                    }`}
+                    style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
+                    #{t}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">등록된 태그가 없습니다.</p>
+          )
+        )}
+      </div>
+
       {/* 차트 섹션 */}
       <div>
         <div className="mb-2">
@@ -437,48 +513,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             label="종목"
             open={showPositions}
             onToggle={() => setShowPositions(v => !v)}
-            badge={visibleMerged.length}
+            badge={tagFilteredPositions.length}
           />
         </div>
         {showPositions && (
-          <>
-            {allTags.length > 0 ? (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {allTags.map(tag => {
-                  const active = selectedTags.includes(tag)
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => setSelectedTags(
-                        active
-                          ? selectedTags.filter(t => t !== tag)
-                          : [...selectedTags, tag]
-                      )}
-                      className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                        active
-                          ? 'border-transparent text-white'
-                          : 'border-slate-200 text-slate-500 hover:border-slate-300 bg-white'
-                      }`}
-                      style={active ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}
-                    >
-                      #{tag}
-                    </button>
-                  )
-                })}
-                {selectedTags.length > 0 ? (
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTags([])}
-                    className="text-xs px-2 py-1 text-slate-400 hover:text-slate-600 transition-colors"
-                  >
-                    초기화
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-            <PositionCards positions={tagFilteredPositions} totalValue={visibleTotal} sectorColors={sectorColors} />
-          </>
+          <PositionCards positions={tagFilteredPositions} totalValue={visibleTotal} sectorColors={sectorColors} />
         )}
       </div>
 
