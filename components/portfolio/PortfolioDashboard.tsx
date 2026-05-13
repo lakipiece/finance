@@ -116,6 +116,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [editingSecurity, setEditingSecurity] = useState<Security | null>(null)
   const [options, setOptions] = useState<Record<string, OptionItem[]>>({})
   const [toastMsg, setToastMsg] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     fetch('/api/portfolio/options').then(r => r.json()).then(setOptions).catch(() => {})
@@ -225,6 +226,15 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         }),
     [visibleMerged, selectedTags]
   )
+
+  const searchedPositions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return tagFilteredPositions
+    return tagFilteredPositions.filter(p =>
+      p.security.name.toLowerCase().includes(q) ||
+      p.security.ticker.toLowerCase().includes(q)
+    )
+  }, [tagFilteredPositions, searchQuery])
 
   const filteredKpi = useMemo(() => {
     const mv = tagFilteredPositions.reduce((s, p) => s + p.market_value, 0)
@@ -522,17 +532,40 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
       {/* 종목 섹션 */}
       <div>
-        <div className="mb-2">
+        <div className="mb-2 flex items-center gap-3 flex-wrap">
           <SectionHeader
             label="종목"
             open={showPositions}
             onToggle={() => setShowPositions(v => !v)}
-            badge={tagFilteredPositions.length}
+            badge={searchedPositions.length}
           />
+          <div className="relative">
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+            </svg>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); if (e.target.value) setShowPositions(true) }}
+              placeholder="종목명/티커 검색"
+              className="text-xs pl-6 pr-6 py-1 rounded-full border border-slate-200 bg-white text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-slate-400 transition-colors w-44"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                title="검색 초기화">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
         {showPositions && (
           <PositionCards
-            positions={tagFilteredPositions}
+            positions={searchedPositions}
             totalValue={visibleTotal}
             sectorColors={sectorColors}
             onEdit={sec => setEditingSecurity(sec as Security)}
