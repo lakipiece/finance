@@ -9,16 +9,18 @@ interface Props {
   positions: MergedPosition[]
   totalValue: number
   sectorColors?: Record<string, string>
+  onEdit?: (security: MergedPosition['security']) => void
 }
 
 function fmt(n: number) {
   return Math.round(n).toLocaleString()
 }
 
-function PositionModal({ position: p, totalValue, onClose, sectorColors = {} }: {
+function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors = {} }: {
   position: MergedPosition
   totalValue: number
   onClose: () => void
+  onEdit?: (security: MergedPosition['security']) => void
   sectorColors?: Record<string, string>
 }) {
   const pnlPos = p.unrealized_pnl >= 0
@@ -60,7 +62,19 @@ function PositionModal({ position: p, totalValue, onClose, sectorColors = {} }: 
               </svg>
             </button>
           </div>
-          <p className="text-sm font-bold text-slate-800 mt-2 leading-snug">{p.security.name}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <p className="text-sm font-bold text-slate-800 leading-snug flex-1">{p.security.name}</p>
+            {onEdit && (
+              <button
+                onClick={() => onEdit(p.security)}
+                title="종목 수정"
+                className="shrink-0 text-slate-200 hover:text-slate-500 p-1 rounded hover:bg-slate-100 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 카드 그리드 3열 2행 */}
@@ -132,7 +146,7 @@ function PositionModal({ position: p, totalValue, onClose, sectorColors = {} }: 
   )
 }
 
-export default function PositionCards({ positions, totalValue, sectorColors = {} }: Props) {
+export default function PositionCards({ positions, totalValue, sectorColors = {}, onEdit }: Props) {
   const router = useRouter()
   const [modal, setModal] = useState<MergedPosition | null>(null)
   const [syncing, setSyncing] = useState<string | null>(null)
@@ -247,7 +261,13 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
       </div>
 
       {modal && (
-        <PositionModal position={modal} totalValue={totalValue} sectorColors={sectorColors} onClose={() => setModal(null)} />
+        <PositionModal
+          position={modal}
+          totalValue={totalValue}
+          sectorColors={sectorColors}
+          onEdit={onEdit ? (sec) => { setModal(null); onEdit(sec) } : undefined}
+          onClose={() => setModal(null)}
+        />
       )}
     </>
   )

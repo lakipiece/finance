@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account } from '@/lib/portfolio/types'
+import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import PortfolioKpiCards from './PortfolioKpiCards'
 import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
+import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
 
 interface Props {
   summary: PortfolioSummary
@@ -109,9 +110,22 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
   const [showAccounts, setShowAccounts] = useState(true)
   const [showSectors, setShowSectors] = useState(true)
-  const [showTags, setShowTags] = useState(true)
+  const [showTags, setShowTags] = useState(false)
   const [showCharts, setShowCharts] = useState(false)
   const [showPositions, setShowPositions] = useState(true)
+  const [editingSecurity, setEditingSecurity] = useState<Security | null>(null)
+  const [options, setOptions] = useState<Record<string, OptionItem[]>>({})
+  const [toastMsg, setToastMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/portfolio/options').then(r => r.json()).then(setOptions).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!toastMsg) return
+    const id = setTimeout(() => setToastMsg(null), 2000)
+    return () => clearTimeout(id)
+  }, [toastMsg])
 
   const accountGroups = useMemo(() =>
     summary.positions.reduce<Record<string, {
@@ -517,9 +531,33 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           />
         </div>
         {showPositions && (
-          <PositionCards positions={tagFilteredPositions} totalValue={visibleTotal} sectorColors={sectorColors} />
+          <PositionCards
+            positions={tagFilteredPositions}
+            totalValue={visibleTotal}
+            sectorColors={sectorColors}
+            onEdit={sec => setEditingSecurity(sec as Security)}
+          />
         )}
       </div>
+
+      {editingSecurity && (
+        <SecurityFormModal
+          security={editingSecurity}
+          options={options}
+          onSave={() => {
+            setEditingSecurity(null)
+            setToastMsg('종목 수정 완료')
+            router.refresh()
+          }}
+          onClose={() => setEditingSecurity(null)}
+        />
+      )}
+
+      {toastMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg pointer-events-none">
+          {toastMsg}
+        </div>
+      )}
 
     </div>
   )
