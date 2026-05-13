@@ -8,41 +8,51 @@ type SnapshotRow = {
   id: string
   date: unknown
   total_market_value: number | null
+  total_invested: number | null
   sector_breakdown: unknown
+  asset_class_breakdown: unknown
+  tag_breakdown: unknown
+}
+
+function parseBreakdown(raw: unknown): Record<string, number> {
+  if (raw == null) return {}
+  if (typeof raw === 'string') return JSON.parse(raw)
+  return raw as Record<string, number>
 }
 
 export default async function SnapshotChartsPage() {
   const sql = getSql()
-  const [raw, sectorRows] = await Promise.all([
+  const [raw, optRows] = await Promise.all([
     sql<SnapshotRow[]>`
-      SELECT id, date, total_market_value, sector_breakdown
+      SELECT id, date, total_market_value, total_invested,
+             sector_breakdown, asset_class_breakdown, tag_breakdown
       FROM snapshots ORDER BY date ASC, created_at ASC
     `,
-    sql<{ value: string; color_hex: string }[]>`
-      SELECT value, color_hex FROM option_list WHERE type = 'sector' AND color_hex IS NOT NULL
+    sql<{ type: string; value: string; color_hex: string }[]>`
+      SELECT type, value, color_hex FROM option_list
+      WHERE type IN ('sector','asset_class') AND color_hex IS NOT NULL
     `,
   ])
 
-  const sectorColors: Record<string, string> = Object.fromEntries(
-    sectorRows.map(r => [r.value, r.color_hex])
-  )
+  const sectorColors: Record<string, string> = {}
+  const assetClassColors: Record<string, string> = {}
+  for (const r of optRows) {
+    if (r.type === 'sector') sectorColors[r.value] = r.color_hex
+    else if (r.type === 'asset_class') assetClassColors[r.value] = r.color_hex
+  }
 
   const points = raw
     .filter(s => s.total_market_value != null)
-    .map(s => {
-      const raw_breakdown = s.sector_breakdown
-      const breakdown: Record<string, number> =
-        raw_breakdown == null ? {}
-        : typeof raw_breakdown === 'string' ? JSON.parse(raw_breakdown)
-        : raw_breakdown as Record<string, number>
-      return {
-        date: (s.date as unknown) instanceof Date
-          ? (s.date as unknown as Date).toISOString().slice(0, 10)
-          : String(s.date).slice(0, 10),
-        total_market_value: Number(s.total_market_value),
-        breakdown,
-      }
-    })
+    .map(s => ({
+      date: (s.date as unknown) instanceof Date
+        ? (s.date as unknown as Date).toISOString().slice(0, 10)
+        : String(s.date).slice(0, 10),
+      total_market_value: Number(s.total_market_value),
+      total_invested: Number(s.total_invested ?? 0),
+      sector_breakdown: parseBreakdown(s.sector_breakdown),
+      asset_class_breakdown: parseBreakdown(s.asset_class_breakdown),
+      tag_breakdown: parseBreakdown(s.tag_breakdown),
+    }))
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
@@ -61,7 +71,11 @@ export default async function SnapshotChartsPage() {
           </Link>
         </div>
       ) : (
-        <SnapshotCharts points={points} sectorColors={sectorColors} />
+        <SnapshotCharts
+          points={points}
+          sectorColors={sectorColors}
+          assetClassColors={assetClassColors}
+        />
       )}
     </div>
   )

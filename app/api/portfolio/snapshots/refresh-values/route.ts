@@ -16,18 +16,23 @@ export async function POST() {
   `
   const securities = await sql<{
     id: string; ticker: string; currency: string; country: string | null
-    sector: string | null; asset_class: string | null
+    sector: string | null; asset_class: string | null; tags: string[]
   }[]>`
     SELECT s.id, s.ticker,
            cu.value AS currency,
            co.value AS country,
            se.value AS sector,
-           ac.value AS asset_class
+           ac.value AS asset_class,
+           COALESCE(tg.tags, '{}') AS tags
     FROM securities s
     LEFT JOIN option_list cu ON s.currency_id     = cu.id
     LEFT JOIN option_list co ON s.country_id      = co.id
     LEFT JOIN option_list se ON s.sector_id       = se.id
     LEFT JOIN option_list ac ON s.asset_class_id  = ac.id
+    LEFT JOIN (
+      SELECT security_id, array_agg(tag ORDER BY tag) AS tags
+      FROM security_tags GROUP BY security_id
+    ) tg ON tg.security_id = s.id
   `
 
   const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
@@ -66,7 +71,11 @@ export async function POST() {
     if (holdings.length === 0) {
       await sql`
         UPDATE snapshots
-        SET total_market_value = 0, total_invested = 0, sector_breakdown = '{}', value_updated_at = NOW()
+        SET total_market_value = 0, total_invested = 0,
+            sector_breakdown = '{}',
+            asset_class_breakdown = '{}',
+            tag_breakdown = '{}',
+            value_updated_at = NOW()
         WHERE id = ${snap.id}
       `
       continue
@@ -95,7 +104,9 @@ export async function POST() {
 
     let totalMarketValue = 0
     let totalInvested = 0
+    const assetClassAgg: Record<string, number> = {}
     const sectorAgg: Record<string, number> = {}
+    const tagAgg: Record<string, number> = {}
 
     for (const h of holdings) {
       const sec = secMap[h.security_id]
@@ -103,32 +114,44 @@ export async function POST() {
       const clean = sec.ticker.startsWith('KRX:') ? sec.ticker.slice(4) : sec.ticker
       const isKrx = sec.country === '국내'
       const avgPrice = Number(h.avg_price ?? 0)
-      // 국내 종목은 .KS 우선, 없으면 bare; 가격 없으면 avg_price 폴백 (코인 등)
       const rawPrice = isKrx
         ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? avgPrice)
         : (priceMap[clean] ?? avgPrice)
       const isKrw = isKrx || sec.currency === 'KRW'
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
-
       const qty = Number(h.quantity)
-      totalMarketValue += priceKrw * qty
+      const value = priceKrw * qty
 
+      totalMarketValue += value
       totalInvested += isKrw ? avgPrice * qty : avgPrice * exchangeRate * qty
 
-      const key = sec.sector || sec.asset_class || '기타'
-      sectorAgg[key] = (sectorAgg[key] ?? 0) + priceKrw * qty
+      const assetKey = sec.asset_class || '기타'
+      assetClassAgg[assetKey] = (assetClassAgg[assetKey] ?? 0) + value
+
+      if (sec.sector) {
+        sectorAgg[sec.sector] = (sectorAgg[sec.sector] ?? 0) + value
+      }
+
+      for (const tag of sec.tags ?? []) {
+        tagAgg[tag] = (tagAgg[tag] ?? 0) + value
+      }
     }
 
-    const sectorBreakdown: Record<string, number> = {}
-    for (const [k, v] of Object.entries(sectorAgg)) {
-      sectorBreakdown[k] = totalMarketValue > 0 ? Math.round((v / totalMarketValue) * 1000) / 10 : 0
+    const toPct = (agg: Record<string, number>) => {
+      const out: Record<string, number> = {}
+      for (const [k, v] of Object.entries(agg)) {
+        out[k] = totalMarketValue > 0 ? Math.round((v / totalMarketValue) * 1000) / 10 : 0
+      }
+      return out
     }
 
     await sql`
       UPDATE snapshots
       SET total_market_value = ${totalMarketValue},
           total_invested = ${totalInvested},
-          sector_breakdown = ${JSON.stringify(sectorBreakdown)},
+          sector_breakdown = ${JSON.stringify(toPct(sectorAgg))},
+          asset_class_breakdown = ${JSON.stringify(toPct(assetClassAgg))},
+          tag_breakdown = ${JSON.stringify(toPct(tagAgg))},
           value_updated_at = NOW()
       WHERE id = ${snap.id}
     `
