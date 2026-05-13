@@ -545,7 +545,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
             </svg>
             <input
-              type="search"
+              type="text"
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); if (e.target.value) setShowPositions(true) }}
               placeholder="종목명/티커 검색"
