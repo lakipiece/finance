@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, LabelList,
@@ -216,7 +217,24 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
 
 export default function SnapshotCharts({ points, sectorColors = {}, assetClassColors = {} }: Props) {
   const { palette } = useTheme()
+  const router = useRouter()
+  const [refreshing, setRefreshing] = useState(false)
   if (points.length < 2) return null
+
+  const needsBackfill = points.every(p =>
+    Object.keys(p.asset_class_breakdown).length === 0 &&
+    Object.keys(p.tag_breakdown).length === 0
+  )
+
+  async function handleBackfill() {
+    setRefreshing(true)
+    try {
+      await fetch('/api/portfolio/snapshots/refresh-values', { method: 'POST' })
+      router.refresh()
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const first = points[0]
   const last = points[points.length - 1]
@@ -249,6 +267,18 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
 
   return (
     <div className="space-y-4">
+
+      {needsBackfill && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-xs text-amber-700">
+            자산군·태그 분해 데이터가 비어 있습니다. 한 번 새로고침이 필요합니다.
+          </p>
+          <button onClick={handleBackfill} disabled={refreshing}
+            className="text-xs px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors">
+            {refreshing ? '계산 중...' : '값 새로고침'}
+          </button>
+        </div>
+      )}
 
       {/* KPI 카드 4개 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
