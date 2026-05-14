@@ -90,6 +90,149 @@ function KpiCard({ label, value, sub, subColor }: {
   )
 }
 
+function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
+  const { palette } = useTheme()
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [search, setSearch] = useState('')
+  const [threshold, setThreshold] = useState(5)
+
+  const allTags = useMemo(() => {
+    const sum: Record<string, number> = {}
+    for (const p of points) for (const [k, v] of Object.entries(p.tag_breakdown)) {
+      sum[k] = (sum[k] ?? 0) + v
+    }
+    return Object.entries(sum).sort((a, b) => b[1] - a[1]).map(([k]) => k)
+  }, [points])
+
+  const visibleTags = useMemo(() => {
+    if (selected.size > 0) return [...selected].sort()
+    return keysAboveThreshold(points, p => p.tag_breakdown, threshold)
+  }, [points, selected, threshold])
+
+  const filteredTagList = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return allTags
+    return allTags.filter(t => t.toLowerCase().includes(q))
+  }, [allTags, search])
+
+  const data = useMemo(() => points.map(p => {
+    const row: Record<string, number | string> = { date: p.date, total_market_value: p.total_market_value }
+    for (const t of visibleTags) row[t] = p.tag_breakdown[t] ?? 0
+    return row
+  }), [points, visibleTags])
+
+  const fallback = [palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3]]
+  function colorFor(_k: string, i: number): string {
+    return fallback[i % fallback.length]
+  }
+
+  function toggle(t: string) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(t)) next.delete(t)
+      else next.add(t)
+      return next
+    })
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-slate-700">태그 비중 변화</h3>
+          <p className="text-[10px] text-slate-400 mt-0.5">
+            태그를 가진 종목 합산 — 한 종목이 여러 태그면 중복 합산
+          </p>
+        </div>
+        {selected.size === 0 ? (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="text-[10px] text-slate-400">임계치</span>
+            <input type="range" min={1} max={20} step={1} value={threshold}
+              onChange={e => setThreshold(Number(e.target.value))}
+              className="w-20 accent-slate-400" />
+            <span className="text-[10px] tabular-nums text-slate-500 w-7">{threshold}%</span>
+          </div>
+        ) : (
+          <button onClick={() => setSelected(new Set())}
+            className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+            선택 해제
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="relative">
+          <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"
+            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="태그 검색"
+            className="text-[10px] pl-6 pr-6 py-1 rounded-full border border-slate-200 bg-white text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-slate-400 transition-colors w-32"
+          />
+          {search ? (
+            <button onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap gap-1 flex-1 min-w-0">
+          {filteredTagList.slice(0, 50).map(t => {
+            const active = selected.has(t)
+            return (
+              <button key={t}
+                onClick={() => toggle(t)}
+                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                  active
+                    ? 'text-white border-transparent'
+                    : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                }`}
+                style={active ? { backgroundColor: palette.colors[0] } : undefined}>
+                #{t}
+              </button>
+            )
+          })}
+          {filteredTagList.length > 50 ? (
+            <span className="text-[10px] text-slate-300 self-center">+{filteredTagList.length - 50}</span>
+          ) : null}
+        </div>
+      </div>
+
+      {visibleTags.length === 0 ? (
+        <p className="text-xs text-slate-400 py-12 text-center">표시할 태그가 없습니다. 칩을 선택하거나 임계치를 낮춰주세요.</p>
+      ) : (
+        <>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={data} margin={{ left: 0, right: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis hide />
+              <Tooltip content={<BreakdownTooltip />} />
+              {visibleTags.map((k, i) => (
+                <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)} />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="flex flex-wrap gap-x-2 gap-y-1 mt-3">
+            {visibleTags.map((k, i) => (
+              <span key={k} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
+                {k}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function StackedBreakdownCard({
   title,
   points,
@@ -386,15 +529,8 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
         enableTopNControl={true}
       />
 
-      {/* 태그 비중 변화 (임계치 기반) */}
-      <StackedBreakdownCard
-        title="태그 비중 변화"
-        description="태그를 가진 종목 합산 — 한 종목이 여러 태그면 중복 합산"
-        points={points}
-        accessor={p => p.tag_breakdown}
-        colorMap={{}}
-        threshold={5}
-      />
+      {/* 태그 비중 변화 (검색 + 다중 선택) */}
+      <TagBreakdownCard points={points} />
 
     </div>
   )
