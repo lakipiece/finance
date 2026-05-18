@@ -86,6 +86,15 @@ function IconScale() {
     </svg>
   )
 }
+function IconPiggyBank() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path d="M19 11c0-3.5-3.1-6-7-6s-7 2.5-7 6c0 1.5.6 2.9 1.6 4L6 17v2h3l1-1.5c.6.2 1.3.3 2 .3s1.4-.1 2-.3L15 19h3v-2l-.6-2c1-1.1 1.6-2.5 1.6-4z" />
+      <circle cx="16" cy="10" r="0.6" fill="currentColor" />
+      <path d="M9 8h2" />
+    </svg>
+  )
+}
 function IconBuilding() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -178,7 +187,7 @@ interface SidebarProps {
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
 
-  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/input', '/compare', '/options'].some(p => pathname.startsWith(p))
+  const inLedger = pathname === '/expenses' || ['/expenses', '/incomes', '/input', '/budget', '/compare', '/options'].some(p => pathname.startsWith(p))
   const inPortfolio = pathname.startsWith('/portfolio')
 
   return (
@@ -196,6 +205,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         {/* 가계부 섹션 */}
         <SectionHeader href="/expenses" icon={<IconGrid />} label="가계부" pathname={pathname} inSection={inLedger} onClose={onClose} />
         <SubItem href="/input"   icon={<IconPlusCircle />} label="수입 지출 관리" pathname={pathname} onClose={onClose} />
+        <SubItem href="/budget"  icon={<IconPiggyBank />}  label="예산관리"       pathname={pathname} onClose={onClose} />
         <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
         <SubItem href="/options" icon={<IconSettings />}   label="옵션"          pathname={pathname} onClose={onClose} />
 
