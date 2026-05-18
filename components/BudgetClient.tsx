@@ -105,24 +105,145 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
           <span className={badge.base} style={catBadge}>{category}</span>
           <h2 className="text-sm font-semibold text-slate-700">{label}</h2>
         </div>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-3 sm:gap-4 text-[11px] sm:text-xs">
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400">잔여기간</span>
-            <span className="font-semibold text-slate-600 tabular-nums">{(remainPeriodPct * 100).toFixed(2)}%</span>
+            <span className="font-semibold text-slate-600 tabular-nums">{(remainPeriodPct * 100).toFixed(1)}%</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400">잔여금액</span>
             <span
               className={`font-semibold tabular-nums ${totalRemainPct < remainPeriodPct ? 'text-rose-500' : 'text-emerald-600'}`}
             >
-              {(totalRemainPct * 100).toFixed(2)}%
+              {(totalRemainPct * 100).toFixed(1)}%
             </span>
           </div>
         </div>
       </div>
 
-      <div className={`${card.base} p-5`}>
-      <div className="overflow-x-auto">
+      <div className={`${card.base} p-3 sm:p-5`}>
+      {/* 모바일: 카드 리스트 */}
+      <div className="sm:hidden space-y-2">
+        {items.map((it) => {
+          const used = usageByDetail[it.detail] ?? 0
+          const remain = it.annual_plan - used
+          const pct = it.annual_plan > 0 ? remain / it.annual_plan : 0
+          const overBudget = it.annual_plan > 0 && remain < 0
+          return (
+            <div key={it.key} className="rounded-xl border border-slate-100 p-3">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={it.detail}
+                      onChange={e => onChange(it.key, { detail: e.target.value })}
+                      placeholder="세부유형"
+                      className={field.input}
+                    />
+                  ) : (
+                    <p className="text-sm text-slate-700 font-semibold truncate">{it.detail || '(미분류)'}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-xs font-semibold tabular-nums ${overBudget ? 'text-rose-500' : 'text-slate-500'}`}>
+                    {it.annual_plan > 0 ? `${(pct * 100).toFixed(1)}%` : '-'}
+                  </span>
+                  {editing ? (
+                    <button
+                      type="button"
+                      onClick={() => onRemove(it.key)}
+                      className="text-slate-300 hover:text-rose-400 transition-colors text-lg leading-none"
+                      aria-label="삭제"
+                    >×</button>
+                  ) : null}
+                </div>
+              </div>
+              {editing || it.note ? (
+                <div className="mb-2">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={it.note}
+                      onChange={e => onChange(it.key, { note: e.target.value })}
+                      placeholder="메모"
+                      className={field.input}
+                    />
+                  ) : (
+                    <p className="text-[11px] text-slate-400">{it.note}</p>
+                  )}
+                </div>
+              ) : null}
+              <div className="grid grid-cols-3 gap-2 text-[11px]">
+                <div>
+                  <p className="text-slate-400">연간계획</p>
+                  {editing ? (
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={it.annual_plan ? fmtAmountInput(String(it.annual_plan)) : ''}
+                      onChange={e => onChange(it.key, { annual_plan: parseAmountInput(e.target.value) })}
+                      placeholder="0"
+                      className={`${field.inputFit} w-full text-right tabular-nums`}
+                    />
+                  ) : (
+                    <p className="text-slate-700 tabular-nums">{formatWonFull(it.annual_plan)}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-slate-400">누적</p>
+                  <p className="text-slate-700 tabular-nums">{formatWonFull(used)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">잔액</p>
+                  <p className={`font-semibold tabular-nums ${overBudget ? 'text-rose-500' : 'text-slate-800'}`}>
+                    {formatWonFull(remain)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+        {!editing && extraDetails.length > 0 ? (
+          <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
+            <p className="text-sm text-slate-400 italic mb-1">(예산 외)</p>
+            <p className="text-[11px] text-slate-400 mb-2">{extraDetails.map(([d]) => d || '(미분류)').join(', ')}</p>
+            <div className="flex justify-between items-baseline">
+              <span className="text-[11px] text-slate-400">누적</span>
+              <span className="text-sm text-slate-600 tabular-nums">{formatWonFull(extraTotal)}</span>
+            </div>
+          </div>
+        ) : null}
+        {/* 합계 */}
+        <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 mt-2">
+          <p className="text-sm font-bold text-slate-700 mb-2">합계</p>
+          <div className="grid grid-cols-3 gap-2 text-[11px]">
+            <div>
+              <p className="text-slate-400">연간계획</p>
+              <p className="text-slate-700 tabular-nums font-semibold">{formatWonFull(totalPlan)}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">누적</p>
+              <p className="text-slate-700 tabular-nums font-semibold">{formatWonFull(totalUsed)}</p>
+            </div>
+            <div>
+              <p className="text-slate-400">잔액</p>
+              <p className={`font-bold tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-800'}`}>
+                {formatWonFull(totalRemain)}
+              </p>
+            </div>
+          </div>
+          <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between items-baseline">
+            <span className="text-[11px] text-slate-400">잔여%</span>
+            <span className={`text-sm font-semibold tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-700'}`}>
+              {totalPlan > 0 ? `${(totalRemainPct * 100).toFixed(1)}%` : '-'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 데스크탑: 테이블 */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-slate-100">
