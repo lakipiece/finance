@@ -1024,13 +1024,6 @@ function YearMonthPicker({ year, month, allPeriod, onChange }: {
               </svg>
             </button>
           </div>
-          {/* All period */}
-          <button onClick={() => { onChange(tempYear, null, true); setOpen(false) }}
-            className={`w-full mb-2 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              allPeriod
-                ? 'bg-[#1A237E] text-white'
-                : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
-            }`}>전체 기간</button>
           {/* Month grid */}
           <div className="grid grid-cols-4 gap-1">
             <button onClick={() => { onChange(tempYear, null, false); setOpen(false) }}
@@ -1048,6 +1041,13 @@ function YearMonthPicker({ year, month, allPeriod, onChange }: {
                 }`}>{m}월</button>
             ))}
           </div>
+          {/* All period (보조) */}
+          <button onClick={() => { onChange(tempYear, null, true); setOpen(false) }}
+            className={`w-full mt-2 pt-2 border-t border-slate-100 py-1.5 rounded-b-lg text-[11px] transition-colors ${
+              allPeriod
+                ? 'text-[#1A237E] font-semibold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}>전체 기간 보기</button>
         </div>
       )}
     </div>
