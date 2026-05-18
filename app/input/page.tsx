@@ -943,9 +943,9 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
 }
 
 /* ── Year/Month Picker ── */
-function YearMonthPicker({ year, month, onChange }: {
-  year: number; month: number | null
-  onChange: (year: number, month: number | null) => void
+function YearMonthPicker({ year, month, allPeriod, onChange }: {
+  year: number; month: number | null; allPeriod: boolean
+  onChange: (year: number, month: number | null, allPeriod: boolean) => void
 }) {
   const [open, setOpen] = useState(false)
   const [tempYear, setTempYear] = useState(year)
@@ -974,7 +974,11 @@ function YearMonthPicker({ year, month, onChange }: {
     setEditingYear(false)
   }
 
-  const label = month ? `${year}년 ${month}월` : `${year}년 전체`
+  const label = allPeriod
+    ? '전체 기간'
+    : month
+    ? `${year}년 ${month}월`
+    : `${year}년 전체`
 
   return (
     <div className="relative" ref={ref}>
@@ -1020,18 +1024,25 @@ function YearMonthPicker({ year, month, onChange }: {
               </svg>
             </button>
           </div>
+          {/* All period */}
+          <button onClick={() => { onChange(tempYear, null, true); setOpen(false) }}
+            className={`w-full mb-2 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              allPeriod
+                ? 'bg-[#1A237E] text-white'
+                : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+            }`}>전체 기간</button>
           {/* Month grid */}
           <div className="grid grid-cols-4 gap-1">
-            <button onClick={() => { onChange(tempYear, null); setOpen(false) }}
+            <button onClick={() => { onChange(tempYear, null, false); setOpen(false) }}
               className={`col-span-4 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                year === tempYear && month === null
+                !allPeriod && year === tempYear && month === null
                   ? 'bg-slate-800 text-white'
                   : 'text-slate-500 hover:bg-slate-50'
-              }`}>전체</button>
+              }`}>{tempYear}년 전체</button>
             {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-              <button key={m} onClick={() => { onChange(tempYear, m); setOpen(false) }}
+              <button key={m} onClick={() => { onChange(tempYear, m, false); setOpen(false) }}
                 className={`py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  year === tempYear && month === m
+                  !allPeriod && year === tempYear && month === m
                     ? 'bg-slate-800 text-white'
                     : 'text-slate-500 hover:bg-slate-50'
                 }`}>{m}월</button>
@@ -1173,6 +1184,7 @@ export default function InputPage() {
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
   const [viewMonth, setViewMonth] = useState<number | null>(now.getMonth() + 1)
+  const [viewAllPeriod, setViewAllPeriod] = useState(false)
 
   useEffect(() => {
     fetch('/api/options/details').then(r => r.json()).then((data: { name: string; category: string }[]) => {
@@ -1188,9 +1200,12 @@ export default function InputPage() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
+    const qs = viewAllPeriod
+      ? 'all=1'
+      : `year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`
     const [expRes, incRes] = await Promise.all([
-      fetch(`/api/expenses?year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`),
-      fetch(`/api/incomes?year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`),
+      fetch(`/api/expenses?${qs}`),
+      fetch(`/api/incomes?${qs}`),
     ])
     const [expData, incData] = await Promise.all([expRes.json(), incRes.json()])
     const expenses: ExpenseRecord[] = (expData.expenses ?? []).map((e: {
@@ -1210,7 +1225,7 @@ export default function InputPage() {
     const combined = [...expenses, ...incomes].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
     setRecords(combined)
     setLoading(false)
-  }, [viewYear, viewMonth])
+  }, [viewYear, viewMonth, viewAllPeriod])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
@@ -1320,8 +1335,8 @@ export default function InputPage() {
         {/* Header with year/month selector + search */}
         <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
           <YearMonthPicker
-            year={viewYear} month={viewMonth}
-            onChange={(y, m) => { setViewYear(y); setViewMonth(m) }}
+            year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}
+            onChange={(y, m, all) => { setViewYear(y); setViewMonth(m); setViewAllPeriod(all) }}
           />
           <div className="relative flex items-center">
             <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1433,7 +1448,7 @@ export default function InputPage() {
             </div>
             {filteredRecords.length === 0 && (
               <p className="text-xs text-slate-400 py-8 text-center">
-                {searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
+                {searchQuery ? '검색 결과가 없습니다.' : viewAllPeriod ? '내역이 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
               </p>
             )}
           </>

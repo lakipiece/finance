@@ -9,19 +9,21 @@ export async function GET(req: NextRequest) {
   const category = params.get('category')
   const detail = params.get('detail')
   const month = params.get('month')
+  const all = params.get('all') === '1'
 
   const year = yearStr ? parseInt(yearStr) : null
-  if (!year) return NextResponse.json({ error: 'year required' }, { status: 400 })
+  if (!all && !year) return NextResponse.json({ error: 'year required' }, { status: 400 })
 
   const sql = getSql()
 
   const rows = await sql`
     SELECT id, year, month, expense_date, category, detail, memo, method, amount, member
     FROM expenses
-    WHERE year = ${year}
+    WHERE 1=1
+    ${!all && year ? sql`AND year = ${year}` : sql``}
     ${category ? sql`AND category = ${category}` : sql``}
     ${detail ? sql`AND detail = ${detail}` : sql``}
-    ${month ? sql`AND month = ${parseInt(month)}` : sql``}
+    ${!all && month ? sql`AND month = ${parseInt(month)}` : sql``}
     ORDER BY expense_date DESC, id DESC
   `
 

@@ -7,15 +7,17 @@ import { auth } from '@/lib/auth'
 export async function GET(req: NextRequest) {
   const year = req.nextUrl.searchParams.get('year')
   const monthParam = req.nextUrl.searchParams.get('month')
-  if (!year) return NextResponse.json({ error: 'year required' }, { status: 400 })
+  const all = req.nextUrl.searchParams.get('all') === '1'
+  if (!all && !year) return NextResponse.json({ error: 'year required' }, { status: 400 })
   try {
     const sql = getSql()
     const month = monthParam ? parseInt(monthParam) : null
     const rows = await sql`
       SELECT id, income_date, year, month, category, description, amount, member, memo
       FROM incomes
-      WHERE year = ${parseInt(year)}
-      ${month ? sql`AND month = ${month}` : sql``}
+      WHERE 1=1
+      ${!all && year ? sql`AND year = ${parseInt(year)}` : sql``}
+      ${!all && month ? sql`AND month = ${month}` : sql``}
       ORDER BY income_date DESC, id DESC
     `
     return NextResponse.json(rows.map((r) => ({
