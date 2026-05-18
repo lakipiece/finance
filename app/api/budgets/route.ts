@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const sql = getSql()
 
-  const [items, weeklyRows, usageByDetailRows, usageByCategoryRows, usageWeeklyRows] = await Promise.all([
+  const [items, weeklyRows, usageByDetailRows, usageByCategoryRows, usageWeeklyRows, detailOptRows] = await Promise.all([
     sql`
       SELECT id, category, detail, annual_plan, sort_order, note
       FROM budget_items
@@ -51,6 +51,12 @@ export async function GET(req: NextRequest) {
       GROUP BY week
       ORDER BY week
     `,
+    sql`
+      SELECT name, COALESCE(category, '') AS category, COALESCE(order_idx, 0) AS order_idx
+      FROM detail_options
+      WHERE is_active = true AND COALESCE(category, '') <> ''
+      ORDER BY category, order_idx, name
+    `,
   ])
 
   const usageByDetail: Record<string, Record<string, number>> = {}
@@ -74,6 +80,8 @@ export async function GET(req: NextRequest) {
     year,
     items,
     weeklyAmount: (weeklyRows[0] as { weekly_amount?: number } | undefined)?.weekly_amount ?? 0,
+    initialized: items.length > 0 || weeklyRows.length > 0,
+    detailOptions: detailOptRows,
     usageByDetail,
     usageByCategory,
     weeklyUsage,

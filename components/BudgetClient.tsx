@@ -25,10 +25,18 @@ interface BudgetItem {
   note: string
 }
 
+interface DetailOption {
+  name: string
+  category: string
+  order_idx: number
+}
+
 interface BudgetData {
   year: number
   items: BudgetItem[]
   weeklyAmount: number
+  initialized: boolean
+  detailOptions: DetailOption[]
   usageByDetail: Record<string, Record<string, number>>
   usageByCategory: Record<string, number>
   weeklyUsage: Record<number, number>
@@ -372,14 +380,25 @@ export default function BudgetClient({ initialYear }: Props) {
       const res = await fetch(`/api/budgets?year=${year}`)
       const json: BudgetData = await res.json()
       setData(json)
-      setDrafts(json.items.map((it, i) => ({
-        key: `item-${it.id ?? i}`,
-        id: it.id,
-        category: it.category,
-        detail: it.detail,
-        annual_plan: it.annual_plan,
-        note: it.note,
-      })))
+      if (json.initialized) {
+        setDrafts(json.items.map((it, i) => ({
+          key: `item-${it.id ?? i}`,
+          id: it.id,
+          category: it.category,
+          detail: it.detail,
+          annual_plan: it.annual_plan,
+          note: it.note,
+        })))
+      } else {
+        setDrafts((json.detailOptions ?? []).map((o, i) => ({
+          key: `seed-${i}`,
+          id: null,
+          category: o.category,
+          detail: o.name,
+          annual_plan: 0,
+          note: '',
+        })))
+      }
       setWeeklyAmount(json.weeklyAmount ?? 0)
     } catch (e) {
       console.error(e)
@@ -396,14 +415,25 @@ export default function BudgetClient({ initialYear }: Props) {
 
   function cancelEdit() {
     if (!data) return
-    setDrafts(data.items.map((it, i) => ({
-      key: `item-${it.id ?? i}`,
-      id: it.id,
-      category: it.category,
-      detail: it.detail,
-      annual_plan: it.annual_plan,
-      note: it.note,
-    })))
+    if (data.initialized) {
+      setDrafts(data.items.map((it, i) => ({
+        key: `item-${it.id ?? i}`,
+        id: it.id,
+        category: it.category,
+        detail: it.detail,
+        annual_plan: it.annual_plan,
+        note: it.note,
+      })))
+    } else {
+      setDrafts((data.detailOptions ?? []).map((o, i) => ({
+        key: `seed-${i}`,
+        id: null,
+        category: o.category,
+        detail: o.name,
+        annual_plan: 0,
+        note: '',
+      })))
+    }
     setWeeklyAmount(data.weeklyAmount ?? 0)
     setEditing(false)
   }
