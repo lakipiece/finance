@@ -75,6 +75,36 @@ function elapsedDays(year: number) {
   return Math.min(daysInYear(year), Math.max(0, Math.floor(diffMs / 86400000) + 1))
 }
 
+function getIsoWeek(date: Date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const day = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+}
+
+/**
+ * '여행공연비'에서 '여행' 항목이 있으면 '문화생활' 외 카테고리 내 모든 detail을 흡수.
+ * '문화생활' 항목은 정확 매칭. 그 외 카테고리는 detail 정확 매칭.
+ */
+function getItemUsed(category: string, detail: string, usageByDetail: Record<string, number>) {
+  if (category === '여행공연비' && detail === '여행') {
+    return Object.entries(usageByDetail)
+      .filter(([d]) => d !== '문화생활')
+      .reduce((s, [, v]) => s + v, 0)
+  }
+  return usageByDetail[detail] ?? 0
+}
+
+function computeExtraDetails(category: string, items: DraftItem[], usageByDetail: Record<string, number>) {
+  const knownDetails = new Set(items.map(it => it.detail))
+  if (category === '여행공연비' && knownDetails.has('여행')) {
+    // '여행' 항목이 문화생활 외 모두 흡수 → 예산 외 없음
+    return []
+  }
+  return Object.entries(usageByDetail).filter(([d, amt]) => !knownDetails.has(d) && amt > 0)
+}
+
 interface SectionProps {
   label: string
   category: string
@@ -94,8 +124,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
   const totalRemainPct = totalPlan > 0 ? totalRemain / totalPlan : 0
   const catBadge = catBadgeStyle(category)
 
-  const knownDetails = new Set(items.map(it => it.detail))
-  const extraDetails = Object.entries(usageByDetail).filter(([d, amt]) => !knownDetails.has(d) && amt > 0)
+  const extraDetails = computeExtraDetails(category, items, usageByDetail)
   const extraTotal = extraDetails.reduce((s, [, v]) => s + v, 0)
 
   return (
@@ -125,10 +154,11 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
       {/* 모바일: 카드 리스트 */}
       <div className="sm:hidden space-y-2">
         {items.map((it) => {
-          const used = usageByDetail[it.detail] ?? 0
-          const remain = it.annual_plan - used
-          const pct = it.annual_plan > 0 ? remain / it.annual_plan : 0
-          const overBudget = it.annual_plan > 0 && remain < 0
+          const used = getItemUsed(category, it.detail, usageByDetail)
+          const hasPlan = it.annual_plan > 0
+          const remain = hasPlan ? it.annual_plan - used : 0
+          const pct = hasPlan ? remain / it.annual_plan : 0
+          const overBudget = hasPlan && remain < 0
           return (
             <div key={it.key} className="rounded-xl border border-slate-100 p-3">
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -145,10 +175,14 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                     <p className="text-sm text-slate-700 font-semibold truncate">{it.detail || '(미분류)'}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-xs font-semibold tabular-nums ${overBudget ? 'text-rose-500' : 'text-slate-500'}`}>
-                    {it.annual_plan > 0 ? `${(pct * 100).toFixed(1)}%` : '-'}
-                  </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {hasPlan ? (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
+                      overBudget ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {(pct * 100).toFixed(1)}%
+                    </span>
+                  ) : null}
                   {editing ? (
                     <button
                       type="button"
@@ -187,7 +221,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                       className={`${field.inputFit} w-full text-right tabular-nums`}
                     />
                   ) : (
-                    <p className="text-slate-700 tabular-nums">{formatWonFull(it.annual_plan)}</p>
+                    <p className="text-slate-700 tabular-nums">{hasPlan ? formatWonFull(it.annual_plan) : '-'}</p>
                   )}
                 </div>
                 <div>
@@ -197,7 +231,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                 <div>
                   <p className="text-slate-400">잔액</p>
                   <p className={`font-semibold tabular-nums ${overBudget ? 'text-rose-500' : 'text-slate-800'}`}>
-                    {formatWonFull(remain)}
+                    {hasPlan ? formatWonFull(remain) : '-'}
                   </p>
                 </div>
               </div>
@@ -206,8 +240,8 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
         })}
         {!editing && extraDetails.length > 0 ? (
           <div className="rounded-xl border border-slate-100 bg-slate-50/40 p-3">
-            <p className="text-sm text-slate-400 italic mb-1">(예산 외)</p>
-            <p className="text-[11px] text-slate-400 mb-2">{extraDetails.map(([d]) => d || '(미분류)').join(', ')}</p>
+            <p className="text-[11px] text-slate-400 mb-1">(예산 외)</p>
+            <p className="text-[10px] text-slate-400 mb-2">{extraDetails.map(([d]) => d || '(미분류)').join(', ')}</p>
             <div className="flex justify-between items-baseline">
               <span className="text-[11px] text-slate-400">누적</span>
               <span className="text-sm text-slate-600 tabular-nums">{formatWonFull(extraTotal)}</span>
@@ -258,10 +292,11 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
           </thead>
           <tbody>
             {items.map((it) => {
-              const used = usageByDetail[it.detail] ?? 0
-              const remain = it.annual_plan - used
-              const pct = it.annual_plan > 0 ? remain / it.annual_plan : 0
-              const overBudget = it.annual_plan > 0 && remain < 0
+              const used = getItemUsed(category, it.detail, usageByDetail)
+              const hasPlan = it.annual_plan > 0
+              const remain = hasPlan ? it.annual_plan - used : 0
+              const pct = hasPlan ? remain / it.annual_plan : 0
+              const overBudget = hasPlan && remain < 0
               return (
                 <tr key={it.key} className="border-b border-slate-50 hover:bg-slate-50/50">
                   <td className="py-2 px-2">
@@ -301,15 +336,23 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                         className={`${field.inputFit} text-right w-full`}
                       />
                     ) : (
-                      <span className="text-slate-600">{formatWonFull(it.annual_plan)}</span>
+                      <span className="text-slate-600">{hasPlan ? formatWonFull(it.annual_plan) : '-'}</span>
                     )}
                   </td>
                   <td className="py-2 px-2 text-right tabular-nums text-slate-600">{formatWonFull(used)}</td>
                   <td className={`py-2 px-2 text-right tabular-nums font-semibold ${overBudget ? 'text-rose-500' : 'text-slate-700'}`}>
-                    {formatWonFull(remain)}
+                    {hasPlan ? formatWonFull(remain) : '-'}
                   </td>
-                  <td className={`py-2 px-2 text-right tabular-nums ${overBudget ? 'text-rose-500' : 'text-slate-500'}`}>
-                    {it.annual_plan > 0 ? `${(pct * 100).toFixed(1)}%` : '-'}
+                  <td className="py-2 px-2 text-right tabular-nums">
+                    {hasPlan ? (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        overBudget ? 'bg-rose-50 text-rose-500' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {(pct * 100).toFixed(1)}%
+                      </span>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
                   </td>
                   {editing ? (
                     <td className="py-2 px-1 text-right">
@@ -326,8 +369,8 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
             })}
             {!editing && extraDetails.length > 0 ? (
               <tr className="border-b border-slate-50 bg-slate-50/40">
-                <td className="py-2 px-2 text-slate-400 italic">(예산 외)</td>
-                <td className="py-2 px-2 text-slate-400 text-[11px]">
+                <td className="py-2 px-2 text-slate-400 text-[11px]">(예산 외)</td>
+                <td className="py-2 px-2 text-slate-400 text-[10px]">
                   {extraDetails.map(([d]) => d || '(미분류)').join(', ')}
                 </td>
                 <td className="py-2 px-2 text-right tabular-nums text-slate-400">-</td>
@@ -401,9 +444,39 @@ function WeeklyTooltip({ active, payload, label }: ChartTooltipProps) {
 interface WeeklyChartProps {
   weeklyAmount: number
   weeklyUsage: Record<number, number>
+  year: number
 }
 
-function WeeklyChart({ weeklyAmount, weeklyUsage }: WeeklyChartProps) {
+interface RechartsDotProps {
+  cx?: number
+  cy?: number
+  index?: number
+  payload?: { week: number }
+}
+
+function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
+  const currentWeek = useMemo(() => {
+    const now = new Date()
+    if (now.getFullYear() !== year) return -1
+    return Math.min(52, getIsoWeek(now))
+  }, [year])
+
+  const renderCumulativeDot = (props: RechartsDotProps) => {
+    const { cx, cy, index, payload } = props
+    if (cx == null || cy == null) return <g key={index} />
+    const isCurrent = payload?.week === currentWeek
+    return (
+      <circle
+        key={index}
+        cx={cx}
+        cy={cy}
+        r={isCurrent ? 6 : 2}
+        fill={isCurrent ? '#F43F5E' : '#1A237E'}
+        stroke={isCurrent ? '#fff' : 'none'}
+        strokeWidth={isCurrent ? 2 : 0}
+      />
+    )
+  }
   const data = useMemo(() => {
     const rows: WeeklyTooltipDatum[] = []
     let cumulative = 0
@@ -464,7 +537,7 @@ function WeeklyChart({ weeklyAmount, weeklyUsage }: WeeklyChartProps) {
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
           <Bar yAxisId="right" dataKey="weekly" name="주간 지출" fill="#e2e8f0" radius={[2, 2, 0, 0]} />
           <Line yAxisId="left" type="monotone" dataKey="baselineCumulative" name="누적 기준" stroke="#c7d2fe" strokeWidth={2} dot={false} />
-          <Line yAxisId="left" type="monotone" dataKey="cumulative" name="누적 지출" stroke="#1A237E" strokeWidth={2.5} dot={{ r: 2 }} />
+          <Line yAxisId="left" type="monotone" dataKey="cumulative" name="누적 지출" stroke="#1A237E" strokeWidth={2.5} dot={renderCumulativeDot} />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
@@ -783,7 +856,7 @@ export default function BudgetClient({ initialYear }: Props) {
             </div>
           </section>
 
-          <WeeklyChart weeklyAmount={weeklyAmount} weeklyUsage={data.weeklyUsage} />
+          <WeeklyChart weeklyAmount={weeklyAmount} weeklyUsage={data.weeklyUsage} year={year} />
         </>
       )}
     </div>
