@@ -142,7 +142,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400">잔여금액</span>
             <span
-              className={`font-semibold tabular-nums ${totalRemainPct < remainPeriodPct ? 'text-rose-500' : 'text-emerald-600'}`}
+              className={`font-semibold tabular-nums ${totalRemainPct < remainPeriodPct ? 'text-rose-500' : 'text-[#1A237E]'}`}
             >
               {(totalRemainPct * 100).toFixed(1)}%
             </span>
@@ -268,10 +268,18 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
             </div>
           </div>
           <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between items-baseline">
-            <span className="text-[11px] text-slate-400">잔여%</span>
-            <span className={`text-sm font-semibold tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-700'}`}>
-              {totalPlan > 0 ? `${(totalRemainPct * 100).toFixed(1)}%` : '-'}
-            </span>
+            <span className="text-[11px] text-slate-400">잔여 / 기간</span>
+            {totalPlan > 0 ? (
+              <span className="text-sm font-semibold tabular-nums">
+                <span className={totalRemainPct < remainPeriodPct ? 'text-rose-500' : 'text-[#1A237E]'}>
+                  {(totalRemainPct * 100).toFixed(1)}%
+                </span>
+                <span className="text-slate-300 mx-1">/</span>
+                <span className="text-slate-400 font-normal">{(remainPeriodPct * 100).toFixed(1)}%</span>
+              </span>
+            ) : (
+              <span className="text-sm text-slate-400">-</span>
+            )}
           </div>
         </div>
       </div>
@@ -387,8 +395,18 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
               <td className={`py-2 px-2 text-right tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-800'}`}>
                 {formatWonFull(totalRemain)}
               </td>
-              <td className={`py-2 px-2 text-right tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-700'}`}>
-                {totalPlan > 0 ? `${(totalRemainPct * 100).toFixed(1)}%` : '-'}
+              <td className="py-2 px-2 text-right tabular-nums">
+                {totalPlan > 0 ? (
+                  <span className="inline-flex items-baseline gap-1">
+                    <span className={totalRemainPct < remainPeriodPct ? 'text-rose-500' : 'text-[#1A237E]'}>
+                      {(totalRemainPct * 100).toFixed(1)}%
+                    </span>
+                    <span className="text-slate-300">/</span>
+                    <span className="text-slate-400 font-normal">{(remainPeriodPct * 100).toFixed(1)}%</span>
+                  </span>
+                ) : (
+                  <span className="text-slate-400">-</span>
+                )}
               </td>
               {editing ? <td /> : null}
             </tr>
@@ -470,10 +488,10 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
         key={index}
         cx={cx}
         cy={cy}
-        r={isCurrent ? 6 : 2}
-        fill={isCurrent ? '#F43F5E' : '#1A237E'}
-        stroke={isCurrent ? '#fff' : 'none'}
-        strokeWidth={isCurrent ? 2 : 0}
+        r={isCurrent ? 5 : 2}
+        fill={isCurrent ? '#fff' : '#1A237E'}
+        stroke="#1A237E"
+        strokeWidth={isCurrent ? 2.5 : 0}
       />
     )
   }
@@ -764,7 +782,7 @@ export default function BudgetClient({ initialYear }: Props) {
             <div className={`${card.base} p-4`}>
               <p className={text.caption}>잔여 / 기간</p>
               <p className="text-lg font-bold tabular-nums mt-1">
-                <span className={totalRemainPctAll < remainPeriodPct ? 'text-rose-500' : 'text-emerald-600'}>
+                <span className={totalRemainPctAll < remainPeriodPct ? 'text-rose-500' : 'text-[#1A237E]'}>
                   {(totalRemainPctAll * 100).toFixed(1)}%
                 </span>
                 <span className="text-slate-300 mx-1.5">/</span>
