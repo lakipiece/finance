@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 interface BaseProps {
   year: number
   month: number | null
+  align?: 'left' | 'right'
 }
 
 type Props =
@@ -20,7 +21,7 @@ type Props =
 
 export default function YearMonthPicker(props: Props) {
   const mode = props.mode ?? 'filter'
-  const { year, month } = props
+  const { year, month, align = 'left' } = props
   const allPeriod = mode === 'filter' ? (props as Extract<Props, { mode?: 'filter' }>).allPeriod : false
 
   const [open, setOpen] = useState(false)
@@ -76,7 +77,7 @@ export default function YearMonthPicker(props: Props) {
         </svg>
       </button>
       {open ? (
-        <div className="absolute top-full left-0 mt-1.5 z-30 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 w-56">
+        <div className={`absolute top-full ${align === 'right' ? 'right-0' : 'left-0'} mt-1.5 z-30 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 w-56`}>
           {/* Year nav */}
           <div className="flex items-center justify-between mb-3 px-1">
             <button type="button" onClick={() => setTempYear(y => y - 1)}

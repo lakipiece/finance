@@ -1220,6 +1220,7 @@ export default function InputPage() {
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
         <YearMonthPicker
           year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}
+          align="right"
           onChange={(y, m, all) => { setViewYear(y); setViewMonth(m); setViewAllPeriod(all) }}
         />
       </div>
