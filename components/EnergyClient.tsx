@@ -513,7 +513,7 @@ export default function EnergyClient() {
         ) : records.length === 0 ? (
           <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+          <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))' }}>
             {records.map((r) => {
               const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
               return (
@@ -522,11 +522,11 @@ export default function EnergyClient() {
                   onClick={() => handleRowClick(r)}
                   className={`${card.base} w-full text-left p-3 sm:p-4 hover:border-slate-200 hover:shadow-sm transition-all`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-semibold text-slate-700 tabular-nums">
+                    <span className="text-sm font-semibold text-slate-700 tabular-nums">
                       {r.year}.{String(r.month).padStart(2, '0')}
                     </span>
-                    <span className="text-xs font-medium text-slate-700 tabular-nums">
-                      {total.toLocaleString('ko-KR')}원
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-[11px] font-medium text-slate-600 tabular-nums">
+                      합계 {total.toLocaleString('ko-KR')}원
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-0 divide-slate-100">
