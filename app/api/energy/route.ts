@@ -6,10 +6,10 @@ import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 
 const NUMERIC_FIELDS = [
-  'electricity_amount', 'electricity_prev_reading', 'electricity_curr_reading', 'electricity_usage',
-  'water_amount', 'water_prev_reading', 'water_curr_reading', 'water_usage',
-  'hot_water_amount', 'hot_water_prev_reading', 'hot_water_curr_reading', 'hot_water_usage',
-  'heating_amount', 'heating_prev_reading', 'heating_curr_reading', 'heating_usage',
+  'electricity_amount', 'electricity_usage',
+  'water_amount', 'water_usage',
+  'hot_water_amount', 'hot_water_usage',
+  'heating_amount', 'heating_usage',
 ] as const
 
 type NumKey = typeof NUMERIC_FIELDS[number]
@@ -27,10 +27,10 @@ export async function GET(req: NextRequest) {
     const sql = getSql()
     const rows = await sql`
       SELECT id, year, month,
-        electricity_amount, electricity_prev_reading, electricity_curr_reading, electricity_usage,
-        water_amount, water_prev_reading, water_curr_reading, water_usage,
-        hot_water_amount, hot_water_prev_reading, hot_water_curr_reading, hot_water_usage,
-        heating_amount, heating_prev_reading, heating_curr_reading, heating_usage,
+        electricity_amount, electricity_usage,
+        water_amount, water_usage,
+        hot_water_amount, hot_water_usage,
+        heating_amount, heating_usage,
         memo
       FROM energy_records
       WHERE 1=1
@@ -67,38 +67,30 @@ export async function POST(req: NextRequest) {
     const [row] = await sql`
       INSERT INTO energy_records (
         year, month,
-        electricity_amount, electricity_prev_reading, electricity_curr_reading, electricity_usage,
-        water_amount, water_prev_reading, water_curr_reading, water_usage,
-        hot_water_amount, hot_water_prev_reading, hot_water_curr_reading, hot_water_usage,
-        heating_amount, heating_prev_reading, heating_curr_reading, heating_usage,
+        electricity_amount, electricity_usage,
+        water_amount, water_usage,
+        hot_water_amount, hot_water_usage,
+        heating_amount, heating_usage,
         memo
       ) VALUES (
         ${year}, ${month},
-        ${v.electricity_amount}, ${v.electricity_prev_reading}, ${v.electricity_curr_reading}, ${v.electricity_usage},
-        ${v.water_amount}, ${v.water_prev_reading}, ${v.water_curr_reading}, ${v.water_usage},
-        ${v.hot_water_amount}, ${v.hot_water_prev_reading}, ${v.hot_water_curr_reading}, ${v.hot_water_usage},
-        ${v.heating_amount}, ${v.heating_prev_reading}, ${v.heating_curr_reading}, ${v.heating_usage},
+        ${v.electricity_amount}, ${v.electricity_usage},
+        ${v.water_amount}, ${v.water_usage},
+        ${v.hot_water_amount}, ${v.hot_water_usage},
+        ${v.heating_amount}, ${v.heating_usage},
         ${memo}
       )
       ON CONFLICT (year, month) DO UPDATE SET
-        electricity_amount       = EXCLUDED.electricity_amount,
-        electricity_prev_reading = EXCLUDED.electricity_prev_reading,
-        electricity_curr_reading = EXCLUDED.electricity_curr_reading,
-        electricity_usage        = EXCLUDED.electricity_usage,
-        water_amount             = EXCLUDED.water_amount,
-        water_prev_reading       = EXCLUDED.water_prev_reading,
-        water_curr_reading       = EXCLUDED.water_curr_reading,
-        water_usage              = EXCLUDED.water_usage,
-        hot_water_amount         = EXCLUDED.hot_water_amount,
-        hot_water_prev_reading   = EXCLUDED.hot_water_prev_reading,
-        hot_water_curr_reading   = EXCLUDED.hot_water_curr_reading,
-        hot_water_usage          = EXCLUDED.hot_water_usage,
-        heating_amount           = EXCLUDED.heating_amount,
-        heating_prev_reading     = EXCLUDED.heating_prev_reading,
-        heating_curr_reading     = EXCLUDED.heating_curr_reading,
-        heating_usage            = EXCLUDED.heating_usage,
-        memo                     = EXCLUDED.memo,
-        updated_at               = NOW()
+        electricity_amount = EXCLUDED.electricity_amount,
+        electricity_usage  = EXCLUDED.electricity_usage,
+        water_amount       = EXCLUDED.water_amount,
+        water_usage        = EXCLUDED.water_usage,
+        hot_water_amount   = EXCLUDED.hot_water_amount,
+        hot_water_usage    = EXCLUDED.hot_water_usage,
+        heating_amount     = EXCLUDED.heating_amount,
+        heating_usage      = EXCLUDED.heating_usage,
+        memo               = EXCLUDED.memo,
+        updated_at         = NOW()
       RETURNING id
     `
     invalidateCache('energy')

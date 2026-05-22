@@ -6,10 +6,10 @@ import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 
 const NUMERIC_FIELDS = [
-  'electricity_amount', 'electricity_prev_reading', 'electricity_curr_reading', 'electricity_usage',
-  'water_amount', 'water_prev_reading', 'water_curr_reading', 'water_usage',
-  'hot_water_amount', 'hot_water_prev_reading', 'hot_water_curr_reading', 'hot_water_usage',
-  'heating_amount', 'heating_prev_reading', 'heating_curr_reading', 'heating_usage',
+  'electricity_amount', 'electricity_usage',
+  'water_amount', 'water_usage',
+  'hot_water_amount', 'hot_water_usage',
+  'heating_amount', 'heating_usage',
 ] as const
 
 type NumKey = typeof NUMERIC_FIELDS[number]
@@ -40,24 +40,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     await sql`
       UPDATE energy_records SET
         year = ${year}, month = ${month},
-        electricity_amount       = ${v.electricity_amount},
-        electricity_prev_reading = ${v.electricity_prev_reading},
-        electricity_curr_reading = ${v.electricity_curr_reading},
-        electricity_usage        = ${v.electricity_usage},
-        water_amount             = ${v.water_amount},
-        water_prev_reading       = ${v.water_prev_reading},
-        water_curr_reading       = ${v.water_curr_reading},
-        water_usage              = ${v.water_usage},
-        hot_water_amount         = ${v.hot_water_amount},
-        hot_water_prev_reading   = ${v.hot_water_prev_reading},
-        hot_water_curr_reading   = ${v.hot_water_curr_reading},
-        hot_water_usage          = ${v.hot_water_usage},
-        heating_amount           = ${v.heating_amount},
-        heating_prev_reading     = ${v.heating_prev_reading},
-        heating_curr_reading     = ${v.heating_curr_reading},
-        heating_usage            = ${v.heating_usage},
-        memo                     = ${memo},
-        updated_at               = NOW()
+        electricity_amount = ${v.electricity_amount},
+        electricity_usage  = ${v.electricity_usage},
+        water_amount       = ${v.water_amount},
+        water_usage        = ${v.water_usage},
+        hot_water_amount   = ${v.hot_water_amount},
+        hot_water_usage    = ${v.hot_water_usage},
+        heating_amount     = ${v.heating_amount},
+        heating_usage      = ${v.heating_usage},
+        memo               = ${memo},
+        updated_at         = NOW()
       WHERE id = ${id}
     `
     invalidateCache('energy')

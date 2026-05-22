@@ -34,24 +34,16 @@ interface EnergyRecord {
   month: number
   memo: string
   electricity_amount: number
-  electricity_prev_reading: number
-  electricity_curr_reading: number
   electricity_usage: number
   water_amount: number
-  water_prev_reading: number
-  water_curr_reading: number
   water_usage: number
   hot_water_amount: number
-  hot_water_prev_reading: number
-  hot_water_curr_reading: number
   hot_water_usage: number
   heating_amount: number
-  heating_prev_reading: number
-  heating_curr_reading: number
   heating_usage: number
 }
 
-function fieldKey(kind: EnergyKind, suffix: 'amount' | 'prev_reading' | 'curr_reading' | 'usage'): keyof EnergyRecord {
+function fieldKey(kind: EnergyKind, suffix: 'amount' | 'usage'): keyof EnergyRecord {
   return `${kind}_${suffix}` as keyof EnergyRecord
 }
 
@@ -154,17 +146,13 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
 
-  // kind별 4개 필드 (문자열로 보관 — 입력 중 포맷 유지)
+  // kind별 2개 필드 (문자열로 보관 — 입력 중 포맷 유지)
   const initFields = useMemo(() => {
     const out: Record<string, string> = {}
     for (const k of KINDS) {
       const amt = initial ? Number(initial[fieldKey(k.key, 'amount')] as number) : 0
-      const prev = initial ? Number(initial[fieldKey(k.key, 'prev_reading')] as number) : 0
-      const curr = initial ? Number(initial[fieldKey(k.key, 'curr_reading')] as number) : 0
       const usage = initial ? Number(initial[fieldKey(k.key, 'usage')] as number) : 0
       out[`${k.key}_amount`] = amt ? amt.toLocaleString('ko-KR') : ''
-      out[`${k.key}_prev_reading`] = prev ? fmtReading(String(prev)) : ''
-      out[`${k.key}_curr_reading`] = curr ? fmtReading(String(curr)) : ''
       out[`${k.key}_usage`] = usage ? fmtReading(String(usage)) : ''
     }
     return out
@@ -176,19 +164,6 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
     setVals(prev => ({ ...prev, [k]: v }))
   }
 
-  // 전월/당월 지침 변경 시 사용량 자동 계산 (사용자가 직접 입력하지 않은 경우만)
-  function handleReadingChange(kind: EnergyKind, suffix: 'prev_reading' | 'curr_reading', v: string) {
-    const formatted = fmtReading(v)
-    const next = { ...vals, [`${kind}_${suffix}`]: formatted }
-    const prev = parseReading(suffix === 'prev_reading' ? formatted : next[`${kind}_prev_reading`])
-    const curr = parseReading(suffix === 'curr_reading' ? formatted : next[`${kind}_curr_reading`])
-    const diff = curr - prev
-    if (diff > 0) {
-      next[`${kind}_usage`] = fmtReading(String(diff % 1 === 0 ? diff : diff.toFixed(3)))
-    }
-    setVals(next)
-  }
-
   async function handleSave() {
     if (!year || month < 1 || month > 12) { setErr('년월을 확인해주세요.'); return }
     setSaving(true); setErr('')
@@ -196,8 +171,6 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
       const payload: Record<string, unknown> = { year, month, memo }
       for (const k of KINDS) {
         payload[`${k.key}_amount`] = parseAmount(vals[`${k.key}_amount`] ?? '')
-        payload[`${k.key}_prev_reading`] = parseReading(vals[`${k.key}_prev_reading`] ?? '')
-        payload[`${k.key}_curr_reading`] = parseReading(vals[`${k.key}_curr_reading`] ?? '')
         payload[`${k.key}_usage`] = parseReading(vals[`${k.key}_usage`] ?? '')
       }
       const url = initial ? `/api/energy/${initial.id}` : '/api/energy'
@@ -255,7 +228,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                 <span className="text-xs font-semibold text-slate-700">{k.label}</span>
                 <span className="text-[10px] text-slate-400">({k.unit})</span>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <label className={field.label}>금액 (원)</label>
                   <input type="text" inputMode="numeric"
@@ -263,22 +236,6 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                     onChange={e => update(`${k.key}_amount`, fmtAmount(e.target.value))}
                     placeholder="0"
                     className={`${field.input} text-right font-bold text-slate-800`} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className={field.label}>전월 지침 <span className="text-slate-300">(선택)</span></label>
-                  <input type="text" inputMode="decimal"
-                    value={vals[`${k.key}_prev_reading`] ?? ''}
-                    onChange={e => handleReadingChange(k.key, 'prev_reading', e.target.value)}
-                    placeholder="0"
-                    className={`${field.input} text-right text-slate-400`} />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className={field.label}>당월 지침 <span className="text-slate-300">(선택)</span></label>
-                  <input type="text" inputMode="decimal"
-                    value={vals[`${k.key}_curr_reading`] ?? ''}
-                    onChange={e => handleReadingChange(k.key, 'curr_reading', e.target.value)}
-                    placeholder="0"
-                    className={`${field.input} text-right text-slate-400`} />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className={field.label}>사용량 ({k.unit})</label>
@@ -556,46 +513,56 @@ export default function EnergyClient() {
         ) : records.length === 0 ? (
           <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
         ) : (
-          records.map((r) => {
-            const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
-            return (
-              <button
-                key={r.id}
-                onClick={() => handleRowClick(r)}
-                className={`${card.base} w-full text-left p-3 sm:p-4 hover:border-slate-200 hover:shadow-sm transition-all`}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-base font-bold text-slate-800 tabular-nums">
-                    {r.year}.{String(r.month).padStart(2, '0')}
-                  </span>
-                  <span className="text-base font-bold text-slate-800 tabular-nums">
-                    {total.toLocaleString('ko-KR')}원
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {activeKindList.map(k => {
-                    const amount = Number(r[fieldKey(k.key, 'amount')] as number)
-                    const usage = Number(r[fieldKey(k.key, 'usage')] as number)
-                    return (
-                      <div key={k.key} className="rounded-lg bg-slate-50/60 px-2.5 py-2 min-w-0 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: k.color }} />
-                          <span className="text-xs font-medium truncate" style={{ color: k.color }}>{k.label}</span>
-                        </div>
-                        <div className="text-right min-w-0">
-                          <div className="text-xs font-bold text-slate-800 tabular-nums">
-                            {amount.toLocaleString('ko-KR')}원
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            {records.map((r) => {
+              const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => handleRowClick(r)}
+                  className={`${card.base} w-full text-left p-3 sm:p-4 hover:border-slate-200 hover:shadow-sm transition-all`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-slate-700 tabular-nums">
+                      {r.year}.{String(r.month).padStart(2, '0')}
+                    </span>
+                    <span className="text-xs font-medium text-slate-700 tabular-nums">
+                      {total.toLocaleString('ko-KR')}원
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-0 divide-slate-100">
+                    {activeKindList.map((k, idx) => {
+                      const amount = Number(r[fieldKey(k.key, 'amount')] as number)
+                      const usage = Number(r[fieldKey(k.key, 'usage')] as number)
+                      // 2열 그리드에서 마지막 행을 제외하고 아래쪽에 옅은 구분선
+                      const total = activeKindList.length
+                      const lastRowStart = Math.floor((total - 1) / 2) * 2
+                      const isBottomRow = idx >= lastRowStart
+                      return (
+                        <div
+                          key={k.key}
+                          className={`py-2 px-1 min-w-0 flex items-center justify-between gap-2 ${
+                            isBottomRow ? '' : 'border-b border-slate-100'
+                          }`}>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: k.color }} />
+                            <span className="text-xs font-medium truncate" style={{ color: k.color }}>{k.label}</span>
                           </div>
-                          <div className="text-[11px] text-slate-500 tabular-nums">
-                            {usage.toLocaleString('ko-KR')} {k.unit}
+                          <div className="text-right min-w-0">
+                            <div className="text-xs font-bold text-slate-800 tabular-nums">
+                              {amount.toLocaleString('ko-KR')}원
+                            </div>
+                            <div className="text-[11px] text-slate-400 tabular-nums">
+                              {usage.toLocaleString('ko-KR')} {k.unit}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </button>
-            )
-          })
+                      )
+                    })}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         )}
       </div>
 
