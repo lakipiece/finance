@@ -1,13 +1,15 @@
 'use client'
 
-import { Fragment, useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
   ResponsiveContainer, BarChart, LineChart,
   Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts'
-import { btn, card, field, modal, tbl, text } from '@/lib/styles'
+import { btn, card, field, modal, text } from '@/lib/styles'
 import { formatWonFull } from '@/lib/utils'
+import { OPTION_COLORS } from '@/lib/palettes'
+import YearMonthPicker from '@/components/ui/YearMonthPicker'
 
 type EnergyKind = 'electricity' | 'water' | 'hot_water' | 'heating'
 
@@ -19,10 +21,10 @@ interface KindMeta {
 }
 
 const KINDS: KindMeta[] = [
-  { key: 'electricity', label: '전기료',   unit: 'kWh',  color: '#1A237E' },
-  { key: 'water',       label: '수도료',   unit: 'm³',   color: '#0277BD' },
-  { key: 'hot_water',   label: '온수',     unit: 'm³',   color: '#EF6C00' },
-  { key: 'heating',     label: '난방비',   unit: 'Gcal', color: '#AD1457' },
+  { key: 'electricity', label: '전기', unit: 'kWh',  color: OPTION_COLORS[0] },
+  { key: 'water',       label: '수도', unit: 'm³',   color: OPTION_COLORS[1] },
+  { key: 'hot_water',   label: '온수', unit: 'm³',   color: OPTION_COLORS[2] },
+  { key: 'heating',     label: '난방', unit: 'Gcal', color: OPTION_COLORS[3] },
 ]
 
 interface EnergyRecord {
@@ -63,15 +65,18 @@ function parseAmount(v: string) {
 }
 
 function fmtReading(v: string) {
-  // 숫자 + 소수점 1개 허용
+  // 숫자 + 소수점 1개 허용 — 정수부에는 3자리 콤마 표시
   const cleaned = v.replace(/[^0-9.]/g, '')
   const firstDot = cleaned.indexOf('.')
-  if (firstDot < 0) return cleaned
-  return cleaned.slice(0, firstDot + 1) + cleaned.slice(firstDot + 1).replace(/\./g, '')
+  const intPart = firstDot < 0 ? cleaned : cleaned.slice(0, firstDot)
+  const decPart = firstDot < 0 ? '' : '.' + cleaned.slice(firstDot + 1).replace(/\./g, '')
+  if (!intPart) return decPart
+  const intFmt = Number(intPart).toLocaleString('ko-KR')
+  return intFmt + decPart
 }
 
 function parseReading(v: string) {
-  const n = parseFloat(v)
+  const n = parseFloat(v.replace(/,/g, ''))
   return Number.isFinite(n) ? n : 0
 }
 
@@ -103,9 +108,9 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
       const curr = initial ? Number(initial[fieldKey(k.key, 'curr_reading')] as number) : 0
       const usage = initial ? Number(initial[fieldKey(k.key, 'usage')] as number) : 0
       out[`${k.key}_amount`] = amt ? amt.toLocaleString('ko-KR') : ''
-      out[`${k.key}_prev_reading`] = prev ? String(prev) : ''
-      out[`${k.key}_curr_reading`] = curr ? String(curr) : ''
-      out[`${k.key}_usage`] = usage ? String(usage) : ''
+      out[`${k.key}_prev_reading`] = prev ? fmtReading(String(prev)) : ''
+      out[`${k.key}_curr_reading`] = curr ? fmtReading(String(curr)) : ''
+      out[`${k.key}_usage`] = usage ? fmtReading(String(usage)) : ''
     }
     return out
   }, [initial])
@@ -124,7 +129,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
     const curr = parseReading(suffix === 'curr_reading' ? formatted : next[`${kind}_curr_reading`])
     const diff = curr - prev
     if (diff > 0) {
-      next[`${kind}_usage`] = String(diff % 1 === 0 ? diff : diff.toFixed(3))
+      next[`${kind}_usage`] = fmtReading(String(diff % 1 === 0 ? diff : diff.toFixed(3)))
     }
     setVals(next)
   }
@@ -178,22 +183,14 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
           </div>
         </div>
         <div className={modal.body}>
-          <div className="flex gap-4 items-end">
-            <div className="flex flex-col gap-1">
-              <label className={field.label}>년도</label>
-              <input type="number" value={year}
-                onChange={e => setYear(parseInt(e.target.value) || 0)}
-                className={`${field.inputFit} w-24 text-right`} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className={field.label}>월</label>
-              <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
-                className={`${field.select} w-20`}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
-                  <option key={m} value={m}>{m}월</option>
-                ))}
-              </select>
-            </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>년월</label>
+            <YearMonthPicker
+              mode="single"
+              year={year}
+              month={month}
+              onChange={(y, m) => { setYear(y); setMonth(m) }}
+            />
           </div>
 
           {KINDS.map(k => (
@@ -210,23 +207,23 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                     value={vals[`${k.key}_amount`] ?? ''}
                     onChange={e => update(`${k.key}_amount`, fmtAmount(e.target.value))}
                     placeholder="0"
-                    className={`${field.input} text-right`} />
+                    className={`${field.input} text-right font-bold text-slate-800`} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className={field.label}>전월 지침</label>
+                  <label className={field.label}>전월 지침 <span className="text-slate-300">(선택)</span></label>
                   <input type="text" inputMode="decimal"
                     value={vals[`${k.key}_prev_reading`] ?? ''}
                     onChange={e => handleReadingChange(k.key, 'prev_reading', e.target.value)}
                     placeholder="0"
-                    className={`${field.input} text-right`} />
+                    className={`${field.input} text-right text-slate-400`} />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className={field.label}>당월 지침</label>
+                  <label className={field.label}>당월 지침 <span className="text-slate-300">(선택)</span></label>
                   <input type="text" inputMode="decimal"
                     value={vals[`${k.key}_curr_reading`] ?? ''}
                     onChange={e => handleReadingChange(k.key, 'curr_reading', e.target.value)}
                     placeholder="0"
-                    className={`${field.input} text-right`} />
+                    className={`${field.input} text-right text-slate-400`} />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className={field.label}>사용량 ({k.unit})</label>
@@ -234,7 +231,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                     value={vals[`${k.key}_usage`] ?? ''}
                     onChange={e => update(`${k.key}_usage`, fmtReading(e.target.value))}
                     placeholder="0"
-                    className={`${field.input} text-right`} />
+                    className={`${field.input} text-right font-bold text-slate-800`} />
                 </div>
               </div>
             </div>
@@ -320,9 +317,18 @@ export default function EnergyClient() {
   }, [records, yearFrom, yearTo])
 
   const activeKindList = KINDS.filter(k => activeKinds[k.key])
+  const allKindsOn = KINDS.every(k => activeKinds[k.key])
 
   function toggleKind(k: EnergyKind) {
     setActiveKinds(prev => ({ ...prev, [k]: !prev[k] }))
+  }
+
+  function toggleAllKinds() {
+    if (allKindsOn) {
+      setActiveKinds({ electricity: false, water: false, hot_water: false, heating: false })
+    } else {
+      setActiveKinds({ electricity: true, water: true, hot_water: true, heating: true })
+    }
   }
 
   function handleAddClick() {
@@ -372,81 +378,77 @@ export default function EnergyClient() {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       {/* 헤더 */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h1 className={text.pageTitle}>에너지 지출관리</h1>
-          <p className="text-xs text-slate-400 mt-1">월별 전기·수도·온수·난방 사용량과 금액을 기록합니다</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div>
+            <h1 className={text.pageTitle}>에너지 지출관리</h1>
+            <p className="text-xs text-slate-400 mt-1">월별 전기·수도·온수·난방 사용량과 금액을 기록합니다</p>
+          </div>
         </div>
-        <button onClick={handleAddClick}
-          className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-          style={{ backgroundColor: '#1A237E' }}>
-          + 입력
-        </button>
-      </div>
-
-      {/* 필터 */}
-      <div className={`${card.base} p-4 flex flex-wrap items-center gap-4`}>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">기준 년도</span>
           <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}
-            className={`${field.select} w-24`}>
+            className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer">
             {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => (
               <option key={y} value={y}>{y}년</option>
             ))}
           </select>
+          <button onClick={handleAddClick}
+            className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+            style={{ backgroundColor: '#1A237E' }}>
+            입력
+          </button>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-slate-500 mr-1">기간</span>
-          {[2, 3, 5].map(n => (
-            <button key={n} onClick={() => setYearsBack(n as 2 | 3 | 5)}
-              className={btn.pill(yearsBack === n)}
-              style={yearsBack === n ? { backgroundColor: '#1A237E', borderColor: '#1A237E' } : undefined}>
-              최근 {n}년
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-1 ml-auto flex-wrap">
-          <span className="text-xs text-slate-500 mr-1">항목</span>
+      </div>
+
+      {/* 필터 */}
+      <div className={`${card.base} px-4 py-2.5 flex flex-wrap items-center gap-2`}>
+        <div className="flex gap-1 flex-wrap">
+          <button onClick={toggleAllKinds}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              allKindsOn ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+            }`}>
+            전체
+          </button>
           {KINDS.map(k => {
             const on = activeKinds[k.key]
             return (
               <button key={k.key} onClick={() => toggleKind(k.key)}
-                className={btn.pill(on)}
-                style={on ? { backgroundColor: k.color, borderColor: k.color } : undefined}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  on ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+                style={on ? { backgroundColor: k.color } : undefined}>
                 {k.label}
+              </button>
+            )
+          })}
+        </div>
+        <span className="text-slate-200 text-xs">|</span>
+        <div className="flex gap-1 ml-auto">
+          {[2, 3, 5].map(n => {
+            const isActive = yearsBack === n
+            return (
+              <button key={n} onClick={() => setYearsBack(n as 2 | 3 | 5)}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+                style={isActive ? { backgroundColor: '#1A237E' } : undefined}>
+                최근 {n}년
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* 차트 영역 */}
+      {/* 차트 영역 — 좌: 월별 사용량(꺾은선), 우: 월별 금액(누적바) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className={`${card.base} p-4`}>
-          <p className="text-xs font-semibold text-slate-600 mb-3">월별 금액 (원)</p>
+          <p className="text-xs font-semibold text-slate-600 mb-3">월별 사용량</p>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+            <LineChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
-              <Tooltip
-                formatter={(v: number, name: string) => [formatWonFull(v), name]}
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
               {activeKindList.map(k => (
-                <Line key={k.key} type="monotone" dataKey={`${k.key}_amount`} name={k.label}
-                  stroke={k.color} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                <YAxis key={k.key} yAxisId={k.key} hide domain={['dataMin', 'dataMax']} />
               ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className={`${card.base} p-4`}>
-          <p className="text-xs font-semibold text-slate-600 mb-3">월별 사용량 (누적)</p>
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(v: number, name: string) => {
                   const meta = KINDS.find(k => k.label === name)
@@ -455,77 +457,82 @@ export default function EnergyClient() {
                 contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
               {activeKindList.map(k => (
-                <Bar key={k.key} dataKey={`${k.key}_usage`} name={k.label} stackId="usage" fill={k.color} />
+                <Line key={k.key} yAxisId={k.key} type="monotone" dataKey={`${k.key}_usage`} name={k.label}
+                  stroke={k.color} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className={`${card.base} p-4`}>
+          <p className="text-xs font-semibold text-slate-600 mb-3">월별 금액</p>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+              <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
+              <Tooltip
+                formatter={(v: number, name: string) => [formatWonFull(v), name]}
+                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
+              {activeKindList.map(k => (
+                <Bar key={k.key} dataKey={`${k.key}_amount`} name={k.label} stackId="amount" fill={k.color} />
               ))}
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* 표 */}
-      <div className={`${card.base} p-4`}>
-        <div className="flex items-center justify-between mb-3">
+      {/* 월별 상세 — 카드 리스트 */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between px-1">
           <p className="text-xs font-semibold text-slate-600">월별 상세</p>
-          <span className="text-[10px] text-slate-400">행 클릭 시 수정</span>
+          <span className="text-[10px] text-slate-400">카드 클릭 시 수정</span>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-200">
-                <th className={tbl.th}>년월</th>
-                {activeKindList.map(k => (
-                  <th key={k.key} colSpan={2} className={`${tbl.thRight} border-l border-slate-100`}>
-                    <span className="inline-flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: k.color }} />
-                      {k.label}
-                    </span>
-                  </th>
-                ))}
-                <th className={tbl.thRight}>합계</th>
-              </tr>
-              <tr className="border-b border-slate-100">
-                <th></th>
-                {activeKindList.map(k => (
-                  <Fragment key={k.key}>
-                    <th className={`${tbl.thRight} border-l border-slate-100`}>금액(원)</th>
-                    <th className={tbl.thRight}>사용량({k.unit})</th>
-                  </Fragment>
-                ))}
-                <th className={tbl.thRight}>금액(원)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={2 + activeKindList.length * 2} className="py-6 text-center text-slate-400">불러오는 중…</td></tr>
-              ) : records.length === 0 ? (
-                <tr><td colSpan={2 + activeKindList.length * 2} className="py-6 text-center text-slate-400">기록이 없습니다. 우측 상단 + 입력 버튼으로 추가하세요.</td></tr>
-              ) : (
-                records.map((r, idx) => {
-                  const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
-                  return (
-                    <tr key={r.id} onClick={() => handleRowClick(r)}
-                      className={`${idx % 2 ? tbl.rowOdd : tbl.rowEven} cursor-pointer`}>
-                      <td className={tbl.td}>{r.year}.{String(r.month).padStart(2, '0')}</td>
-                      {activeKindList.map(k => (
-                        <Fragment key={k.key}>
-                          <td className={`${tbl.tdRight} border-l border-slate-100`}>
-                            {Number(r[fieldKey(k.key, 'amount')] as number).toLocaleString('ko-KR')}
-                          </td>
-                          <td className={tbl.tdRight}>
-                            {Number(r[fieldKey(k.key, 'usage')] as number).toLocaleString('ko-KR')}
-                          </td>
-                        </Fragment>
-                      ))}
-                      <td className={`${tbl.tdRight} font-semibold text-slate-800`}>
-                        {total.toLocaleString('ko-KR')}
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className={`${card.base} py-8 text-center text-[11px] text-slate-400`}>불러오는 중…</div>
+        ) : records.length === 0 ? (
+          <div className={`${card.base} py-8 text-center text-[11px] text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
+        ) : (
+          records.map((r) => {
+            const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
+            return (
+              <button
+                key={r.id}
+                onClick={() => handleRowClick(r)}
+                className={`${card.base} w-full text-left p-3 hover:border-slate-200 hover:shadow-sm transition-all`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-semibold text-slate-700 tabular-nums">
+                    {r.year}.{String(r.month).padStart(2, '0')}
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-800 tabular-nums">
+                    {total.toLocaleString('ko-KR')}원
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {activeKindList.map(k => {
+                    const amount = Number(r[fieldKey(k.key, 'amount')] as number)
+                    const usage = Number(r[fieldKey(k.key, 'usage')] as number)
+                    return (
+                      <div key={k.key} className="rounded-lg bg-slate-50/60 px-2.5 py-2 min-w-0">
+                        <div className="flex items-center gap-1 mb-1">
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
+                          <span className="text-[10px] font-medium" style={{ color: k.color }}>{k.label}</span>
+                        </div>
+                        <div className="text-[11px] font-bold text-slate-800 tabular-nums">
+                          {amount.toLocaleString('ko-KR')}원
+                        </div>
+                        <div className="text-[10px] text-slate-500 tabular-nums">
+                          {usage.toLocaleString('ko-KR')} {k.unit}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </button>
+            )
+          })
+        )}
       </div>
 
       {showModal ? (
