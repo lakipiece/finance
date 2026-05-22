@@ -10,6 +10,7 @@ import { btn, card, field, modal, text } from '@/lib/styles'
 import { formatWonFull } from '@/lib/utils'
 import { OPTION_COLORS } from '@/lib/palettes'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 type EnergyKind = 'electricity' | 'water' | 'hot_water' | 'heating'
 
@@ -82,6 +83,60 @@ function parseReading(v: string) {
 
 function ymKey(year: number, month: number) {
   return `${year}-${String(month).padStart(2, '0')}`
+}
+
+/* ── 차트 툴팁 ── */
+function UsageTooltip({ active, payload, label, activeKinds }: ChartTooltipProps & { activeKinds: KindMeta[] }) {
+  if (!active || !payload?.length) return null
+  const row = payload[0].payload as Record<string, number | null>
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[140px]">
+      <p className="font-semibold text-slate-700 mb-2">{label}</p>
+      {activeKinds.map(k => {
+        const v = Number(row[`${k.key}_usage`] ?? 0)
+        return (
+          <div key={k.key} className="flex items-center justify-between gap-3 mb-0.5 last:mb-0">
+            <span className="flex items-center gap-1.5" style={{ color: k.color }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
+              {k.label}
+            </span>
+            <span className="font-medium text-slate-700 tabular-nums">
+              {v.toLocaleString('ko-KR')} {k.unit}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function AmountTooltip({ active, payload, label, activeKinds }: ChartTooltipProps & { activeKinds: KindMeta[] }) {
+  if (!active || !payload?.length) return null
+  const row = payload[0].payload as Record<string, number>
+  const total = activeKinds.reduce((s, k) => s + Number(row[`${k.key}_amount`] ?? 0), 0)
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[160px]">
+      <p className="font-semibold text-slate-700 mb-2">{label}</p>
+      {activeKinds.map(k => {
+        const v = Number(row[`${k.key}_amount`] ?? 0)
+        return (
+          <div key={k.key} className="flex items-center justify-between gap-3 mb-0.5">
+            <span className="flex items-center gap-1.5" style={{ color: k.color }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
+              {k.label}
+            </span>
+            <span className="font-medium text-slate-700 tabular-nums">
+              {formatWonFull(v)}
+            </span>
+          </div>
+        )
+      })}
+      <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-slate-100">
+        <span className="text-slate-500">합계</span>
+        <span className="font-semibold text-slate-800 tabular-nums">{formatWonFull(total)}</span>
+      </div>
+    </div>
+  )
 }
 
 /* ── 입력/수정 모달 ── */
@@ -293,16 +348,17 @@ export default function EnergyClient() {
   useEffect(() => { fetchRecords() }, [fetchRecords])
 
   // 차트 데이터: yearFrom ~ yearTo의 모든 월을 0으로 채워 누락 월도 X축에 노출
+  // usage_norm: 항목별 비-제로 데이터의 min/max로 0..1 정규화 (추세 비교용)
   const chartData = useMemo(() => {
     const map = new Map<string, EnergyRecord>()
     for (const r of records) map.set(ymKey(r.year, r.month), r)
-    const out: Array<Record<string, string | number>> = []
+    const out: Array<Record<string, string | number | null>> = []
     for (let y = yearFrom; y <= yearTo; y++) {
       for (let m = 1; m <= 12; m++) {
         const key = ymKey(y, m)
         const r = map.get(key)
-        const row: Record<string, string | number> = {
-          ym: `${String(y).slice(2)}/${String(m).padStart(2, '0')}`,
+        const row: Record<string, string | number | null> = {
+          ym: `${y}.${String(m).padStart(2, '0')}`,
           year: y,
           month: m,
         }
@@ -311,6 +367,21 @@ export default function EnergyClient() {
           row[`${k.key}_usage`] = r ? Number(r[fieldKey(k.key, 'usage')] as number) : 0
         }
         out.push(row)
+      }
+    }
+    // 항목별 정규화 (값이 있는 달만 대상)
+    for (const k of KINDS) {
+      const vals = out.map(r => Number(r[`${k.key}_usage`])).filter(v => v > 0)
+      if (vals.length === 0) {
+        for (const r of out) r[`${k.key}_usage_norm`] = null
+        continue
+      }
+      const min = Math.min(...vals)
+      const max = Math.max(...vals)
+      const span = max - min || 1
+      for (const r of out) {
+        const v = Number(r[`${k.key}_usage`])
+        r[`${k.key}_usage_norm`] = v > 0 ? (v - min) / span : null
       }
     }
     return out
@@ -400,7 +471,7 @@ export default function EnergyClient() {
       </div>
 
       {/* 필터 */}
-      <div className={`${card.base} px-4 py-2.5 flex flex-wrap items-center gap-2`}>
+      <div className="px-1 flex flex-wrap items-center gap-2">
         <div className="flex gap-1 flex-wrap">
           <button onClick={toggleAllKinds}
             className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
@@ -441,39 +512,30 @@ export default function EnergyClient() {
       {/* 차트 영역 — 좌: 월별 사용량(꺾은선), 우: 월별 금액(누적바) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className={`${card.base} p-4`}>
-          <p className="text-xs font-semibold text-slate-600 mb-3">월별 사용량</p>
+          <h2 className="text-sm font-semibold text-slate-700 mb-3">월별 사용량</h2>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={chartData} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              {activeKindList.map(k => (
-                <YAxis key={k.key} yAxisId={k.key} hide domain={['dataMin', 'dataMax']} />
-              ))}
-              <Tooltip
-                formatter={(v: number, name: string) => {
-                  const meta = KINDS.find(k => k.label === name)
-                  return [`${Number(v).toLocaleString('ko-KR')} ${meta?.unit ?? ''}`, name]
-                }}
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              <YAxis hide domain={[0, 1]} />
+              <Tooltip content={<UsageTooltip activeKinds={activeKindList} />} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
               {activeKindList.map(k => (
-                <Line key={k.key} yAxisId={k.key} type="monotone" dataKey={`${k.key}_usage`} name={k.label}
-                  stroke={k.color} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} />
+                <Line key={k.key} type="monotone" dataKey={`${k.key}_usage_norm`} name={k.label}
+                  stroke={k.color} strokeWidth={2} dot={{ r: 2 }} activeDot={{ r: 4 }} connectNulls={false} />
               ))}
             </LineChart>
           </ResponsiveContainer>
         </div>
 
         <div className={`${card.base} p-4`}>
-          <p className="text-xs font-semibold text-slate-600 mb-3">월별 금액</p>
+          <h2 className="text-sm font-semibold text-slate-700 mb-3">월별 금액</h2>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
               <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
-              <Tooltip
-                formatter={(v: number, name: string) => [formatWonFull(v), name]}
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              <Tooltip content={<AmountTooltip activeKinds={activeKindList} />} />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
               {activeKindList.map(k => (
                 <Bar key={k.key} dataKey={`${k.key}_amount`} name={k.label} stackId="amount" fill={k.color} />
@@ -486,13 +548,13 @@ export default function EnergyClient() {
       {/* 월별 상세 — 카드 리스트 */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <p className="text-xs font-semibold text-slate-600">월별 상세</p>
+          <h2 className="text-sm font-semibold text-slate-700">월별 상세</h2>
           <span className="text-[10px] text-slate-400">카드 클릭 시 수정</span>
         </div>
         {loading ? (
-          <div className={`${card.base} py-8 text-center text-[11px] text-slate-400`}>불러오는 중…</div>
+          <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>불러오는 중…</div>
         ) : records.length === 0 ? (
-          <div className={`${card.base} py-8 text-center text-[11px] text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
+          <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
         ) : (
           records.map((r) => {
             const total = activeKindList.reduce((s, k) => s + Number(r[fieldKey(k.key, 'amount')] as number), 0)
@@ -500,12 +562,12 @@ export default function EnergyClient() {
               <button
                 key={r.id}
                 onClick={() => handleRowClick(r)}
-                className={`${card.base} w-full text-left p-3 hover:border-slate-200 hover:shadow-sm transition-all`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold text-slate-700 tabular-nums">
+                className={`${card.base} w-full text-left p-3 sm:p-4 hover:border-slate-200 hover:shadow-sm transition-all`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-base font-bold text-slate-800 tabular-nums">
                     {r.year}.{String(r.month).padStart(2, '0')}
                   </span>
-                  <span className="text-[11px] font-bold text-slate-800 tabular-nums">
+                  <span className="text-base font-bold text-slate-800 tabular-nums">
                     {total.toLocaleString('ko-KR')}원
                   </span>
                 </div>
@@ -514,16 +576,18 @@ export default function EnergyClient() {
                     const amount = Number(r[fieldKey(k.key, 'amount')] as number)
                     const usage = Number(r[fieldKey(k.key, 'usage')] as number)
                     return (
-                      <div key={k.key} className="rounded-lg bg-slate-50/60 px-2.5 py-2 min-w-0">
-                        <div className="flex items-center gap-1 mb-1">
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
-                          <span className="text-[10px] font-medium" style={{ color: k.color }}>{k.label}</span>
+                      <div key={k.key} className="rounded-lg bg-slate-50/60 px-2.5 py-2 min-w-0 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: k.color }} />
+                          <span className="text-xs font-medium truncate" style={{ color: k.color }}>{k.label}</span>
                         </div>
-                        <div className="text-[11px] font-bold text-slate-800 tabular-nums">
-                          {amount.toLocaleString('ko-KR')}원
-                        </div>
-                        <div className="text-[10px] text-slate-500 tabular-nums">
-                          {usage.toLocaleString('ko-KR')} {k.unit}
+                        <div className="text-right min-w-0">
+                          <div className="text-xs font-bold text-slate-800 tabular-nums">
+                            {amount.toLocaleString('ko-KR')}원
+                          </div>
+                          <div className="text-[11px] text-slate-500 tabular-nums">
+                            {usage.toLocaleString('ko-KR')} {k.unit}
+                          </div>
                         </div>
                       </div>
                     )

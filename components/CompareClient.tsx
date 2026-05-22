@@ -102,8 +102,7 @@ export default function CompareClient({ availableYears }: Props) {
       </div>
 
       {/* Year selector */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4 sm:gap-6 flex-wrap">
-        <span className="hidden sm:inline text-xs font-semibold text-slate-600">연도 선택</span>
+      <div className="px-1 flex items-center gap-3 flex-wrap">
         <div className="flex gap-2 flex-wrap">
           {availableYears.map((y) => {
             const isSelected = selectedYears.includes(y.year)
@@ -125,15 +124,12 @@ export default function CompareClient({ availableYears }: Props) {
 
       {/* Category filter */}
       {selectedYears.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-slate-600">카테고리</span>
-            <button onClick={() => setCumulative(prev => !prev)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
-              {cumulative ? '누적 보기' : '월별 보기'}
-            </button>
-          </div>
-          <div className="flex gap-1.5 flex-wrap items-center">
+        <div className="px-1 flex items-center gap-1.5 flex-wrap">
+          <button onClick={() => setCumulative(prev => !prev)}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+            {cumulative ? '누적 보기' : '월별 보기'}
+          </button>
+          <span className="text-slate-200 mx-0.5">|</span>
             <button
               onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
@@ -161,18 +157,17 @@ export default function CompareClient({ availableYears }: Props) {
               전체 수입
             </button>
             {/* 수입 카테고리 */}
-            {INCOME_CATEGORIES.map(cat => (
-              <button key={cat}
-                onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors"
-                style={selectedCategory === cat
-                  ? { backgroundColor: INCOME_COLORS[cat], color: '#fff' }
-                  : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
-                }>
-                {cat}
-              </button>
-            ))}
-          </div>
+          {INCOME_CATEGORIES.map(cat => (
+            <button key={cat}
+              onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
+              className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors"
+              style={selectedCategory === cat
+                ? { backgroundColor: INCOME_COLORS[cat], color: '#fff' }
+                : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
+              }>
+              {cat}
+            </button>
+          ))}
         </div>
       )}
 

@@ -1216,18 +1216,18 @@ export default function InputPage() {
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
         <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
+        <YearMonthPicker
+          year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}
+          onChange={(y, m, all) => { setViewYear(y); setViewMonth(m); setViewAllPeriod(all) }}
+        />
       </div>
 
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        {/* Header with year/month selector + search */}
-        <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-          <YearMonthPicker
-            year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}
-            onChange={(y, m, all) => { setViewYear(y); setViewMonth(m); setViewAllPeriod(all) }}
-          />
+        {/* Header with search */}
+        <div className="flex items-center justify-end mb-4 gap-3 flex-wrap">
           <div className="relative flex items-center">
             <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>

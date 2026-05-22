@@ -180,13 +180,16 @@ export default function CompareCharts({
   return (
     <>
       {/* Monthly line chart */}
+      <section>
+        <div className="px-1 mb-3">
+          <h2 className="text-sm font-semibold text-slate-700">{chartTitle}</h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            {selectedDetail
+              ? <><span>항목별 월간 비교 </span><button onClick={() => onDetailSelect(null)} className="text-blue-400 hover:text-blue-600 ml-1">전체보기</button></>
+              : cumulative ? '연초부터 해당 월까지 누적 합계' : '선택한 연도별 월간 합계'}
+          </p>
+        </div>
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        <h2 className="text-base font-semibold text-slate-700 mb-1">{chartTitle}</h2>
-        <p className="text-xs text-slate-400 mb-4">
-          {selectedDetail
-            ? <><span>항목별 월간 비교 </span><button onClick={() => onDetailSelect(null)} className="text-blue-400 hover:text-blue-600 ml-1">전체보기</button></>
-            : cumulative ? '연초부터 해당 월까지 누적 합계' : '선택한 연도별 월간 합계'}
-        </p>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -206,13 +209,35 @@ export default function CompareCharts({
           </LineChart>
         </ResponsiveContainer>
       </div>
+      </section>
 
       {/* Category or sub-detail bar chart */}
+      <section>
+        {(() => {
+          const secondTitle = subDetailData
+            ? `${selectedCategory} — 항목별 연도 비교`
+            : isIncomeCategory && memberData
+            ? `${selectedCategory} — 사용자별 연도 비교`
+            : isIncomeCategory && incomeCategoryData
+            ? '전체 수입 — 급여 / 기타'
+            : '카테고리별 연도 비교'
+          const secondSubtitle = subDetailData
+            ? '세부 항목별 연간 지출 합계 (상위 20개)'
+            : isIncomeCategory && memberData
+            ? `사용자별 연간 ${selectedCategory} 합계`
+            : isIncomeCategory && incomeCategoryData
+            ? '카테고리별 연간 수입 합계'
+            : '카테고리별 연간 지출 합계'
+          return (
+            <div className="px-1 mb-3">
+              <h2 className="text-sm font-semibold text-slate-700">{secondTitle}</h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">{secondSubtitle}</p>
+            </div>
+          )
+        })()}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
         {subDetailData ? (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">{selectedCategory} — 항목별 연도 비교</h2>
-            <p className="text-xs text-slate-400 mb-4">세부 항목별 연간 지출 합계 (상위 20개)</p>
             <div className="mb-3">
               <input type="text" value={detailSearch} onChange={e => setDetailSearch(e.target.value)}
                 placeholder="내역 검색..."
@@ -243,8 +268,6 @@ export default function CompareCharts({
           </>
         ) : isIncomeCategory && memberData ? (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">{selectedCategory} — 사용자별 연도 비교</h2>
-            <p className="text-xs text-slate-400 mb-4">사용자별 연간 {selectedCategory} 합계</p>
             <ResponsiveContainer width="100%" height={Math.max(200, memberData.length * 56)}>
               <BarChart data={memberData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -260,8 +283,6 @@ export default function CompareCharts({
           </>
         ) : isIncomeCategory && incomeCategoryData ? (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">전체 수입 — 급여 / 기타</h2>
-            <p className="text-xs text-slate-400 mb-4">카테고리별 연간 수입 합계</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={incomeCategoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -277,8 +298,6 @@ export default function CompareCharts({
           </>
         ) : (
           <>
-            <h2 className="text-base font-semibold text-slate-700 mb-1">카테고리별 연도 비교</h2>
-            <p className="text-xs text-slate-400 mb-4">카테고리별 연간 지출 합계</p>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={categoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -294,6 +313,7 @@ export default function CompareCharts({
           </>
         )}
       </div>
+      </section>
     </>
   )
 }

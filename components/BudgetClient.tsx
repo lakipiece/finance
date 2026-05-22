@@ -753,8 +753,8 @@ export default function BudgetClient({ initialYear }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>예산관리</h1>
+        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>예산관리</h1>
+        <div className="flex items-center gap-2">
           <select
             value={year}
             onChange={(e) => { setYear(parseInt(e.target.value)); setEditing(false) }}
@@ -763,8 +763,6 @@ export default function BudgetClient({ initialYear }: Props) {
           >
             {years.map(y => <option key={y} value={y}>{y}년</option>)}
           </select>
-        </div>
-        <div className="flex items-center gap-2">
           {editing ? (
             <>
               <button type="button" onClick={cancelEdit} className={btn.secondary} disabled={saving}>취소</button>
@@ -772,14 +770,21 @@ export default function BudgetClient({ initialYear }: Props) {
                 type="button"
                 onClick={save}
                 disabled={saving}
-                className={btn.primary}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-60"
                 style={{ backgroundColor: '#1A237E' }}
               >
                 {saving ? '저장중...' : '저장'}
               </button>
             </>
           ) : (
-            <button type="button" onClick={startEdit} className={btn.secondary}>수정</button>
+            <button
+              type="button"
+              onClick={startEdit}
+              className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+              style={{ backgroundColor: '#1A237E' }}
+            >
+              수정
+            </button>
           )}
         </div>
       </div>
