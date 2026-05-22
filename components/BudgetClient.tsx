@@ -14,7 +14,9 @@ import {
 } from 'recharts'
 import { formatWonFull, formatWonCompact, catBadgeStyle } from '@/lib/utils'
 import { btn, field, card, badge, text } from '@/lib/styles'
-import type { ChartTooltipProps, TooltipEntry } from '@/lib/chartTypes'
+import type { ChartTooltipProps } from '@/lib/chartTypes'
+
+const POSITIVE_BUDGET_COLOR = '#1A237E'
 
 interface BudgetItem {
   id: number | null
@@ -106,7 +108,6 @@ function computeExtraDetails(category: string, items: DraftItem[], usageByDetail
 }
 
 interface SectionProps {
-  label: string
   category: string
   items: DraftItem[]
   usageByDetail: Record<string, number>
@@ -118,7 +119,14 @@ interface SectionProps {
   onRemove: (key: string) => void
 }
 
-function BudgetSection({ label, category, items, usageByDetail, totalUsed, remainPeriodPct, editing, onAdd, onChange, onRemove }: SectionProps) {
+function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriodPct, editing, onAdd, onChange, onRemove }: SectionProps) {
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const left = a.detail.trim() || '\uffff'
+      const right = b.detail.trim() || '\uffff'
+      return left.localeCompare(right, 'ko-KR', { sensitivity: 'base' })
+    })
+  }, [items])
   const totalPlan = items.reduce((s, it) => s + it.annual_plan, 0)
   const totalRemain = totalPlan - totalUsed
   const totalRemainPct = totalPlan > 0 ? totalRemain / totalPlan : 0
@@ -132,7 +140,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2 px-1">
         <div className="flex items-center gap-2">
           <span className={badge.base} style={catBadge}>{category}</span>
-          <h2 className="text-sm font-semibold text-slate-700">{label}</h2>
+          <h2 className="text-sm font-semibold text-slate-700">계획</h2>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-[11px] sm:text-xs">
           <div className="flex items-center gap-1.5">
@@ -153,7 +161,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
       <div className={`${card.base} p-3 sm:p-5`}>
       {/* 모바일: 카드 리스트 */}
       <div className="sm:hidden space-y-2">
-        {items.map((it) => {
+        {sortedItems.map((it) => {
           const used = getItemUsed(category, it.detail, usageByDetail)
           const hasPlan = it.annual_plan > 0
           const remain = hasPlan ? it.annual_plan - used : 0
@@ -169,7 +177,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                       value={it.detail}
                       onChange={e => onChange(it.key, { detail: e.target.value })}
                       placeholder="세부유형"
-                      className={field.input}
+                      className={`${field.input} min-w-0`}
                     />
                   ) : (
                     <p className="text-sm text-slate-700 font-semibold truncate">{it.detail || '(미분류)'}</p>
@@ -193,21 +201,6 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                   ) : null}
                 </div>
               </div>
-              {editing || it.note ? (
-                <div className="mb-2">
-                  {editing ? (
-                    <input
-                      type="text"
-                      value={it.note}
-                      onChange={e => onChange(it.key, { note: e.target.value })}
-                      placeholder="메모"
-                      className={field.input}
-                    />
-                  ) : (
-                    <p className="text-[11px] text-slate-400">{it.note}</p>
-                  )}
-                </div>
-              ) : null}
               <div className="grid grid-cols-3 gap-2 text-[11px]">
                 <div>
                   <p className="text-slate-400">연간계획</p>
@@ -235,6 +228,21 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                   </p>
                 </div>
               </div>
+              {editing || it.note ? (
+                <div className="mt-2 border-t border-slate-100 pt-2">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={it.note}
+                      onChange={e => onChange(it.key, { note: e.target.value })}
+                      placeholder="메모"
+                      className={`${field.input} min-w-0 placeholder:text-slate-200`}
+                    />
+                  ) : (
+                    <p className="text-[11px] text-slate-300">{it.note}</p>
+                  )}
+                </div>
+              ) : null}
             </div>
           )
         })}
@@ -285,21 +293,30 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
       </div>
 
       {/* 데스크탑: 테이블 */}
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-xs">
+      <div className="hidden sm:block overflow-x-auto max-[1200px]:overflow-visible">
+        <table className="w-full table-fixed text-xs">
+          <colgroup>
+            <col className="w-[22%] max-[1200px]:w-[30%]" />
+            <col className="w-[24%] max-[1200px]:hidden" />
+            <col className="w-[15%] max-[1200px]:w-[18%]" />
+            <col className="w-[15%] max-[1200px]:w-[18%]" />
+            <col className="w-[14%] max-[1200px]:w-[18%]" />
+            <col className="w-[10%] max-[1200px]:w-[16%]" />
+            {editing ? <col className="w-8" /> : null}
+          </colgroup>
           <thead>
             <tr className="border-b border-slate-100">
-              <th className="text-left py-2 px-2 text-slate-400 font-medium w-1/4">구분</th>
-              <th className="text-left py-2 px-2 text-slate-400 font-medium">메모</th>
-              <th className="text-right py-2 px-2 text-slate-400 font-medium w-28">연간계획</th>
-              <th className="text-right py-2 px-2 text-slate-400 font-medium w-28">누적 사용금액</th>
-              <th className="text-right py-2 px-2 text-slate-400 font-medium w-28">잔액</th>
-              <th className="text-right py-2 px-2 text-slate-400 font-medium w-16">잔여%</th>
+              <th className="text-left py-2 px-2 text-slate-400 font-medium">구분</th>
+              <th className="text-left py-2 px-2 text-slate-400 font-medium max-[1200px]:hidden">메모</th>
+              <th className="text-right py-2 px-2 text-slate-400 font-medium">연간계획</th>
+              <th className="text-right py-2 px-2 text-slate-400 font-medium">누적 사용금액</th>
+              <th className="text-right py-2 px-2 text-slate-400 font-medium">잔액</th>
+              <th className="text-right py-2 px-2 text-slate-400 font-medium">잔여%</th>
               {editing ? <th className="w-8" /> : null}
             </tr>
           </thead>
           <tbody>
-            {items.map((it) => {
+            {sortedItems.map((it) => {
               const used = getItemUsed(category, it.detail, usageByDetail)
               const hasPlan = it.annual_plan > 0
               const remain = hasPlan ? it.annual_plan - used : 0
@@ -307,30 +324,35 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
               const overBudget = hasPlan && remain < 0
               return (
                 <tr key={it.key} className="border-b border-slate-50 hover:bg-slate-50/50">
-                  <td className="py-2 px-2">
+                  <td className="group relative py-2 px-2 min-w-0">
                     {editing ? (
                       <input
                         type="text"
                         value={it.detail}
                         onChange={e => onChange(it.key, { detail: e.target.value })}
                         placeholder="세부유형"
-                        className={field.input}
+                        className={`${field.input} min-w-0`}
                       />
                     ) : (
-                      <span className="text-slate-700 font-medium">{it.detail || '(미분류)'}</span>
+                      <span className="block truncate text-slate-700 font-medium">{it.detail || '(미분류)'}</span>
                     )}
+                    {it.note ? (
+                      <div className="pointer-events-none absolute left-2 top-full z-20 mt-1 hidden max-w-[260px] rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] leading-relaxed text-slate-500 shadow-lg group-hover:max-[1200px]:block">
+                        {it.note}
+                      </div>
+                    ) : null}
                   </td>
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-2 min-w-0 max-[1200px]:hidden">
                     {editing ? (
                       <input
                         type="text"
                         value={it.note}
                         onChange={e => onChange(it.key, { note: e.target.value })}
                         placeholder="메모"
-                        className={field.input}
+                        className={`${field.input} min-w-0`}
                       />
                     ) : (
-                      <span className="text-slate-400 text-[11px]">{it.note}</span>
+                      <span className="block truncate text-slate-400 text-[11px]">{it.note}</span>
                     )}
                   </td>
                   <td className="py-2 px-2 text-right tabular-nums">
@@ -341,7 +363,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
                         value={it.annual_plan ? fmtAmountInput(String(it.annual_plan)) : ''}
                         onChange={e => onChange(it.key, { annual_plan: parseAmountInput(e.target.value) })}
                         placeholder="0"
-                        className={`${field.inputFit} text-right w-full`}
+                        className={`${field.inputFit} min-w-0 w-full text-right tabular-nums`}
                       />
                     ) : (
                       <span className="text-slate-600">{hasPlan ? formatWonFull(it.annual_plan) : '-'}</span>
@@ -378,7 +400,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
             {!editing && extraDetails.length > 0 ? (
               <tr className="border-b border-slate-50 bg-slate-50/40">
                 <td className="py-2 px-2 text-slate-400 text-[11px]">(예산 외)</td>
-                <td className="py-2 px-2 text-slate-400 text-[10px]">
+                <td className="py-2 px-2 text-slate-400 text-[10px] max-[1200px]:hidden">
                   {extraDetails.map(([d]) => d || '(미분류)').join(', ')}
                 </td>
                 <td className="py-2 px-2 text-right tabular-nums text-slate-400">-</td>
@@ -389,7 +411,7 @@ function BudgetSection({ label, category, items, usageByDetail, totalUsed, remai
             ) : null}
             <tr className="border-t-2 border-slate-200 font-semibold">
               <td className="py-2 px-2 text-slate-700">합계</td>
-              <td className="py-2 px-2" />
+              <td className="py-2 px-2 max-[1200px]:hidden" />
               <td className="py-2 px-2 text-right tabular-nums text-slate-700">{formatWonFull(totalPlan)}</td>
               <td className="py-2 px-2 text-right tabular-nums text-slate-700">{formatWonFull(totalUsed)}</td>
               <td className={`py-2 px-2 text-right tabular-nums ${totalRemain < 0 ? 'text-rose-500' : 'text-slate-800'}`}>
@@ -489,8 +511,8 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
         cx={cx}
         cy={cy}
         r={isCurrent ? 5 : 2}
-        fill={isCurrent ? '#fff' : '#1A237E'}
-        stroke="#1A237E"
+        fill={isCurrent ? '#fff' : POSITIVE_BUDGET_COLOR}
+        stroke={POSITIVE_BUDGET_COLOR}
         strokeWidth={isCurrent ? 2.5 : 0}
       />
     )
@@ -511,18 +533,19 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
     return rows
   }, [weeklyAmount, weeklyUsage])
 
-  const totalUsed = data[data.length - 1]?.cumulative ?? 0
-  const totalBaseline = weeklyAmount * 52
-  const diff = totalBaseline - totalUsed
+  const referenceWeek = currentWeek > 0 ? currentWeek : 52
+  const referenceRow = data[referenceWeek - 1]
+  const referenceUsed = referenceRow?.cumulative ?? 0
+  const referenceBaseline = referenceRow?.baselineCumulative ?? weeklyAmount * 52
+  const diff = referenceBaseline - referenceUsed
 
   return (
-    <div className={`${card.base} p-5`}>
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h2 className="text-sm font-semibold text-slate-700">변동비 — 주차별 사용 현황</h2>
+    <div className={`${card.base} p-3 sm:p-5`}>
+      <div className="flex items-center justify-end mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400">누적 차액</span>
-            <span className={`font-semibold tabular-nums ${diff < 0 ? 'text-rose-500' : 'text-emerald-600'}`}>
+            <span className={`font-semibold tabular-nums ${diff < 0 ? 'text-rose-500' : 'text-[#1A237E]'}`}>
               {diff.toLocaleString('ko-KR')}원
             </span>
             <span className="text-slate-300">·</span>
@@ -530,7 +553,8 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
           </div>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={300}>
+      <div className="h-[220px] sm:h-[260px] lg:h-[300px]">
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
           <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -555,9 +579,10 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
           <Bar yAxisId="right" dataKey="weekly" name="주간 지출" fill="#e2e8f0" radius={[2, 2, 0, 0]} />
           <Line yAxisId="left" type="monotone" dataKey="baselineCumulative" name="누적 기준" stroke="#c7d2fe" strokeWidth={2} dot={false} />
-          <Line yAxisId="left" type="monotone" dataKey="cumulative" name="누적 지출" stroke="#1A237E" strokeWidth={2.5} dot={renderCumulativeDot} />
+          <Line yAxisId="left" type="monotone" dataKey="cumulative" name="누적 지출" stroke={POSITIVE_BUDGET_COLOR} strokeWidth={2.5} dot={renderCumulativeDot} activeDot={renderCumulativeDot} />
         </ComposedChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }
@@ -793,7 +818,6 @@ export default function BudgetClient({ initialYear }: Props) {
 
           {/* 섹션들 */}
           <BudgetSection
-            label="여행/공연비 계획"
             category="여행공연비"
             items={drafts.filter(d => d.category === '여행공연비')}
             usageByDetail={usageByDetail['여행공연비'] ?? {}}
@@ -806,7 +830,6 @@ export default function BudgetClient({ initialYear }: Props) {
           />
 
           <BudgetSection
-            label="고정비 계획"
             category="고정비"
             items={drafts.filter(d => d.category === '고정비')}
             usageByDetail={usageByDetail['고정비'] ?? {}}
@@ -820,7 +843,6 @@ export default function BudgetClient({ initialYear }: Props) {
 
           {(drafts.some(d => d.category === '대출상환') || (usageByCategory['대출상환'] ?? 0) > 0) ? (
             <BudgetSection
-              label="대출상환 계획"
               category="대출상환"
               items={drafts.filter(d => d.category === '대출상환')}
               usageByDetail={usageByDetail['대출상환'] ?? {}}
@@ -834,7 +856,6 @@ export default function BudgetClient({ initialYear }: Props) {
           ) : null}
 
           <BudgetSection
-            label="변동비 계획"
             category="변동비"
             items={drafts.filter(d => d.category === '변동비')}
             usageByDetail={usageByDetail['변동비'] ?? {}}
@@ -849,14 +870,17 @@ export default function BudgetClient({ initialYear }: Props) {
           {/* 변동비 주단위 기준 — KPI 카드 */}
           <section>
             <div className="flex items-center mb-3 px-1">
-              <h2 className="text-sm font-semibold text-slate-700">변동비 주단위 기준</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className={`${card.base} p-4`}>
-                <p className={text.caption}>연간 변동비 ÷ 52 (참고)</p>
-                <p className="text-lg font-bold text-slate-800 tabular-nums mt-1">{formatWonFull(variableWeeklySuggestion)}</p>
+              <div className="flex items-center gap-2">
+                <span className={badge.base} style={catBadgeStyle('변동비')}>변동비</span>
+                <h2 className="text-sm font-semibold text-slate-700">주단위 기준</h2>
               </div>
-              <div className={`${card.base} p-4`}>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
+                <p className={text.caption}>연간 변동비 ÷ 52 (참고)</p>
+                <p className="text-[13px] sm:text-lg font-bold text-slate-800 tabular-nums mt-1 truncate">{formatWonFull(variableWeeklySuggestion)}</p>
+              </div>
+              <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
                 <p className={text.caption}>주당 기준금액</p>
                 {editing ? (
                   <input
@@ -865,10 +889,10 @@ export default function BudgetClient({ initialYear }: Props) {
                     value={weeklyAmount ? fmtAmountInput(String(weeklyAmount)) : ''}
                     onChange={e => setWeeklyAmount(parseAmountInput(e.target.value))}
                     placeholder="0"
-                    className={`${field.inputFit} w-full text-lg font-bold tabular-nums mt-1`}
+                    className={`${field.inputFit} min-w-0 w-full text-[13px] sm:text-lg font-bold tabular-nums mt-1`}
                   />
                 ) : (
-                  <p className="text-lg font-bold text-slate-800 tabular-nums mt-1">{formatWonFull(weeklyAmount)}</p>
+                  <p className="text-[13px] sm:text-lg font-bold text-slate-800 tabular-nums mt-1 truncate">{formatWonFull(weeklyAmount)}</p>
                 )}
               </div>
             </div>
