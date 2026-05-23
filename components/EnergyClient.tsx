@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Fragment, useState, useEffect, useMemo, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
   ResponsiveContainer, BarChart,
@@ -83,27 +83,29 @@ function AmountTooltip({ active, payload, label, activeKinds }: ChartTooltipProp
   const row = payload[0].payload as Record<string, number>
   const total = activeKinds.reduce((s, k) => s + Number(row[`${k.key}_amount`] ?? 0), 0)
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[200px]">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[220px]">
       <p className="font-semibold text-slate-700 mb-2">{label}</p>
-      {activeKinds.map(k => {
-        const amt = Number(row[`${k.key}_amount`] ?? 0)
-        const usage = Number(row[`${k.key}_usage`] ?? 0)
-        return (
-          <div key={k.key} className="flex items-center justify-between gap-3 mb-1 last:mb-0">
-            <span className="flex items-center gap-1.5" style={{ color: k.color }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
-              {k.label}
-            </span>
-            <span className="text-right">
-              <span className="font-medium text-slate-700 tabular-nums">{formatWonFull(amt)}</span>
-              <span className="ml-2 text-[10px] text-slate-400 tabular-nums">{usage.toLocaleString('ko-KR')} {k.unit}</span>
-            </span>
-          </div>
-        )
-      })}
-      <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-slate-100">
-        <span className="text-slate-500">합계</span>
-        <span className="font-semibold text-slate-800 tabular-nums">{formatWonFull(total)}</span>
+      <div className="grid grid-cols-[auto_1fr_auto] gap-x-3 items-center">
+        {activeKinds.map(k => {
+          const amt = Number(row[`${k.key}_amount`] ?? 0)
+          const usage = Number(row[`${k.key}_usage`] ?? 0)
+          return (
+            <Fragment key={k.key}>
+              <span className="flex items-center gap-1.5 py-0.5" style={{ color: k.color }}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
+                {k.label}
+              </span>
+              <span className="text-right text-[10px] text-slate-400 tabular-nums">
+                {usage.toLocaleString('ko-KR')} {k.unit}
+              </span>
+              <span className="text-right font-medium text-slate-700 tabular-nums">
+                {formatWonFull(amt)}
+              </span>
+            </Fragment>
+          )
+        })}
+        <span className="col-span-2 text-slate-500 mt-2 pt-2 border-t border-slate-100">합계</span>
+        <span className="text-right font-semibold text-slate-800 tabular-nums mt-2 pt-2 border-t border-slate-100">{formatWonFull(total)}</span>
       </div>
     </div>
   )
