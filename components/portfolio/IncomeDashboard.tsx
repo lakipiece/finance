@@ -127,6 +127,24 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     }).catch(() => {})
   }, [])
 
+  // 필터 상태 복원 (배당 추가 등으로 새로고침돼도 유지)
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('income-filter')
+      if (!raw) return
+      const f = JSON.parse(raw)
+      if (typeof f.year === 'number') setFilterYear(f.year)
+      if (f.month === null || typeof f.month === 'number') setFilterMonth(f.month)
+      if (typeof f.allPeriod === 'boolean') setFilterAllPeriod(f.allPeriod)
+      if (f.owner === null || typeof f.owner === 'string') setOwnerFilter(f.owner)
+      if (f.account === null || typeof f.account === 'string') setAccountFilter(f.account)
+    } catch { /* noop */ }
+  }, [])
+
+  function persistFilter(next: { year: number; month: number | null; allPeriod: boolean; owner: string | null; account: string | null }) {
+    try { sessionStorage.setItem('income-filter', JSON.stringify(next)) } catch { /* noop */ }
+  }
+
   const filteredDividends = useMemo(
     () => dividends.filter(d => {
       if (ownerFilter && (d.account.owner ?? '') !== ownerFilter) return false
@@ -172,16 +190,20 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   }
 
   function selectOwner(o: string) {
-    setOwnerFilter(prev => prev === o ? null : o)
+    const owner = ownerFilter === o ? null : o
+    setOwnerFilter(owner)
     setAccountFilter(null)
     setSelectedMonth(null)
     setSelectedSecurity(null)
+    persistFilter({ year: filterYear, month: filterMonth, allPeriod: filterAllPeriod, owner, account: null })
   }
 
   function selectAccount(id: string) {
-    setAccountFilter(prev => prev === id ? null : id)
+    const account = accountFilter === id ? null : id
+    setAccountFilter(account)
     setSelectedMonth(null)
     setSelectedSecurity(null)
+    persistFilter({ year: filterYear, month: filterMonth, allPeriod: filterAllPeriod, owner: ownerFilter, account })
   }
 
   function handlePeriodChange(y: number, m: number | null, all: boolean) {
@@ -190,6 +212,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     setFilterAllPeriod(all)
     setSelectedMonth(null)
     setSelectedSecurity(null)
+    persistFilter({ year: y, month: m, allPeriod: all, owner: ownerFilter, account: accountFilter })
   }
 
   function openAddModal() {
