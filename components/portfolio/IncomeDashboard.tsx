@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -14,8 +14,10 @@ import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import DividendTable from './DividendTable'
 import DividendFormModal from './DividendFormModal'
 import BulkDividendModal from './BulkDividendModal'
+import YearMonthPicker from '@/components/ui/YearMonthPicker'
 
 interface AccountSecurity { account_id: string; security_id: string }
+interface MemberOpt { code: string; color: string }
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -33,7 +35,12 @@ interface Props {
 
 const fmt = formatWonCompact
 
-function thisYear() { return new Date().getFullYear() }
+function inPeriod(dateStr: string, allPeriod: boolean, year: number, month: number | null) {
+  if (allPeriod) return true
+  if (!dateStr.startsWith(String(year))) return false
+  if (month !== null && dateStr.slice(5, 7) !== String(month).padStart(2, '0')) return false
+  return true
+}
 
 function groupByMonth(items: { date: unknown; amount: number }[]) {
   const map: Record<string, number> = {}
@@ -105,29 +112,85 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   const [tab, setTab] = useState<'month' | 'account' | 'security'>('month')
   const [taxUpdating, setTaxUpdating] = useState(false)
 
-  const year = thisYear()
+  // 필터: 년월 · 사용자 · 계좌
+  const now = new Date()
+  const [filterYear, setFilterYear] = useState(now.getFullYear())
+  const [filterMonth, setFilterMonth] = useState<number | null>(null)
+  const [filterAllPeriod, setFilterAllPeriod] = useState(false)
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null)
+  const [accountFilter, setAccountFilter] = useState<string | null>(null)
+  const [memberOpts, setMemberOpts] = useState<MemberOpt[]>([])
 
-  const yearDividends = useMemo(
-    () => dividends.filter(d => fmtDate(d.paid_at).startsWith(String(year))),
-    [dividends, year]
+  useEffect(() => {
+    fetch('/api/options/members').then(r => r.json()).then(data => {
+      if (Array.isArray(data) && data.length) setMemberOpts(data)
+    }).catch(() => {})
+  }, [])
+
+  const filteredDividends = useMemo(
+    () => dividends.filter(d => {
+      if (ownerFilter && (d.account.owner ?? '') !== ownerFilter) return false
+      if (accountFilter && String(d.account_id) !== accountFilter) return false
+      return inPeriod(fmtDate(d.paid_at), filterAllPeriod, filterYear, filterMonth)
+    }),
+    [dividends, ownerFilter, accountFilter, filterAllPeriod, filterYear, filterMonth]
   )
+
+  const periodLabel = filterAllPeriod
+    ? '전체 기간'
+    : filterMonth
+    ? `${filterYear}년 ${filterMonth}월`
+    : `${filterYear}년`
 
   const chartData = groupByMonth(
-    yearDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
+    filteredDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
   )
-  const monthTickerMap = useMemo(() => groupByMonthAndTicker(yearDividends), [yearDividends])
+  const monthTickerMap = useMemo(() => groupByMonthAndTicker(filteredDividends), [filteredDividends])
 
   const scopedDividends = useMemo(
     () => selectedMonth
-      ? yearDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
-      : yearDividends,
-    [yearDividends, selectedMonth]
+      ? filteredDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
+      : filteredDividends,
+    [filteredDividends, selectedMonth]
   )
 
   const owners = useMemo(() => {
     const s = new Set(accounts.map(a => a.owner ?? '').filter(Boolean))
     return [...s]
   }, [accounts])
+
+  // 배당 내역이 있는 계좌만 (사용자 필터 반영)
+  const filterAccounts = useMemo(() => {
+    const ids = new Set(dividends.map(d => String(d.account_id)))
+    return accounts.filter(a =>
+      ids.has(String(a.id)) && (!ownerFilter || (a.owner ?? '') === ownerFilter)
+    )
+  }, [accounts, dividends, ownerFilter])
+
+  function ownerColor(code: string) {
+    return memberOpts.find(m => m.code === code)?.color ?? palette.colors[0]
+  }
+
+  function selectOwner(o: string) {
+    setOwnerFilter(prev => prev === o ? null : o)
+    setAccountFilter(null)
+    setSelectedMonth(null)
+    setSelectedSecurity(null)
+  }
+
+  function selectAccount(id: string) {
+    setAccountFilter(prev => prev === id ? null : id)
+    setSelectedMonth(null)
+    setSelectedSecurity(null)
+  }
+
+  function handlePeriodChange(y: number, m: number | null, all: boolean) {
+    setFilterYear(y)
+    setFilterMonth(m)
+    setFilterAllPeriod(all)
+    setSelectedMonth(null)
+    setSelectedSecurity(null)
+  }
 
   function openAddModal() {
     setEditTarget(null)
@@ -165,26 +228,59 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>배당 · 분배금</h1>
-          <p className="text-xs text-slate-400 mt-0.5">연도별 배당·분배금 집계 및 세후 현황</p>
+          <p className="text-xs text-slate-400 mt-0.5">기간별 배당·분배금 집계 및 세후 현황</p>
         </div>
-        <button
-          onClick={handleUpdateTax}
-          disabled={taxUpdating}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 disabled:opacity-50 transition-colors"
-        >
-          {taxUpdating ? '계산 중…' : '세금 자동계산'}
-        </button>
+        <div className="flex items-center gap-2">
+          <YearMonthPicker
+            year={filterYear} month={filterMonth} allPeriod={filterAllPeriod}
+            align="right"
+            onChange={handlePeriodChange}
+          />
+          <button
+            onClick={handleUpdateTax}
+            disabled={taxUpdating}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 disabled:opacity-50 transition-colors"
+          >
+            {taxUpdating ? '계산 중…' : '세금 자동계산'}
+          </button>
+        </div>
+      </div>
+
+      {/* 필터: 사용자 · 계좌 */}
+      <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3 flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] font-semibold text-slate-400 shrink-0">사용자</span>
+        {owners.length > 0 ? owners.map(o => {
+          const active = ownerFilter === o
+          return (
+            <button key={o} type="button" onClick={() => selectOwner(o)}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              style={active ? { backgroundColor: ownerColor(o) } : undefined}>
+              {o}
+            </button>
+          )
+        }) : <span className="text-[11px] text-slate-300">없음</span>}
+        <span className="text-slate-200 text-xs">|</span>
+        <span className="text-[11px] font-semibold text-slate-400 shrink-0">계좌</span>
+        {filterAccounts.length > 0 ? filterAccounts.map(a => {
+          const active = accountFilter === String(a.id)
+          return (
+            <button key={a.id} type="button" onClick={() => selectAccount(String(a.id))}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              {a.broker} · {a.name}
+            </button>
+          )
+        }) : <span className="text-[11px] text-slate-300">없음</span>}
       </div>
 
       {/* KPI */}
       {(() => {
         const kpiRows = selectedMonth
-          ? yearDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
-          : yearDividends
+          ? filteredDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
+          : filteredDividends
         const gross = kpiRows.reduce((s, d) => s + toKrw(d), 0)
         const tax = kpiRows.reduce((s, d) => s + taxKrw(d), 0)
         const net = gross - tax
-        const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : `${year}년`
+        const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : periodLabel
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
@@ -207,8 +303,8 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <div className="bg-white rounded-2xl border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-700">
-            {year}년 배당·분배금 집계
-            {selectedMonth && <span className="text-xs text-slate-400 font-normal ml-2">· {selectedMonth}</span>}
+            {periodLabel} 배당·분배금 집계
+            {selectedMonth ? <span className="text-xs text-slate-400 font-normal ml-2">· {selectedMonth}</span> : null}
           </h3>
           <div className="flex gap-1">
             {(['month', 'account', 'security'] as const).map(k => (
@@ -321,7 +417,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
       {/* 배당 테이블 */}
       <DividendTable
-        dividends={dividends}
+        dividends={filteredDividends}
         selectedMonth={selectedMonth}
         selectedSecurity={selectedSecurity}
         onClearSecurity={() => setSelectedSecurity(null)}
