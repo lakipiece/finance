@@ -480,8 +480,8 @@ function ModalShell({ onClose, title, onDelete, children }: {
   onClose: () => void; title: string; onDelete?: () => void; children: React.ReactNode
 }) {
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[92vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
           <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
           <div className="flex items-center gap-1">
