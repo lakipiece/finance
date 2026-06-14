@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
@@ -409,6 +410,7 @@ function PriceHistoryModal({
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options: initOptions, holdingsMap = {} }: Props) {
   const { palette } = useTheme()
+  const router = useRouter()
   const [securities, setSecurities] = useState(initSecurities)
   const [options, setOptions] = useState(initOptions)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -423,6 +425,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<Record<string, string>>({})
   const [refreshingAll, setRefreshingAll] = useState(false)
+  const [fetchingHist, setFetchingHist] = useState<string | null>(null)
 
   // 모달 열릴 때 최신 옵션 로드
   useEffect(() => {
@@ -474,6 +477,28 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       setSyncMsg(prev => ({ ...prev, [rawTicker]: '✗' }))
     } finally {
       setSyncing(null)
+    }
+  }
+
+  // 개별 종목 최근 90일 과거 일별 종가 수집
+  async function fetchHistory(rawTicker: string) {
+    setFetchingHist(rawTicker)
+    const end = new Date()
+    const start = new Date()
+    start.setDate(start.getDate() - 90)
+    const fmt = (d: Date) => d.toISOString().slice(0, 10)
+    try {
+      const res = await apiFetch('/api/portfolio/prices/history', 'POST', {
+        startDate: fmt(start),
+        endDate: fmt(end),
+        tickers: [rawTicker],
+      })
+      notify(`과거 데이터 수집 완료 (${res.saved ?? 0}건)`)
+      router.refresh()
+    } catch (e: unknown) {
+      notify(e instanceof Error ? e.message : '과거 수집 실패', false)
+    } finally {
+      setFetchingHist(null)
     }
   }
 
@@ -591,7 +616,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={handleRefreshAll} disabled={refreshingAll}
-            className={`${btn.primary} ${refreshingAll ? 'opacity-100' : 'opacity-0 hover:opacity-100 focus:opacity-100'}`}
+            className={`${btn.primary} ${refreshingAll ? 'opacity-100' : ''}`}
             style={{ backgroundColor: palette.colors[0] }}>
             {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
           </button>
@@ -702,6 +727,21 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   </button>
                 )}
                 <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {s.asset_class !== '현금' ? (
+                    <button onClick={() => fetchHistory(s.ticker)} disabled={fetchingHist === s.ticker} title="과거 데이터 수집 (90일)"
+                      className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
+                      {fetchingHist === s.ticker ? (
+                        <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                    </button>
+                  ) : null}
                   <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
                     className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
                     {syncing === s.ticker ? (

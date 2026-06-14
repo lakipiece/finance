@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { refreshAllPrices } from '@/lib/portfolio/prices'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+export const maxDuration = 300
 
 export async function POST(request: Request) {
   const cronSecret = process.env.CRON_SECRET

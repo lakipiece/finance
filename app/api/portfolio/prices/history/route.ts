@@ -9,11 +9,12 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { startDate, endDate } = await req.json()
+  const { startDate, endDate, tickers } = await req.json()
   if (!startDate || !endDate) {
     return NextResponse.json({ error: 'startDate, endDate 필수' }, { status: 400 })
   }
 
-  const result = await fetchHistoricalPrices(startDate, endDate)
+  // tickers 미지정 시 전체 종목 수집 (기존 동작)
+  const result = await fetchHistoricalPrices(startDate, endDate, Array.isArray(tickers) ? tickers : undefined)
   return NextResponse.json(result)
 }

@@ -108,6 +108,8 @@ export async function refreshAllPrices(): Promise<{
   saved: number
   failed: string[]
   results: Record<string, number>
+  backfilled: number
+  backfillTickers: string[]
 }> {
   const sql = getSql()
   const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
@@ -121,7 +123,7 @@ export async function refreshAllPrices(): Promise<{
     LEFT JOIN option_list cu ON s.currency_id    = cu.id
   `
 
-  if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {} }
+  if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {}, backfilled: 0, backfillTickers: [] }
 
   // KST 기준 거래일: KST 12시 이전(새벽) 수집 = 미국장 마감 후 → 전날이 거래일
   const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
@@ -173,8 +175,41 @@ export async function refreshAllPrices(): Promise<{
     `
   }
 
+  // 과거 30일 데이터가 없는 종목만 backfill — 신규 종목이 추가되면 자동으로 과거가 채워짐
+  const sinceDate = new Date(tradingDate)
+  sinceDate.setUTCDate(sinceDate.getUTCDate() - 30)
+  const since = sinceDate.toISOString().slice(0, 10)
+
+  // price_history 저장 형식(yahoo/coin ticker) 기준으로 종목별 가장 이른 날짜 조회
+  const tickersToCheck = [...new Set([...yahooTickers, ...coinTickers])]
+  const minRows = await sql<{ ticker: string; min_date: string }[]>`
+    SELECT ticker, MIN(date)::text AS min_date
+    FROM price_history
+    WHERE ticker = ANY(${tickersToCheck})
+    GROUP BY ticker
+  `
+  const minDateByTicker: Record<string, string> = {}
+  for (const r of minRows ?? []) minDateByTicker[r.ticker] = r.min_date
+
+  // 30일 이전 데이터가 없는 종목(신규 포함)의 raw 티커 추출 (현금 제외)
+  const backfillTickers = securities
+    .filter(s => s.asset_class !== '현금')
+    .filter(s => {
+      const stored = s.asset_class === '코인' ? s.ticker : toYahooTicker(s.ticker, s.country)
+      const min = minDateByTicker[stored]
+      return !min || min > since
+    })
+    .map(s => s.ticker)
+
+  let backfilled = 0
+  if (backfillTickers.length > 0) {
+    const hist = await fetchHistoricalPrices(since, today, backfillTickers)
+    backfilled = hist.saved
+    if (hist.failed.length > 0) console.warn('[refreshAllPrices] backfill failed:', hist.failed)
+  }
+
   if (allFailed.length > 0) console.warn('[refreshAllPrices] failed:', allFailed)
-  return { saved: allSaved.length, failed: allFailed, results }
+  return { saved: allSaved.length, failed: allFailed, results, backfilled, backfillTickers }
 }
 
 // 페이지 로딩 시 사용: DB에서 읽기만 함 (Yahoo 호출 없음)
@@ -185,12 +220,14 @@ export async function getPrices(
 }
 
 // 날짜 범위의 과거 일별 종가를 Yahoo Finance / CoinGecko에서 수집
+// onlyTickers를 주면 해당 raw 티커(securities.ticker)의 종목만 수집 (USDKRW=X 환율은 항상 포함)
 export async function fetchHistoricalPrices(
   startDate: string,  // 'YYYY-MM-DD'
   endDate: string,    // 'YYYY-MM-DD'
+  onlyTickers?: string[],
 ): Promise<{ saved: number; failed: string[]; tickers: string[] }> {
   const sql = getSql()
-  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
+  const allSecurities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
     SELECT s.ticker,
            ac.value AS asset_class,
            co.value AS country,
@@ -200,7 +237,11 @@ export async function fetchHistoricalPrices(
     LEFT JOIN option_list co ON s.country_id     = co.id
     LEFT JOIN option_list cu ON s.currency_id    = cu.id
   `
-  if (!securities || securities.length === 0) return { saved: 0, failed: [], tickers: [] }
+  if (!allSecurities || allSecurities.length === 0) return { saved: 0, failed: [], tickers: [] }
+
+  const securities = onlyTickers
+    ? allSecurities.filter(s => onlyTickers.includes(s.ticker))
+    : allSecurities
 
   const period1 = new Date(startDate)
   const period2 = new Date(endDate)
