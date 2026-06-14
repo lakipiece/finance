@@ -295,7 +295,8 @@ export async function fetchHistoricalPrices(
   for (const ticker of coinTickers) {
     try {
       const from = Math.floor(period1.getTime() / 1000)
-      const to = Math.floor(period2.getTime() / 1000)
+      // endDate는 UTC 00:00이므로 그대로 쓰면 마지막 날 데이터가 누락됨 → 하루치 더해 포함
+      const to = Math.floor(period2.getTime() / 1000) + 86400
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/${ticker.toLowerCase()}/market_chart/range?vs_currency=krw&from=${from}&to=${to}`
       )

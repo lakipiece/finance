@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   const session = await auth()
@@ -12,6 +13,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     order_idx = COALESCE(${order_idx ?? null}::int, order_idx)
     WHERE id = ${params.id} RETURNING *`
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  invalidateCache()
   return NextResponse.json(row)
 }
 
@@ -20,5 +22,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
   await sql`DELETE FROM detail_options WHERE id = ${params.id}`
+  invalidateCache()
   return NextResponse.json({ ok: true })
 }

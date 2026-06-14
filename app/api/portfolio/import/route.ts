@@ -160,9 +160,11 @@ export async function POST(req: NextRequest) {
   }
   const holdingsPayload = [...holdingsMap.values()]
 
+  // holdings unique 제약은 (account_id, security_id, snapshot_id) NULLS NOT DISTINCT.
+  // import는 snapshot_id 없이(NULL) 현재 보유내역을 upsert하며, NULL도 동일값으로 충돌 판정됨.
   await sql`
     INSERT INTO holdings ${sql(holdingsPayload)}
-    ON CONFLICT (account_id, security_id) DO UPDATE SET
+    ON CONFLICT (account_id, security_id, snapshot_id) DO UPDATE SET
       quantity = EXCLUDED.quantity,
       avg_price = EXCLUDED.avg_price,
       total_invested = EXCLUDED.total_invested,

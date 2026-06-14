@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         SET amount = EXCLUDED.amount, note = EXCLUDED.note
       RETURNING id, pension_asset_id, snapshot_date, amount, note, created_at
     `
+    invalidateCache()
     return NextResponse.json({ ...row, snapshot_date: formatDate(row.snapshot_date) })
   } catch (e) {
     console.error('[POST /pension-assets/[id]/snapshots]', e)

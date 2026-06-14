@@ -118,9 +118,11 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   } catch {
     // 가격 조회 실패 시 투자원금 기준으로만 표시
   }
-  const exchangeRate = prices['KRW=X']?.price ?? 1350
+  const liveExchangeRate = prices['KRW=X']?.price
+  if (!liveExchangeRate) console.warn('[fetchPortfolioSummary] KRW=X 환율 조회 실패 → 기본값 1350 사용')
+  const exchangeRate = liveExchangeRate ?? 1350
 
-  const dividendRows = await sql<{ security_id: number; account_id: number; amount: number; currency: string; exchange_rate: number | null }[]>`
+  const dividendRows = await sql<{ security_id: string; account_id: string; amount: number; currency: string; exchange_rate: number | null }[]>`
     SELECT security_id, account_id, amount, currency, exchange_rate
     FROM dividends
   `
@@ -153,7 +155,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     const unrealizedPct = totalInvested > 0 ? unrealizedPnl / totalInvested : 0
 
     const divs = (dividendRows ?? []).filter(
-      d => String(d.security_id) === h.security_id && String(d.account_id) === h.account_id
+      d => d.security_id === h.security_id && d.account_id === h.account_id
     )
     const totalDividends = divs.reduce((sum, d) => {
       const rate = Number(d.exchange_rate) || 1

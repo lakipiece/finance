@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 function formatDate(v: unknown): string | null {
   if (!v) return null
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
       VALUES (${name.trim()}, ${description ?? ''})
       RETURNING id, name, description, created_at
     `
+    invalidateCache()
     return NextResponse.json({
       ...row,
       current_amount: null,

@@ -22,12 +22,20 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { security_id, account_id, sold_at, quantity, avg_cost_krw, sell_price_krw, realized_pnl_krw, memo } = await req.json()
-  const sql = getSql()
-  const [row] = await sql`
-    INSERT INTO sells (security_id, account_id, sold_at, quantity, avg_cost_krw, sell_price_krw, realized_pnl_krw, memo)
-    VALUES (${security_id}, ${account_id}, ${sold_at}, ${quantity}, ${avg_cost_krw ?? null}, ${sell_price_krw ?? null}, ${realized_pnl_krw ?? null}, ${memo ?? null})
-    RETURNING *
-  `
-  return NextResponse.json(row, { status: 201 })
+  try {
+    const { security_id, account_id, sold_at, quantity, avg_cost_krw, sell_price_krw, realized_pnl_krw, memo } = await req.json()
+    if (!security_id || !account_id || !sold_at || quantity == null) {
+      return NextResponse.json({ error: '필수 항목 누락 (security_id, account_id, sold_at, quantity)' }, { status: 400 })
+    }
+    const sql = getSql()
+    const [row] = await sql`
+      INSERT INTO sells (security_id, account_id, sold_at, quantity, avg_cost_krw, sell_price_krw, realized_pnl_krw, memo)
+      VALUES (${security_id}, ${account_id}, ${sold_at}, ${quantity}, ${avg_cost_krw ?? null}, ${sell_price_krw ?? null}, ${realized_pnl_krw ?? null}, ${memo ?? null})
+      RETURNING *
+    `
+    return NextResponse.json(row, { status: 201 })
+  } catch (e) {
+    console.error('[POST /portfolio/sells]', e)
+    return NextResponse.json({ error: '저장 실패' }, { status: 500 })
+  }
 }

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 export async function GET(req: NextRequest) {
   const year = req.nextUrl.searchParams.get('year')
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       VALUES (${income_date}, ${d.getFullYear()}, ${d.getMonth() + 1}, ${category}, ${description ?? ''}, ${amount}, ${member ?? null}, ${memo ?? ''})
       RETURNING id, income_date, year, month, category, description, amount, member, memo
     `
+    invalidateCache()
     return NextResponse.json({
       ...row,
       income_date: row.income_date instanceof Date

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -20,6 +21,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       SET name = ${name.trim()}, description = ${description ?? ''}
       WHERE id = ${id}
     `
+    invalidateCache()
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('[PATCH /pension-assets/[id]]', e)
@@ -34,6 +36,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { id } = await params
     const sql = getSql()
     await sql`DELETE FROM pension_assets WHERE id = ${id}`
+    invalidateCache()
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('[DELETE /pension-assets/[id]]', e)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { invalidateCache } from '@/lib/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,5 +21,6 @@ export async function POST(req: Request) {
     INSERT INTO members (code, display_name, color) VALUES (${code}, ${display_name}, ${color ?? '#64748b'})
     ON CONFLICT (code) DO UPDATE SET display_name = EXCLUDED.display_name, color = EXCLUDED.color
     RETURNING *`
+  invalidateCache()
   return NextResponse.json(row, { status: 201 })
 }

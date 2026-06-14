@@ -46,45 +46,14 @@ function TargetInput({ value, onChange }: { value: number; onChange: (v: number)
   )
 }
 
-export default function RebalanceDashboard({ summary, targets }: Props) {
-  const { palette } = useTheme()
-  const [editTargets, setEditTargets] = useState<TargetAllocation[]>(targets)
-  const [saved, setSaved] = useState(false)
-  const total = summary.total_market_value
-
-  const byAssetClass = groupPct(summary.positions, p => p.security.asset_class ?? '기타', total)
-  const byStyle = groupPct(summary.positions, p => p.security.etf_style ?? '미분류', total)
-  const byTicker = groupPct(summary.positions, p => p.security.ticker, total)
-
-  function getTarget(level: string, key: string) {
-    return editTargets.find(t => t.level === level && t.key === key)?.target_pct ?? 0
-  }
-
-  function setTarget(level: string, key: string, pct: number) {
-    setEditTargets(prev => {
-      const idx = prev.findIndex(t => t.level === level && t.key === key)
-      if (idx >= 0) return prev.map((t, i) => i === idx ? { ...t, target_pct: pct } : t)
-      return [...prev, { id: '', level: level as TargetAllocation['level'], key, target_pct: pct }]
-    })
-    setSaved(false)
-  }
-
-  async function saveTargets() {
-    const body = editTargets
-      .filter(t => t.target_pct > 0)
-      .map(({ level, key, target_pct }) => ({ level, key, target_pct }))
-    await fetch('/api/portfolio/targets', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
-    setSaved(true)
-  }
-
-  const Section = ({ title, rows }: {
-    title: string
-    rows: { key: string; actual_pct: number; level: string; mono?: boolean }[]
-  }) => (
+function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
+  title: string
+  rows: { key: string; actual_pct: number; level: string; mono?: boolean }[]
+  total: number
+  getTarget: (level: string, key: string) => number
+  setTarget: (level: string, key: string, pct: number) => void
+}) {
+  return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="px-5 py-3.5 border-b border-slate-100">
         <p className="text-xs font-semibold text-slate-600">{title}</p>
@@ -128,6 +97,42 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
       </div>
     </div>
   )
+}
+
+export default function RebalanceDashboard({ summary, targets }: Props) {
+  const { palette } = useTheme()
+  const [editTargets, setEditTargets] = useState<TargetAllocation[]>(targets)
+  const [saved, setSaved] = useState(false)
+  const total = summary.total_market_value
+
+  const byAssetClass = groupPct(summary.positions, p => p.security.asset_class ?? '기타', total)
+  const byStyle = groupPct(summary.positions, p => p.security.etf_style ?? '미분류', total)
+  const byTicker = groupPct(summary.positions, p => p.security.ticker, total)
+
+  function getTarget(level: string, key: string) {
+    return editTargets.find(t => t.level === level && t.key === key)?.target_pct ?? 0
+  }
+
+  function setTarget(level: string, key: string, pct: number) {
+    setEditTargets(prev => {
+      const idx = prev.findIndex(t => t.level === level && t.key === key)
+      if (idx >= 0) return prev.map((t, i) => i === idx ? { ...t, target_pct: pct } : t)
+      return [...prev, { id: '', level: level as TargetAllocation['level'], key, target_pct: pct }]
+    })
+    setSaved(false)
+  }
+
+  async function saveTargets() {
+    const body = editTargets
+      .filter(t => t.target_pct > 0)
+      .map(({ level, key, target_pct }) => ({ level, key, target_pct }))
+    await fetch('/api/portfolio/targets', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    setSaved(true)
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
@@ -145,21 +150,24 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
         </button>
       </div>
 
-      <Section
+      <RebalanceSection
         title="자산군 목표 비율"
         rows={byAssetClass.map(r => ({ ...r, level: 'asset_class' }))}
+        total={total} getTarget={getTarget} setTarget={setTarget}
       />
-      <Section
+      <RebalanceSection
         title="스타일 목표 비율"
         rows={byStyle
           .sort((a, b) => b.market_value - a.market_value)
           .map(r => ({ ...r, level: 'style' }))}
+        total={total} getTarget={getTarget} setTarget={setTarget}
       />
-      <Section
+      <RebalanceSection
         title="종목별 목표 비율"
         rows={byTicker
           .sort((a, b) => b.market_value - a.market_value)
           .map(r => ({ ...r, level: 'ticker', mono: true }))}
+        total={total} getTarget={getTarget} setTarget={setTarget}
       />
     </div>
   )
