@@ -160,8 +160,16 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
   )
 }
 
-function MemoSuggestInput({ value, onChange, className }: {
-  value: string; onChange: (v: string) => void; className?: string
+/* 자동완성 입력: 2글자 이상 입력 후 '?' 를 치면 최근 항목 목록(역순)을 보여줌.
+   '?' 는 트리거 문자로 소비되어 값에는 남지 않음. fetcher 는 최근순 정렬된 문자열 배열 반환. */
+function SuggestInput({ value, onChange, fetcher, placeholder, className, multiline = true, maxLength }: {
+  value: string
+  onChange: (v: string) => void
+  fetcher: (q: string) => Promise<string[]>
+  placeholder?: string
+  className?: string
+  multiline?: boolean
+  maxLength?: number
 }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [open, setOpen] = useState(false)
@@ -169,24 +177,12 @@ function MemoSuggestInput({ value, onChange, className }: {
   const taRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
+    if (!multiline) return
     const el = taRef.current
     if (!el) return
     el.style.height = 'auto'
     el.style.height = `${el.scrollHeight}px`
-  }, [value])
-
-  useEffect(() => {
-    if (value.length < 2) { setSuggestions([]); setOpen(false); return }
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/expenses/memos?q=${encodeURIComponent(value)}`)
-        const data = await res.json()
-        setSuggestions(data.memos ?? [])
-        setOpen((data.memos ?? []).length > 0)
-      } catch { setSuggestions([]) }
-    }, 200)
-    return () => clearTimeout(timer)
-  }, [value])
+  }, [value, multiline])
 
   useEffect(() => {
     function onMouseDown(e: MouseEvent) {
@@ -196,13 +192,45 @@ function MemoSuggestInput({ value, onChange, className }: {
     return () => document.removeEventListener('mousedown', onMouseDown)
   }, [])
 
+  async function triggerSearch(q: string) {
+    try {
+      const items = await fetcher(q.trim())
+      setSuggestions(items)
+      setOpen(items.length > 0)
+    } catch { setSuggestions([]); setOpen(false) }
+  }
+
+  function handleChange(raw: string) {
+    // 2글자 이상 입력 후 '?' 입력 시에만 목록 표시 ('?' 는 제거)
+    if (raw.endsWith('?')) {
+      const q = raw.slice(0, -1)
+      if (q.trim().length >= 2) {
+        onChange(q)
+        triggerSearch(q)
+        return
+      }
+    }
+    onChange(raw)
+    setOpen(false)
+  }
+
   return (
     <div className="relative" ref={ref}>
-      <textarea ref={taRef} value={value} rows={1}
-        onChange={e => onChange(e.target.value)}
-        placeholder="메모"
-        className={`${className} resize-none overflow-hidden`}
-        style={{ minHeight: '2rem' }} />
+      {multiline ? (
+        <textarea ref={taRef} value={value} rows={1}
+          onChange={e => handleChange(e.target.value)}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          className={`${className} resize-none overflow-hidden`}
+          style={{ minHeight: '2rem' }} />
+      ) : (
+        <input type="text" value={value}
+          onChange={e => handleChange(e.target.value)}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          autoComplete="off"
+          className={className} />
+      )}
       {open && suggestions.length > 0 && (
         <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-44 overflow-y-auto">
           {suggestions.map(s => (
@@ -217,6 +245,22 @@ function MemoSuggestInput({ value, onChange, className }: {
       )}
     </div>
   )
+}
+
+/* 자동완성 fetcher */
+async function fetchExpenseMemos(q: string): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/expenses/memos?q=${encodeURIComponent(q)}`)
+    const data = await res.json()
+    return data.memos ?? []
+  } catch { return [] }
+}
+async function fetchIncomeSuggestions(field: 'description' | 'memo', q: string): Promise<string[]> {
+  try {
+    const res = await fetch(`/api/incomes/suggestions?field=${field}&q=${encodeURIComponent(q)}`)
+    const data = await res.json()
+    return data.items ?? []
+  } catch { return [] }
 }
 
 function TrashIcon() {
@@ -791,7 +835,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <MemoSuggestInput value={memo} onChange={setMemo} className={field.input} />
+          <SuggestInput value={memo} onChange={setMemo} fetcher={fetchExpenseMemos} placeholder="메모 (2글자+? 로 검색)" className={field.input} />
         </div>
         {err && <p className="text-xs text-rose-500">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
@@ -860,8 +904,9 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
         <div className="flex gap-4 items-start">
           <div className="flex-1">
             <label className={field.label}>설명</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-              placeholder="수입 내용" maxLength={50} className={field.input} />
+            <SuggestInput value={description} onChange={setDescription}
+              fetcher={q => fetchIncomeSuggestions('description', q)}
+              placeholder="수입 내용 (2글자+? 로 검색)" maxLength={50} multiline={false} className={field.input} />
           </div>
           <div className="w-36">
             <label className={field.label}>금액 (원)</label>
@@ -872,7 +917,9 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
+          <SuggestInput value={memo} onChange={setMemo}
+            fetcher={q => fetchIncomeSuggestions('memo', q)}
+            placeholder="메모 (2글자+? 로 검색)" className={field.input} />
         </div>
         {err && <p className="text-xs text-rose-500">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">

@@ -14,10 +14,11 @@ export async function GET(req: NextRequest) {
   try {
     const sql = getSql()
     const rows = await sql`
-      SELECT DISTINCT memo
+      SELECT memo
       FROM expenses
       WHERE memo ILIKE ${'%' + q + '%'} AND memo != ''
-      ORDER BY memo
+      GROUP BY memo
+      ORDER BY MAX(expense_date) DESC, MAX(id) DESC
       LIMIT 30
     `
     return NextResponse.json({ memos: rows.map(r => r.memo as string) })
