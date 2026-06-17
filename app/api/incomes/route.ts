@@ -9,16 +9,25 @@ export async function GET(req: NextRequest) {
   const year = req.nextUrl.searchParams.get('year')
   const monthParam = req.nextUrl.searchParams.get('month')
   const all = req.nextUrl.searchParams.get('all') === '1'
+  const q = req.nextUrl.searchParams.get('q')?.trim() || null
   if (!all && !year) return NextResponse.json({ error: 'year required' }, { status: 400 })
   try {
     const sql = getSql()
     const month = monthParam ? parseInt(monthParam) : null
+    const like = q ? `%${q}%` : ''
     const rows = await sql`
       SELECT id, income_date, year, month, category, description, amount, member, memo
       FROM incomes
       WHERE 1=1
       ${!all && year ? sql`AND year = ${parseInt(year)}` : sql``}
       ${!all && month ? sql`AND month = ${month}` : sql``}
+      ${q ? sql`AND (
+        COALESCE(description, '') ILIKE ${like}
+        OR COALESCE(category, '') ILIKE ${like}
+        OR COALESCE(memo, '') ILIKE ${like}
+        OR COALESCE(member, '') ILIKE ${like}
+        OR income_date::text ILIKE ${like}
+      )` : sql``}
       ORDER BY income_date DESC, id DESC
     `
     return NextResponse.json(rows.map((r) => ({

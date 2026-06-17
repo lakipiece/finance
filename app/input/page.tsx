@@ -1070,6 +1070,8 @@ export default function InputPage() {
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>(DEFAULT_MEMBERS)
   const [methodOpts, setMethodOpts] = useState<MethodOpt[]>(DEFAULT_METHODS)
   const [searchQuery, setSearchQuery] = useState('')
+  // 전체기간 모드에서 실제로 서버 조회에 사용된 검색어 (버튼 클릭 시점에 확정)
+  const [committedQuery, setCommittedQuery] = useState('')
 
   const now = new Date()
   const [viewYear, setViewYear] = useState(now.getFullYear())
@@ -1088,10 +1090,10 @@ export default function InputPage() {
     fetch('/api/options/methods').then(r => r.json()).then((data: MethodOpt[]) => { if (Array.isArray(data) && data.length) setMethodOpts(data.map(m => ({ name: m.name, color: m.color ?? '#94a3b8' }))) }).catch(() => {})
   }, [])
 
-  const fetchAll = useCallback(async () => {
+  const fetchData = useCallback(async (query: string) => {
     setLoading(true)
     const qs = viewAllPeriod
-      ? 'all=1'
+      ? `all=1&q=${encodeURIComponent(query.trim())}`
       : `year=${viewYear}${viewMonth !== null ? `&month=${viewMonth}` : ''}`
     const [expRes, incRes] = await Promise.all([
       fetch(`/api/expenses?${qs}`),
@@ -1117,10 +1119,42 @@ export default function InputPage() {
     setLoading(false)
   }, [viewYear, viewMonth, viewAllPeriod])
 
-  useEffect(() => { fetchAll() }, [fetchAll])
+  // 월/년 모드: 기간 변경 시 자동 조회. 전체기간 모드: 자동 조회 없이 검색 버튼 대기.
+  useEffect(() => {
+    if (viewAllPeriod) {
+      setRecords([])
+      setCommittedQuery('')
+      setSearchQuery('')
+      setLoading(false)
+      return
+    }
+    fetchData('')
+  }, [fetchData, viewAllPeriod])
+
+  function handleSearch() {
+    const q = searchQuery.trim()
+    setCommittedQuery(q)
+    if (!q) { setRecords([]); return }
+    fetchData(q)
+  }
+
+  function clearSearch() {
+    setSearchQuery('')
+    if (viewAllPeriod) { setCommittedQuery(''); setRecords([]) }
+  }
+
+  // 전체기간이면 마지막 검색어로, 아니면 현재 기간으로 재조회
+  function refetch() {
+    if (viewAllPeriod) {
+      const q = committedQuery.trim()
+      if (q) fetchData(q)
+    } else {
+      fetchData('')
+    }
+  }
 
   function handleSaved() {
-    fetchAll()
+    refetch()
     setEditRecord(null)
     setCreateType(null)
   }
@@ -1131,7 +1165,7 @@ export default function InputPage() {
     const url = editRecord.type === 'expense' ? `/api/expenses/${editRecord.id}` : `/api/incomes/${editRecord.id}`
     await fetch(url, { method: 'DELETE' })
     setEditRecord(null)
-    fetchAll()
+    refetch()
   }
 
   const [typeFilter, setTypeFilter] = useState<'all' | 'expense' | 'income'>('all')
@@ -1158,7 +1192,8 @@ export default function InputPage() {
     if (typeFilter !== 'all') list = list.filter(r => r.type === typeFilter)
     if (categoryFilter) list = list.filter(r => r.category === categoryFilter)
     if (memberFilter) list = list.filter(r => r.member === memberFilter)
-    if (searchQuery.trim()) {
+    // 전체기간 모드는 서버에서 이미 검색어로 필터링됨 → 클라 텍스트 필터 생략
+    if (!viewAllPeriod && searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim()
       list = list.filter(r => {
         const label = r.type === 'expense' ? ((r as ExpenseRecord).detail || r.category) : (r as IncomeRecord).description
@@ -1171,7 +1206,7 @@ export default function InputPage() {
       })
     }
     return list
-  }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery])
+  }, [records, excludeLoan, typeFilter, categoryFilter, memberFilter, searchQuery, viewAllPeriod])
 
   const filteredRecords = useMemo(() => {
     let list = baseFilteredList
@@ -1228,20 +1263,21 @@ export default function InputPage() {
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         {/* Header with search */}
-        <div className="flex items-center justify-end mb-4 gap-3 flex-wrap">
+        <div className="flex items-center justify-end mb-4 gap-2 flex-wrap">
           <div className="relative flex items-center">
             <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
               type="text"
-              placeholder="검색..."
+              placeholder={viewAllPeriod ? '검색어 입력 후 검색' : '검색...'}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => { if (viewAllPeriod && e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
               className="pl-5 pr-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')}
+              <button onClick={clearSearch}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1249,6 +1285,16 @@ export default function InputPage() {
               </button>
             )}
           </div>
+          {viewAllPeriod ? (
+            <button onClick={handleSearch}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50"
+              style={{ backgroundColor: '#1A237E' }}>
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+              검색
+            </button>
+          ) : null}
         </div>
 
         {/* Filter + Sort row */}
@@ -1339,7 +1385,9 @@ export default function InputPage() {
             </div>
             {filteredRecords.length === 0 && (
               <p className="text-xs text-slate-400 py-8 text-center">
-                {searchQuery ? '검색 결과가 없습니다.' : viewAllPeriod ? '내역이 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
+                {viewAllPeriod
+                  ? (committedQuery ? '검색 결과가 없습니다.' : '검색어를 입력하고 검색 버튼을 누르세요.')
+                  : searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
               </p>
             )}
           </>

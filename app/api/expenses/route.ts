@@ -10,11 +10,13 @@ export async function GET(req: NextRequest) {
   const detail = params.get('detail')
   const month = params.get('month')
   const all = params.get('all') === '1'
+  const q = params.get('q')?.trim() || null
 
   const year = yearStr ? parseInt(yearStr) : null
   if (!all && !year) return NextResponse.json({ error: 'year required' }, { status: 400 })
 
   const sql = getSql()
+  const like = q ? `%${q}%` : ''
 
   const rows = await sql`
     SELECT id, year, month, expense_date, category, detail, memo, method, amount, member
@@ -24,6 +26,14 @@ export async function GET(req: NextRequest) {
     ${category ? sql`AND category = ${category}` : sql``}
     ${detail ? sql`AND detail = ${detail}` : sql``}
     ${!all && month ? sql`AND month = ${parseInt(month)}` : sql``}
+    ${q ? sql`AND (
+      COALESCE(detail, '') ILIKE ${like}
+      OR COALESCE(category, '') ILIKE ${like}
+      OR COALESCE(memo, '') ILIKE ${like}
+      OR COALESCE(method, '') ILIKE ${like}
+      OR COALESCE(member, '') ILIKE ${like}
+      OR expense_date::text ILIKE ${like}
+    )` : sql``}
     ORDER BY expense_date DESC, id DESC
   `
 
