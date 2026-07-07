@@ -18,6 +18,7 @@ import YearMonthPicker from '@/components/ui/YearMonthPicker'
 
 interface AccountSecurity { account_id: string; security_id: string }
 interface MemberOpt { code: string; color: string }
+interface PositionLite { ticker: string; account_id: string; owner: string | null; invested: number; marketValue: number }
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -29,6 +30,7 @@ interface Props {
   securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
   accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>[]
   accountSecurities: AccountSecurity[]
+  positions: PositionLite[]
 }
 
 // ─── 유틸 ────────────────────────────────────────────────────────────────────
@@ -73,7 +75,10 @@ function groupByAccount(items: DividendRow[]) {
   return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([label, amount]) => ({ label, amount }))
 }
 
-function groupBySecurity(items: DividendRow[]) {
+function groupBySecurity(
+  items: DividendRow[],
+  posMap: Record<string, { invested: number; marketValue: number }>,
+) {
   const map: Record<string, { name: string; amount: number }> = {}
   for (const d of items) {
     const ticker = d.security.ticker
@@ -82,7 +87,13 @@ function groupBySecurity(items: DividendRow[]) {
   }
   return Object.entries(map)
     .sort((a, b) => b[1].amount - a[1].amount)
-    .map(([ticker, { name, amount }]) => ({ label: name, ticker, amount }))
+    .map(([ticker, { name, amount }]) => ({
+      label: name,
+      ticker,
+      amount,
+      invested: posMap[ticker]?.invested ?? 0,
+      marketValue: posMap[ticker]?.marketValue ?? 0,
+    }))
 }
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
@@ -99,9 +110,44 @@ function CustomTooltip({ active, payload, label, color }: ChartTooltipProps & { 
   )
 }
 
+// 종목별 차트 전용: 배당금 · 투자금 · 평가금을 한번에 표시
+function SecurityTooltip({ active, payload, color }: ChartTooltipProps & { color?: string }) {
+  if (!active || !payload?.length) return null
+  const p = payload[0].payload as { label?: string; amount?: number; invested?: number; marketValue?: number }
+  const pnl = (p.marketValue ?? 0) - (p.invested ?? 0)
+  const rows: { k: string; v: number; c: string }[] = [
+    { k: '배당금', v: p.amount ?? 0, c: color ?? '#10b981' },
+    { k: '투자금', v: p.invested ?? 0, c: '#64748b' },
+    { k: '평가금', v: p.marketValue ?? 0, c: '#1A237E' },
+  ]
+  return (
+    <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-sm min-w-[150px]">
+      <p className="text-[11px] font-semibold text-slate-700 mb-1.5">{p.label}</p>
+      <div className="space-y-0.5">
+        {rows.map(r => (
+          <div key={r.k} className="flex items-center justify-between gap-4">
+            <span className="text-[10px] text-slate-400">{r.k}</span>
+            <span className="text-[11px] font-medium tabular-nums" style={{ color: r.c }}>
+              {Math.round(r.v).toLocaleString()}원
+            </span>
+          </div>
+        ))}
+        {p.invested ? (
+          <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-slate-100">
+            <span className="text-[10px] text-slate-400">평가손익</span>
+            <span className="text-[11px] font-medium tabular-nums" style={{ color: pnl >= 0 ? '#dc2626' : '#2563eb' }}>
+              {pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString()}원
+            </span>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
 // ─── 메인 컴포넌트 ───────────────────────────────────────────────────────────
 
-export default function IncomeDashboard({ dividends, securities, accounts, accountSecurities }: Props) {
+export default function IncomeDashboard({ dividends, securities, accounts, accountSecurities, positions }: Props) {
   const router = useRouter()
   const { palette } = useTheme()
 
@@ -170,6 +216,24 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       ? filteredDividends.filter(d => fmtDate(d.paid_at).startsWith(selectedMonth))
       : filteredDividends,
     [filteredDividends, selectedMonth]
+  )
+
+  // 종목별 투자금·평가금 — owner/계좌 필터를 배당 필터와 동일하게 반영해 집계
+  const positionByTicker = useMemo(() => {
+    const map: Record<string, { invested: number; marketValue: number }> = {}
+    for (const p of positions) {
+      if (ownerFilter && (p.owner ?? '') !== ownerFilter) continue
+      if (accountFilter && String(p.account_id) !== accountFilter) continue
+      if (!map[p.ticker]) map[p.ticker] = { invested: 0, marketValue: 0 }
+      map[p.ticker].invested += p.invested
+      map[p.ticker].marketValue += p.marketValue
+    }
+    return map
+  }, [positions, ownerFilter, accountFilter])
+
+  const securityData = useMemo(
+    () => groupBySecurity(scopedDividends, positionByTicker).slice(0, 15),
+    [scopedDividends, positionByTicker]
   )
 
   const owners = useMemo(() => {
@@ -373,8 +437,8 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         )}
 
         {tab === 'security' && (
-          <ResponsiveContainer width="100%" height={Math.max(220, groupBySecurity(scopedDividends).slice(0, 15).length * 24 + 20)}>
-            <BarChart data={groupBySecurity(scopedDividends).slice(0, 15)} layout="vertical"
+          <ResponsiveContainer width="100%" height={Math.max(220, securityData.length * 24 + 20)}>
+            <BarChart data={securityData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
               style={{ cursor: 'pointer' }}
               onClick={(data) => {
@@ -384,7 +448,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<SecurityTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14}
                 fill={palette.colors[0]}
                 label={false} />

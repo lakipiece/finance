@@ -1,5 +1,6 @@
 import { getSql } from '@/lib/db'
 import IncomeDashboard from '@/components/portfolio/IncomeDashboard'
+import { fetchPortfolioSummary } from '@/lib/portfolio/fetch'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 
 export const dynamic = 'force-dynamic'
@@ -13,7 +14,13 @@ export default async function IncomePage() {
   const sql = getSql()
 
   try {
-    const [dividends, securities, accounts, accountSecurities] = await Promise.all([
+    // 종목별 투자금·평가금 (실시간 시세 기반). 실패해도 income 페이지는 유지.
+    const summaryPromise = fetchPortfolioSummary().catch((e: any) => {
+      console.error('[IncomePage] 포트폴리오 요약 로드 실패:', e?.message ?? e)
+      return null
+    })
+
+    const [dividends, securities, accounts, accountSecurities, summary] = await Promise.all([
       sql`
         SELECT d.*,
           json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW')) AS security,
@@ -33,7 +40,17 @@ export default async function IncomePage() {
       sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate
           FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
+      summaryPromise,
     ])
+
+    // 종목별 투자금·평가금 (계좌 단위) → 클라이언트에서 필터 반영해 집계
+    const positions = (summary?.positions ?? []).map(p => ({
+      ticker: p.security.ticker,
+      account_id: String(p.account.id),
+      owner: p.account.owner,
+      invested: p.total_invested,
+      marketValue: p.market_value,
+    }))
 
     return (
       <IncomeDashboard
@@ -41,6 +58,7 @@ export default async function IncomePage() {
         securities={securities}
         accounts={accounts}
         accountSecurities={accountSecurities}
+        positions={positions}
       />
     )
   } catch (e: any) {
