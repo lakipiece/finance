@@ -66,13 +66,24 @@ function groupByMonthAndTicker(items: DividendRow[]) {
   return map
 }
 
-function groupByAccount(items: DividendRow[]) {
-  const map: Record<string, number> = {}
+function groupByAccount(
+  items: DividendRow[],
+  posMap: Record<string, { invested: number; marketValue: number }>,
+) {
+  const map: Record<string, { label: string; amount: number }> = {}
   for (const d of items) {
-    const key = `${d.account.broker} · ${d.account.name}`
-    map[key] = (map[key] ?? 0) + toKrw(d)
+    const id = String(d.account_id)
+    if (!map[id]) map[id] = { label: `${d.account.broker} · ${d.account.name}`, amount: 0 }
+    map[id].amount += toKrw(d)
   }
-  return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([label, amount]) => ({ label, amount }))
+  return Object.entries(map)
+    .map(([id, { label, amount }]) => ({
+      label,
+      amount,
+      invested: posMap[id]?.invested ?? 0,
+      marketValue: posMap[id]?.marketValue ?? 0,
+    }))
+    .sort((a, b) => b.amount - a.amount)
 }
 
 function groupBySecurity(
@@ -98,31 +109,24 @@ function groupBySecurity(
 
 // ─── 커스텀 툴팁 ─────────────────────────────────────────────────────────────
 
-function CustomTooltip({ active, payload, label, color }: ChartTooltipProps & { color?: string }) {
+// 월별·계좌별·종목별 공통: 배당금 · 투자금 · 평가금 · 배당률(배당금/투자금)을 한번에 표시
+function DividendTooltip({ active, payload, label, color }: ChartTooltipProps & { color?: string }) {
   if (!active || !payload?.length) return null
-  return (
-    <div className="bg-white border border-slate-100 rounded-lg px-3 py-1.5 shadow-sm">
-      <p className="text-[10px] text-slate-400 mb-0.5">{label}</p>
-      <p className="text-xs font-semibold" style={{ color: color ?? '#10b981' }}>
-        {Math.round(payload[0].value).toLocaleString()}원
-      </p>
-    </div>
-  )
-}
-
-// 종목별 차트 전용: 배당금 · 투자금 · 평가금을 한번에 표시
-function SecurityTooltip({ active, payload, color }: ChartTooltipProps & { color?: string }) {
-  if (!active || !payload?.length) return null
-  const p = payload[0].payload as { label?: string; amount?: number; invested?: number; marketValue?: number }
-  const pnl = (p.marketValue ?? 0) - (p.invested ?? 0)
+  const p = payload[0].payload as { label?: string; month?: string; amount?: number; invested?: number; marketValue?: number }
+  const amount = p.amount ?? 0
+  const invested = p.invested ?? 0
+  const marketValue = p.marketValue ?? 0
+  const pnl = marketValue - invested
+  const yieldPct = invested > 0 ? (amount / invested) * 100 : null
+  const title = p.label ?? p.month ?? label ?? ''
   const rows: { k: string; v: number; c: string }[] = [
-    { k: '배당금', v: p.amount ?? 0, c: color ?? '#10b981' },
-    { k: '투자금', v: p.invested ?? 0, c: '#64748b' },
-    { k: '평가금', v: p.marketValue ?? 0, c: '#1A237E' },
+    { k: '배당금', v: amount, c: color ?? '#10b981' },
+    { k: '투자금', v: invested, c: '#64748b' },
+    { k: '평가금', v: marketValue, c: '#1A237E' },
   ]
   return (
-    <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-sm min-w-[150px]">
-      <p className="text-[11px] font-semibold text-slate-700 mb-1.5">{p.label}</p>
+    <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-sm min-w-[160px]">
+      <p className="text-[11px] font-semibold text-slate-700 mb-1.5">{title}</p>
       <div className="space-y-0.5">
         {rows.map(r => (
           <div key={r.k} className="flex items-center justify-between gap-4">
@@ -132,8 +136,16 @@ function SecurityTooltip({ active, payload, color }: ChartTooltipProps & { color
             </span>
           </div>
         ))}
-        {p.invested ? (
+        {yieldPct !== null ? (
           <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-slate-100">
+            <span className="text-[10px] text-slate-400">배당률</span>
+            <span className="text-[11px] font-semibold tabular-nums text-emerald-600">
+              {yieldPct.toFixed(2)}%
+            </span>
+          </div>
+        ) : null}
+        {invested > 0 ? (
+          <div className="flex items-center justify-between gap-4">
             <span className="text-[10px] text-slate-400">평가손익</span>
             <span className="text-[11px] font-medium tabular-nums" style={{ color: pnl >= 0 ? '#dc2626' : '#2563eb' }}>
               {pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString()}원
@@ -206,9 +218,6 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     ? `${filterYear}년 ${filterMonth}월`
     : `${filterYear}년`
 
-  const chartData = groupByMonth(
-    filteredDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) }))
-  )
   const monthTickerMap = useMemo(() => groupByMonthAndTicker(filteredDividends), [filteredDividends])
 
   const scopedDividends = useMemo(
@@ -218,18 +227,56 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     [filteredDividends, selectedMonth]
   )
 
-  // 종목별 투자금·평가금 — owner/계좌 필터를 배당 필터와 동일하게 반영해 집계
+  // 투자금·평가금 — owner/계좌 필터를 배당 필터와 동일하게 반영해 집계 (종목/계좌/총계)
+  const scopedPositions = useMemo(
+    () => positions.filter(p => {
+      if (ownerFilter && (p.owner ?? '') !== ownerFilter) return false
+      if (accountFilter && String(p.account_id) !== accountFilter) return false
+      return true
+    }),
+    [positions, ownerFilter, accountFilter]
+  )
+
   const positionByTicker = useMemo(() => {
     const map: Record<string, { invested: number; marketValue: number }> = {}
-    for (const p of positions) {
-      if (ownerFilter && (p.owner ?? '') !== ownerFilter) continue
-      if (accountFilter && String(p.account_id) !== accountFilter) continue
+    for (const p of scopedPositions) {
       if (!map[p.ticker]) map[p.ticker] = { invested: 0, marketValue: 0 }
       map[p.ticker].invested += p.invested
       map[p.ticker].marketValue += p.marketValue
     }
     return map
-  }, [positions, ownerFilter, accountFilter])
+  }, [scopedPositions])
+
+  const positionByAccount = useMemo(() => {
+    const map: Record<string, { invested: number; marketValue: number }> = {}
+    for (const p of scopedPositions) {
+      const id = String(p.account_id)
+      if (!map[id]) map[id] = { invested: 0, marketValue: 0 }
+      map[id].invested += p.invested
+      map[id].marketValue += p.marketValue
+    }
+    return map
+  }, [scopedPositions])
+
+  // 월별 툴팁용 총 투자금·평가금 (기간 무관, 현재 보유 기준)
+  const totalPosition = useMemo(
+    () => scopedPositions.reduce(
+      (acc, p) => ({ invested: acc.invested + p.invested, marketValue: acc.marketValue + p.marketValue }),
+      { invested: 0, marketValue: 0 }
+    ),
+    [scopedPositions]
+  )
+
+  const monthData = useMemo(
+    () => groupByMonth(filteredDividends.map(d => ({ date: d.paid_at, amount: toKrw(d) })))
+      .map(row => ({ ...row, invested: totalPosition.invested, marketValue: totalPosition.marketValue })),
+    [filteredDividends, totalPosition]
+  )
+
+  const accountData = useMemo(
+    () => groupByAccount(scopedDividends, positionByAccount),
+    [scopedDividends, positionByAccount]
+  )
 
   const securityData = useMemo(
     () => groupBySecurity(scopedDividends, positionByTicker).slice(0, 15),
@@ -406,9 +453,9 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           </div>
         </div>
 
-        {tab === 'month' && chartData.length > 0 && (
+        {tab === 'month' && monthData.length > 0 && (
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={chartData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+            <BarChart data={monthData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
               onClick={(data) => {
                 const label = data?.activeLabel as string | undefined
                 if (label) setSelectedMonth(prev => prev === label ? null : label)
@@ -416,7 +463,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} width={52} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[3, 3, 0, 0]} maxBarSize={32}
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
@@ -425,12 +472,12 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
         {tab === 'account' && (
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={groupByAccount(scopedDividends)} layout="vertical"
+            <BarChart data={accountData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -448,7 +495,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
-              <Tooltip content={<SecurityTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
               <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14}
                 fill={palette.colors[0]}
                 label={false} />
