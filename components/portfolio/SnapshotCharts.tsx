@@ -10,8 +10,10 @@ import {
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
-import type { CashflowEvent, SnapshotViewMode } from './SnapshotList'
+import type { SnapshotViewMode } from './SnapshotList'
 import { SNAPSHOT_VIEW_LABELS } from './SnapshotList'
+import { snapshotMetrics } from '@/lib/portfolio/metrics'
+import type { AccountCashflowEvent, AccountSnapshotEntry } from '@/lib/portfolio/metrics'
 
 export interface SnapshotPoint {
   date: string
@@ -20,25 +22,15 @@ export interface SnapshotPoint {
   sector_breakdown: Record<string, number>
   asset_class_breakdown: Record<string, number>
   tag_breakdown: Record<string, number>
+  account_breakdown?: Record<string, AccountSnapshotEntry>
 }
 
 interface Props {
   points: SnapshotPoint[]
   sectorColors?: Record<string, string>
   assetClassColors?: Record<string, string>
-  cashflowEvents?: CashflowEvent[]
+  cashflowEvents?: AccountCashflowEvent[]
   initialView?: SnapshotViewMode
-}
-
-/** date 이하의 누적 입금/출금 */
-function cumulativeAt(events: CashflowEvent[], date: string): { inflow: number; outflow: number } {
-  let inflow = 0, outflow = 0
-  for (const e of events) {
-    if (e.date > date) break
-    inflow += e.inflow
-    outflow += e.outflow
-  }
-  return { inflow, outflow }
 }
 
 /** 월별 최초/최종/전체 필터 (points는 date ASC) */
@@ -428,31 +420,34 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
   const pctFromPrev = prev && prev.total_market_value > 0 ? (diffFromPrev / prev.total_market_value) * 100 : 0
   const investedDiffFromFirst = currentInvested - first.total_invested
 
-  // 수익금액 = 평가액 + 누적출금 − 누적입금 (입출금 원장 기준)
-  const lastCum = hasLedger ? cumulativeAt(cashflowEvents, last.date) : null
-  const currentProfit = lastCum && lastCum.inflow > 0
-    ? currentValue + lastCum.outflow - lastCum.inflow : null
-  const currentProfitRate = currentProfit != null && lastCum && lastCum.inflow > 0
-    ? currentProfit / lastCum.inflow : null
+  // 계좌별 하이브리드 지표 (원장 계좌 누적입금 | 미기록 계좌 매수원가) — metrics.ts 공용 로직
+  const pointMetrics = points.map(p =>
+    hasLedger
+      ? snapshotMetrics(p.account_breakdown ?? null, cashflowEvents, p.date, {
+          value: p.total_market_value, cost: p.total_invested,
+        })
+      : null
+  )
+  const lastM = pointMetrics[pointMetrics.length - 1]
+  const currentProfit = lastM?.ledgerApplied ? lastM.profit : null
+  const currentProfitRate = lastM?.ledgerApplied ? lastM.rate : null
 
-  const composedData = points.map(p => {
-    const cum = hasLedger ? cumulativeAt(cashflowEvents, p.date) : null
+  const composedData = points.map((p, i) => {
+    const m = pointMetrics[i]
     return {
       date: p.date,
       평가액: p.total_market_value,
       평균매수금액: p.total_invested,
-      ...(cum && cum.inflow > 0 ? { 투자원금: cum.inflow } : {}),
+      ...(m?.ledgerApplied ? { 투자원금: m.basis } : {}),
       손익: p.total_market_value - p.total_invested,
-      ...(cum && cum.inflow > 0
-        ? { 수익금액: p.total_market_value + cum.outflow - cum.inflow }
-        : {}),
+      ...(m?.ledgerApplied ? { 수익금액: m.profit } : {}),
     }
   })
 
-  const hasProfitSeries = hasLedger && composedData.some(d => '수익금액' in d)
+  const hasProfitSeries = composedData.some(d => '수익금액' in d)
   const pnlData = composedData.map(d => ({
     date: d.date,
-    손익: hasProfitSeries ? ((d as Record<string, number | string>)['수익금액'] as number ?? d.손익) : d.손익,
+    손익: ((d as Record<string, number | string>)['수익금액'] as number | undefined) ?? d.손익,
   }))
 
   const momData = points.map((p, i) => {
@@ -502,7 +497,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           <KpiCard
             label="수익금액"
             value={fmtKrw(currentProfit)}
-            sub={`수익률 ${currentProfitRate != null ? fmtPctSigned(currentProfitRate * 100) : '-'} — 평가액＋출금−입금`}
+            sub={`수익률 ${currentProfitRate != null ? fmtPctSigned(currentProfitRate * 100) : '-'} — 계좌별 입금·원가 기준`}
             subColor={currentProfit >= 0 ? 'text-rose-500' : 'text-blue-500'}
           />
         ) : (
@@ -513,11 +508,13 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
             subColor={currentPnl >= 0 ? 'text-rose-500' : 'text-blue-500'}
           />
         )}
-        {lastCum && lastCum.inflow > 0 ? (
+        {lastM?.ledgerApplied ? (
           <KpiCard
             label="투자원금"
-            value={fmtKrw(lastCum.inflow)}
-            sub={`누적입금${lastCum.outflow > 0 ? ` · 출금 ${fmtY(lastCum.outflow)}` : ''}`}
+            value={fmtKrw(lastM.basis)}
+            sub={lastM.coversAll
+              ? `누적입금${lastM.withdrawals > 0 ? ` · 출금 ${fmtY(lastM.withdrawals)}` : ''}`
+              : `입금 ${fmtY(lastM.deposits)} + 미기록 계좌 매수원가`}
           />
         ) : (
           <KpiCard
@@ -630,10 +627,14 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
 
 function ValuesTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
-  const mv = Number(payload.find(p => p.dataKey === '평가액')?.value ?? 0)
-  const inv = Number(payload.find(p => p.dataKey === '투자원금')?.value ?? 0)
-  const pnl = mv - inv
-  const ret = inv > 0 ? (pnl / inv) * 100 : 0
+  const row = payload[0].payload as Record<string, number | string>
+  const mv = Number(row['평가액'] ?? 0)
+  const cost = Number(row['평균매수금액'] ?? 0)
+  const basis = row['투자원금'] != null ? Number(row['투자원금']) : null
+  // 수익: 원장 하이브리드가 있으면 그 값, 없으면 평가액 − 매수원가
+  const profit = row['수익금액'] != null ? Number(row['수익금액']) : mv - cost
+  const base = basis ?? cost
+  const ret = base > 0 ? (profit / base) * 100 : 0
   return (
     <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
       <p className="text-slate-400 mb-1.5">{label}</p>
@@ -641,14 +642,20 @@ function ValuesTooltip({ active, payload, label }: ChartTooltipProps) {
         <span className="text-slate-500">평가액</span>
         <span className="font-semibold text-slate-700 tabular-nums">{fmtKrw(mv)}</span>
       </div>
+      {basis != null ? (
+        <div className="flex justify-between gap-3">
+          <span className="text-slate-500">투자원금</span>
+          <span className="text-slate-600 tabular-nums">{fmtKrw(basis)}</span>
+        </div>
+      ) : null}
       <div className="flex justify-between gap-3">
-        <span className="text-slate-500">투자원금</span>
-        <span className="text-slate-600 tabular-nums">{fmtKrw(inv)}</span>
+        <span className="text-slate-500">평균매수금액</span>
+        <span className="text-slate-600 tabular-nums">{fmtKrw(cost)}</span>
       </div>
       <div className="flex justify-between gap-3 border-t border-slate-100 mt-1.5 pt-1.5">
-        <span className="text-slate-400">손익</span>
-        <span className={`font-semibold tabular-nums ${pnl >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
-          {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)} ({fmtPctSigned(ret)})
+        <span className="text-slate-400">수익</span>
+        <span className={`font-semibold tabular-nums ${profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+          {profit >= 0 ? '+' : ''}{fmtKrw(profit)} ({fmtPctSigned(ret)})
         </span>
       </div>
     </div>

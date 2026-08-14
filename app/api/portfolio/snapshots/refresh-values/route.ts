@@ -59,14 +59,14 @@ export async function POST() {
       ORDER BY ticker, date DESC
     `,
     snapshotIds.length > 0
-      ? sql<{ snapshot_id: string; security_id: string; quantity: number; avg_price: number | null }[]>`
-          SELECT snapshot_id, security_id, quantity, avg_price FROM holdings
+      ? sql<{ snapshot_id: string; account_id: string; security_id: string; quantity: number; avg_price: number | null }[]>`
+          SELECT snapshot_id, account_id, security_id, quantity, avg_price FROM holdings
           WHERE snapshot_id = ANY(${snapshotIds}) AND quantity > 0
         `
       : Promise.resolve([]),
   ])
 
-  const holdingsBySnapshot: Record<string, { security_id: string; quantity: number; avg_price: number | null }[]> = {}
+  const holdingsBySnapshot: Record<string, { account_id: string; security_id: string; quantity: number; avg_price: number | null }[]> = {}
   for (const h of allHoldings) {
     ;(holdingsBySnapshot[h.snapshot_id] ??= []).push(h)
   }
@@ -82,6 +82,7 @@ export async function POST() {
             sector_breakdown = '{}',
             asset_class_breakdown = '{}',
             tag_breakdown = '{}',
+            account_breakdown = '{}',
             value_updated_at = NOW()
         WHERE id = ${snap.id}
       `
@@ -111,6 +112,8 @@ export async function POST() {
     const assetClassAgg: Record<string, number> = {}
     const sectorAgg: Record<string, number> = {}
     const tagAgg: Record<string, number> = {}
+    // 계좌별 {평가액, 평균매수금액} — 목록·차트의 원장/원가 하이브리드 계산용
+    const accountAgg: Record<string, { value: number; cost: number }> = {}
 
     for (const h of holdings) {
       const sec = secMap[h.security_id]
@@ -122,9 +125,14 @@ export async function POST() {
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
       const qty = Number(h.quantity)
       const value = priceKrw * qty
+      const cost = isKrw ? avgPrice * qty : avgPrice * exchangeRate * qty
 
       totalMarketValue += value
-      totalInvested += isKrw ? avgPrice * qty : avgPrice * exchangeRate * qty
+      totalInvested += cost
+
+      const acc = (accountAgg[h.account_id] ??= { value: 0, cost: 0 })
+      acc.value += value
+      acc.cost += cost
 
       const assetKey = sec.asset_class || '기타'
       assetClassAgg[assetKey] = (assetClassAgg[assetKey] ?? 0) + value
@@ -146,6 +154,11 @@ export async function POST() {
       return out
     }
 
+    const accountBreakdown: Record<string, { value: number; cost: number }> = {}
+    for (const [id, v] of Object.entries(accountAgg)) {
+      accountBreakdown[id] = { value: Math.round(v.value), cost: Math.round(v.cost) }
+    }
+
     await sql`
       UPDATE snapshots
       SET total_market_value = ${totalMarketValue},
@@ -153,6 +166,7 @@ export async function POST() {
           sector_breakdown = ${JSON.stringify(toPct(sectorAgg))},
           asset_class_breakdown = ${JSON.stringify(toPct(assetClassAgg))},
           tag_breakdown = ${JSON.stringify(toPct(tagAgg))},
+          account_breakdown = ${JSON.stringify(accountBreakdown)},
           value_updated_at = NOW()
       WHERE id = ${snap.id}
     `

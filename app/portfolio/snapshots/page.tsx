@@ -3,6 +3,8 @@ import SnapshotList from '@/components/portfolio/SnapshotList'
 
 export const dynamic = 'force-dynamic'
 
+import { parseAccountBreakdown } from '@/lib/portfolio/metrics'
+
 type SnapshotRow = {
   id: string
   date: unknown
@@ -10,6 +12,7 @@ type SnapshotRow = {
   total_market_value: number | null
   total_invested: number | null
   sector_breakdown: Record<string, number> | null
+  account_breakdown: unknown
   value_updated_at: unknown
 }
 
@@ -17,20 +20,20 @@ export default async function SnapshotsPage() {
   const sql = getSql()
   const [raw, sectorRows, cashflowRows, dividendRows] = await Promise.all([
     sql<SnapshotRow[]>`
-      SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, value_updated_at
+      SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, account_breakdown, value_updated_at
       FROM snapshots ORDER BY date DESC, created_at DESC
     `,
     sql<{ value: string; color_hex: string }[]>`
       SELECT value, color_hex FROM option_list WHERE type = 'sector' AND color_hex IS NOT NULL
     `,
-    // 입출금 이벤트 — 스냅샷 시점별 누적입금/출금 계산용 (테이블 없으면 빈 배열)
-    sql<{ flow_date: unknown; inflow: number; outflow: number }[]>`
-      SELECT flow_date,
+    // 계좌별 입출금 이벤트 — 스냅샷 시점별 누적입금/출금 계산용 (테이블 없으면 빈 배열)
+    sql<{ account_id: string; flow_date: unknown; inflow: number; outflow: number }[]>`
+      SELECT account_id, flow_date,
         COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
         COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
       FROM account_cashflows
-      GROUP BY flow_date ORDER BY flow_date
-    `.catch(() => [] as { flow_date: unknown; inflow: number; outflow: number }[]),
+      GROUP BY account_id, flow_date ORDER BY flow_date
+    `.catch(() => [] as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]),
     // 월별 배당 합계 (KRW 환산)
     sql<{ ym: string; total: number }[]>`
       SELECT to_char(paid_at, 'YYYY-MM') AS ym,
@@ -41,6 +44,7 @@ export default async function SnapshotsPage() {
   ])
 
   const cashflowEvents = cashflowRows.map(r => ({
+    account_id: r.account_id,
     date: (r.flow_date as unknown) instanceof Date
       ? (r.flow_date as unknown as Date).toISOString().slice(0, 10)
       : String(r.flow_date).slice(0, 10),
@@ -64,6 +68,7 @@ export default async function SnapshotsPage() {
     sector_breakdown: s.sector_breakdown != null
       ? (typeof s.sector_breakdown === 'string' ? JSON.parse(s.sector_breakdown) : s.sector_breakdown)
       : null,
+    account_breakdown: parseAccountBreakdown(s.account_breakdown),
   }))
 
   return (

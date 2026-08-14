@@ -6,6 +6,7 @@ import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account, Se
 import { useTheme } from '@/lib/ThemeContext'
 import PortfolioKpiCards from './PortfolioKpiCards'
 import PageHeader from '@/components/ui/PageHeader'
+import { hybridTotals } from '@/lib/portfolio/metrics'
 import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
@@ -259,22 +260,24 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
     [tagFilteredPositions]
   )
 
-  // 입출금 원장 합계 — 계좌 필터 반영. 섹터/태그 필터 중에는 계좌 단위 지표라 비활성(null).
+  // 입출금 원장 하이브리드 지표 — 계좌 단위로 기준(누적입금|매수원가)을 정한 뒤 합산.
+  // 계좌 필터 반영. 섹터/태그 필터 중에는 계좌 단위 지표라 비활성(null).
   const ledger = useMemo(() => {
     if (selectedSectors.size > 0 || selectedTags.size > 0) return null
-    const visible = summary.cashflow_sums.filter(cs =>
+    const visibleSums = summary.cashflow_sums.filter(cs =>
       selectedAccountIds.size === 0 || selectedAccountIds.has(cs.account_id)
     )
-    if (visible.length === 0) return null
-    const deposits = visible.reduce((s, cs) => s + cs.inflow, 0)
-    const withdrawals = visible.reduce((s, cs) => s + cs.outflow, 0)
-    if (deposits <= 0) return null
-    // 표시 중인 계좌가 전부 원장 기록을 갖고 있는지
-    const ledgerIds = new Set(visible.map(cs => cs.account_id))
-    const visibleAccountIds = new Set(accountFiltered.map(p => p.account.id))
-    let coversAll = true
-    for (const id of visibleAccountIds) if (!ledgerIds.has(id)) { coversAll = false; break }
-    return { deposits, withdrawals, coversAll }
+    if (visibleSums.length === 0) return null
+    // 표시 중인 계좌별 평가액·평균매수금액
+    const perAccount: Record<string, { value: number; cost: number }> = {}
+    for (const p of accountFiltered) {
+      const a = (perAccount[p.account.id] ??= { value: 0, cost: 0 })
+      a.value += p.market_value
+      a.cost += p.total_invested
+    }
+    const sums = Object.fromEntries(visibleSums.map(cs => [cs.account_id, { inflow: cs.inflow, outflow: cs.outflow }]))
+    const h = hybridTotals(perAccount, sums)
+    return h.ledgerApplied ? h : null
   }, [summary.cashflow_sums, selectedAccountIds, selectedSectors, selectedTags, accountFiltered])
 
   const chartPositions = useMemo(() =>

@@ -6,6 +6,8 @@ import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
 import PageHeader from '@/components/ui/PageHeader'
+import { snapshotMetrics } from '@/lib/portfolio/metrics'
+import type { AccountCashflowEvent, AccountSnapshotEntry } from '@/lib/portfolio/metrics'
 
 type SnapshotItem = {
   id: string
@@ -14,10 +16,8 @@ type SnapshotItem = {
   total_market_value: number | null
   total_invested: number | null
   sector_breakdown: Record<string, number> | null
+  account_breakdown?: Record<string, AccountSnapshotEntry>
 }
-
-/** 날짜별 입출금 합계 (오름차순 정렬 전제) */
-export type CashflowEvent = { date: string; inflow: number; outflow: number }
 
 export type SnapshotViewMode = 'last' | 'first' | 'all'
 
@@ -30,24 +30,13 @@ export const SNAPSHOT_VIEW_LABELS: Record<SnapshotViewMode, string> = {
 interface Props {
   snapshots: SnapshotItem[]
   sectorColors?: Record<string, string>
-  cashflowEvents?: CashflowEvent[]
+  cashflowEvents?: AccountCashflowEvent[]
   /** 'YYYY-MM' → 해당 월 배당 합계 (KRW) */
   dividendsByMonth?: Record<string, number>
 }
 
 function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
-}
-
-/** date 이하의 누적 입금/출금 */
-function cumulativeAt(events: CashflowEvent[], date: string): { inflow: number; outflow: number } {
-  let inflow = 0, outflow = 0
-  for (const e of events) {
-    if (e.date > date) break
-    inflow += e.inflow
-    outflow += e.outflow
-  }
-  return { inflow, outflow }
 }
 
 export default function SnapshotList({ snapshots: initSnapshots, sectorColors = {}, cashflowEvents = [], dividendsByMonth = {} }: Props) {
@@ -204,10 +193,12 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1])
             : []
 
-          // 수익금액 = 평가액 + 누적출금 − 누적입금 (원장 기록 시)
-          const cum = hasLedger ? cumulativeAt(cashflowEvents, snap.date) : null
-          const profit = cum && cum.inflow > 0 && mv != null ? mv + cum.outflow - cum.inflow : null
-          const profitRate = profit != null && cum && cum.inflow > 0 ? profit / cum.inflow : null
+          // 계좌별 하이브리드: 원장 계좌는 누적입금, 미기록 계좌는 평균매수금액 폴백
+          const m = hasLedger && mv != null
+            ? snapshotMetrics(snap.account_breakdown ?? null, cashflowEvents, snap.date, { value: mv, cost: inv ?? 0 })
+            : null
+          const profit = m?.ledgerApplied ? m.profit : null
+          const profitRate = m?.ledgerApplied ? m.rate : null
 
           const monthDividend = dividendsByMonth[ym] ?? 0
 
