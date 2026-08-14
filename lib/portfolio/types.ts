@@ -108,12 +108,29 @@ export interface PortfolioPosition {
   total_dividends: number
 }
 
+/**
+ * 계좌별 입출금 원장 합계.
+ * 지표 흐름 (docs/plans/2026-08-14-account-cashflows-design.md):
+ *   투자원금     = 누적입금 (inflow)
+ *   평균매수금액 = Σ(수량 × 평균매수단가)  ← positions의 total_invested
+ *   평가손익     = 평가금액 − 평균매수금액
+ *   수익금액     = 평가금액 + 누적출금 − 누적입금
+ */
+export interface AccountCashflowSum {
+  account_id: string
+  inflow: number   // 입금 + 이체입금 + 기초잔액
+  outflow: number  // 출금 + 이체출금 (배당 인출 포함)
+}
+
 export interface PortfolioSummary {
   total_market_value: number
+  /** 평균매수금액 합계 (Σ 수량×평균매수단가, KRW) — 평가손익의 기준 */
   total_invested: number
   total_unrealized_pnl: number
   total_unrealized_pct: number
   total_dividends: number
+  /** 입출금 원장이 기록된 계좌들의 합계 (없으면 빈 배열) */
+  cashflow_sums: AccountCashflowSum[]
   positions: PortfolioPosition[]
   last_price_updated_at: string | null  // price_history 최신 레코드의 date
 }

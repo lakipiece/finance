@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
@@ -16,27 +16,53 @@ type SnapshotItem = {
   sector_breakdown: Record<string, number> | null
 }
 
+/** 날짜별 입출금 합계 (오름차순 정렬 전제) */
+export type CashflowEvent = { date: string; inflow: number; outflow: number }
+
+export type SnapshotViewMode = 'last' | 'first' | 'all'
+
+export const SNAPSHOT_VIEW_LABELS: Record<SnapshotViewMode, string> = {
+  last: '월별 최종',
+  first: '월별 최초',
+  all: '전체',
+}
+
 interface Props {
   snapshots: SnapshotItem[]
   sectorColors?: Record<string, string>
+  cashflowEvents?: CashflowEvent[]
+  /** 'YYYY-MM' → 해당 월 배당 합계 (KRW) */
+  dividendsByMonth?: Record<string, number>
 }
 
 function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
 
-export default function SnapshotList({ snapshots: initSnapshots, sectorColors = {} }: Props) {
+/** date 이하의 누적 입금/출금 */
+function cumulativeAt(events: CashflowEvent[], date: string): { inflow: number; outflow: number } {
+  let inflow = 0, outflow = 0
+  for (const e of events) {
+    if (e.date > date) break
+    inflow += e.inflow
+    outflow += e.outflow
+  }
+  return { inflow, outflow }
+}
+
+export default function SnapshotList({ snapshots: initSnapshots, sectorColors = {}, cashflowEvents = [], dividendsByMonth = {} }: Props) {
   const { palette } = useTheme()
   const [snapshots, setSnapshots] = useState(initSnapshots)
-  const [creating, setCreating] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [cloneTarget, setCloneTarget] = useState<SnapshotItem | null>(null)
   const [cloneDate, setCloneDate] = useState('')
   const [cloning, setCloning] = useState(false)
+  const [viewMode, setViewMode] = useState<SnapshotViewMode>('last')
+  const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set())
   const router = useRouter()
 
   // 같은 날짜 suffix
-  const labelMap = (() => {
+  const labelMap = useMemo(() => {
     const dateCount: Record<string, number> = {}
     const dateIdx: Record<string, number> = {}
     const result: Record<string, string> = {}
@@ -50,22 +76,44 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
       }
     }
     return result
-  })()
+  }, [snapshots])
 
-  async function handleCreate() {
-    setCreating(true)
-    const latest = snapshots[0]
-    const res = await fetch('/api/portfolio/snapshots', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: new Date().toISOString().slice(0, 10), clone_from: latest?.id ?? null }),
+  // 월별 그루핑 (snapshots는 date DESC 정렬)
+  const months = useMemo(() => {
+    const map = new Map<string, SnapshotItem[]>()
+    for (const s of snapshots) {
+      const ym = s.date.slice(0, 7)
+      if (!map.has(ym)) map.set(ym, [])
+      map.get(ym)!.push(s)
+    }
+    return [...map.entries()]  // [ym, 해당 월 스냅샷들(최신순)]
+  }, [snapshots])
+
+  // 표시 목록: 대표 카드 + 펼친 월의 나머지
+  const visibleItems = useMemo(() => {
+    if (viewMode === 'all') {
+      return snapshots.map(s => ({ snap: s, hiddenSiblings: 0, ym: s.date.slice(0, 7) }))
+    }
+    const out: { snap: SnapshotItem; hiddenSiblings: number; ym: string }[] = []
+    for (const [ym, items] of months) {
+      // 최신순이므로 월별 최종=첫번째, 월별 최초=마지막
+      const rep = viewMode === 'last' ? items[0] : items[items.length - 1]
+      const others = items.filter(s => s.id !== rep.id)
+      out.push({ snap: rep, hiddenSiblings: expandedMonths.has(ym) ? 0 : others.length, ym })
+      if (expandedMonths.has(ym)) {
+        for (const s of others) out.push({ snap: s, hiddenSiblings: 0, ym })
+      }
+    }
+    return out
+  }, [viewMode, months, snapshots, expandedMonths])
+
+  function toggleMonth(ym: string) {
+    setExpandedMonths(prev => {
+      const next = new Set(prev)
+      if (next.has(ym)) next.delete(ym)
+      else next.add(ym)
+      return next
     })
-    if (!res.ok) { setCreating(false); return }
-    const snap = await res.json()
-    // 생성 직후 전체 스냅샷 값 계산
-    await fetch('/api/portfolio/snapshots/refresh-values', { method: 'POST' })
-    setCreating(false)
-    router.push(`/portfolio/snapshots/${snap.id}`)
   }
 
   async function handleRefreshValues() {
@@ -111,19 +159,39 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
     }
   }
 
+  const hasLedger = cashflowEvents.length > 0
+  const latestId = snapshots[0]?.id
+
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader title="스냅샷" description="포트폴리오 시점별 기록">
         <button onClick={handleRefreshValues} disabled={refreshing} className={btn.secondary}>
           {refreshing ? '계산 중…' : '값 갱신'}
         </button>
-        <button onClick={() => router.push('/portfolio/snapshots/charts')} className={btn.secondary}>
+        <button onClick={() => router.push(`/portfolio/snapshots/charts?view=${viewMode}`)} className={btn.secondary}>
           차트보기
         </button>
       </PageHeader>
 
+      {/* 보기 필터 — 차트보기에도 동일 모드가 전달된다 */}
+      <div className="flex items-center gap-1.5">
+        {(Object.keys(SNAPSHOT_VIEW_LABELS) as SnapshotViewMode[]).map(m => {
+          const active = viewMode === m
+          return (
+            <button key={m} onClick={() => { setViewMode(m); setExpandedMonths(new Set()) }}
+              className={btn.pill(active)}
+              style={active ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+              {SNAPSHOT_VIEW_LABELS[m]}
+            </button>
+          )
+        })}
+        <span className="text-[10px] text-slate-300 ml-1">
+          {viewMode === 'all' ? `${snapshots.length}개` : `${months.length}개월 · 총 ${snapshots.length}개`}
+        </span>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {snapshots.map((snap, i) => {
+        {visibleItems.map(({ snap, hiddenSiblings, ym }) => {
           const label = labelMap[snap.id]
           const [datePart, suffix] = label.includes(' -')
             ? [label.split(' -')[0], `-${label.split(' -')[1]}`]
@@ -136,11 +204,18 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             ? Object.entries(snap.sector_breakdown).sort((a, b) => b[1] - a[1])
             : []
 
+          // 수익금액 = 평가액 + 누적출금 − 누적입금 (원장 기록 시)
+          const cum = hasLedger ? cumulativeAt(cashflowEvents, snap.date) : null
+          const profit = cum && cum.inflow > 0 && mv != null ? mv + cum.outflow - cum.inflow : null
+          const profitRate = profit != null && cum && cum.inflow > 0 ? profit / cum.inflow : null
+
+          const monthDividend = dividendsByMonth[ym] ?? 0
+
           return (
             <div key={snap.id}
               onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
               className={`bg-white rounded-2xl px-6 py-5 cursor-pointer hover:shadow-sm transition-all group relative flex flex-col ${
-                i === 0
+                snap.id === latestId
                   ? 'border-2 border-[#1A237E] shadow-sm'
                   : 'border border-slate-100 hover:border-slate-200'
               }`}>
@@ -152,7 +227,15 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     <p className="text-base font-bold text-slate-800 leading-tight">
                       {datePart.slice(0, 7)}
                     </p>
-                    {suffix && <span className="text-xs font-normal text-slate-400">{suffix}</span>}
+                    {suffix ? <span className="text-xs font-normal text-slate-400">{suffix}</span> : null}
+                    {hiddenSiblings > 0 ? (
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleMonth(ym) }}
+                        className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
+                        title="이 달의 다른 스냅샷 펼치기">
+                        +{hiddenSiblings}
+                      </button>
+                    ) : null}
                   </div>
                   <p className="text-[10px] text-slate-400 mt-0.5">{datePart}</p>
                 </div>
@@ -162,24 +245,45 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                   ) : (
                     <p className="text-sm text-slate-300">—</p>
                   )}
-                  {inv != null && (
-                    <p className="text-[10px] text-slate-400 tabular-nums">{fmtKrw(inv)}</p>
-                  )}
-                  {pnl != null && (
-                    <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+                  {inv != null ? (
+                    <p className="text-[10px] text-slate-400 tabular-nums" title="평균매수금액">{fmtKrw(inv)}</p>
+                  ) : null}
+                  {pnl != null ? (
+                    <p className={`text-xs font-semibold tabular-nums ${pnl >= 0 ? 'text-rose-500' : 'text-blue-500'}`}
+                      title="평가손익 (평가액 − 평균매수금액)">
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
-                      {pnlPct != null && (
+                      {pnlPct != null ? (
                         <span className="text-[10px] ml-0.5 opacity-80">
                           ({pnl >= 0 ? '+' : ''}{(pnlPct * 100).toFixed(1)}%)
                         </span>
-                      )}
+                      ) : null}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
+              {/* 수익금액 · 당월 배당 (원장 기준) */}
+              {profit != null || monthDividend > 0 ? (
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50 text-[11px]">
+                  {profit != null ? (
+                    <span className={`font-semibold tabular-nums ${profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}
+                      title="수익금액 = 평가액 + 누적출금 − 누적입금">
+                      수익 {profit >= 0 ? '+' : ''}{fmtKrw(profit)}
+                      {profitRate != null ? (
+                        <span className="text-[10px] ml-0.5 opacity-80">({profitRate >= 0 ? '+' : ''}{(profitRate * 100).toFixed(1)}%)</span>
+                      ) : null}
+                    </span>
+                  ) : <span />}
+                  {monthDividend > 0 ? (
+                    <span className="text-slate-400 tabular-nums" title="이 달에 받은 배당·분배금">
+                      월배당 {fmtKrw(monthDividend)}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+
               {/* 섹터 비중 — 전체 스크롤 */}
-              {sectors.length > 0 && (
+              {sectors.length > 0 ? (
                 <div className="mt-4 overflow-y-auto flex-1 px-2.5" style={{ maxHeight: '286px' }}>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {sectors.map(([k, v]) => {
@@ -194,9 +298,9 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     })}
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              {snap.memo && <p className="text-[10px] text-slate-300 mt-2 truncate">{snap.memo}</p>}
+              {snap.memo ? <p className="text-[10px] text-slate-300 mt-2 truncate">{snap.memo}</p> : null}
 
               {/* CSV 내보내기(좌) + 편집/복제/삭제(우) — hover 시만 표시 */}
               <div className="flex justify-between items-center mt-4 pt-2 border-t border-slate-50 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -235,9 +339,8 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
       </div>
 
       {/* 복제 확인 모달 */}
-      {cloneTarget && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={() => setCloneTarget(null)}>
+      {cloneTarget ? (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full"
             onClick={e => e.stopPropagation()}>
             <p className="text-sm font-semibold text-slate-800 mb-1">스냅샷 복제</p>
@@ -261,7 +364,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

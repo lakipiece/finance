@@ -15,7 +15,7 @@ export default async function PortfolioOptionsPage() {
     grouped[r.type].push(r)
   }
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <PageHeader title="옵션 관리" description="섹터, 계좌 유형 등 분류 옵션 설정" />
       <OptionsManager initialOptions={grouped} />
     </div>

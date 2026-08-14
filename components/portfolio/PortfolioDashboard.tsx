@@ -10,14 +10,11 @@ import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
 
-interface CashflowSum { account_id: string; inflow: number; outflow: number }
-
 interface Props {
   summary: PortfolioSummary
   targets: TargetAllocation[]
   accountTypeColors?: Record<string, string>
   sectorColors?: Record<string, string>
-  cashflowSums?: CashflowSum[]
 }
 
 export interface MergedPosition {
@@ -103,7 +100,7 @@ function SectionHeader({
   )
 }
 
-export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {}, cashflowSums = [] }: Props) {
+export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {} }: Props) {
   const { palette } = useTheme()
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
@@ -251,32 +248,34 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       total_unrealized_pnl: pnl,
       total_unrealized_pct: inv > 0 ? pnl / inv : 0,
       total_dividends: div,
+      cashflow_sums: summary.cashflow_sums,
       positions: accountFiltered,
       last_price_updated_at: summary.last_price_updated_at,
     }
-  }, [tagFilteredPositions, accountFiltered, summary.last_price_updated_at])
+  }, [tagFilteredPositions, accountFiltered, summary.cashflow_sums, summary.last_price_updated_at])
 
   const visibleTotal = useMemo(
     () => tagFilteredPositions.reduce((s, p) => s + p.market_value, 0),
     [tagFilteredPositions]
   )
 
-  // 실질 수익 — 입출금 원장이 기록된 계좌만 대상. 계좌 필터 반영 (섹터/태그 필터는 계좌 단위 지표라 미반영)
-  const realProfit = useMemo(() => {
-    const relevant = cashflowSums.filter(cs =>
+  // 입출금 원장 합계 — 계좌 필터 반영. 섹터/태그 필터 중에는 계좌 단위 지표라 비활성(null).
+  const ledger = useMemo(() => {
+    if (selectedSectors.size > 0 || selectedTags.size > 0) return null
+    const visible = summary.cashflow_sums.filter(cs =>
       selectedAccountIds.size === 0 || selectedAccountIds.has(cs.account_id)
     )
-    if (relevant.length === 0) return null
-    const recordedIds = new Set(relevant.map(cs => cs.account_id))
-    const inflow = relevant.reduce((s, cs) => s + cs.inflow, 0)
-    const outflow = relevant.reduce((s, cs) => s + cs.outflow, 0)
-    if (inflow <= 0) return null
-    const marketValue = summary.positions
-      .filter(p => recordedIds.has(p.account.id))
-      .reduce((s, p) => s + p.market_value, 0)
-    const profit = marketValue - (inflow - outflow)
-    return { profit, rate: profit / inflow }
-  }, [cashflowSums, selectedAccountIds, summary.positions])
+    if (visible.length === 0) return null
+    const deposits = visible.reduce((s, cs) => s + cs.inflow, 0)
+    const withdrawals = visible.reduce((s, cs) => s + cs.outflow, 0)
+    if (deposits <= 0) return null
+    // 표시 중인 계좌가 전부 원장 기록을 갖고 있는지
+    const ledgerIds = new Set(visible.map(cs => cs.account_id))
+    const visibleAccountIds = new Set(accountFiltered.map(p => p.account.id))
+    let coversAll = true
+    for (const id of visibleAccountIds) if (!ledgerIds.has(id)) { coversAll = false; break }
+    return { deposits, withdrawals, coversAll }
+  }, [summary.cashflow_sums, selectedAccountIds, selectedSectors, selectedTags, accountFiltered])
 
   const chartPositions = useMemo(() =>
     accountFiltered.filter(p => {
@@ -346,7 +345,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         </button>
       </PageHeader>
 
-      <PortfolioKpiCards summary={filteredKpi} realProfit={realProfit} />
+      <PortfolioKpiCards summary={filteredKpi} ledger={ledger} />
 
       {/* 계좌 섹션 */}
       <div>

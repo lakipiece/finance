@@ -4,39 +4,54 @@ import type { PortfolioSummary } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { formatWonRound } from '@/lib/utils'
 
+/**
+ * 지표 흐름:
+ *   투자원금     = 누적입금 (입출금 원장)
+ *   평균매수금액 = Σ(수량 × 평균매수단가)
+ *   평가손익     = 평가금액 − 평균매수금액   (보유 종목의 가치 증감)
+ *   수익금액     = 평가금액 + 누적출금 − 누적입금  (실질 수익, 배당 인출 포함)
+ * 원장 미기록 시(ledger=null) 매수원가 기준의 기존 지표로 폴백.
+ */
 interface Props {
   summary: PortfolioSummary
-  /** 입출금 원장 기반 실질 수익 (원장 기록이 있을 때만) */
-  realProfit?: { profit: number; rate: number } | null
+  /** 표시 대상 계좌들의 입출금 합계. 원장 기록 없으면 null */
+  ledger?: { deposits: number; withdrawals: number; coversAll: boolean } | null
 }
 
 function pctStr(n: number) {
   return `${n >= 0 ? '+' : ''}${(n * 100).toFixed(2)}%`
 }
 
-export default function PortfolioKpiCards({ summary, realProfit = null }: Props) {
+export default function PortfolioKpiCards({ summary, ledger = null }: Props) {
   const { palette } = useTheme()
   const { total_market_value, total_invested, total_unrealized_pnl, total_unrealized_pct, total_dividends } = summary
   const pnlPos = total_unrealized_pnl >= 0
   const pnlColor = pnlPos ? 'text-rose-500' : 'text-blue-500'
 
-  const cards = [
+  const cards = ledger ? (() => {
+    // 원장 기준 흐름
+    const profit = total_market_value + ledger.withdrawals - ledger.deposits
+    const rate = ledger.deposits > 0 ? profit / ledger.deposits : 0
+    const profitColor = profit >= 0 ? 'text-rose-500' : 'text-blue-500'
+    const basisNote = ledger.coversAll ? '' : ' · 일부 계좌 미기록'
+    return [
+      { label: '총 평가금액', value: formatWonRound(total_market_value), sub: '현재 시장가 기준', inverted: true },
+      { label: '투자원금', value: formatWonRound(ledger.deposits), sub: `누적입금${ledger.withdrawals > 0 ? ` · 출금 ${formatWonRound(ledger.withdrawals)}` : ''}${basisNote}`, inverted: false, color: 'text-slate-700' },
+      { label: '평가손익', value: `${pnlPos ? '+' : ''}${formatWonRound(total_unrealized_pnl)}`, sub: `평균매수금액 ${formatWonRound(total_invested)} 대비`, inverted: false, color: pnlColor },
+      { label: '수익금액', value: `${profit >= 0 ? '+' : ''}${formatWonRound(profit)}`, sub: `수익률 ${pctStr(rate)} — 평가액＋출금−입금`, inverted: false, color: profitColor },
+      { label: '누적 분배금', value: formatWonRound(total_dividends), sub: '받은 배당·분배금', inverted: false, color: 'text-slate-700' },
+    ]
+  })() : [
+    // 원장 미기록 — 매수원가 기준 (기존)
     { label: '총 평가금액', value: formatWonRound(total_market_value), sub: '현재 시장가 기준', inverted: true },
-    { label: '총 투자원금', value: formatWonRound(total_invested),      sub: '매수 원가 합계',  inverted: false, color: 'text-slate-700' },
-    { label: '수익',        value: `${pnlPos ? '+' : ''}${formatWonRound(total_unrealized_pnl)}`, sub: '평가손익 합계', inverted: false, color: pnlColor },
-    { label: '평가수익률',  value: pctStr(total_unrealized_pct), sub: '투자원금 대비', inverted: false, color: pnlColor },
+    { label: '총 투자원금', value: formatWonRound(total_invested),      sub: '매수 원가 합계 (입출금 미기록)',  inverted: false, color: 'text-slate-700' },
+    { label: '평가손익',    value: `${pnlPos ? '+' : ''}${formatWonRound(total_unrealized_pnl)}`, sub: '평가금액 − 매수원가', inverted: false, color: pnlColor },
+    { label: '평가수익률',  value: pctStr(total_unrealized_pct), sub: '매수원가 대비', inverted: false, color: pnlColor },
     { label: '누적 분배금', value: formatWonRound(total_dividends), sub: '받은 배당·분배금', inverted: false, color: 'text-slate-700' },
-    ...(realProfit ? [{
-      label: '실질 수익',
-      value: `${realProfit.profit >= 0 ? '+' : ''}${formatWonRound(realProfit.profit)}`,
-      sub: `입금 대비 ${pctStr(realProfit.rate)} — 입출금 원장 기준`,
-      inverted: false,
-      color: realProfit.profit >= 0 ? 'text-rose-500' : 'text-blue-500',
-    }] : []),
   ]
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 ${cards.length === 6 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}>
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       {cards.map(c => (
         c.inverted ? (
           <div key={c.label}

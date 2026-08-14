@@ -546,7 +546,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   }, [securities, secSearch, secFilter, secSort])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-3">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
         <div className={`px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           {msg.text}

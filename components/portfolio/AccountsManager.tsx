@@ -15,6 +15,7 @@ import type { Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, badge, modal } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import CashflowPanel from './CashflowPanel'
 
 interface AccountSecurity { account_id: string; security_id: string }
 type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
@@ -28,7 +29,11 @@ interface Props {
   sectorColors?: Record<string, string>
   countryColors?: Record<string, string>
   currencyColors?: Record<string, string>
+  /** 계좌별 실시간 평가액 (입출금 탭의 실질수익 계산용) */
+  accountValues?: Record<string, number>
 }
+
+type ModalTab = 'securities' | 'cashflows'
 
 
 function SortableAccountCard({
@@ -86,7 +91,7 @@ function SortableAccountCard({
   )
 }
 
-export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [], sectorColors = {}, countryColors = {}, currencyColors = {} }: Props) {
+export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [], sectorColors = {}, countryColors = {}, currencyColors = {}, accountValues = {} }: Props) {
   const { palette } = useTheme()
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
@@ -94,6 +99,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const [liveTypeOptions, setLiveTypeOptions] = useState<OptionItem[]>(accountTypeOptions)
 
   const [modalLinkAccountId, setModalLinkAccountId] = useState<string | null>(null)
+  const [modalTab, setModalTab] = useState<ModalTab>('securities')
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -143,6 +149,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     const current = new Set(links.filter(l => l.account_id === modalLinkAccountId).map(l => l.security_id))
     setPendingIds(current)
     setLinkSearch('')
+    setModalTab('securities')
   }, [modalLinkAccountId])
 
   const isDirty = useMemo(() => {
@@ -247,7 +254,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   const modalAccount = accounts.find(a => a.id === modalLinkAccountId)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
         <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
           {msg.text}
@@ -291,8 +298,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Link Modal */}
       {modalLinkAccountId && createPortal(
-        <div className={modal.overlayTop}
-          onClick={handleModalClose}>
+        <div className={modal.overlayTop}>
           <div className="bg-white rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl"
             style={{ maxHeight: '82vh' }}
             onClick={e => e.stopPropagation()}>
@@ -302,12 +308,16 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 <p className="text-xs text-slate-400 mt-0.5">{modalAccount?.broker}{modalAccount?.type ? ` · ${modalAccount.type}` : ''}</p>
               </div>
               <div className="flex items-center gap-2">
-                {isDirty && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>}
-                <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                  className={btn.primary}
-                  style={{ backgroundColor: palette.colors[0] }}>
-                  {savingLinks ? '저장 중...' : '저장하기'}
-                </button>
+                {modalTab === 'securities' ? (
+                  <>
+                    {isDirty && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>}
+                    <button onClick={saveLinks} disabled={!isDirty || savingLinks}
+                      className={btn.primary}
+                      style={{ backgroundColor: palette.colors[0] }}>
+                      {savingLinks ? '저장 중...' : '저장하기'}
+                    </button>
+                  </>
+                ) : null}
                 <button onClick={handleModalClose} className={modal.close}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -315,6 +325,34 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </button>
               </div>
             </div>
+
+            {/* 탭 */}
+            <div className="flex gap-1 px-5 pt-3 shrink-0">
+              {([
+                { key: 'securities' as const, label: '종목 연결', badge: `${pendingIds.size}` },
+                { key: 'cashflows' as const, label: '입출금', badge: null },
+              ]).map(t => {
+                const active = modalTab === t.key
+                return (
+                  <button key={t.key} onClick={() => setModalTab(t.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      active ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    }`}
+                    style={active ? { backgroundColor: palette.colors[0] } : undefined}>
+                    {t.label}
+                    {t.badge ? <span className={`ml-1.5 ${active ? 'opacity-70' : 'text-slate-400'}`}>{t.badge}</span> : null}
+                  </button>
+                )
+              })}
+            </div>
+
+            {modalTab === 'cashflows' ? (
+              <CashflowPanel
+                accountId={modalLinkAccountId}
+                marketValue={accountValues[modalLinkAccountId]}
+              />
+            ) : (
+            <>
             <div className="px-5 py-3 border-b border-slate-100 shrink-0">
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -368,6 +406,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 <p className="text-xs text-slate-400 text-center py-8">검색 결과가 없습니다</p>
               )}
             </div>
+            </>
+            )}
           </div>
         </div>,
         document.body
@@ -397,8 +437,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Add Account Modal */}
       {showAddModal && createPortal(
-        <div className={modal.overlayTop}
-          onClick={() => setShowAddModal(false)}>
+        <div className={modal.overlayTop}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             onClick={e => e.stopPropagation()}>
             <p className="text-sm font-semibold text-slate-700 mb-4">계좌 추가</p>
@@ -448,8 +487,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Edit Account Modal */}
       {editingAccountId && createPortal(
-        <div className={modal.overlayTop}
-          onClick={() => setEditingAccountId(null)}>
+        <div className={modal.overlayTop}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
             onClick={e => e.stopPropagation()}>
             <p className="text-sm font-semibold text-slate-700 mb-4">계좌 수정</p>

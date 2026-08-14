@@ -351,8 +351,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
       {/* Account Modal */}
       {modalAccountId && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4"
-          onClick={handleModalClose}>
+        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-5xl flex flex-col shadow-2xl"
             style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}>

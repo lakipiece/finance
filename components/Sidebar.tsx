@@ -57,14 +57,6 @@ function IconAccount() {
     </svg>
   )
 }
-function IconTransfer() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h13M14 4l3 3-3 3" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20 17H7M10 14l-3 3 3 3" />
-    </svg>
-  )
-}
 function IconList() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -207,8 +199,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   return (
     <div className="flex flex-col h-full w-[220px] border-r border-slate-100 bg-white">
-      {/* 로고 */}
-      <div className="flex items-center gap-2.5 px-4 pb-5" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* 로고 — 본문 py-8과 상단 라인을 맞춘다 */}
+      <div className="flex items-center gap-2.5 px-4 pb-5"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
         <IconLogo />
         <div className="leading-none">
           <p className="text-[13px] font-bold tracking-widest text-slate-700 uppercase leading-tight">Lakipiece</p>
@@ -232,7 +225,6 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SubItem href="/portfolio/snapshots"  icon={<IconCamera />}   label="스냅샷"   pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/income"     icon={<IconDollar />}   label="배당"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/accounts"   icon={<IconAccount />}  label="계좌"     pathname={pathname} onClose={onClose} />
-        <SubItem href="/portfolio/cashflows"  icon={<IconTransfer />} label="입출금"   pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/securities" icon={<IconList />}     label="종목"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/options"    icon={<IconSliders />}  label="옵션"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/rebalance"  icon={<IconScale />}    label="리밸런싱" pathname={pathname} onClose={onClose} />

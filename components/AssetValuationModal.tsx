@@ -126,7 +126,7 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
   if (!show) return null
 
   const content = (
-    <div className={modal.overlayTop} onClick={onClose}>
+    <div className={modal.overlayTop}>
       <div className={`${modal.containerLg}`} onClick={e => e.stopPropagation()}>
         {/* 헤더 */}
         <div className={modal.header}>

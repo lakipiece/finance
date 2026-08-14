@@ -172,7 +172,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
   }
 
   return createPortal(
-    <div className={modal.overlay} onClick={onClose}>
+    <div className={modal.overlay}>
       <div className={modal.containerLg} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
           <h3 className="text-sm font-semibold text-slate-800">
@@ -368,7 +368,7 @@ export default function EnergyClient() {
   }, [records])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 헤더 */}
       <PageHeader title="에너지 지출관리" description="월별 전기·수도·온수·난방 사용량과 금액을 기록합니다">
         <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}

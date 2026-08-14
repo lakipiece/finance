@@ -176,7 +176,7 @@ export default function DashboardClient({ year }: { year: number }) {
     : cumulativeMonthData
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
       <PageHeader title="가계부 대시보드">
         <YearPicker variant="light" />

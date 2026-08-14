@@ -1080,7 +1080,7 @@ export default function InputPage() {
 
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <PageHeader title="수입 지출 관리">
         <YearMonthPicker
           year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}

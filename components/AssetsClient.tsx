@@ -256,7 +256,7 @@ function PensionSnapshotModal({ show, pensionId, pensionName, onClose, onSaved, 
   }
 
   return createPortal(
-    <div className={modal.overlayTop} onClick={onClose}>
+    <div className={modal.overlayTop}>
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
           <div>
@@ -339,7 +339,7 @@ function PensionFormModal({ show, onClose, onSaved, palette, editItem }: {
   }
 
   return createPortal(
-    <div className={modal.overlayTop} onClick={onClose}>
+    <div className={modal.overlayTop}>
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
           <h2 className="text-sm font-semibold text-slate-800">{editItem ? '연금자산 수정' : '연금자산 추가'}</h2>

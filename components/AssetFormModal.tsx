@@ -94,7 +94,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
   }
 
   const content = (
-    <div className={modal.overlayTop} onClick={onClose}>
+    <div className={modal.overlayTop}>
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         {/* 헤더 */}
         <div className={modal.header}>

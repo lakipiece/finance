@@ -83,7 +83,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
   }
 
   const secModal = (
-    <div className={modalStyles.overlayTop} onClick={onClose}>
+    <div className={modalStyles.overlayTop}>
       <div className={modalStyles.container} onClick={e => e.stopPropagation()}>
         <div className={modalStyles.header}>
           <div className="flex items-center gap-2">

@@ -8,7 +8,10 @@ import {
   LineChart, Line, ComposedChart, ReferenceLine, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn } from '@/lib/styles'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
+import type { CashflowEvent, SnapshotViewMode } from './SnapshotList'
+import { SNAPSHOT_VIEW_LABELS } from './SnapshotList'
 
 export interface SnapshotPoint {
   date: string
@@ -23,6 +26,33 @@ interface Props {
   points: SnapshotPoint[]
   sectorColors?: Record<string, string>
   assetClassColors?: Record<string, string>
+  cashflowEvents?: CashflowEvent[]
+  initialView?: SnapshotViewMode
+}
+
+/** date 이하의 누적 입금/출금 */
+function cumulativeAt(events: CashflowEvent[], date: string): { inflow: number; outflow: number } {
+  let inflow = 0, outflow = 0
+  for (const e of events) {
+    if (e.date > date) break
+    inflow += e.inflow
+    outflow += e.outflow
+  }
+  return { inflow, outflow }
+}
+
+/** 월별 최초/최종/전체 필터 (points는 date ASC) */
+function filterByView(points: SnapshotPoint[], view: SnapshotViewMode): SnapshotPoint[] {
+  if (view === 'all') return points
+  const byMonth = new Map<string, SnapshotPoint[]>()
+  for (const p of points) {
+    const ym = p.date.slice(0, 7)
+    if (!byMonth.has(ym)) byMonth.set(ym, [])
+    byMonth.get(ym)!.push(p)
+  }
+  return [...byMonth.values()].map(items =>
+    view === 'first' ? items[0] : items[items.length - 1]
+  )
 }
 
 const POS = '#ef4444'  // 한국식 — 상승 빨강
@@ -358,11 +388,15 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
   )
 }
 
-export default function SnapshotCharts({ points, sectorColors = {}, assetClassColors = {} }: Props) {
+export default function SnapshotCharts({ points: allPoints, sectorColors = {}, assetClassColors = {}, cashflowEvents = [], initialView = 'last' }: Props) {
   const { palette } = useTheme()
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
+  const [view, setView] = useState<SnapshotViewMode>(initialView)
+  const points = useMemo(() => filterByView(allPoints, view), [allPoints, view])
   if (points.length < 2) return null
+
+  const hasLedger = cashflowEvents.length > 0
 
   const needsBackfill = points.every(p =>
     Object.keys(p.asset_class_breakdown).length === 0 &&
@@ -394,14 +428,32 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
   const pctFromPrev = prev && prev.total_market_value > 0 ? (diffFromPrev / prev.total_market_value) * 100 : 0
   const investedDiffFromFirst = currentInvested - first.total_invested
 
-  const composedData = points.map(p => ({
-    date: p.date,
-    평가액: p.total_market_value,
-    투자원금: p.total_invested,
-    손익: p.total_market_value - p.total_invested,
-  }))
+  // 수익금액 = 평가액 + 누적출금 − 누적입금 (입출금 원장 기준)
+  const lastCum = hasLedger ? cumulativeAt(cashflowEvents, last.date) : null
+  const currentProfit = lastCum && lastCum.inflow > 0
+    ? currentValue + lastCum.outflow - lastCum.inflow : null
+  const currentProfitRate = currentProfit != null && lastCum && lastCum.inflow > 0
+    ? currentProfit / lastCum.inflow : null
 
-  const pnlData = composedData.map(d => ({ date: d.date, 손익: d.손익 }))
+  const composedData = points.map(p => {
+    const cum = hasLedger ? cumulativeAt(cashflowEvents, p.date) : null
+    return {
+      date: p.date,
+      평가액: p.total_market_value,
+      평균매수금액: p.total_invested,
+      ...(cum && cum.inflow > 0 ? { 투자원금: cum.inflow } : {}),
+      손익: p.total_market_value - p.total_invested,
+      ...(cum && cum.inflow > 0
+        ? { 수익금액: p.total_market_value + cum.outflow - cum.inflow }
+        : {}),
+    }
+  })
+
+  const hasProfitSeries = hasLedger && composedData.some(d => '수익금액' in d)
+  const pnlData = composedData.map(d => ({
+    date: d.date,
+    손익: hasProfitSeries ? ((d as Record<string, number | string>)['수익금액'] as number ?? d.손익) : d.손익,
+  }))
 
   const momData = points.map((p, i) => {
     if (i === 0) return { date: p.date, 증감: 0 }
@@ -410,6 +462,21 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
 
   return (
     <div className="space-y-4">
+
+      {/* 보기 필터 — 스냅샷 목록과 동일한 기준 */}
+      <div className="flex items-center gap-1.5">
+        {(Object.keys(SNAPSHOT_VIEW_LABELS) as SnapshotViewMode[]).map(m => {
+          const active = view === m
+          return (
+            <button key={m} onClick={() => setView(m)}
+              className={btn.pill(active)}
+              style={active ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+              {SNAPSHOT_VIEW_LABELS[m]}
+            </button>
+          )
+        })}
+        <span className="text-[10px] text-slate-300 ml-1">{points.length}개 시점</span>
+      </div>
 
       {needsBackfill && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
@@ -431,17 +498,34 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
           sub={`첫 스냅샷 대비 ${fmtPctSigned(pctFromFirst)} (${fmtY(diffFromFirst)})`}
           subColor={diffFromFirst >= 0 ? 'text-rose-500' : 'text-blue-500'}
         />
-        <KpiCard
-          label="누적 손익"
-          value={fmtKrw(currentPnl)}
-          sub={`수익률 ${fmtPctSigned(currentReturn * 100)}`}
-          subColor={currentPnl >= 0 ? 'text-rose-500' : 'text-blue-500'}
-        />
-        <KpiCard
-          label="투자 원금"
-          value={fmtKrw(currentInvested)}
-          sub={`첫 스냅샷 대비 ${fmtY(investedDiffFromFirst)}`}
-        />
+        {currentProfit != null ? (
+          <KpiCard
+            label="수익금액"
+            value={fmtKrw(currentProfit)}
+            sub={`수익률 ${currentProfitRate != null ? fmtPctSigned(currentProfitRate * 100) : '-'} — 평가액＋출금−입금`}
+            subColor={currentProfit >= 0 ? 'text-rose-500' : 'text-blue-500'}
+          />
+        ) : (
+          <KpiCard
+            label="평가손익"
+            value={fmtKrw(currentPnl)}
+            sub={`수익률 ${fmtPctSigned(currentReturn * 100)} — 매수원가 대비`}
+            subColor={currentPnl >= 0 ? 'text-rose-500' : 'text-blue-500'}
+          />
+        )}
+        {lastCum && lastCum.inflow > 0 ? (
+          <KpiCard
+            label="투자원금"
+            value={fmtKrw(lastCum.inflow)}
+            sub={`누적입금${lastCum.outflow > 0 ? ` · 출금 ${fmtY(lastCum.outflow)}` : ''}`}
+          />
+        ) : (
+          <KpiCard
+            label="평균매수금액"
+            value={fmtKrw(currentInvested)}
+            sub={`첫 스냅샷 대비 ${fmtY(investedDiffFromFirst)}`}
+          />
+        )}
         <KpiCard
           label="직전 대비"
           value={prev ? fmtPctSigned(pctFromPrev) : '-'}
@@ -450,9 +534,11 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
         />
       </div>
 
-      {/* 평가액 vs 투자원금 */}
+      {/* 평가액 vs 원금 */}
       <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">평가액 vs 투자원금</h3>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">
+          평가액 vs {hasProfitSeries ? '투자원금(누적입금) · 평균매수금액' : '평균매수금액'}
+        </h3>
         <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={composedData} margin={{ left: 0, right: 8, top: 24 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -463,15 +549,21 @@ export default function SnapshotCharts({ points, sectorColors = {}, assetClassCo
               <LabelList dataKey="평가액" position="top" formatter={(v: number) => fmtY(v)}
                 style={{ fontSize: 10, fill: '#94a3b8' }} />
             </Bar>
-            <Line type="monotone" dataKey="투자원금" stroke="#64748b" strokeWidth={2}
+            <Line type="monotone" dataKey="평균매수금액" stroke="#64748b" strokeWidth={2}
               dot={{ r: 3, fill: '#fff', stroke: '#64748b' }} />
+            {hasProfitSeries ? (
+              <Line type="monotone" dataKey="투자원금" stroke="#00695C" strokeWidth={2}
+                strokeDasharray="5 3" dot={{ r: 3, fill: '#fff', stroke: '#00695C' }} />
+            ) : null}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
-      {/* 누적 손익 라인 */}
+      {/* 수익 추이 라인 */}
       <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">누적 손익 추이</h3>
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">
+          {hasProfitSeries ? '수익금액 추이 (평가액＋출금−입금)' : '누적 손익 추이'}
+        </h3>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={pnlData} margin={{ left: 0, right: 8, top: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />

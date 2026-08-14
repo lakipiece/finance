@@ -3,7 +3,24 @@ import 'server-only'
 import { getSql } from '@/lib/db'
 import { getPrices, toYahooTicker } from './prices'
 import { isKrwSecurity, resolveExchangeRate } from './valuation'
-import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation } from './types'
+import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation, AccountCashflowSum } from './types'
+
+/** 계좌별 입출금 합계. account_cashflows 테이블이 없으면 빈 배열. */
+export async function fetchCashflowSums(): Promise<AccountCashflowSum[]> {
+  const sql = getSql()
+  try {
+    const rows = await sql<{ account_id: string; inflow: number; outflow: number }[]>`
+      SELECT account_id,
+        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
+        COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+      FROM account_cashflows
+      GROUP BY account_id
+    `
+    return rows.map(r => ({ account_id: r.account_id, inflow: Number(r.inflow), outflow: Number(r.outflow) }))
+  } catch {
+    return []
+  }
+}
 
 export async function fetchAccounts(): Promise<Account[]> {
   const sql = getSql()
@@ -104,6 +121,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       total_unrealized_pnl: 0,
       total_unrealized_pct: 0,
       total_dividends: 0,
+      cashflow_sums: [],
       positions: [],
       last_price_updated_at: null,
     }
@@ -181,10 +199,14 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   })
 
   const total_market_value = positions.reduce((s, p) => s + p.market_value, 0)
+  // 평균매수금액 합계 (평가손익의 기준)
   const total_invested = positions.reduce((s, p) => s + p.total_invested, 0)
   const total_unrealized_pnl = total_market_value - total_invested
   const total_unrealized_pct = total_invested > 0 ? total_unrealized_pnl / total_invested : 0
   const total_dividends = positions.reduce((s, p) => s + p.total_dividends, 0)
+
+  // 입출금 원장 합계 — 수익금액(평가액 + 출금 − 입금) 계산용
+  const cashflow_sums = await fetchCashflowSums()
 
   const latestPrices = await sql<{ date: string; created_at: string }[]>`
     SELECT date, created_at FROM price_history ORDER BY created_at DESC LIMIT 1
@@ -210,6 +232,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     total_unrealized_pnl,
     total_unrealized_pct,
     total_dividends,
+    cashflow_sums,
     positions,
     last_price_updated_at,
   }
