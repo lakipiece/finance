@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
-const VALID_TYPES = ['deposit', 'withdrawal', 'transfer_in', 'transfer_out', 'opening']
+const VALID_TYPES = ['deposit', 'withdrawal', 'opening']
 
 // GET /api/portfolio/cashflows?account_id=&year=
 export async function GET(req: NextRequest) {

@@ -38,8 +38,8 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
     `,
     sql<{ account_id: string; flow_date: unknown; inflow: number; outflow: number }[]>`
       SELECT account_id, flow_date,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','opening')), 0)::float AS inflow,
+        COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow
       FROM account_cashflows
       GROUP BY account_id, flow_date ORDER BY flow_date
     `.catch(() => [] as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]),

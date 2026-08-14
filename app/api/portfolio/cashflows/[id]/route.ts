@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
-const VALID_TYPES = ['deposit', 'withdrawal', 'transfer_in', 'transfer_out', 'opening']
+const VALID_TYPES = ['deposit', 'withdrawal', 'opening']
 type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(req: NextRequest, { params }: Params) {

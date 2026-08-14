@@ -66,12 +66,13 @@
 |------|------|
 | `account_id` | FK → accounts (CASCADE) |
 | `flow_date` | 발생일 |
-| `type` | `deposit` 입금 / `withdrawal` 출금 / `transfer_in` 이체입금 / `transfer_out` 이체출금 / `opening` 기초잔액 |
+| `type` | `deposit` 입금 / `withdrawal` 출금 / `opening` 기초잔액 |
 | `amount` | KRW, 항상 양수 (방향은 type이 결정) |
 
-- **입금 계열** = deposit + transfer_in + opening / **출금 계열** = withdrawal + transfer_out
+- **입금 계열** = deposit + opening / **출금 계열** = withdrawal
 - **opening(기초잔액)**: 과거 입금을 소급하지 않고 기록 시작 시점의 계좌 평가액을 1건 넣는 앵커. 계좌당 1건.
-- **계좌 간 이체**: 보내는 계좌 `transfer_out` + 받는 계좌 `transfer_in` 쌍으로 입력. 전체 합산에서 상쇄.
+- **계좌 간 이체**: 보내는 계좌 `출금` + 받는 계좌 `입금` 쌍으로 입력. 전체 합산에서 상쇄.
+  (초기 설계의 `transfer_in`/`transfer_out` 유형은 계산이 입금/출금과 동일해 2026-08-15 제거)
 - 날짜별 이벤트로 쌓으므로 나중에 XIRR(금액가중 수익률)·연도별 투입금 분석 가능.
 
 ### snapshots.account_breakdown (jsonb)
@@ -116,7 +117,7 @@ KPI 카드 구성 (대시보드, 원장 있을 때):
 ### 시작하기 (계좌별 1회)
 1. 계좌 관리 → 계좌 카드 클릭 → **입출금 탭**
 2. `기초잔액` 유형으로 현재(또는 기록 시작 시점) 평가액 1건 입력
-3. 이후 실제 입금/출금/이체만 그때그때 기록
+3. 이후 실제 입금/출금만 그때그때 기록 (계좌 간 이체 = 출금+입금 쌍)
 
 ### 정확도를 위한 규칙
 - **스냅샷에 예수금(현금)을 계속 입력**한다 — 평가금액이 정확해야 수익금액이 정확하다.
@@ -143,6 +144,7 @@ KPI 카드 구성 (대시보드, 원장 있을 때):
 | `docs/sql/2026-08-14-password-bcrypt.sql` | 비밀번호 해시 전환 |
 | `docs/sql/2026-08-14-cleanup-unused.sql` | 미사용 테이블 4개 DROP + 고아 holdings 정리 |
 | `docs/sql/2026-08-15-snapshot-account-breakdown.sql` | 계좌별 분해값 컬럼 |
+| `docs/sql/2026-08-15-drop-transfer-types.sql` | 이체 유형 제거 (입금/출금/기초잔액 3종으로 단순화) |
 
 ### 주요 커밋
 | 커밋 | 내용 |

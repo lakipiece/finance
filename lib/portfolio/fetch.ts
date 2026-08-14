@@ -11,8 +11,8 @@ export async function fetchCashflowSums(): Promise<AccountCashflowSum[]> {
   try {
     const rows = await sql<{ account_id: string; inflow: number; outflow: number }[]>`
       SELECT account_id,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','opening')), 0)::float AS inflow,
+        COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow
       FROM account_cashflows
       GROUP BY account_id
     `

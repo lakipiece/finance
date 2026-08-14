@@ -49,8 +49,8 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
   // 계좌별 입출금 이벤트 — 스냅샷 날짜 기준 누적입금(투자원금)·수익금액 계산용
   const cashflowRaw = await sql`
     SELECT account_id, flow_date,
-      COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
-      COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+      COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','opening')), 0)::float AS inflow,
+      COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow
     FROM account_cashflows
     GROUP BY account_id, flow_date ORDER BY flow_date
   `.catch(() => []) as unknown as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]

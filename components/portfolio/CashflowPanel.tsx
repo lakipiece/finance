@@ -7,7 +7,7 @@ import { field, btn, badge, brand, skeleton } from '@/lib/styles'
 import { formatWonRound } from '@/lib/utils'
 import DateInput from '@/components/ui/DateInput'
 
-const TYPE_ORDER: CashflowType[] = ['deposit', 'withdrawal', 'transfer_in', 'transfer_out', 'opening']
+const TYPE_ORDER: CashflowType[] = ['deposit', 'withdrawal', 'opening']
 const INFLOW_COLOR = brand.accent    // 입금 계열
 const OUTFLOW_COLOR = '#690043'      // 출금 계열
 
@@ -196,8 +196,8 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
         {type === 'opening' ? (
           <p className="text-[10px] text-slate-400 mt-2">기초잔액: 기록 시작 시점의 계좌 평가액을 입금으로 간주하는 앵커. 계좌당 1건만 넣고 이후는 실제 입출금만 기록하세요.</p>
         ) : null}
-        {type === 'transfer_in' || type === 'transfer_out' ? (
-          <p className="text-[10px] text-slate-400 mt-2">계좌 간 이체: 보내는 계좌에 이체출금, 받는 계좌에 이체입금을 각각 기록하세요.</p>
+        {type === 'deposit' || type === 'withdrawal' ? (
+          <p className="text-[10px] text-slate-400 mt-2">계좌 간 이체는 보내는 계좌에 출금, 받는 계좌에 입금을 각각 기록하세요.</p>
         ) : null}
         {editId ? (
           <p className="text-[10px] text-amber-600 mt-2">기존 기록을 수정하는 중입니다.</p>

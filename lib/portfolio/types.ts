@@ -49,7 +49,7 @@ export interface Holding {
   security?: Security
 }
 
-export type CashflowType = 'deposit' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'opening'
+export type CashflowType = 'deposit' | 'withdrawal' | 'opening'
 
 export interface Cashflow {
   id: string
@@ -61,14 +61,12 @@ export interface Cashflow {
   account?: Pick<Account, 'name' | 'broker' | 'owner'>
 }
 
-/** type별 집계 방향: 입금(+) / 출금(−) */
-export const CASHFLOW_INFLOW_TYPES: CashflowType[] = ['deposit', 'transfer_in', 'opening']
+/** type별 집계 방향: 입금(+) / 출금(−). 계좌 간 이체는 출금+입금 쌍으로 기록. */
+export const CASHFLOW_INFLOW_TYPES: CashflowType[] = ['deposit', 'opening']
 
 export const CASHFLOW_TYPE_LABELS: Record<CashflowType, string> = {
   deposit: '입금',
   withdrawal: '출금',
-  transfer_in: '이체입금',
-  transfer_out: '이체출금',
   opening: '기초잔액',
 }
 

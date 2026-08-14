@@ -29,8 +29,8 @@ export default async function SnapshotsPage() {
     // 계좌별 입출금 이벤트 — 스냅샷 시점별 누적입금/출금 계산용 (테이블 없으면 빈 배열)
     sql<{ account_id: string; flow_date: unknown; inflow: number; outflow: number }[]>`
       SELECT account_id, flow_date,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
-        COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+        COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','opening')), 0)::float AS inflow,
+        COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow
       FROM account_cashflows
       GROUP BY account_id, flow_date ORDER BY flow_date
     `.catch(() => [] as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]),
