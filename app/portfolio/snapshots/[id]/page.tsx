@@ -45,6 +45,23 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
     sql`SELECT value, color_hex FROM option_list WHERE type = 'account_type'` as unknown as Promise<{ value: string; color_hex: string | null }[]>,
     sql`SELECT value, color_hex FROM option_list WHERE type = 'sector'` as unknown as Promise<{ value: string; color_hex: string | null }[]>,
   ])
+
+  // 계좌별 입출금 이벤트 — 스냅샷 날짜 기준 누적입금(투자원금)·수익금액 계산용
+  const cashflowRaw = await sql`
+    SELECT account_id, flow_date,
+      COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','transfer_in','opening')), 0)::float AS inflow,
+      COALESCE(SUM(amount) FILTER (WHERE type IN ('withdrawal','transfer_out')), 0)::float AS outflow
+    FROM account_cashflows
+    GROUP BY account_id, flow_date ORDER BY flow_date
+  `.catch(() => []) as unknown as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]
+  const cashflowEvents = cashflowRaw.map(r => ({
+    account_id: r.account_id,
+    date: (r.flow_date as unknown) instanceof Date
+      ? (r.flow_date as unknown as Date).toISOString().slice(0, 10)
+      : String(r.flow_date).slice(0, 10),
+    inflow: Number(r.inflow),
+    outflow: Number(r.outflow),
+  }))
   const typeColors: Record<string, string> = {}
   for (const o of optionsRaw) {
     if (o.color_hex) typeColors[o.value] = o.color_hex
@@ -72,6 +89,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
       accountSecurities={accountSecurities}
       typeColors={typeColors}
       sectorColors={sectorColors}
+      cashflowEvents={cashflowEvents}
     />
   )
 }

@@ -18,6 +18,9 @@ interface HoldingRow {
 
 interface AccountSecurity { account_id: string; security_id: string }
 
+/** 계좌별 날짜별 입출금 합계 (오름차순 정렬 전제) */
+interface AccountCashflowEvent { account_id: string; date: string; inflow: number; outflow: number }
+
 interface Props {
   snapshot: Snapshot
   holdings: HoldingRow[]
@@ -26,6 +29,7 @@ interface Props {
   accountSecurities: AccountSecurity[]
   typeColors?: Record<string, string>
   sectorColors?: Record<string, string>
+  cashflowEvents?: AccountCashflowEvent[]
 }
 
 function formatWithCommas(v: number | null): string {
@@ -68,7 +72,7 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
   )
 }
 
-export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {}, sectorColors = {} }: Props) {
+export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {}, sectorColors = {}, cashflowEvents = [] }: Props) {
   const router = useRouter()
   const { palette } = useTheme()
   const [saving, setSaving] = useState(false)
@@ -266,6 +270,55 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     [accountInvested]
   )
 
+  // 스냅샷 날짜 기준 계좌별 누적 입금/출금 (입출금 원장)
+  const cfAt = useMemo(() => {
+    const map: Record<string, { inflow: number; outflow: number }> = {}
+    for (const e of cashflowEvents) {
+      if (e.date > snapshotDate) continue
+      const m = (map[e.account_id] ??= { inflow: 0, outflow: 0 })
+      m.inflow += e.inflow
+      m.outflow += e.outflow
+    }
+    // 입금이 0이면 원장 미기록으로 취급
+    for (const id of Object.keys(map)) {
+      if (map[id].inflow <= 0) delete map[id]
+    }
+    return map
+  }, [cashflowEvents, snapshotDate])
+
+  /**
+   * 계좌별 지표 (원장 있으면 누적입금 기준, 없으면 평균매수금액으로 폴백)
+   *   투자원금 = 누적입금 | 평균매수금액
+   *   수익     = 평가금액 + 누적출금 − 누적입금 | 평가금액 − 평균매수금액
+   */
+  const accountMetrics = useMemo(() => {
+    const out: Record<string, { basis: number; profit: number; rate: number | null; hasLedger: boolean }> = {}
+    const ids = new Set([...Object.keys(accountValues), ...Object.keys(accountInvested), ...Object.keys(cfAt)])
+    for (const id of ids) {
+      const value = accountValues[id] ?? 0
+      const cf = cfAt[id]
+      if (cf) {
+        const profit = value + cf.outflow - cf.inflow
+        out[id] = { basis: cf.inflow, profit, rate: cf.inflow > 0 ? profit / cf.inflow : null, hasLedger: true }
+      } else {
+        const cost = accountInvested[id] ?? 0
+        const profit = value - cost
+        out[id] = { basis: cost, profit, rate: cost > 0 ? profit / cost : null, hasLedger: false }
+      }
+    }
+    return out
+  }, [accountValues, accountInvested, cfAt])
+
+  const totalMetrics = useMemo(() => {
+    let basis = 0, profit = 0, hasLedger = false
+    for (const m of Object.values(accountMetrics)) {
+      basis += m.basis
+      profit += m.profit
+      if (m.hasLedger) hasLedger = true
+    }
+    return { basis, profit, rate: basis > 0 ? profit / basis : null, hasLedger }
+  }, [accountMetrics])
+
   const modalAccount = accMap[modalAccountId ?? '']
   const modalAccountValue = accountValues[modalAccountId ?? ''] ?? 0
 
@@ -289,9 +342,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
           {totalValue > 0 && (
             <div className="text-right leading-tight">
-              <p className="text-[10px] text-slate-400 tabular-nums">{Math.round(totalInvested).toLocaleString()}원</p>
+              <p className="text-[10px] text-slate-400 tabular-nums"
+                title={totalMetrics.hasLedger ? '투자원금 (누적입금, 미기록 계좌는 평균매수금액)' : '평균매수금액 합계'}>
+                투자원금 {Math.round(totalMetrics.basis).toLocaleString()}원
+              </p>
               <p className="text-sm font-semibold text-slate-700 tabular-nums">
                 평가금액 {Math.round(totalValue).toLocaleString()}원
+              </p>
+              <p className={`text-[11px] font-semibold tabular-nums ${totalMetrics.profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+                수익 {totalMetrics.profit >= 0 ? '+' : ''}{Math.round(totalMetrics.profit).toLocaleString()}원
+                {totalMetrics.rate != null ? ` (${totalMetrics.rate >= 0 ? '+' : ''}${(totalMetrics.rate * 100).toFixed(1)}%)` : ''}
               </p>
             </div>
           )}
@@ -329,17 +389,31 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   )}
                 </div>
                 <p className="text-xs text-slate-400">{a.broker}</p>
-                {/* 하단: 종목수 + 원금/평가금액 */}
+                {/* 하단: 종목수 + 투자원금/평가금액/수익 */}
                 <div className="mt-auto pt-2 space-y-0.5">
                   <p className="text-[10px] text-slate-400">
                     <span className="font-semibold text-slate-600 text-[10px]">{count}</span>종목
                   </p>
-                  {aVal > 0 ? (
-                    <div className="flex justify-between text-[10px] tabular-nums">
-                      <span className="text-slate-400">{Math.round(accountInvested[a.id] ?? 0).toLocaleString()}원</span>
-                      <span className="text-slate-600 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
-                    </div>
-                  ) : (
+                  {aVal > 0 ? (() => {
+                    const m = accountMetrics[a.id]
+                    return (
+                      <>
+                        <div className="flex justify-between text-[10px] tabular-nums">
+                          <span className="text-slate-400"
+                            title={m?.hasLedger ? '투자원금 (누적입금)' : '평균매수금액 (원장 미기록)'}>
+                            {Math.round(m?.basis ?? 0).toLocaleString()}원
+                          </span>
+                          <span className="text-slate-600 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
+                        </div>
+                        {m != null ? (
+                          <div className={`text-right text-[10px] font-semibold tabular-nums ${m.profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+                            {m.hasLedger ? '수익' : '평익'} {m.profit >= 0 ? '+' : ''}{Math.round(m.profit).toLocaleString()}원
+                            {m.rate != null ? ` (${m.rate >= 0 ? '+' : ''}${(m.rate * 100).toFixed(1)}%)` : ''}
+                          </div>
+                        ) : null}
+                      </>
+                    )
+                  })() : (
                     <p className="text-xs text-slate-300">—</p>
                   )}
                 </div>
@@ -362,22 +436,37 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 {modalAccount?.broker && (
                   <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 bg-slate-100">{modalAccount.broker}</span>
                 )}
-                {modalAccountValue > 0 && (
-                  <div className="mt-2 space-y-0.5 min-w-[160px]">
+                {modalAccountValue > 0 ? (() => {
+                  const id = modalAccountId ?? ''
+                  const cf = cfAt[id]
+                  const cost = accountInvested[id] ?? 0
+                  const pnl = modalAccountValue - cost           // 평가손익 (평가금액 − 평균매수금액)
+                  const m = accountMetrics[id]
+                  const row = (label: string, val: string, cls = 'text-slate-600') => (
                     <div className="flex items-center justify-between gap-6 text-xs">
-                      <span className="text-slate-400 shrink-0">원금</span>
-                      <span className="font-medium text-slate-600 tabular-nums">
-                        {Math.round(accountInvested[modalAccountId ?? ''] ?? 0).toLocaleString()}원
-                      </span>
+                      <span className="text-slate-400 shrink-0">{label}</span>
+                      <span className={`font-medium tabular-nums ${cls}`}>{val}</span>
                     </div>
-                    <div className="flex items-center justify-between gap-6 text-xs">
-                      <span className="text-slate-400 shrink-0">평가금액</span>
-                      <span className="font-medium text-slate-600 tabular-nums">
-                        {Math.round(modalAccountValue).toLocaleString()}원
-                      </span>
+                  )
+                  const signed = (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v).toLocaleString()}원`
+                  const pct = (v: number, base: number) => base > 0 ? ` (${v >= 0 ? '+' : ''}${(v / base * 100).toFixed(1)}%)` : ''
+                  return (
+                    <div className="mt-2 space-y-0.5 min-w-[200px]">
+                      {cf
+                        ? row('투자원금 (누적입금)', `${Math.round(cf.inflow).toLocaleString()}원`)
+                        : row('투자원금 (매수원가 기준)', `${Math.round(cost).toLocaleString()}원`)}
+                      {cf && cf.outflow > 0 ? row('누적출금', `${Math.round(cf.outflow).toLocaleString()}원`) : null}
+                      {cf ? row('평균매수금액', `${Math.round(cost).toLocaleString()}원`) : null}
+                      {row('평가금액', `${Math.round(modalAccountValue).toLocaleString()}원`, 'text-slate-700 font-semibold')}
+                      {cost > 0
+                        ? row('평가손익', signed(pnl) + pct(pnl, cost), pnl >= 0 ? 'text-rose-500' : 'text-blue-500')
+                        : null}
+                      {cf && m != null
+                        ? row('수익금액', signed(m.profit) + pct(m.profit, cf.inflow), m.profit >= 0 ? 'text-rose-500' : 'text-blue-500')
+                        : null}
                     </div>
-                  </div>
-                )}
+                  )
+                })() : null}
               </div>
               <div className="flex items-center gap-2">
                 {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
