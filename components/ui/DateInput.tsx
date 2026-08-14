@@ -102,7 +102,7 @@ export default function DateInput({ value, onChange, className = '', placeholder
   const calendar = open && (
     <div
       ref={calRef}
-      className="fixed z-[9999] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 select-none"
+      className="fixed z-[10010] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 select-none"
       style={{ top: pos.top, left: pos.left, width: 248 }}
     >
       {/* 헤더: 연/월 + 이전/다음 */}

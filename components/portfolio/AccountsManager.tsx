@@ -299,8 +299,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Link Modal */}
       {modalLinkAccountId && createPortal(
         <div className={modal.overlayTop}>
-          <div className="bg-white rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl"
-            style={{ maxHeight: '82vh' }}
+          <div className="bg-white rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl"
+            style={{ maxHeight: '88vh' }}
             onClick={e => e.stopPropagation()}>
             <div className={modal.header}>
               <div>
