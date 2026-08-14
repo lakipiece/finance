@@ -49,18 +49,27 @@ export interface Holding {
   security?: Security
 }
 
-export interface PortfolioTransaction {
+export type CashflowType = 'deposit' | 'withdrawal' | 'transfer_in' | 'transfer_out' | 'opening'
+
+export interface Cashflow {
   id: string
   account_id: string
-  security_id: string
-  type: 'buy' | 'sell'
-  date: string
-  quantity: number
-  price_per_unit: number
-  currency: string
-  exchange_rate: number
-  fees: number
-  notes: string | null
+  flow_date: string
+  type: CashflowType
+  amount: number
+  memo: string
+  account?: Pick<Account, 'name' | 'broker' | 'owner'>
+}
+
+/** type별 집계 방향: 입금(+) / 출금(−) */
+export const CASHFLOW_INFLOW_TYPES: CashflowType[] = ['deposit', 'transfer_in', 'opening']
+
+export const CASHFLOW_TYPE_LABELS: Record<CashflowType, string> = {
+  deposit: '입금',
+  withdrawal: '출금',
+  transfer_in: '이체입금',
+  transfer_out: '이체출금',
+  opening: '기초잔액',
 }
 
 export interface Dividend {
@@ -114,21 +123,6 @@ export interface Snapshot {
   date: string
   memo: string | null
   created_at: string
-}
-
-export interface Sell {
-  id: string
-  snapshot_id: string | null
-  security_id: string
-  account_id: string
-  sold_at: string
-  quantity: number
-  avg_cost_krw: number | null
-  sell_price_krw: number | null
-  realized_pnl_krw: number | null
-  memo: string | null
-  security?: Security
-  account?: Account
 }
 
 export interface SnapshotWithStats {

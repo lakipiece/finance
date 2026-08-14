@@ -1,5 +1,6 @@
 import { getSql } from '@/lib/db'
 import OptionsManager from '@/components/portfolio/OptionsManager'
+import PageHeader from '@/components/ui/PageHeader'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,12 +16,7 @@ export default async function PortfolioOptionsPage() {
   }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>옵션 관리</h1>
-          <p className="text-xs text-slate-400 mt-0.5">섹터, 계좌 유형 등 분류 옵션 설정</p>
-        </div>
-      </div>
+      <PageHeader title="옵션 관리" description="섹터, 계좌 유형 등 분류 옵션 설정" />
       <OptionsManager initialOptions={grouped} />
     </div>
   )

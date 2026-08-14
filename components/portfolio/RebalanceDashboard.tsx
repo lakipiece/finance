@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface Props {
   summary: PortfolioSummary
@@ -136,11 +137,7 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>리밸런싱</h1>
-          <p className="text-xs text-slate-400 mt-0.5">목표 비율 설정 및 현황 비교</p>
-        </div>
+      <PageHeader title="리밸런싱" description="목표 비율 설정 및 현황 비교">
         <button
           onClick={saveTargets}
           className={btn.primary}
@@ -148,7 +145,7 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
         >
           {saved ? '저장됨 ✓' : '목표 저장'}
         </button>
-      </div>
+      </PageHeader>
 
       <RebalanceSection
         title="자산군 목표 비율"

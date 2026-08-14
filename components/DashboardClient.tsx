@@ -5,6 +5,7 @@ import type { MonthlyData, ExpenseItem, CategoryTotal } from '@/lib/types'
 import { useFilter } from '@/lib/FilterContext'
 import DrilldownPanel from './DrilldownPanel'
 import YearPicker from './YearPicker'
+import PageHeader from '@/components/ui/PageHeader'
 import type { IncomeRow } from './IncomeTableCard'
 
 export interface SummaryData {
@@ -177,10 +178,9 @@ export default function DashboardClient({ year }: { year: number }) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 페이지 헤더 */}
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>가계부 대시보드</h1>
+      <PageHeader title="가계부 대시보드">
         <YearPicker variant="light" />
-      </div>
+      </PageHeader>
       <DrilldownPanel
         monthData={displayMonthData}
         monthlyList={filteredSummary.monthlyList}

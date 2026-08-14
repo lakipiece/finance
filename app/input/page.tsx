@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull } from '@/lib/utils'
 import DateInput from '@/components/ui/DateInput'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
+import PageHeader from '@/components/ui/PageHeader'
 import { field } from '@/lib/styles'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
@@ -301,224 +302,6 @@ interface IncomeRecord {
 }
 type AnyRecord = ExpenseRecord | IncomeRecord
 
-/* ── (unused - kept for reference) ── */
-function _CompactExpenseForm_unused({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
-  onSaved: () => void
-  initialDate: string
-  initialMember: string
-  onDateChange: (d: string) => void
-  onMemberChange: (m: string) => void
-}) {
-  const { catColors } = useTheme()
-  const { excludeLoan } = useFilter()
-  const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
-  const visibleCategories = CATEGORIES.filter(c => !(excludeLoan && c === '대출상환'))
-  const [date, setDate] = useState(initialDate)
-  const [member, setMember] = useState(initialMember)
-  const [category, setCategory] = useState('변동비')
-  const [detail, setDetail] = useState('')
-  const [method, setMethod] = useState(() => DEFAULT_METHODS[0].name)
-  const [amount, setAmount] = useState('')
-  const [memo, setMemo] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [err, setErr] = useState('')
-
-  function handleDateChange(d: string) { setDate(d); onDateChange(d) }
-  function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const v = e.target.value
-    setAmount(isFormula(v) ? v : fmtAmount(v))
-  }
-  function resolveAmount() {
-    if (isFormula(amount)) {
-      const r = evalFormula(amount)
-      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
-    }
-  }
-  const formulaResult = isFormula(amount) ? evalFormula(amount) : null
-
-  async function handleSave() {
-    resolveAmount()
-    const raw = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
-    if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
-    setSaving(true); setErr('')
-    try {
-      const res = await fetch('/api/expenses/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: raw, memo, memos: [] }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '저장 실패')
-      setDetail(''); setAmount(''); setMemo('')
-      onSaved()
-    } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
-    finally { setSaving(false) }
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-4 gap-3 items-start">
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-full" />
-        </div>
-        <div className="col-span-2 flex flex-col gap-1">
-          <label className={field.label}>지출유형</label>
-          <div className="flex flex-wrap gap-1">
-            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
-          </div>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>세부유형</label>
-          <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>결제수단</label>
-          <div className="flex flex-wrap gap-1">
-            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
-          </div>
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>금액 (원)</label>
-          <input type="text" inputMode="numeric" value={amount}
-            onChange={handleAmountChange}
-            onBlur={resolveAmount}
-            onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
-            placeholder="0 또는 =수식" className={`${field.input} text-right`} />
-          {isFormula(amount) && (
-            <span className={`text-[10px] text-right tabular-nums ${formulaResult !== null ? 'text-blue-500' : 'text-rose-400'}`}>
-              {formulaResult !== null ? `= ${formulaResult.toLocaleString('ko-KR')}원` : '수식 오류'}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
-        </div>
-      </div>
-
-      {err && <p className="text-xs text-rose-500">{err}</p>}
-      <div className="flex justify-end">
-        <button type="button" onClick={handleSave} disabled={saving}
-          className="px-5 py-2 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-60"
-          style={{ backgroundColor: '#1A237E' }}>
-          {saving ? '저장 중…' : '저장'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-/* ── (unused - kept for reference) ── */
-function _CompactIncomeForm_unused({ onSaved, initialDate, initialMember, onDateChange, onMemberChange }: {
-  onSaved: () => void
-  initialDate: string
-  initialMember: string
-  onDateChange: (d: string) => void
-  onMemberChange: (m: string) => void
-}) {
-  const [date, setDate] = useState(initialDate)
-  const [member, setMember] = useState(initialMember)
-  const [category, setCategory] = useState<string>(INCOME_CATEGORIES[0])
-  const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
-  const [memo, setMemo] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [err, setErr] = useState('')
-
-  function handleDateChange(d: string) { setDate(d); onDateChange(d) }
-  function handleMemberChange(m: string) { setMember(m); onMemberChange(m) }
-  function handleAmountChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const v = e.target.value
-    setAmount(isFormula(v) ? v : fmtAmount(v))
-  }
-  function resolveAmount() {
-    if (isFormula(amount)) {
-      const r = evalFormula(amount)
-      if (r !== null) setAmount(r.toLocaleString('ko-KR'))
-    }
-  }
-  const formulaResult = isFormula(amount) ? evalFormula(amount) : null
-
-  async function handleSave() {
-    resolveAmount()
-    const raw = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
-    if (!date || !category || !description || raw <= 0) { setErr('모든 필드를 입력해주세요.'); return }
-    setSaving(true); setErr('')
-    try {
-      const res = await fetch('/api/incomes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ income_date: date, category, description, amount: raw, member, memo }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? '저장 실패')
-      setDescription(''); setAmount(''); setMemo('')
-      onSaved()
-    } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
-    finally { setSaving(false) }
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-4 gap-3 items-start">
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>작성자</label>
-          <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>날짜</label>
-          <DateInput value={date} onChange={handleDateChange} className="w-full" />
-        </div>
-        <div className="col-span-2 flex flex-col gap-1">
-          <label className={field.label}>카테고리</label>
-          <div className="flex flex-wrap gap-1">
-            {INCOME_CATEGORIES.map(c => (
-              <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]} size="sm">{c}</PillBtn>
-            ))}
-          </div>
-        </div>
-        <div className="col-span-2 flex flex-col gap-1">
-          <label className={field.label}>설명</label>
-          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-            placeholder="수입 내용" maxLength={50} className={field.input} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>금액 (원)</label>
-          <input type="text" inputMode="numeric" value={amount}
-            onChange={handleAmountChange}
-            onBlur={resolveAmount}
-            onKeyDown={e => { if (e.key === 'Enter') resolveAmount() }}
-            placeholder="0 또는 =수식" className={`${field.input} text-right`} />
-          {isFormula(amount) && (
-            <span className={`text-[10px] text-right tabular-nums ${formulaResult !== null ? 'text-blue-500' : 'text-rose-400'}`}>
-              {formulaResult !== null ? `= ${formulaResult.toLocaleString('ko-KR')}원` : '수식 오류'}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
-        </div>
-      </div>
-
-      {err && <p className="text-xs text-rose-500">{err}</p>}
-      <div className="flex justify-end">
-        <button type="button" onClick={handleSave} disabled={saving}
-          className="px-5 py-2 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-60"
-          style={{ backgroundColor: '#1A237E' }}>
-          {saving ? '저장 중…' : '저장'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 /* ── Modal Shell ── */
 function ModalShell({ onClose, title, onDelete, children }: {
   onClose: () => void; title: string; onDelete?: () => void; children: React.ReactNode
@@ -581,7 +364,7 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
       const res = await fetch(`/api/expenses/${record.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo, memos: [] }),
+        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '수정 실패')
@@ -776,7 +559,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
       const res = await fetch('/api/expenses/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo, memos: [] }),
+        body: JSON.stringify({ expense_date: date, category, detail: detail || null, method: method || null, member, amount: amt, memo }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
@@ -1298,14 +1081,13 @@ export default function InputPage() {
   return (
     <FormCtx.Provider value={{ memberOpts, methodOpts, detailsByCategory }}>
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>수입 지출 관리</h1>
+      <PageHeader title="수입 지출 관리">
         <YearMonthPicker
           year={viewYear} month={viewMonth} allPeriod={viewAllPeriod}
           align="right"
           onChange={(y, m, all) => { setViewYear(y); setViewMonth(m); setViewAllPeriod(all) }}
         />
-      </div>
+      </PageHeader>
 
       {/* Records */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">

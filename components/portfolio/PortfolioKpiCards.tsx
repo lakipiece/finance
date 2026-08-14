@@ -4,13 +4,17 @@ import type { PortfolioSummary } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { formatWonRound } from '@/lib/utils'
 
-interface Props { summary: PortfolioSummary }
+interface Props {
+  summary: PortfolioSummary
+  /** 입출금 원장 기반 실질 수익 (원장 기록이 있을 때만) */
+  realProfit?: { profit: number; rate: number } | null
+}
 
 function pctStr(n: number) {
   return `${n >= 0 ? '+' : ''}${(n * 100).toFixed(2)}%`
 }
 
-export default function PortfolioKpiCards({ summary }: Props) {
+export default function PortfolioKpiCards({ summary, realProfit = null }: Props) {
   const { palette } = useTheme()
   const { total_market_value, total_invested, total_unrealized_pnl, total_unrealized_pct, total_dividends } = summary
   const pnlPos = total_unrealized_pnl >= 0
@@ -22,10 +26,17 @@ export default function PortfolioKpiCards({ summary }: Props) {
     { label: '수익',        value: `${pnlPos ? '+' : ''}${formatWonRound(total_unrealized_pnl)}`, sub: '평가손익 합계', inverted: false, color: pnlColor },
     { label: '평가수익률',  value: pctStr(total_unrealized_pct), sub: '투자원금 대비', inverted: false, color: pnlColor },
     { label: '누적 분배금', value: formatWonRound(total_dividends), sub: '받은 배당·분배금', inverted: false, color: 'text-slate-700' },
+    ...(realProfit ? [{
+      label: '실질 수익',
+      value: `${realProfit.profit >= 0 ? '+' : ''}${formatWonRound(realProfit.profit)}`,
+      sub: `입금 대비 ${pctStr(realProfit.rate)} — 입출금 원장 기준`,
+      inverted: false,
+      color: realProfit.profit >= 0 ? 'text-rose-500' : 'text-blue-500',
+    }] : []),
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 ${cards.length === 6 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'}`}>
       {cards.map(c => (
         c.inverted ? (
           <div key={c.label}

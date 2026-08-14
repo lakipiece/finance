@@ -4,6 +4,7 @@ const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
 import { getSql } from '@/lib/db'
 import { toYahooTicker } from './ticker-utils'
+import { kstTradingDate } from './valuation'
 export { isKrxTicker, toYahooTicker } from './ticker-utils'
 
 // Yahoo Finance exchange code → Google Finance exchange code
@@ -126,11 +127,8 @@ export async function refreshAllPrices(): Promise<{
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {}, backfilled: 0, backfillTickers: [] }
 
   // KST 기준 거래일: KST 12시 이전(새벽) 수집 = 미국장 마감 후 → 전날이 거래일
-  const nowKst = new Date(Date.now() + 9 * 60 * 60 * 1000)
-  const kstHour = nowKst.getUTCHours()
-  const tradingDate = new Date(nowKst)
-  if (kstHour < 12) tradingDate.setUTCDate(tradingDate.getUTCDate() - 1)
-  const today = tradingDate.toISOString().slice(0, 10)
+  const today = kstTradingDate()
+  const tradingDate = new Date(today)
 
   // 자산군별 분류
   const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)

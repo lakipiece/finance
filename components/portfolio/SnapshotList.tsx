@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/lib/ThemeContext'
+import { btn } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
+import PageHeader from '@/components/ui/PageHeader'
 
 type SnapshotItem = {
   id: string
@@ -111,22 +113,14 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>스냅샷</h1>
-          <p className="text-xs text-slate-400 mt-0.5">포트폴리오 시점별 기록</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={handleRefreshValues} disabled={refreshing}
-            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50 disabled:opacity-50">
-            {refreshing ? '계산 중…' : '값 갱신'}
-          </button>
-          <button onClick={() => router.push('/portfolio/snapshots/charts')}
-            className="border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-slate-50">
-            차트보기
-          </button>
-        </div>
-      </div>
+      <PageHeader title="스냅샷" description="포트폴리오 시점별 기록">
+        <button onClick={handleRefreshValues} disabled={refreshing} className={btn.secondary}>
+          {refreshing ? '계산 중…' : '값 갱신'}
+        </button>
+        <button onClick={() => router.push('/portfolio/snapshots/charts')} className={btn.secondary}>
+          차트보기
+        </button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         {snapshots.map((snap, i) => {

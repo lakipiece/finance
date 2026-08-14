@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, badge, modal } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface AccountSecurity { account_id: string; security_id: string }
 type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
@@ -253,12 +254,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
         </div>
       )}
 
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>계좌 관리</h1>
-          <p className="text-xs text-slate-400 mt-0.5">연결 계좌 및 종목 배분 관리</p>
-        </div>
-      </div>
+      <PageHeader title="계좌 관리" description="연결 계좌 및 종목 배분 관리" />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={accounts.map(a => a.id)} strategy={rectSortingStrategy}>

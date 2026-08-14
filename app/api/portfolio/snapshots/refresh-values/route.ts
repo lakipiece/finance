@@ -3,71 +3,78 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import {
+  isKrwSecurity, lookupPrice, priceLookupKeys, resolveExchangeRate, toDateStr,
+} from '@/lib/portfolio/valuation'
 
-const EXCHANGE_RATE_FALLBACK = 1350
-
+// 모든 스냅샷의 총평가액·투자원금·비중(breakdown)을 재계산한다.
+// 가격: 스냅샷 날짜 이전 최신 → 없으면 가장 가까운 미래 가격 → 최후에 avg_price(손익 0 처리).
 export async function POST() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const sql = getSql()
-  const snapshots = await sql<{ id: string; date: unknown }[]>`
-    SELECT id, date FROM snapshots ORDER BY date DESC
-  `
-  const securities = await sql<{
-    id: string; ticker: string; currency: string; country: string | null
-    sector: string | null; asset_class: string | null; tags: string[]
-  }[]>`
-    SELECT s.id, s.ticker,
-           cu.value AS currency,
-           co.value AS country,
-           se.value AS sector,
-           ac.value AS asset_class,
-           COALESCE(tg.tags, '{}') AS tags
-    FROM securities s
-    LEFT JOIN option_list cu ON s.currency_id     = cu.id
-    LEFT JOIN option_list co ON s.country_id      = co.id
-    LEFT JOIN option_list se ON s.sector_id       = se.id
-    LEFT JOIN option_list ac ON s.asset_class_id  = ac.id
-    LEFT JOIN (
-      SELECT security_id, array_agg(tag ORDER BY tag) AS tags
-      FROM security_tags GROUP BY security_id
-    ) tg ON tg.security_id = s.id
-  `
+  const [snapshots, securities] = await Promise.all([
+    sql<{ id: string; date: unknown }[]>`
+      SELECT id, date FROM snapshots ORDER BY date DESC
+    `,
+    sql<{
+      id: string; ticker: string; currency: string; country: string | null
+      sector: string | null; asset_class: string | null; tags: string[]
+    }[]>`
+      SELECT s.id, s.ticker,
+             cu.value AS currency,
+             co.value AS country,
+             se.value AS sector,
+             ac.value AS asset_class,
+             COALESCE(tg.tags, '{}') AS tags
+      FROM securities s
+      LEFT JOIN option_list cu ON s.currency_id     = cu.id
+      LEFT JOIN option_list co ON s.country_id      = co.id
+      LEFT JOIN option_list se ON s.sector_id       = se.id
+      LEFT JOIN option_list ac ON s.asset_class_id  = ac.id
+      LEFT JOIN (
+        SELECT security_id, array_agg(tag ORDER BY tag) AS tags
+        FROM security_tags GROUP BY security_id
+      ) tg ON tg.security_id = s.id
+    `,
+  ])
 
   const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
 
-  // Yahoo ticker 목록 (국내 종목은 .KS와 bare 모두 포함 — 코인/현금 등은 bare로 저장됨)
-  const tickers: string[] = []
-  for (const s of securities) {
-    const clean = s.ticker.startsWith('KRX:') ? s.ticker.slice(4) : s.ticker
-    if (clean.includes('.')) { tickers.push(clean); continue }
-    if (s.country === '국내') {
-      tickers.push(`${clean}.KS`)
-      tickers.push(clean) // fallback for crypto/cash stored without .KS
-    } else {
-      tickers.push(clean)
-    }
-  }
-  tickers.push('USDKRW=X')
-  const uniqueTickers = [...new Set(tickers)]
+  const uniqueTickers = [
+    ...new Set([
+      ...securities.flatMap(s => priceLookupKeys(s.ticker, s.country)),
+      'USDKRW=X',
+      'KRW=X',
+    ]),
+  ]
 
-  // 전체 price_history 한번에 로드 (최적화)
-  const allPrices = await sql<{ ticker: string; price: number; date: unknown }[]>`
-    SELECT ticker, price, date FROM price_history
-    WHERE ticker = ANY(${uniqueTickers})
-    ORDER BY ticker, date DESC
-  `
+  // 가격 이력 + 전체 holdings를 한 번에 로드 (스냅샷별 N+1 제거)
+  const snapshotIds = snapshots.map(s => s.id)
+  const [allPrices, allHoldings] = await Promise.all([
+    sql<{ ticker: string; price: number; date: unknown }[]>`
+      SELECT ticker, price, date FROM price_history
+      WHERE ticker = ANY(${uniqueTickers})
+      ORDER BY ticker, date DESC
+    `,
+    snapshotIds.length > 0
+      ? sql<{ snapshot_id: string; security_id: string; quantity: number; avg_price: number | null }[]>`
+          SELECT snapshot_id, security_id, quantity, avg_price FROM holdings
+          WHERE snapshot_id = ANY(${snapshotIds}) AND quantity > 0
+        `
+      : Promise.resolve([]),
+  ])
+
+  const holdingsBySnapshot: Record<string, { security_id: string; quantity: number; avg_price: number | null }[]> = {}
+  for (const h of allHoldings) {
+    ;(holdingsBySnapshot[h.snapshot_id] ??= []).push(h)
+  }
 
   for (const snap of snapshots) {
-    const snapDate = (snap.date as unknown) instanceof Date
-      ? (snap.date as unknown as Date).toISOString().slice(0, 10)
-      : String(snap.date).slice(0, 10)
+    const snapDate = toDateStr(snap.date)
+    const holdings = holdingsBySnapshot[snap.id] ?? []
 
-    const holdings = await sql<{ security_id: string; quantity: number; avg_price: number | null }[]>`
-      SELECT security_id, quantity, avg_price FROM holdings
-      WHERE snapshot_id = ${snap.id} AND quantity > 0
-    `
     if (holdings.length === 0) {
       await sql`
         UPDATE snapshots
@@ -81,26 +88,23 @@ export async function POST() {
       continue
     }
 
-    // 해당 날짜까지의 최신 가격 찾기 (없으면 가장 가까운 미래 가격 fallback)
+    // 해당 날짜까지의 최신 가격 (없으면 가장 가까운 미래 가격 fallback)
     const priceMap: Record<string, number> = {}
-    const fallbackMap: Record<string, { price: number; date: string }> = {}
+    const fallbackMap: Record<string, number> = {}
     for (const p of allPrices) {
-      const pDate = (p.date as unknown) instanceof Date
-        ? (p.date as unknown as Date).toISOString().slice(0, 10)
-        : String(p.date).slice(0, 10)
+      const pDate = toDateStr(p.date)
       if (pDate <= snapDate && !priceMap[p.ticker]) {
         priceMap[p.ticker] = Number(p.price)
       }
-      // 미래 가격 중 가장 가까운 것 (allPrices는 date DESC이므로 마지막에 남는 게 가장 가까운 미래)
+      // allPrices는 date DESC → 마지막에 남는 값이 가장 가까운 미래
       if (pDate > snapDate) {
-        fallbackMap[p.ticker] = { price: Number(p.price), date: pDate }
+        fallbackMap[p.ticker] = Number(p.price)
       }
     }
-    // fallback 적용
-    for (const [ticker, fb] of Object.entries(fallbackMap)) {
-      if (!priceMap[ticker]) priceMap[ticker] = fb.price
+    for (const [ticker, price] of Object.entries(fallbackMap)) {
+      if (!priceMap[ticker]) priceMap[ticker] = price
     }
-    const exchangeRate = priceMap['USDKRW=X'] ?? EXCHANGE_RATE_FALLBACK
+    const { rate: exchangeRate } = resolveExchangeRate(priceMap)
 
     let totalMarketValue = 0
     let totalInvested = 0
@@ -111,13 +115,10 @@ export async function POST() {
     for (const h of holdings) {
       const sec = secMap[h.security_id]
       if (!sec) continue
-      const clean = sec.ticker.startsWith('KRX:') ? sec.ticker.slice(4) : sec.ticker
-      const isKrx = sec.country === '국내'
       const avgPrice = Number(h.avg_price ?? 0)
-      const rawPrice = isKrx
-        ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? avgPrice)
-        : (priceMap[clean] ?? avgPrice)
-      const isKrw = isKrx || sec.currency === 'KRW'
+      // 가격 미존재 시 avg_price 사용 → 해당 종목 손익 0으로 계산됨 (가격 수집으로 해소)
+      const rawPrice = lookupPrice(priceMap, sec.ticker, sec.country) ?? avgPrice
+      const isKrw = isKrwSecurity(sec)
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
       const qty = Number(h.quantity)
       const value = priceKrw * qty

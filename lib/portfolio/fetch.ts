@@ -1,7 +1,8 @@
 // lib/portfolio/fetch.ts
 import 'server-only'
 import { getSql } from '@/lib/db'
-import { getPrices, isKrxTicker, toYahooTicker } from './prices'
+import { getPrices, toYahooTicker } from './prices'
+import { isKrwSecurity, resolveExchangeRate } from './valuation'
 import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation } from './types'
 
 export async function fetchAccounts(): Promise<Account[]> {
@@ -118,9 +119,9 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
   } catch {
     // 가격 조회 실패 시 투자원금 기준으로만 표시
   }
-  const liveExchangeRate = prices['KRW=X']?.price
-  if (!liveExchangeRate) console.warn('[fetchPortfolioSummary] KRW=X 환율 조회 실패 → 기본값 1350 사용')
-  const exchangeRate = liveExchangeRate ?? 1350
+  const priceOnly = Object.fromEntries(Object.entries(prices).map(([k, v]) => [k, v.price]))
+  const { rate: exchangeRate, isFallback: fxFallback } = resolveExchangeRate(priceOnly)
+  if (fxFallback) console.warn(`[fetchPortfolioSummary] 환율 조회 실패 → 기본값 ${exchangeRate} 사용`)
 
   const dividendRows = await sql<{ security_id: string; account_id: string; amount: number; currency: string; exchange_rate: number | null }[]>`
     SELECT security_id, account_id, amount, currency, exchange_rate
@@ -131,8 +132,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     const yahooTicker = toYahooTicker(h.security.ticker)
     const rawPrice = prices[yahooTicker]?.price ?? 0
 
-    // KRX 6자리 숫자 티커 = 한국 상장 → KRW, 그 외 currency 필드 따름
-    const isKrw = isKrxTicker(h.security.ticker) || h.security.currency === 'KRW'
+    // KRW 판정은 valuation.ts 통일 규칙 사용 (country/currency/티커 패턴)
+    const isKrw = isKrwSecurity(h.security)
     const isUSD = !isKrw
     const currentPriceKRW = isUSD ? rawPrice * exchangeRate : rawPrice
 

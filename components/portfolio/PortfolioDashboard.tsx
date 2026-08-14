@@ -5,15 +5,19 @@ import { useRouter } from 'next/navigation'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition, Account, Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import PortfolioKpiCards from './PortfolioKpiCards'
+import PageHeader from '@/components/ui/PageHeader'
 import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
+
+interface CashflowSum { account_id: string; inflow: number; outflow: number }
 
 interface Props {
   summary: PortfolioSummary
   targets: TargetAllocation[]
   accountTypeColors?: Record<string, string>
   sectorColors?: Record<string, string>
+  cashflowSums?: CashflowSum[]
 }
 
 export interface MergedPosition {
@@ -99,7 +103,7 @@ function SectionHeader({
   )
 }
 
-export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {} }: Props) {
+export default function PortfolioDashboard({ summary, accountTypeColors = {}, sectorColors = {}, cashflowSums = [] }: Props) {
   const { palette } = useTheme()
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
@@ -257,6 +261,23 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
     [tagFilteredPositions]
   )
 
+  // 실질 수익 — 입출금 원장이 기록된 계좌만 대상. 계좌 필터 반영 (섹터/태그 필터는 계좌 단위 지표라 미반영)
+  const realProfit = useMemo(() => {
+    const relevant = cashflowSums.filter(cs =>
+      selectedAccountIds.size === 0 || selectedAccountIds.has(cs.account_id)
+    )
+    if (relevant.length === 0) return null
+    const recordedIds = new Set(relevant.map(cs => cs.account_id))
+    const inflow = relevant.reduce((s, cs) => s + cs.inflow, 0)
+    const outflow = relevant.reduce((s, cs) => s + cs.outflow, 0)
+    if (inflow <= 0) return null
+    const marketValue = summary.positions
+      .filter(p => recordedIds.has(p.account.id))
+      .reduce((s, p) => s + p.market_value, 0)
+    const profit = marketValue - (inflow - outflow)
+    return { profit, rate: profit / inflow }
+  }, [cashflowSums, selectedAccountIds, summary.positions])
+
   const chartPositions = useMemo(() =>
     accountFiltered.filter(p => {
       if (selectedSectors.size > 0 && !selectedSectors.has(p.security.sector ?? '기타')) return false
@@ -309,14 +330,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
-      {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>포트폴리오</h1>
-          <p className="text-xs text-slate-400 mt-0.5">전체 보유 현황 및 수익률</p>
-        </div>
-        {/* 툴바 */}
-        <div className="flex items-center gap-2">
+      {/* 페이지 헤더 + 툴바 */}
+      <PageHeader title="포트폴리오" description="전체 보유 현황 및 수익률">
         {refreshMsg && <span className="text-[10px] text-slate-400">{refreshMsg}</span>}
         {lastUpdated && (
           <span className="text-[10px] text-slate-300 tabular-nums">{lastUpdated}</span>
@@ -329,10 +344,9 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             <path fillRule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.389zm1.26-3.674a.75.75 0 00.219-.53V2.978a.75.75 0 00-1.5 0v2.43l-.31-.31A7 7 0 003.27 8.236a.75.75 0 101.449.389A5.5 5.5 0 0113.92 6.159l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clipRule="evenodd" />
           </svg>
         </button>
-        </div>
-      </div>
+      </PageHeader>
 
-      <PortfolioKpiCards summary={filteredKpi} />
+      <PortfolioKpiCards summary={filteredKpi} realProfit={realProfit} />
 
       {/* 계좌 섹션 */}
       <div>

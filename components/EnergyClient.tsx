@@ -6,7 +6,8 @@ import {
   ResponsiveContainer, BarChart,
   Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts'
-import { btn, card, field, modal, text } from '@/lib/styles'
+import { btn, card, field, modal, text, brand } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 import { formatWonFull } from '@/lib/utils'
 import { OPTION_COLORS } from '@/lib/palettes'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
@@ -369,27 +370,17 @@ export default function EnergyClient() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       {/* 헤더 */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 flex-wrap">
-          <div>
-            <h1 className={text.pageTitle}>에너지 지출관리</h1>
-            <p className="text-xs text-slate-400 mt-1">월별 전기·수도·온수·난방 사용량과 금액을 기록합니다</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}
-            className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer">
-            {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => (
-              <option key={y} value={y}>{y}년</option>
-            ))}
-          </select>
-          <button onClick={handleAddClick}
-            className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
-            입력
-          </button>
-        </div>
-      </div>
+      <PageHeader title="에너지 지출관리" description="월별 전기·수도·온수·난방 사용량과 금액을 기록합니다">
+        <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}
+          className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer">
+          {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => (
+            <option key={y} value={y}>{y}년</option>
+          ))}
+        </select>
+        <button onClick={handleAddClick} className={btn.primary} style={{ backgroundColor: brand.primary }}>
+          입력
+        </button>
+      </PageHeader>
 
       {/* 필터 */}
       <div className="px-1 flex flex-wrap items-center gap-2">

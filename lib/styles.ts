@@ -135,9 +135,16 @@ export const modal = {
     'transition-colors shrink-0',
 } as const
 
+// ─── 브랜드 색상 ────────────────────────────────────────────────────────────
+// 페이지 타이틀·주요 CTA 등에서 인라인 하드코딩하던 값의 단일 소스
+export const brand = {
+  primary: '#1A237E',   // 딥 네이비 — 타이틀, 주 버튼
+  accent:  '#00695C',   // 틸 — 액센트 바, 보조 강조
+} as const
+
 // ─── 텍스트 계층 ────────────────────────────────────────────────────────────
 export const text = {
-  pageTitle:    'text-xl font-bold text-slate-800',
+  pageTitle:    'text-xl font-bold text-[#1A237E]',
   sectionTitle: 'text-sm font-semibold text-slate-700',
   cardTitle:    'text-xs font-semibold text-slate-600',
   label:        'text-xs text-slate-400 font-medium uppercase tracking-wider',

@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, badge, field, modal } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 import { formatWonFull } from '@/lib/utils'
 import { createPortal } from 'react-dom'
 import AssetFormModal, { type AssetItem } from '@/components/AssetFormModal'
@@ -657,11 +658,7 @@ export default function AssetsClient() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>자산</h1>
-          <p className="text-xs text-slate-400 mt-0.5">유형자산, 연금자산, 금융자산 현황</p>
-        </div>
+      <PageHeader title="자산" description="유형자산, 연금자산, 금융자산 현황">
         {activeTab === 'tangible' && (
           <button onClick={() => { setEditItem(null); setShowFormModal(true) }}
             className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>
@@ -674,7 +671,7 @@ export default function AssetsClient() {
             + 연금 추가
           </button>
         )}
-      </div>
+      </PageHeader>
 
       {/* 전체 KPI */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

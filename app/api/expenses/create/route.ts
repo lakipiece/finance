@@ -5,22 +5,14 @@ import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 
-interface MemoInput { label: string; amount?: number | null }
-
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const body = await req.json()
-    const { expense_date, category, detail, method, member, memos } = body
-    const memoList: MemoInput[] = Array.isArray(memos) ? memos : []
-
-    // 금액 결정: memos에 amount가 하나라도 있으면 합산, 없으면 body.amount 사용
-    const hasAmounts = memoList.some(m => m.amount != null)
-    const amount = hasAmounts
-      ? memoList.reduce((s, m) => s + (m.amount ?? 0), 0)
-      : Number(body.amount)
+    const { expense_date, category, detail, method, member } = body
+    const amount = Number(body.amount)
 
     if (!expense_date || !category || isNaN(amount)) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
@@ -37,20 +29,6 @@ export async function POST(req: NextRequest) {
       VALUES (${expense_date}, ${year}, ${month}, ${category}, ${detail ?? ''}, ${method ?? ''}, ${amount}, ${member ?? null}, ${body.memo ?? ''}, 'manual')
       RETURNING id
     `
-
-    if (memoList.length > 0) {
-      const memoRows = memoList
-        .filter(m => m.label?.trim())
-        .map((m, i) => ({
-          expense_id: expense.id,
-          label: m.label.trim(),
-          amount: m.amount ?? null,
-          sort_order: i,
-        }))
-      if (memoRows.length > 0) {
-        await sql`INSERT INTO expense_memos ${sql(memoRows)}`
-      }
-    }
 
     invalidateCache()
     return NextResponse.json({ id: expense.id })

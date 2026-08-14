@@ -13,7 +13,8 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { formatWonFull, formatWonCompact, catBadgeStyle } from '@/lib/utils'
-import { btn, field, card, badge, text } from '@/lib/styles'
+import { btn, field, card, badge, text, brand } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 const POSITIVE_BUDGET_COLOR = '#1A237E'
@@ -752,42 +753,30 @@ export default function BudgetClient({ initialYear }: Props) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>예산관리</h1>
-        <div className="flex items-center gap-2">
-          <select
-            value={year}
-            onChange={(e) => { setYear(parseInt(e.target.value)); setEditing(false) }}
-            className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
-            disabled={editing}
-          >
-            {years.map(y => <option key={y} value={y}>{y}년</option>)}
-          </select>
-          {editing ? (
-            <>
-              <button type="button" onClick={cancelEdit} className={btn.secondary} disabled={saving}>취소</button>
-              <button
-                type="button"
-                onClick={save}
-                disabled={saving}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-60"
-                style={{ backgroundColor: '#1A237E' }}
-              >
-                {saving ? '저장중...' : '저장'}
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={startEdit}
-              className="px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-              style={{ backgroundColor: '#1A237E' }}
-            >
-              수정
+      <PageHeader title="예산관리">
+        <select
+          value={year}
+          onChange={(e) => { setYear(parseInt(e.target.value)); setEditing(false) }}
+          className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer"
+          disabled={editing}
+        >
+          {years.map(y => <option key={y} value={y}>{y}년</option>)}
+        </select>
+        {editing ? (
+          <>
+            <button type="button" onClick={cancelEdit} className={btn.secondary} disabled={saving}>취소</button>
+            <button type="button" onClick={save} disabled={saving}
+              className={btn.primary} style={{ backgroundColor: brand.primary }}>
+              {saving ? '저장중...' : '저장'}
             </button>
-          )}
-        </div>
-      </div>
+          </>
+        ) : (
+          <button type="button" onClick={startEdit}
+            className={btn.primary} style={{ backgroundColor: brand.primary }}>
+            수정
+          </button>
+        )}
+      </PageHeader>
 
       {loading || !data ? (
         <div className={`${card.base} p-10 text-center text-slate-400 text-sm`}>불러오는 중...</div>

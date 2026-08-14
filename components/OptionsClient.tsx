@@ -12,6 +12,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field } from '@/lib/styles'
+import PageHeader from '@/components/ui/PageHeader'
 import { OPTION_COLORS } from '@/lib/palettes'
 import { CATEGORIES, CAT_COLORS } from '@/lib/utils'
 
@@ -512,10 +513,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>옵션 관리</h1>
-        <p className="text-xs text-slate-400 mt-0.5">사용자, 결제수단, 세부유형 설정</p>
-      </div>
+      <PageHeader title="옵션 관리" description="사용자, 결제수단, 세부유형 설정" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 

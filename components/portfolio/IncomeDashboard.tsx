@@ -15,6 +15,7 @@ import DividendTable from './DividendTable'
 import DividendFormModal from './DividendFormModal'
 import BulkDividendModal from './BulkDividendModal'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface AccountSecurity { account_id: string; security_id: string }
 interface MemberOpt { code: string; color: string }
@@ -359,12 +360,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>배당 · 분배금</h1>
-          <p className="text-xs text-slate-400 mt-0.5">기간별 배당·분배금 집계 및 세후 현황</p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHeader title="배당 · 분배금" description="기간별 배당·분배금 집계 및 세후 현황">
           <YearMonthPicker
             year={filterYear} month={filterMonth} allPeriod={filterAllPeriod}
             align="right"
@@ -377,8 +373,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           >
             {taxUpdating ? '계산 중…' : '세금 자동계산'}
           </button>
-        </div>
-      </div>
+      </PageHeader>
 
       {/* 필터: 사용자 · 계좌 */}
       <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3 flex items-center gap-2 flex-wrap">

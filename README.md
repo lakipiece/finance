@@ -63,7 +63,9 @@ docker compose up db -d
 sleep 5
 
 cat docs/schema.sql | docker compose exec -T db psql -U finance finance
-cat docs/portfolio-schema.sql | docker compose exec -T db psql -U finance finance
+# 이후 docs/sql/ 의 2026-08-14 이후 마이그레이션을 날짜순으로 적용
+cat docs/sql/2026-08-14-account-cashflows.sql | docker compose exec -T db psql -U finance finance
+cat docs/sql/2026-08-14-perf-indexes.sql | docker compose exec -T db psql -U finance finance
 ```
 
 ### 4. 관리자 계정 생성
@@ -177,8 +179,8 @@ docker compose start db
 │   ├── db.ts                   # PostgreSQL 연결
 │   └── auth.ts                 # 인증 설정
 ├── docs/
-│   ├── portfolio-schema.sql    # 포트폴리오 스키마
-│   └── schema.sql              # 가계부 기본 스키마
+│   ├── schema.sql              # 전체 스키마 (운영 DB pg_dump 기준)
+│   └── sql/                    # 날짜별 마이그레이션
 ├── scripts/
 │   └── setup-auth.ts           # 관리자 계정 생성
 ├── docker-compose.yml

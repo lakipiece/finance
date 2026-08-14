@@ -9,6 +9,7 @@ import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
+import PageHeader from '@/components/ui/PageHeader'
 
 type HoldingRow = {
   security_id: string
@@ -553,12 +554,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       )}
 
       {/* 페이지 헤더 */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: '#1A237E' }}>종목 관리</h1>
-          <p className="text-xs text-slate-400 mt-0.5">보유 종목 등록 및 가격 이력 관리</p>
-        </div>
-      </div>
+      <PageHeader title="종목 관리" description="보유 종목 등록 및 가격 이력 관리" />
 
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">
