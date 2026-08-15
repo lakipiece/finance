@@ -749,6 +749,16 @@ export default function BudgetClient({ initialYear }: Props) {
   const totalRemainAll = totalAnnualPlan - totalUsedAll
   const totalRemainPctAll = totalAnnualPlan > 0 ? totalRemainAll / totalAnnualPlan : 0
 
+  // 실제 주당 평균 — 지출이 있는 주만 센다
+  const { weeklyAvgUsed, weeklyUsedWeeks } = useMemo(() => {
+    const weeks = Object.values(data?.weeklyUsage ?? {}).filter(v => v > 0)
+    if (weeks.length === 0) return { weeklyAvgUsed: 0, weeklyUsedWeeks: 0 }
+    return {
+      weeklyAvgUsed: weeks.reduce((s, v) => s + v, 0) / weeks.length,
+      weeklyUsedWeeks: weeks.length,
+    }
+  }, [data?.weeklyUsage])
+
   const variableWeeklySuggestion = useMemo(() => {
     const plan = drafts.filter(d => d.category === '변동비').reduce((s, d) => s + d.annual_plan, 0)
     return Math.round(plan / 52)
@@ -799,15 +809,28 @@ export default function BudgetClient({ initialYear }: Props) {
                 {formatWonFull(totalRemainAll)}
               </p>
             </div>
+            {/* 잔여 예산과 잔여 기간을 같은 축의 두 막대로 겹쳐 보여준다.
+                숫자 두 개를 나란히 읽는 것보다 길이 차이가 즉시 들어온다.
+                예산 막대가 기간 막대보다 짧으면 앞서 쓰고 있다는 뜻 → warning */}
             <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>잔여 / 기간</p>
-              <p className="text-heading font-bold tabular-nums mt-1">
-                <span className={totalRemainPctAll < remainPeriodPct ? 'text-warning' : 'text-ink'}>
-                  {(totalRemainPctAll * 100).toFixed(1)}%
-                </span>
-                <span className="text-ink-5 mx-1.5">/</span>
-                <span className="text-ink-2">{(remainPeriodPct * 100).toFixed(1)}%</span>
-              </p>
+              <div className="mt-1 space-y-1.5">
+                {([
+                  { label: '예산', pct: totalRemainPctAll, behind: totalRemainPctAll < remainPeriodPct },
+                  { label: '기간', pct: remainPeriodPct, behind: false },
+                ]).map(bar => (
+                  <div key={bar.label} className="flex items-center gap-2">
+                    <span className="text-micro tracking-normal text-ink-5 w-6 shrink-0">{bar.label}</span>
+                    <span className="flex-1 h-1 rounded-full bg-surface-low overflow-hidden min-w-0">
+                      <span className={`block h-full rounded-full ${bar.behind ? 'bg-warning' : 'bg-action'}`}
+                        style={{ width: `${Math.max(0, Math.min(100, bar.pct * 100))}%` }} />
+                    </span>
+                    <span className={`text-meta font-bold tabular-nums w-12 text-right shrink-0 ${
+                      bar.behind ? 'text-warning' : 'text-ink'
+                    }`}>{(bar.pct * 100).toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -870,12 +893,12 @@ export default function BudgetClient({ initialYear }: Props) {
                 <h2 className="text-subhead font-medium text-ink">주단위 기준</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:gap-2">
-              <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className={`${card.base} ${card.padKpi} min-w-0`}>
                 <p className={text.caption}>연간 변동비 ÷ 52 (참고)</p>
                 <p className="text-subhead sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(variableWeeklySuggestion)}</p>
               </div>
-              <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
+              <div className={`${card.base} ${card.padKpi} min-w-0`}>
                 <p className={text.caption}>주당 기준금액</p>
                 {editing ? (
                   <input
@@ -889,6 +912,22 @@ export default function BudgetClient({ initialYear }: Props) {
                 ) : (
                   <p className="text-subhead sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(weeklyAmount)}</p>
                 )}
+              </div>
+              {/* 기준금액만 보면 실제로 그 선을 지키고 있는지 알 수 없다.
+                  지출이 기록된 주만 세어 평균을 낸다 (아직 안 온 주가 평균을 낮추지 않도록). */}
+              <div className={`${card.base} ${card.padKpi} min-w-0 col-span-2 sm:col-span-1`}>
+                <p className={text.caption}>현재까지 주당 평균</p>
+                <p className={`text-subhead sm:text-heading font-bold tabular-nums mt-1 truncate ${
+                  weeklyAmount > 0 && weeklyAvgUsed > weeklyAmount ? 'text-warning' : 'text-ink'
+                }`}>
+                  {weeklyAvgUsed > 0 ? formatWonFull(Math.round(weeklyAvgUsed)) : '—'}
+                </p>
+                <p className="text-micro tracking-normal text-ink-5 mt-0.5 truncate">
+                  {weeklyUsedWeeks > 0 ? `${weeklyUsedWeeks}주 기준` : '기록 없음'}
+                  {weeklyAmount > 0 && weeklyAvgUsed > 0
+                    ? ` · 기준 대비 ${weeklyAvgUsed >= weeklyAmount ? '+' : ''}${(((weeklyAvgUsed / weeklyAmount) - 1) * 100).toFixed(0)}%`
+                    : ''}
+                </p>
               </div>
             </div>
           </section>
