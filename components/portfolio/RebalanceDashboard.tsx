@@ -36,19 +36,22 @@ function diffColor(diff: number) {
   return diff > 0 ? 'text-gain' : 'text-loss'
 }
 
-function TargetInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function TargetInput({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
   // 입력 중에는 로컬 버퍼를 쓴다.
   // 매 타건마다 toFixed(1)로 되돌리면 "30"을 치는 도중 "3.0"으로 잘려
   // 두 번째 자리를 영영 입력할 수 없다.
-  const [text, setText] = useState(() => (value * 100).toFixed(1))
+  const fmt = (v: number | null) => (v == null ? '' : (v * 100).toFixed(1))
+  const [text, setText] = useState(() => fmt(value))
   const [editing, setEditing] = useState(false)
 
   useEffect(() => {
-    if (!editing) setText((value * 100).toFixed(1))
+    if (!editing) setText(fmt(value))
   }, [value, editing])
 
   function handleChange(raw: string) {
     setText(raw)
+    // 빈칸 = 목표 미설정. 0 입력 = "0%를 목표로 삼는다"로 뜻이 다르다.
+    if (raw.trim() === '') { onChange(null); return }
     const n = parseFloat(raw)
     if (!isNaN(n) && n >= 0 && n <= 100) onChange(n / 100)
   }
@@ -59,10 +62,13 @@ function TargetInput({ value, onChange }: { value: number; onChange: (v: number)
         type="text"
         inputMode="decimal"
         value={text}
+        placeholder="—"
         onFocus={e => { setEditing(true); e.currentTarget.select() }}
         onChange={e => handleChange(e.target.value)}
-        onBlur={() => { setEditing(false); setText((value * 100).toFixed(1)) }}
-        className="w-16 text-right rounded-cell bg-surface-low px-2 py-1 text-body text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5"
+        onBlur={() => { setEditing(false); setText(fmt(value)) }}
+        className={`w-16 text-right rounded-cell px-2 py-1 text-body focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5 ${
+          value == null ? 'bg-surface-low/60 text-ink-5' : 'bg-surface-low text-ink font-medium'
+        }`}
       />
       <span className="text-micro tracking-normal text-ink-4">%</span>
     </span>
@@ -73,31 +79,56 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget, onPick }: 
   title: string
   rows: { key: string; actual_pct: number; level: string; label?: string; items?: PortfolioPosition[] }[]
   total: number
-  getTarget: (level: string, key: string) => number
-  setTarget: (level: string, key: string, pct: number) => void
+  getTarget: (level: string, key: string) => number | null
+  setTarget: (level: string, key: string, pct: number | null) => void
   onPick?: (p: PortfolioPosition[]) => void
 }) {
+  // 목표 합이 100%인지 바로 보이게 헤더에 합계를 둔다.
+  // 미설정(null)은 합계에서 빼되, 몇 개가 비어 있는지는 알려준다.
+  const targets = rows.map(r => getTarget(r.level, r.key))
+  const targetSum = targets.reduce<number>((acc, t) => acc + (t ?? 0), 0)
+  const unsetCount = targets.filter(t => t == null).length
+  const actualSum = rows.reduce((acc, r) => acc + r.actual_pct, 0)
+  const sumOff = Math.abs(targetSum - 1) > 0.0005
+
   return (
     <div className="bg-surface-card rounded-card shadow-card p-[13px] flex flex-col min-w-0">
-      <p className="text-subhead font-medium text-ink mb-2">{title}</p>
+      <div className="flex items-baseline justify-between gap-2 mb-2">
+        <p className="text-heading text-ink truncate">{title}</p>
+        <span className="text-micro tracking-normal tabular-nums shrink-0 text-ink-5">
+          현재 {(actualSum * 100).toFixed(1)}%
+        </span>
+      </div>
+      <div className="flex items-baseline justify-between gap-2 mb-1 pb-2 border-b border-surface-container">
+        <span className="text-micro tracking-normal text-ink-5">목표 합계</span>
+        <span className="flex items-baseline gap-1.5 shrink-0">
+          {unsetCount > 0 ? (
+            <span className="text-micro tracking-normal text-ink-5">미설정 {unsetCount}</span>
+          ) : null}
+          <span className={`text-subhead font-bold tabular-nums ${sumOff ? 'text-warning' : 'text-income'}`}>
+            {(targetSum * 100).toFixed(1)}%
+          </span>
+        </span>
+      </div>
       {/* 3열 카드에 들어가도록 한 항목을 2줄로 접는다.
           윗줄 = 이름 · 현재 비중 / 아랫줄 = 목표 · 차이 · 필요 금액 */}
       <div className="flex flex-col">
         {rows.map(({ key, actual_pct, level, label, items }) => {
           const target = getTarget(level, key)
-          const diff = actual_pct - target
-          const needed = (target - actual_pct) * total
+          // 목표가 없으면 차이·필요 금액을 계산하지 않는다 (0%를 목표로 둔 것과 다르다)
+          const diff = target == null ? null : actual_pct - target
+          const needed = target == null ? null : (target - actual_pct) * total
           const clickable = Boolean(onPick && items?.length)
           return (
             <div key={key} className="py-2 border-b border-surface-low last:border-0">
               <div className="flex items-baseline justify-between gap-2 min-w-0">
                 {clickable ? (
                   <button type="button" onClick={() => onPick?.(items!)}
-                    className="text-body font-medium text-ink truncate text-left hover:underline underline-offset-2 min-w-0">
+                    className="text-body font-bold text-ink truncate text-left hover:underline underline-offset-2 min-w-0">
                     {label ?? key}
                   </button>
                 ) : (
-                  <span className="text-body font-medium text-ink truncate min-w-0">{label ?? key}</span>
+                  <span className="text-body font-bold text-ink truncate min-w-0">{label ?? key}</span>
                 )}
                 <span className="text-body font-medium text-ink tabular-nums shrink-0">
                   {(actual_pct * 100).toFixed(1)}%
@@ -107,13 +138,21 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget, onPick }: 
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-micro tracking-normal text-ink-5 shrink-0">목표</span>
                   <TargetInput value={target} onChange={v => setTarget(level, key, v)} />
-                  <span className={`text-micro tracking-normal font-bold tabular-nums shrink-0 ${diffColor(diff)}`}>
-                    {diff >= 0 ? '+' : ''}{(diff * 100).toFixed(1)}%
-                  </span>
+                  {diff == null ? (
+                    <span className="text-micro tracking-normal text-ink-5 shrink-0">미설정</span>
+                  ) : (
+                    <span className={`text-micro tracking-normal font-bold tabular-nums shrink-0 ${diffColor(diff)}`}>
+                      {diff >= 0 ? '+' : ''}{(diff * 100).toFixed(1)}%
+                    </span>
+                  )}
                 </div>
-                <span className={`text-micro tracking-normal tabular-nums shrink-0 ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
-                  {Math.round(Math.abs(needed) / 10000).toLocaleString()}만원 {needed >= 0 ? '매수' : '매도'}
-                </span>
+                {needed == null ? (
+                  <span className="text-micro tracking-normal text-ink-5 shrink-0">—</span>
+                ) : (
+                  <span className={`text-micro tracking-normal tabular-nums shrink-0 ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
+                    {Math.round(Math.abs(needed) / 10000).toLocaleString()}만원 {needed >= 0 ? '매수' : '매도'}
+                  </span>
+                )}
               </div>
             </div>
           )
@@ -205,13 +244,15 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
   const byStyle = groupPct(summary.positions, p => p.security.etf_style ?? '미분류', total)
   const byTicker = groupPct(summary.positions, p => p.security.ticker, total)
 
-  function getTarget(level: string, key: string) {
-    return editTargets.find(t => t.level === level && t.key === key)?.target_pct ?? 0
+  /** 목표 미설정은 null. 명시적 0%와 구분한다 */
+  function getTarget(level: string, key: string): number | null {
+    return editTargets.find(t => t.level === level && t.key === key)?.target_pct ?? null
   }
 
-  function setTarget(level: string, key: string, pct: number) {
+  function setTarget(level: string, key: string, pct: number | null) {
     setEditTargets(prev => {
       const idx = prev.findIndex(t => t.level === level && t.key === key)
+      if (pct == null) return idx >= 0 ? prev.filter((_, i) => i !== idx) : prev
       if (idx >= 0) return prev.map((t, i) => i === idx ? { ...t, target_pct: pct } : t)
       return [...prev, { id: '', level: level as TargetAllocation['level'], key, target_pct: pct }]
     })
@@ -219,8 +260,9 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
   }
 
   async function saveTargets() {
+    // 0%도 그대로 보낸다. 걸러내면 다시 불러올 때 '미설정'으로 되돌아간다
     const body = editTargets
-      .filter(t => t.target_pct > 0)
+      .filter(t => t.target_pct != null)
       .map(({ level, key, target_pct }) => ({ level, key, target_pct }))
     await fetch('/api/portfolio/targets', {
       method: 'PUT',
