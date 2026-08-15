@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition } from '@/lib/portfolio/types'
 import { btn } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
@@ -33,12 +33,31 @@ function diffColor(diff: number) {
 }
 
 function TargetInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  // 입력 중에는 로컬 버퍼를 쓴다.
+  // 매 타건마다 toFixed(1)로 되돌리면 "30"을 치는 도중 "3.0"으로 잘려
+  // 두 번째 자리를 영영 입력할 수 없다.
+  const [text, setText] = useState(() => (value * 100).toFixed(1))
+  const [editing, setEditing] = useState(false)
+
+  useEffect(() => {
+    if (!editing) setText((value * 100).toFixed(1))
+  }, [value, editing])
+
+  function handleChange(raw: string) {
+    setText(raw)
+    const n = parseFloat(raw)
+    if (!isNaN(n) && n >= 0 && n <= 100) onChange(n / 100)
+  }
+
   return (
     <span className="inline-flex items-center gap-0.5">
       <input
-        type="number" min={0} max={100} step={0.1}
-        value={(value * 100).toFixed(1)}
-        onChange={e => onChange(parseFloat(e.target.value) / 100)}
+        type="text"
+        inputMode="decimal"
+        value={text}
+        onFocus={e => { setEditing(true); e.currentTarget.select() }}
+        onChange={e => handleChange(e.target.value)}
+        onBlur={() => { setEditing(false); setText((value * 100).toFixed(1)) }}
         className="w-16 text-right rounded-cell bg-surface-low px-2 py-1 text-body text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5"
       />
       <span className="text-micro tracking-normal text-ink-4">%</span>
