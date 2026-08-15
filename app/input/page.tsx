@@ -182,6 +182,15 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
     }
   }, [open])
 
+  // 포커스가 인풋과 목록을 모두 벗어나면 닫는다 (Tab으로 다음 필드로 갈 때 포함).
+  // 항목 클릭은 mousedown에서 preventDefault로 포커스를 잡아두므로 여기 걸리지 않는다.
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const next = e.relatedTarget as Node | null
+    if (next && listRef.current?.contains(next)) return
+    setOpen(false)
+    setActiveIdx(-1)
+  }
+
   // 목록이 열려 있는 동안 ↑↓로 항목을 옮기고 ⏎로 확정한다.
   // 이때 ⏎가 폼 저장으로 새지 않도록 이벤트를 여기서 끊는다.
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -207,6 +216,7 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
       <input type="text" value={value}
         onChange={e => { onChange(e.target.value); setOpen(true); setActiveIdx(-1) }}
         onFocus={() => setOpen(true)}
+        onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         placeholder={placeholder ?? '세부유형 검색…'}
         maxLength={30}
@@ -335,6 +345,13 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
     setActiveIdx(-1)
   }
 
+  function handleBlur(e: React.FocusEvent<HTMLElement>) {
+    const next = e.relatedTarget as Node | null
+    if (next && listRef.current?.contains(next)) return
+    setOpen(false)
+    setActiveIdx(-1)
+  }
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
     const listOpen = open && suggestions.length > 0
     if (!listOpen) return
@@ -359,6 +376,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
         <textarea ref={taRef} value={value} rows={1}
           onChange={e => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           maxLength={maxLength}
           className={`${className} resize-none overflow-hidden`}
@@ -367,6 +385,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
         <input type="text" value={value}
           onChange={e => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
           placeholder={placeholder}
           maxLength={maxLength}
           autoComplete="off"
