@@ -60,9 +60,14 @@ const PAGE_SIZES = [20, 50, 100] as const
  * 카테고리색은 6px 점에만 남기고 배경·글자색으로 쓰지 않는다.
  * (색 틴트를 배경에 깔면 중성 램프가 깨지고, 선택 여부와 카테고리가 같은 채널을 두고 다툰다.)
  */
-function kpiCardCls(selected: boolean): string {
-  return `text-left rounded-card p-[13px] transition-colors ${
-    selected ? 'bg-action' : 'bg-surface-low hover:bg-surface-container'
+function kpiCardCls(selected: boolean, summary = false): string {
+  // 요약 카드(전체 수입·전체 지출)는 흰 표면 + 그림자로 한 단계 띄워
+  // 같은 줄의 항목 카드와 역할이 다르다는 것을 표면 높이로만 말한다.
+  const base = summary
+    ? 'bg-surface-card shadow-card hover:-translate-y-0.5'
+    : 'bg-surface-low hover:bg-surface-container'
+  return `text-left rounded-card p-[13px] transition-all focus-visible:outline-none focus-visible:shadow-focus ${
+    selected ? 'bg-action shadow-card' : base
   }`
 }
 const kpiLabelCls = (selected: boolean) =>
@@ -225,10 +230,10 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className={kpiCardCls(isActive)}
+              className={kpiCardCls(isActive, true)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#00695C' }} />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#ffffff' : '#00695C' }} />
                 <span className={kpiLabelCls(isActive)}>전체 수입</span>
               </div>
               <p className={kpiValueCls(isActive)}>{formatWonFull(incomeMonthData.total)}</p>
@@ -277,10 +282,10 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className={kpiCardCls(isActive)}
+              className={kpiCardCls(isActive, true)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#1A237E' }} />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#ffffff' : '#1A237E' }} />
                 <span className={kpiLabelCls(isActive)}>전체 지출</span>
               </div>
               <p className={kpiValueCls(isActive)}>{formatWonFull(monthData.total)}</p>
@@ -736,7 +741,7 @@ function ExpenseTableCard({
                 <button
                   key={key}
                   onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-btn text-body transition-colors ${
+                  className={`px-2 py-1 rounded-btn text-meta transition-colors ${
                     sortKey === key ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3'
                   }`}
                 >

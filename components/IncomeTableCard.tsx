@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { formatWonFull, INCOME_COLORS } from '@/lib/utils'
+import { formatWonFull, formatDate, INCOME_COLORS } from '@/lib/utils'
+import CategoryBadge from '@/components/ui/CategoryBadge'
 import { tbl } from '@/lib/styles'
 
 export interface IncomeRow {
@@ -77,7 +78,7 @@ export default function IncomeTableCard({
           type="text" value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="검색..."
-          className="w-44 rounded-btn px-3 py-1.5 text-body text-ink-2 focus:outline-none bg-surface-card border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
+          className="w-44 rounded-field px-3 py-[9px] text-body text-ink focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
         />
       </div>
 
@@ -90,7 +91,7 @@ export default function IncomeTableCard({
             <div className="flex gap-2 mb-3 flex-wrap">
               {(['date', 'category', 'description', 'amount'] as const).map(key => (
                 <button key={key} onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-btn text-body transition-colors ${
+                  className={`px-2 py-1 rounded-btn text-meta transition-colors ${
                     sortKey === key ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3'
                   }`}>
                   {{ date: '날짜', category: '분류', description: '설명', amount: '금액' }[key]}{sortIcon(key)}
@@ -103,14 +104,14 @@ export default function IncomeTableCard({
                 <div key={item.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-body font-medium text-white" style={{ backgroundColor: color }}>{item.category}</span>
+                      <CategoryBadge category={item.category} color={color} />
                       <span className="text-body text-ink-2">{item.description}</span>
                     </div>
                     <span className="font-medium text-ink text-subhead">{formatWonFull(item.amount)}</span>
                   </div>
                   {item.memo && <p className="text-micro tracking-normal text-ink-4 mb-1 break-words">{item.memo}</p>}
                   <div className="flex items-center justify-between text-body text-ink-4">
-                    <span>{item.income_date}</span>
+                    <span className="tabular-nums">{formatDate(item.income_date)}</span>
                     {item.member && (
                       <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
                     )}
