@@ -25,6 +25,8 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // 정적 자산은 인증 대상이 아니다. 자체 호스팅 폰트(css·woff2)가 빠지면
+    // 로그인 화면이 시스템 폰트로 떨어진다.
+    '/((?!_next/static|_next/image|favicon\\.ico|fonts/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|woff2?|ttf|otf)$).*)',
   ],
 }
