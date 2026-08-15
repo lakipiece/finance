@@ -66,7 +66,7 @@ function kpiCardCls(selected: boolean): string {
   }`
 }
 const kpiLabelCls = (selected: boolean) =>
-  `text-body font-medium ${selected ? 'text-white/72' : 'text-ink-3'}`
+  `text-body font-medium ${selected ? 'text-white/70' : 'text-ink-3'}`
 const kpiValueCls = (selected: boolean) =>
   `text-heading tabular-nums ${selected ? 'text-white' : 'text-ink'}`
 const kpiSubCls = (selected: boolean) =>
