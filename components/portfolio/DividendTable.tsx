@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { formatWonRound } from '@/lib/utils'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
-import { btn, tbl } from '@/lib/styles'
+import { createPortal } from 'react-dom'
+import { btn, tbl, modal } from '@/lib/styles'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -27,12 +28,92 @@ interface Props {
   palette: { colors: string[] }
 }
 
+
+/** 종목 배당 상세 레이어 — 리밸런싱의 종목 레이어와 같은 언어로 보여준다 */
+function SecurityDividendDetail({ ticker, rows, onClose }: {
+  ticker: string
+  rows: DividendRow[]
+  onClose: () => void
+}) {
+  const sec = rows[0].security
+  const gross = rows.reduce((s, d) => s + toKrw(d), 0)
+  const tax = rows.reduce((s, d) => s + taxKrw(d), 0)
+  const net = gross - tax
+  const latest = rows.reduce<string | null>((a, d) => (!a || d.paid_at > a ? d.paid_at : a), null)
+
+  // 계좌별 / 연도별 분해
+  const byAccount = new Map<string, number>()
+  const byYear = new Map<string, number>()
+  for (const d of rows) {
+    byAccount.set(d.account.name, (byAccount.get(d.account.name) ?? 0) + toKrw(d) - taxKrw(d))
+    const y = String(d.paid_at).slice(0, 4)
+    byYear.set(y, (byYear.get(y) ?? 0) + toKrw(d) - taxKrw(d))
+  }
+  const metrics = [
+    { label: '세후 합계', value: formatWonRound(net) },
+    { label: '세전 합계', value: formatWonRound(gross) },
+    { label: '원천징수', value: formatWonRound(tax) },
+    { label: '지급 건수', value: `${rows.length}건` },
+    { label: '최근 지급', value: latest ? fmtDate(latest) : '—' },
+    { label: '통화', value: sec.currency },
+  ]
+
+  return createPortal(
+    <div className={modal.overlayTop} onClick={onClose}>
+      <div className={modal.containerLg} onClick={e => e.stopPropagation()}>
+        <div className={modal.header}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+              <span className="text-micro font-bold px-2 py-0.5 rounded-full font-mono bg-surface-low text-ink-2">{ticker}</span>
+              <span className="text-micro tracking-normal text-ink-5">배당 이력</span>
+            </div>
+            <p className="text-title text-ink truncate">{sec.name}</p>
+          </div>
+          <button onClick={onClose} className={modal.close}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className={modal.body}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {metrics.map(m => (
+              <div key={m.label} className="rounded-card bg-surface-low px-[13px] py-[11px] min-w-0">
+                <p className="text-micro text-ink-5 uppercase">{m.label}</p>
+                <p className="text-heading text-ink tabular-nums mt-1 truncate">{m.value}</p>
+              </div>
+            ))}
+          </div>
+          {[
+            { title: '계좌별 (세후)', entries: [...byAccount.entries()].sort((a, b) => b[1] - a[1]) },
+            { title: '연도별 (세후)', entries: [...byYear.entries()].sort((a, b) => b[0].localeCompare(a[0])) },
+          ].map(sec2 => (
+            <div key={sec2.title}>
+              <p className="text-micro text-ink-5 uppercase mb-1.5">{sec2.title}</p>
+              <div className="rounded-card bg-surface-low px-[13px] py-1">
+                {sec2.entries.map(([k, v]) => (
+                  <div key={k} className="flex items-baseline justify-between gap-2 py-[5px] border-b border-surface-container last:border-0">
+                    <span className="text-body text-ink-2 truncate">{k}</span>
+                    <span className="text-body font-medium text-ink tabular-nums shrink-0">{formatWonRound(v)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
 export default function DividendTable({ dividends, selectedMonth, selectedSecurity, onClearSecurity, onEdit, onDelete, openAddModal, palette }: Props) {
   const [search, setSearch] = useState('')
   const [sortMode, setSortMode] = useState<SortMode>('date')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>([])
+  const [detailTicker, setDetailTicker] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/options/members').then(r => r.json()).then(data => {
@@ -121,8 +202,11 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
             <div key={d.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div className="flex-1 min-w-0">
-                  <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>
-                  <span className="text-body font-medium text-ink truncate">{d.security.name}</span>
+                  <button type="button" onClick={() => setDetailTicker(d.security.ticker)}
+                    className="text-left min-w-0 hover:underline underline-offset-2">
+                    <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}</span>
+                    <span className="text-body font-bold text-ink truncate block">{d.security.name}</span>
+                  </button>
                 </div>
                 <span className="font-bold text-ink text-subhead shrink-0 tabular-nums whitespace-nowrap">
                   {formatWonRound(net)}
@@ -192,8 +276,11 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                   <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
                   <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap">{fmtDate(d.paid_at)}</td>
                   <td className={tbl.td}>
-                    <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>
-                    <span className="text-body font-medium text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
+                    <button type="button" onClick={() => setDetailTicker(d.security.ticker)}
+                      className="text-left min-w-0 hover:underline underline-offset-2">
+                      <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}</span>
+                      <span className="text-body font-bold text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
+                    </button>
                   </td>
                   <td className={tbl.td}>
                     <span className="inline-block px-2 py-0.5 rounded-full text-body font-medium bg-surface-low text-ink-2">

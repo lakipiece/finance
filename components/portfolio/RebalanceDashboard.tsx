@@ -244,9 +244,16 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
   const byStyle = groupPct(summary.positions, p => p.security.etf_style ?? '미분류', total)
   const byTicker = groupPct(summary.positions, p => p.security.ticker, total)
 
-  /** 목표 미설정은 null. 명시적 0%와 구분한다 */
+  /**
+   * 목표 미설정은 null. 명시적 0%와 구분한다.
+   * DB numeric 컬럼은 문자열("0.03")로 넘어오므로 반드시 숫자로 바꾼다 —
+   * 그대로 더하면 합계가 문자열 이어붙기가 되어 NaN이 된다.
+   */
   function getTarget(level: string, key: string): number | null {
-    return editTargets.find(t => t.level === level && t.key === key)?.target_pct ?? null
+    const raw = editTargets.find(t => t.level === level && t.key === key)?.target_pct
+    if (raw == null) return null
+    const n = Number(raw)
+    return Number.isFinite(n) ? n : null
   }
 
   function setTarget(level: string, key: string, pct: number | null) {
@@ -263,7 +270,8 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
     // 0%도 그대로 보낸다. 걸러내면 다시 불러올 때 '미설정'으로 되돌아간다
     const body = editTargets
       .filter(t => t.target_pct != null)
-      .map(({ level, key, target_pct }) => ({ level, key, target_pct }))
+      .map(({ level, key, target_pct }) => ({ level, key, target_pct: Number(target_pct) }))
+      .filter(t => Number.isFinite(t.target_pct))
     await fetch('/api/portfolio/targets', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
