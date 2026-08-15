@@ -19,7 +19,7 @@ export default function PageHeader({ title, description, children }: Props) {
     <div className="flex items-center justify-between flex-wrap gap-3">
       <div>
         <h1 className={text.pageTitle}>{title}</h1>
-        {description ? <p className="text-xs text-slate-400 mt-0.5">{description}</p> : null}
+        {description ? <p className="text-body text-ink-4 mt-0.5">{description}</p> : null}
       </div>
       {children ? <div className="flex items-center gap-2">{children}</div> : null}
     </div>

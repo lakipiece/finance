@@ -38,26 +38,26 @@ export default function HistoricalPriceFetcher() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-100 px-5 py-5 space-y-4">
+    <div className="bg-surface-card rounded-field px-5 py-5 space-y-4">
       <div>
-        <p className="text-xs font-semibold text-slate-600 mb-0.5">과거 가격 일괄 수집</p>
-        <p className="text-[10px] text-slate-400">날짜 범위를 지정해 Yahoo Finance / CoinGecko에서 일별 종가를 가져옵니다. 종목이 많거나 기간이 길면 수 분 소요될 수 있습니다.</p>
+        <p className="text-body font-medium text-ink-2 mb-0.5">과거 가격 일괄 수집</p>
+        <p className="text-micro tracking-normal text-ink-4">날짜 범위를 지정해 Yahoo Finance / CoinGecko에서 일별 종가를 가져옵니다. 종목이 많거나 기간이 길면 수 분 소요될 수 있습니다.</p>
       </div>
 
       <div className="flex items-center gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-400 whitespace-nowrap">시작일</span>
+          <span className="text-micro tracking-normal text-ink-4 whitespace-nowrap">시작일</span>
           <DateInput value={startDate} onChange={setStartDate} />
         </div>
-        <span className="text-slate-200 text-xs">—</span>
+        <span className="text-ink-5 text-body">—</span>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-slate-400 whitespace-nowrap">종료일</span>
+          <span className="text-micro tracking-normal text-ink-4 whitespace-nowrap">종료일</span>
           <DateInput value={endDate} onChange={setEndDate} />
         </div>
         <button
           onClick={handleFetch}
           disabled={loading || !startDate || !endDate}
-          className="text-white px-4 py-1.5 rounded-lg text-xs hover:opacity-90 transition-opacity flex items-center gap-1.5"
+          className="text-white px-4 py-1.5 rounded-btn text-body hover:opacity-90 transition-opacity flex items-center gap-1.5"
           style={{ backgroundColor: '#1A237E' }}
         >
           {loading && (
@@ -71,21 +71,21 @@ export default function HistoricalPriceFetcher() {
       </div>
 
       {error && (
-        <p className="text-xs text-rose-500">{error}</p>
+        <p className="text-body text-gain">{error}</p>
       )}
 
       {result && (
-        <div className="text-xs text-slate-500 space-y-1">
+        <div className="text-body text-ink-3 space-y-1">
           <p>
-            <span className="text-emerald-600 font-semibold">{result.saved.toLocaleString()}건</span> 저장 완료
+            <span className="text-income font-medium">{result.saved.toLocaleString()}건</span> 저장 완료
             {' · '}종목 {result.tickers.length}개
           </p>
           {result.failed.length > 0 && (
             <details className="mt-1">
-              <summary className="text-rose-400 cursor-pointer">실패 {result.failed.length}건</summary>
+              <summary className="text-gain cursor-pointer">실패 {result.failed.length}건</summary>
               <ul className="mt-1 space-y-0.5 pl-2">
                 {result.failed.map((f, i) => (
-                  <li key={i} className="text-rose-400">{f}</li>
+                  <li key={i} className="text-gain">{f}</li>
                 ))}
               </ul>
             </details>

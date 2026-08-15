@@ -1,0 +1,91 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>폼 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>폼 (as-is)</h1><p class="lede">가장 잘 지켜지는 영역(field.* 155회). 밑줄형 인풋이 기본이고 검색·텍스트에어리어만 박스형이다.</p>
+
+<h2>field.* — 실사용 <span class="flag ok">155회, 앱 내 최다</span></h2>
+<div class="panel">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 24px;max-width:640px">
+    <div>
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">계좌명</label>
+      <input value="Laki-ISA" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:12px;color:#475569;outline:none">
+      <div class="dark-note"><code>field.input</code></div>
+    </div>
+    <div>
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">구분</label>
+      <select style="border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:12px;color:#475569;outline:none;appearance:none;width:100%"><option>증권</option></select>
+      <div class="dark-note"><code>field.select</code></div>
+    </div>
+    <div>
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">포커스 상태</label>
+      <input value="입력 중" style="width:100%;border:0;border-bottom:1px solid #1A237E;background:transparent;padding:4px 0 6px;font-size:12px;color:#475569;outline:none">
+      <div class="dark-note">밑줄만 브랜드색으로 — 링 없음</div>
+    </div>
+    <div>
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">플레이스홀더</label>
+      <input placeholder="종목명을 입력하세요" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:12px;color:#475569;outline:none">
+      <div class="dark-note">placeholder <code>slate-300</code> — 대비 1.5:1 <span class="flag">접근성</span></div>
+    </div>
+    <div style="grid-column:1/-1">
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">검색 (박스형)</label>
+      <div style="position:relative"><span style="position:absolute;left:9px;top:6px;color:#cbd5e1">
+        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+      <input placeholder="종목명/티커 검색" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px 6px 28px;font-size:12px;color:#64748b;outline:none;background:#fff"></div>
+      <div class="dark-note"><code>field.search</code> — 유일하게 <code>focus:ring</code>을 쓰는 인풋 <span class="flag">포커스 규칙 불일치</span></div>
+    </div>
+    <div style="grid-column:1/-1">
+      <label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">메모</label>
+      <textarea rows="2" style="width:100%;border:1px solid #f1f5f9;border-radius:8px;padding:8px 12px;font-size:12px;color:#475569;outline:none;resize:none;font-family:inherit">여러 줄 입력</textarea>
+      <div class="dark-note"><code>field.textarea</code> — 테두리가 <code>slate-100</code>, 검색은 <code>slate-200</code> <span class="flag">불일치</span></div>
+    </div>
+    <div style="grid-column:1/-1">
+      <div style="border:2px dashed #e2e8f0;border-radius:12px;padding:24px;text-align:center;font-size:11px;color:#94a3b8">엑셀 파일을 끌어다 놓으세요</div>
+      <div class="dark-note"><code>field.dropzone</code></div>
+    </div>
+  </div>
+</div>
+
+<h2>비어 있는 축</h2>
+<table class="dt">
+<tr><th style="width:150px">축</th><th>현황</th></tr>
+<tr><td>에러 상태</td><td><b>정의 없음</b> — 유효성 실패 시 색·메시지 규칙이 없어 화면마다 alert()나 인라인 텍스트로 제각각 <span class="flag">미정의</span></td></tr>
+<tr><td>필수 표시</td><td>없음</td></tr>
+<tr><td>도움말 텍스트</td><td>없음 — <code>field.label</code>과 <code>field.labelSm</code>이 색만 다르게 두 벌 존재</td></tr>
+<tr><td>체크박스 · 라디오 · 토글</td><td>토큰 없음. 각 화면에서 인라인 작성</td></tr>
+<tr><td>날짜 입력</td><td><code>ui/DateInput.tsx</code>, <code>ui/YearMonthPicker.tsx</code>가 별도 존재하나 field.*를 쓰지 않음</td></tr>
+</table>
+
+</div></body></html>

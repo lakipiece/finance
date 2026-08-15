@@ -1,0 +1,97 @@
+<!-- @dsCard group="확정 스펙 (D안)" viewport="1280x1240" name="색 · 표면" subtitle="중성 램프 · 의미색 · 카테고리" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"><title>확정 스펙 — 색 · 표면</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#fff;color:#0d1c2e}
+.wrap{padding:28px 32px 44px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:10px;font-weight:500;padding:4px 9px;border-radius:9999px;background:#00695C;color:#fff;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:820px}
+h2{font-size:13px;font-weight:500;color:#334155;margin:30px 0 4px}
+.note{font-size:11px;color:#94a3b8;line-height:1.7;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:14px}
+.sw{border-radius:11px;overflow:hidden;background:#fafafb}
+.sw i{display:block;height:52px}
+.sw .m{padding:8px 9px}
+.n{font-size:11px;font-weight:500;color:#0d1c2e}
+.hex{font-size:10px;font-family:ui-monospace,monospace;color:#8794a8;margin-top:1px}
+.u{font-size:10px;color:#8794a8;margin-top:3px;line-height:1.5}
+.dead{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 7px;border-radius:9999px;background:#f1f3f7;color:#8794a8;margin-left:6px}
+.new{background:#00695C;color:#fff}
+.demo{background:#fafafb;border-radius:16px;padding:16px;margin-bottom:12px}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:13px}
+</style></head><body><div class="wrap">
+<div class="tag">D안 확정</div>
+<h1>확정 스펙 — 색 · 표면</h1>
+<p class="lede">D-00·D-01 결정을 반영한 정본입니다. 기존 <a href="../audit/color.html">색 감사 문서</a>는 현행(as-is) 기록으로 남겨두고, 앞으로 그릴 화면은 이 문서를 따릅니다.</p>
+
+<h2>1. 표면 램프 <span class="dead new">변경</span></h2>
+<p class="note">청색 램프(<code>#f8f9ff → #dce9ff</code>) 폐기. 필드가 밀집한 폼에서 청색 틴트가 누적돼 화면이 물드는 문제 때문입니다. 램프는 <b>한 벌만</b> 존재하며 폼·대시보드 구분 없이 같은 값을 씁니다.</p>
+<div class="grid">
+  <div class="sw"><i style="background:#fafafb"></i><div class="m"><div class="n">surface</div><div class="hex">#fafafb</div><div class="u">앱 배경 · 화면 바닥</div></div></div>
+  <div class="sw"><i style="background:#f1f3f7"></i><div class="m"><div class="n">surface-low</div><div class="hex">#f1f3f7</div><div class="u">인풋 채움 · 구분선 · 사이드바</div></div></div>
+  <div class="sw"><i style="background:#e9ecf2"></i><div class="m"><div class="n">surface-container</div><div class="hex">#e9ecf2</div><div class="u">구분 존 · 차트 그리드</div></div></div>
+  <div class="sw"><i style="background:#e0e4ec"></i><div class="m"><div class="n">surface-high</div><div class="hex">#e0e4ec</div><div class="u">보조 버튼 — <b>실제 액션 전용</b></div></div></div>
+</div>
+<div class="demo">
+  <div style="background:#f1f3f7;border-radius:14px;padding:13px">
+    <div class="card">
+      <div style="font-size:12px;font-weight:500;color:#0d1c2e">surface → surface-low → card</div>
+      <div style="font-size:11px;color:#8794a8;margin-top:5px;line-height:1.6">테두리 없이 <b>배경 톤 이동 + 확산 그림자</b>로만 깊이를 만든다. 카드 그림자는 <code>0 4px 32px 0 rgba(13,28,46,.06)</code> 한 값만 쓴다</div>
+    </div>
+  </div>
+</div>
+
+<h2>2. 의미색 <span class="dead new">변경</span></h2>
+<p class="note">중성 램프 위에서는 금액 색이 화면의 유일한 채도가 됩니다. 색은 <b>의미가 있을 때만</b> 씁니다.</p>
+<div class="grid">
+  <div class="sw"><i style="background:#00695C"></i><div class="m"><div class="n">income</div><div class="hex">#00695C</div><div class="u">수입 · 입금 · 수지 흑자 <br>대비 6.6:1</div></div></div>
+  <div class="sw"><i style="background:#0d1c2e"></i><div class="m"><div class="n">on-surface</div><div class="hex">#0d1c2e</div><div class="u">지출 금액 · 기본 텍스트<br>지출에는 색을 쓰지 않는다</div></div></div>
+  <div class="sw"><i style="background:#b45309"></i><div class="m"><div class="n">warning</div><div class="hex">#b45309</div><div class="u">예산 초과 · 임박 · 이상 거래</div></div></div>
+  <div class="sw"><i style="background:#131b2e"></i><div class="m"><div class="n">action</div><div class="hex">#131b2e</div><div class="u">주 버튼 · 선택 상태 · 포커스 링</div></div></div>
+</div>
+<table class="dt" style="margin-bottom:14px">
+<tr><th style="width:130px">쓰는 곳</th><th>규칙</th></tr>
+<tr><td><b>수입 · 입금</b></td><td><code>#00695C</code> + <code>font-weight:700</code>. 부호 <code>+</code> 항상 표기</td></tr>
+<tr><td><b>지출</b></td><td><code>#0d1c2e</code> 무채색. 부호 <code>−</code> 표기. <b>빨강을 쓰지 않는다</b> — 행 대부분이 지출이라 색이 무의미해진다</td></tr>
+<tr><td><b>포트폴리오 손익</b></td><td>기존 2색 유지 — 상승 <code>#e11d48</code> / 하락 <code>#2563eb</code>. <b>가계부와 공유하지 않는다</b>(의미가 다름)</td></tr>
+<tr><td><b>경고</b></td><td><code>#b45309</code> — 예산 초과·임박에만. 이 색이 나오면 사용자가 조치해야 한다는 뜻</td></tr>
+</table>
+
+<h2>3. 카테고리 팔레트 <span class="dead new">변동비 이동</span></h2>
+<p class="note">수입색 <code>#00695C</code>와 겹치던 <b>변동비</b>를 <code>#26A69A</code>로 옮겼습니다. 나머지 3색은 <code>lib/palettes.ts</code> 그대로입니다.</p>
+<div class="grid">
+  <div class="sw"><i style="background:#1A237E"></i><div class="m"><div class="n">colors[0]</div><div class="hex">#1A237E</div><div class="u">고정비</div></div></div>
+  <div class="sw"><i style="background:#690043"></i><div class="m"><div class="n">colors[1]</div><div class="hex">#690043</div><div class="u">대출상환</div></div></div>
+  <div class="sw"><i style="background:#26A69A"></i><div class="m"><div class="n">colors[2]</div><div class="hex">#26A69A <b style="color:#00695C">변경</b></div><div class="u">변동비 — 이전 <code>#00695C</code></div></div></div>
+  <div class="sw"><i style="background:#8D6E63"></i><div class="m"><div class="n">colors[3]</div><div class="hex">#8D6E63</div><div class="u">여행공연비</div></div></div>
+</div>
+<div class="demo">
+  <div class="card" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+    <span style="display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c"><span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#1A237E"></span>고정비</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c"><span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#690043"></span>대출상환</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c"><span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#26A69A"></span>변동비</span>
+    <span style="display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c"><span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#8D6E63"></span>여행공연비</span>
+    <span style="font-size:10px;color:#8794a8;margin-left:4px">카테고리색은 <b>점</b>이 지고, 글자는 <code>#3d4a5c</code> 고정</span>
+  </div>
+</div>
+<p class="note" style="border:0;padding:0"><b>왜 점인가</b> — 카테고리색을 글자색으로 쓰면 밝은 색이 대비를 못 넘습니다(<code>#26A69A</code>는 흰 배경에서 3.0:1 — 본문 기준 AA 미달). 점은 색을 그대로 쓰면서 글자 대비를 고정할 수 있고, 색약 사용자도 라벨로 읽습니다.</p>
+
+<h2>4. 폐기 <span class="dead">삭제</span></h2>
+<table class="dt">
+<tr><th style="width:170px">값</th><th>사유</th></tr>
+<tr><td><code>#f8f9ff</code> <code>#eff4ff</code> <code>#e6eeff</code> <code>#dce9ff</code> <code>#ccdbf3</code></td><td>청색 표면 램프 — 중성 램프로 대체</td></tr>
+<tr><td><code>bg-black/40</code></td><td>오버레이 — <code>#0d1c2e/30 + blur(6px)</code>로 대체 (<a href="overlays-forms.html">폼·모달 스펙</a>)</td></tr>
+<tr><td><code>#e2e8f0</code> (인풋 밑줄)</td><td>채움형 전환으로 인풋에서 사용 종료. 다른 용도는 유지</td></tr>
+<tr><td><code>#cbd5e1</code> (플레이스홀더)</td><td>대비 1.5:1 미달 — <code>#a8b3c4</code>로 대체</td></tr>
+</table>
+
+<p style="font-size:11px;color:#94a3b8;margin:16px 0 0">근거 — <a href="../proposals/decision-00-surface-ramp.html">D-00 표면 램프</a> · <a href="../proposals/decision-01-amount-color.html">D-01 금액 색</a> · <a href="../proposals/decision-board.html">결정 현황판</a></p>
+</div></body></html>

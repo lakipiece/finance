@@ -1,0 +1,198 @@
+<!-- @dsCard group="D안 결정" viewport="1440x1500" name="D-08 폰트 비교 3종" subtitle="같은 UI에 실제 웹폰트를 얹어 비교" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<title>D-08 — 폰트 비교 3종</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',sans-serif;background:#fff;color:#0d1c2e}
+.wrap{padding:28px 32px 44px;max-width:1380px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:10px;font-weight:500;padding:4px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:860px}
+h2{font-size:13px;font-weight:700;color:#334155;margin:30px 0 4px}
+.note{font-size:11px;color:#94a3b8;line-height:1.7;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.scroller{overflow-x:auto;padding-bottom:8px}
+.g4{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start;min-width:1000px}
+.oh{margin-bottom:9px}
+.oh b{font-size:13px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.stage{background:#fafafb;border-radius:16px;padding:13px}
+.card{background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:12px}
+.lbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+.mrow td{padding:5px 0;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c;white-space:nowrap}
+.dot{display:inline-block;width:6px;height:6px;border-radius:9999px;flex:none}
+.cap{font-size:10px;color:#8794a8;margin-top:8px;line-height:1.6}
+.pros{font-size:10.5px;line-height:1.7;margin:9px 0 0;padding:0;list-style:none}
+.pros li{padding-left:13px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.f1{font-family:'Noto Sans KR',sans-serif}
+.f2{font-family:'Pretendard',sans-serif}
+.f4{font-family:'IBM Plex Sans KR',sans-serif}
+.ruler{font-size:11px;color:#5b6a80;line-height:1.9}
+.ok{color:#00695C;font-weight:700}
+.bad{color:#e11d48;font-weight:700}
+.mid{color:#b45309;font-weight:700}
+</style></head><body><div class="wrap">
+<div class="tag">D-08 · mac · Windows · iOS 기준 (Android 제외)</div>
+<h1>폰트 비교 3종 — 같은 UI, 다른 폰트</h1>
+<p class="lede">세 카드 모두 <b>실제 웹폰트를 불러와</b> 렌더한 것입니다. 마크업·크기·굵기·색은 완전히 동일하고 <code>font-family</code>만 다릅니다. 확정 스펙에서 폰트가 가장 많이 드러나는 요소들 — <b>KPI 금액(22/700) · 표 금액(tabular-nums) · 라벨(10/500 대문자) · 배지 · 본문(12/400)</b> — 을 한 장에 모았습니다.</p>
+
+<div class="scroller"><div class="g4">
+
+  <div>
+    <div class="oh"><b>① Noto Sans KR</b><span>현행 기준 폰트 · Google</span></div>
+    <div class="stage f1">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+        <div style="font-size:20px;font-weight:700;color:#0d1c2e">가계부</div>
+        <div style="font-size:13px;font-weight:500;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08 ⌄</div>
+      </div>
+      <div style="background:#131b2e;border-radius:13px;padding:10px 12px;margin-bottom:7px">
+        <div class="lbl" style="color:rgba(255,255,255,.72)">이번 달 수입</div>
+        <div style="margin-top:7px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.015em;color:#fff;text-align:right">6,420,000원</div>
+      </div>
+      <div class="card">
+        <div class="lbl" style="color:#a8b3c4;margin-bottom:6px">최근 거래</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">급여 (8월)</td><td style="color:#00695C;text-align:right;font-weight:700">+6,420,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">주택담보대출</td><td style="color:#0d1c2e;text-align:right">−980,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">아파트 관리비</td><td style="color:#0d1c2e;text-align:right">−318,000</td></tr>
+          <tr class="mrow"><td style="color:#3d4a5c">이마트 장보기</td><td style="color:#0d1c2e;text-align:right">−142,600</td></tr>
+        </table>
+        <div style="display:flex;gap:5px;margin-top:9px">
+          <span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span>
+          <span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span>
+        </div>
+      </div>
+      <div class="ruler" style="margin-top:9px">
+        <div style="font-weight:700">1234567890 · 0.00%</div>
+        <div style="font-weight:500">가나다라마바사 ABCabc</div>
+        <div>본문 12px 기준 문장입니다</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">이 디자인의 <b>기준 폰트</b> — 시안 재검토 불필요</li>
+      <li class="y">Google Fonts 공식 · OFL · 서브셋 분할 제공</li>
+      <li class="n">한글 본문 폭이 넷 중 가장 넓다(124.6px) — 표에 들어가는 글자 수가 줄어든다</li>
+      <li class="n">라틴 글자가 한글 대비 작게 느껴짐</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="oh"><b>② Pretendard</b><span>국내 표준급 <span class="rec">권장</span></span></div>
+    <div class="stage f2">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+        <div style="font-size:20px;font-weight:700;color:#0d1c2e">가계부</div>
+        <div style="font-size:13px;font-weight:500;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08 ⌄</div>
+      </div>
+      <div style="background:#131b2e;border-radius:13px;padding:10px 12px;margin-bottom:7px">
+        <div class="lbl" style="color:rgba(255,255,255,.72)">이번 달 수입</div>
+        <div style="margin-top:7px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.015em;color:#fff;text-align:right">6,420,000원</div>
+      </div>
+      <div class="card">
+        <div class="lbl" style="color:#a8b3c4;margin-bottom:6px">최근 거래</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">급여 (8월)</td><td style="color:#00695C;text-align:right;font-weight:700">+6,420,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">주택담보대출</td><td style="color:#0d1c2e;text-align:right">−980,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">아파트 관리비</td><td style="color:#0d1c2e;text-align:right">−318,000</td></tr>
+          <tr class="mrow"><td style="color:#3d4a5c">이마트 장보기</td><td style="color:#0d1c2e;text-align:right">−142,600</td></tr>
+        </table>
+        <div style="display:flex;gap:5px;margin-top:9px">
+          <span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span>
+          <span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span>
+        </div>
+      </div>
+      <div class="ruler" style="margin-top:9px">
+        <div style="font-weight:700">1234567890 · 0.00%</div>
+        <div style="font-weight:500">가나다라마바사 ABCabc</div>
+        <div>본문 12px 기준 문장입니다</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y"><b>시스템 UI 폰트 metric에 맞춰 설계</b> — 웹폰트 로딩 전후 레이아웃 흔들림이 가장 적다</li>
+      <li class="y">한글 본문 폭 최소(116.9px). 다만 <b>금액은 오히려 가장 넓다</b>(128.9px)</li>
+      <li class="y">라틴·한글 균형이 좋아 <code>ABC 128,450,000원</code> 혼용이 자연스럽다</li>
+      <li class="y">100–900 전 굵기 · OFL</li>
+      <li class="n">폰트 교체 — 확정 시안을 다시 훑어야 함</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="oh"><b>③ IBM Plex Sans KR</b><span>기업용 · 중립</span></div>
+    <div class="stage f4">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+        <div style="font-size:20px;font-weight:700;color:#0d1c2e">가계부</div>
+        <div style="font-size:13px;font-weight:500;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08 ⌄</div>
+      </div>
+      <div style="background:#131b2e;border-radius:13px;padding:10px 12px;margin-bottom:7px">
+        <div class="lbl" style="color:rgba(255,255,255,.72)">이번 달 수입</div>
+        <div style="margin-top:7px;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.015em;color:#fff;text-align:right">6,420,000원</div>
+      </div>
+      <div class="card">
+        <div class="lbl" style="color:#a8b3c4;margin-bottom:6px">최근 거래</div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">급여 (8월)</td><td style="color:#00695C;text-align:right;font-weight:700">+6,420,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">주택담보대출</td><td style="color:#0d1c2e;text-align:right">−980,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#3d4a5c">아파트 관리비</td><td style="color:#0d1c2e;text-align:right">−318,000</td></tr>
+          <tr class="mrow"><td style="color:#3d4a5c">이마트 장보기</td><td style="color:#0d1c2e;text-align:right">−142,600</td></tr>
+        </table>
+        <div style="display:flex;gap:5px;margin-top:9px">
+          <span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span>
+          <span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span>
+        </div>
+      </div>
+      <div class="ruler" style="margin-top:9px">
+        <div style="font-weight:700">1234567890 · 0.00%</div>
+        <div style="font-weight:500">가나다라마바사 ABCabc</div>
+        <div>본문 12px 기준 문장입니다</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">라틴 IBM Plex와 한 가족 — 영문·코드 표기가 안정적</li>
+      <li class="y">중립적이고 차분해 금융 데이터와 어울림</li>
+      <li class="n">한글 본문 폭이 Noto보다 약간 좁은 정도(121.1 vs 124.6px) — 밀도 이점은 크지 않다</li>
+      <li class="n">굵기가 Thin~Bold 범위로 700 위가 없음</li>
+      <li class="n">국내 사용례가 적어 낯설게 보일 수 있음</li>
+    </ul>
+  </div>
+</div></div>
+
+<h2>보는 법 — 어디를 비교해야 하나</h2>
+<table class="dt" style="margin-bottom:14px">
+<tr><th style="width:130px">비교 지점</th><th>무엇을 볼까</th></tr>
+<tr><td><b>KPI 금액</b> 22/700</td><td>박스가 우측정렬 full-width라 <b>눈으로는 길이 차이가 안 보입니다</b>. 실측값은 아래 표에 넣었습니다 — <code>6,420,000원</code> 기준 Noto 122.1 · Pretendard 128.9 · IBM Plex 122.4px</td></tr>
+<tr><td><b>표 금액</b> 12 · tabular</td><td>자릿수가 위아래로 <b>정확히 맞는지</b>. 넷 다 <code>tabular-nums</code>를 지원하지만 숫자 폭 자체가 달라 열 너비가 달라집니다</td></tr>
+<tr><td><b>10px 라벨</b></td><td><code>이번 달 수입</code>·<code>최근 거래</code>가 <b>작은 크기에서 뭉치는지</b>. 확정 스펙에서 가장 작은 글자이므로 여기서 판독이 갈립니다</td></tr>
+<tr><td><b>넷째 후보</b></td><td>SUIT은 CDN 로딩이 확인되지 않아 <b>이 비교에서 제외</b>했습니다 — 렌더하지 못한 폰트를 평가할 수 없기 때문입니다</td></tr>
+<tr><td><b>혼용</b></td><td><code>가나다라마바사 ABCabc</code> 줄에서 <b>한글과 라틴의 크기가 맞는지</b>. 어긋나면 종목명·티커 표기가 어색해집니다</td></tr>
+<tr><td><b>본문 줄</b></td><td><code>본문 12px 기준 문장입니다</code>의 길이 차이 = 그대로 <b>표에 들어가는 글자 수 차이</b>입니다. 실측 Noto 124.6 · Pretendard 116.9 · IBM Plex 121.1px — <b>여기서는 Pretendard가 가장 좁습니다</b></td></tr>
+</table>
+
+<h2>정리</h2>
+<table class="dt">
+<tr><th style="width:110px">항목</th><th>① Noto Sans KR</th><th>② Pretendard</th><th>③ IBM Plex Sans KR</th></tr>
+<tr><td><b>성격</b></td><td>중립 · 표준</td><td>시스템 UI 근사</td><td>기업 · 중립</td></tr>
+<tr><td><b>한글 본문 폭</b><br><span style="font-size:10px;color:#a8b3c4">12px 실측</span></td><td class="mid">124.6px</td><td class="ok">116.9px <b>최소</b></td><td>121.1px</td></tr>
+<tr><td><b>금액 폭</b><br><span style="font-size:10px;color:#a8b3c4">22/700 실측</span></td><td class="ok">122.1px</td><td class="mid">128.9px <b>최대</b></td><td class="ok">122.4px</td></tr>
+<tr><td><b>밀도 적합</b></td><td>본문 불리 · 금액 유리</td><td class="ok">본문 유리 · 금액 불리</td><td>중간</td></tr>
+<tr><td><b>10px 판독</b></td><td class="ok">좋음</td><td class="ok">좋음</td><td class="ok">좋음</td></tr>
+<tr><td><b>굵기</b></td><td>100–900</td><td class="ok">100–900</td><td class="mid">100–700</td></tr>
+<tr><td><b>로딩 전 흔들림</b></td><td class="mid">있음</td><td class="ok">가장 적음</td><td class="mid">있음</td></tr>
+<tr><td><b>라이선스</b></td><td>OFL</td><td>OFL</td><td>OFL</td></tr>
+<tr><td><b>교체 비용</b></td><td class="ok">없음</td><td class="mid">시안 재검토</td><td class="mid">시안 재검토</td></tr>
+</table>
+
+<p style="font-size:11px;color:#475569;margin:14px 0 0;line-height:1.8;max-width:880px"><b>② Pretendard를 권합니다 — 단, 이유는 하나뿐입니다.</b> <b>시스템 UI 폰트 metric에 맞춰 설계돼 웹폰트가 늦게 로드돼도 레이아웃이 덜 흔들린다</b>는 점입니다. 폴백이 <code>-apple-system</code>(mac·iOS)·<code>Segoe UI</code>(Windows)일 때 특히 그렇고, 이건 화면에서 재현할 수 없지만 설계 의도로 문서화된 특성입니다.<br><br><b>폭은 근거가 되지 못합니다.</b> 실측 결과 Pretendard는 <b>한글 본문에서만 가장 좁고(116.9 vs Noto 124.6px) 금액에서는 오히려 가장 넓습니다(128.9 vs Noto 122.1px)</b>. D안은 표에 금액 열이 많으므로 폭만 놓고 보면 <b>어느 쪽도 명백히 유리하지 않습니다</b>.<br><br><b>① Noto Sans KR을 유지해도 무방합니다.</b> 확정 시안이 이미 이 폰트 기준이라 교체 비용이 0이고, 판독성 문제도 없습니다. "안전하게 지금 것으로 굳힌다"가 목표라면 ①이 맞습니다.<br><br>③ IBM Plex Sans KR은 권하지 않습니다 — 폭은 Noto보다 나쁘지 않지만 굵기 상한이 700이라 확장 여지가 없고 국내 사용례가 적습니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">문서 — <a href="decision-08-typography.html">D-08 폰트·타이포</a> · <a href="../spec/color-surface.html">색·표면 스펙</a> · <a href="decision-board.html">결정 현황판</a></p>
+</div></body></html>

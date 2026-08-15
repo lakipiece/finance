@@ -1,0 +1,80 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>모달 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>모달 (as-is)</h1><p class="lede">modal.* 45회 사용으로 구조는 일관(header/body/footer). 다만 overlay가 두 벌, 배경 규칙도 두 벌이다.</p>
+
+<h2>modal.* 기본형</h2>
+<div style="position:relative;height:340px;border-radius:16px;overflow:hidden;background:#f1f5f9">
+  <div style="position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;box-shadow:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1);width:400px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid #f1f5f9">
+        <span style="font-size:14px;font-weight:600;color:#334155">계좌 수정</span>
+        <button style="border:0;background:transparent;color:#94a3b8;padding:4px;border-radius:4px;cursor:pointer;line-height:0">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div style="padding:16px 24px;display:flex;flex-direction:column;gap:16px">
+        <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">계좌명</label>
+          <input value="Laki-ISA" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:12px;color:#475569;outline:none"></div>
+        <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">색상</label>
+          <div style="display:flex;gap:6px"><div style="width:22px;height:22px;border-radius:9999px;background:#1A237E;outline:2px solid #1A237E;outline-offset:2px"></div><div style="width:22px;height:22px;border-radius:9999px;background:#690043;"></div><div style="width:22px;height:22px;border-radius:9999px;background:#00695C;"></div><div style="width:22px;height:22px;border-radius:9999px;background:#8D6E63;"></div><div style="width:22px;height:22px;border-radius:9999px;background:#4527A0;"></div></div></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;padding:14px 24px;border-top:1px solid #f1f5f9">
+        <button style="padding:6px 16px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid #e2e8f0;color:#475569;background:#fff;cursor:pointer;white-space:nowrap">취소</button>
+        <button style="padding:6px 16px;border-radius:8px;font-size:12px;font-weight:500;color:#fff;border:0;background:#1A237E;cursor:pointer;white-space:nowrap">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+<table class="dt" style="margin-top:16px">
+<tr><th style="width:130px">토큰</th><th>스펙</th></tr>
+<tr><td><code>modal.overlay</code></td><td><code>fixed inset-0 z-50 bg-black/40 px-4</code></td></tr>
+<tr><td><code>modal.overlayTop</code></td><td><code>z-[9999]</code> — 모달 위 모달(createPortal)</td></tr>
+<tr><td><code>modal.container / containerLg</code></td><td><code>rounded-2xl shadow-xl max-w-md / max-w-lg</code>, <code>max-h-[95dvh] sm:max-h-[90vh]</code></td></tr>
+<tr><td><code>modal.header / body / footer</code></td><td><code>px-6 py-4</code> + <code>border-slate-100</code> 구분선</td></tr>
+<tr><td><code>glass.overlay</code> <span class="flag dead">사용 0회</span></td><td><code>bg-[#0d1c2e]/30 backdrop-blur-[6px]</code> — 전혀 다른 오버레이 규칙</td></tr>
+</table>
+<p class="note">모달 제목의 크기·굵기가 토큰화돼 있지 않아 화면마다 <code>text-sm</code> / <code>text-base</code> / <code>font-semibold</code> / <code>font-bold</code>가 섞인다.</p>
+
+<h2>비어 있는 축</h2>
+<table class="dt">
+<tr><th style="width:150px">축</th><th>현황</th></tr>
+<tr><td>확인 다이얼로그</td><td>전용 컴포넌트 없음 — 삭제 확인이 브라우저 <code>confirm()</code> 또는 개별 모달로 갈림</td></tr>
+<tr><td>토스트 · 알림</td><td><b>없음</b>. 성공/실패 피드백이 <code>alert()</code>와 인라인 텍스트로 이원화 <span class="flag">미정의</span></td></tr>
+<tr><td>진입 · 퇴장 모션</td><td>없음 — 즉시 나타나고 즉시 사라짐</td></tr>
+<tr><td>포커스 트랩 · aria</td><td><code>role="dialog"</code> 미부착 화면 존재 <span class="flag">접근성</span></td></tr>
+</table>
+
+</div></body></html>

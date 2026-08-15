@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const { code, display_name, color } = await req.json()
   if (!code || !display_name) return NextResponse.json({ error: 'code, display_name required' }, { status: 400 })
   const [row] = await sql`
-    INSERT INTO members (code, display_name, color) VALUES (${code}, ${display_name}, ${color ?? '#64748b'})
+    INSERT INTO members (code, display_name, color) VALUES (${code}, ${display_name}, ${color ?? '#5b6a80'})
     ON CONFLICT (code) DO UPDATE SET display_name = EXCLUDED.display_name, color = EXCLUDED.color
     RETURNING *`
   invalidateCache()

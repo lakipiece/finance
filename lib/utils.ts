@@ -27,19 +27,18 @@ export function formatWonCompact(n: number): string {
   return n.toLocaleString()
 }
 
+// 카테고리 색 — DEFAULT_PALETTE.colors와 동일한 단일 소스.
+// 이 색은 "점"으로만 쓴다. 글자색으로 쓰지 않는다 (D-01b).
 export const CAT_COLORS: Record<string, string> = {
-  '고정비': '#6B8CAE',
-  '대출상환': '#C47D7D',
-  '변동비': '#6DAE8C',
+  '고정비': '#1A237E',
+  '대출상환': '#690043',
+  '변동비': '#26A69A',
   '여행공연비': '#8D6E63',
 }
 
-// 카테고리 배지 — 테마 색상 기준 (DEFAULT_PALETTE.colors 순서와 동일)
-export const CAT_BADGE: Record<string, { bg: string; text: string }> = {
-  '고정비':   { bg: 'rgba(26,35,126,0.10)',  text: '#1A237E' },
-  '대출상환': { bg: 'rgba(105,0,67,0.10)',   text: '#690043' },
-  '변동비':   { bg: 'rgba(0,105,92,0.10)',   text: '#00695C' },
-  '여행공연비':{ bg: 'rgba(141,110,99,0.10)', text: '#8D6E63' },
+/** 카테고리 점 색 — 미등록 카테고리는 중립 잉크 */
+export function catColor(cat: string): string {
+  return CAT_COLORS[cat] ?? INCOME_COLORS[cat] ?? '#a8b3c4'
 }
 
 export const CATEGORIES = ['고정비', '대출상환', '변동비', '여행공연비'] as const
@@ -53,9 +52,11 @@ export const INCOME_COLORS: Record<string, string> = {
   '기타': '#5A6476',
 }
 
-export function catBadgeStyle(cat: string): CSSProperties {
-  const b = CAT_BADGE[cat]
-  return b
-    ? { backgroundColor: b.bg, color: b.text }
-    : { backgroundColor: 'rgba(100,116,139,0.08)', color: '#64748b' }
+/**
+ * 배지 스타일 — D-01b: 카테고리색을 글자색으로 쓰지 않는다.
+ * 배경은 surface-low, 글자는 잉크 고정. 의미는 앞의 점(6px)이 전달한다.
+ * 점은 `catColor(cat)`으로 별도 렌더링할 것 — `<CategoryBadge>` 사용 권장.
+ */
+export function catBadgeStyle(_cat: string): CSSProperties {
+  return { backgroundColor: '#f1f3f7', color: '#3d4a5c' }
 }

@@ -87,8 +87,8 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
       <div className={modalStyles.container} onClick={e => e.stopPropagation()}>
         <div className={modalStyles.header}>
           <div className="flex items-center gap-2">
-            {isEdit && <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span>}
-            <h3 className="text-sm font-semibold text-slate-800">{isEdit ? '종목 수정' : '종목 추가'}</h3>
+            {isEdit && <span className="bg-surface-low text-ink-2 text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span>}
+            <h3 className="text-subhead font-medium text-ink">{isEdit ? '종목 수정' : '종목 추가'}</h3>
           </div>
           <button onClick={onClose} className={modalStyles.close}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -139,12 +139,12 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
               <label className={field.label}>태그</label>
               <div className="flex flex-wrap gap-1.5 mb-2 min-h-[24px]">
                 {tags.map(t => (
-                  <span key={t} className="flex items-center gap-1 bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
+                  <span key={t} className="flex items-center gap-1 bg-surface-low text-ink-2 text-body px-2 py-0.5 rounded-full">
                     {t}
                     <button
                       type="button"
                       onClick={() => setTags(tags.filter(x => x !== t))}
-                      className="text-slate-400 hover:text-slate-700 leading-none"
+                      className="text-ink-4 hover:text-ink leading-none"
                     >×</button>
                   </span>
                 ))}
@@ -165,7 +165,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
               />
             </div>
           </div>
-          {err && <p className="text-xs text-red-500">{err}</p>}
+          {err && <p className="text-body text-gain">{err}</p>}
         </div>
         <div className={modalStyles.footer}>
           <button onClick={onClose} className={btn.secondary}>취소</button>

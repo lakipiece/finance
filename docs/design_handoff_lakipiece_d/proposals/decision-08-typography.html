@@ -1,0 +1,176 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1420" name="D-08 폰트 · 타이포" subtitle="플랫폼 간 동일 렌더링" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<title>D-08 — 폰트 · 타이포 스케일</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 44px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:10px;font-weight:600;padding:4px 9px;border-radius:9999px;background:#b45309;color:#fff;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:840px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:30px 0 4px}
+.note{font-size:11px;color:#94a3b8;line-height:1.7;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.demo{background:#fafafb;border-radius:16px;padding:16px;margin-bottom:12px}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:14px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.cap{font-size:10px;color:#8794a8;margin-top:7px;line-height:1.6}
+.oh{margin-bottom:9px}
+.oh b{font-size:12.5px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.pros{font-size:10.5px;line-height:1.7;margin:9px 0 0;padding:0;list-style:none}
+.pros li{padding-left:13px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.bad{color:#e11d48;font-weight:700}
+.ok{color:#00695C;font-weight:700}
+.mac{font-family:'Apple SD Gothic Neo','Apple Gothic',sans-serif}
+.win{font-family:'Malgun Gothic','맑은 고딕',sans-serif}
+.ntk{font-family:'Noto Sans KR',sans-serif}
+.row{display:flex;align-items:baseline;gap:9px;padding:6px 0;border-bottom:1px solid #f1f3f7}
+.row:last-child{border-bottom:0}
+.rl{font-size:9px;font-weight:700;color:#a8b3c4;width:52px;flex:none;text-transform:uppercase;letter-spacing:.06em}
+</style></head><body><div class="wrap">
+<div class="tag">추가 결정 필요</div>
+<h1>D-08 — 폰트 · 타이포 스케일</h1>
+<p class="lede">짧게 답하면 <b>지금 상태로는 플랫폼마다 다르게 보입니다.</b> 확정 스펙의 색·간격·라운딩은 어디서나 동일하지만, <b>폰트만은 그렇지 않습니다</b>. 현재 스택 <code>'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif</code>에서 Noto Sans KR은 <b>어느 OS에도 기본 설치돼 있지 않기 때문</b>입니다 — 웹폰트로 불러오지 않으면 항상 뒤의 시스템 폰트로 떨어집니다.</p>
+
+<h2>1. 지금 무슨 일이 일어나는가</h2>
+<p class="note">아래 두 카드는 <b>굵기 단계만</b> 도식화한 것입니다 — 각 OS 폰트가 <code>font-weight</code> 네 단계를 몇 단계로 소화하는지를 그렸습니다. 자폭·x-height·줄바꿈 차이는 그 OS에서만 볼 수 있어 <b>이 지면에서는 재현할 수 없습니다</b>.</p>
+<div class="demo g2">
+  <div class="card">
+    <div class="oh"><b>macOS · iOS · 웹폰트</b><span>굵기 4단이 그대로 나오는 경우</span></div>
+    <div class="ntk">
+      <div class="row"><span class="rl">700</span><span style="font-size:20px;font-weight:700;letter-spacing:-.015em">6,420,000원</span></div>
+      <div class="row"><span class="rl">600</span><span style="font-size:13px;font-weight:600">최근 거래</span></div>
+      <div class="row"><span class="rl">500</span><span style="font-size:11px;font-weight:500">결제수단</span></div>
+      <div class="row"><span class="rl">400</span><span style="font-size:12px">아파트 관리비</span></div>
+    </div>
+    <div class="cap">Apple SD Gothic Neo(mac·iOS)는 굵기 100–900을 갖고 있어 <b>네 단계가 구분된다</b>. 웹폰트를 적용해도 결과는 같아 <b>한 장으로 합쳤다</b>.<br><br><b>Android</b>(Noto Sans CJK KR)는 이 둘 사이다 — <b>400·500·700은 실제 굵기</b>가 있고 <b>600만 합성</b>된다. 아래 표 참조.<br><br>다만 <b>같아지는 건 굵기뿐</b>이다. 폰트가 다르면 자폭·x-height가 달라 같은 12px라도 글자 길이와 줄바꿈 지점이 어긋나는데, 그건 이 화면에서 보여줄 수 없다</div>
+  </div>
+  <div class="card" style="box-shadow:0 0 0 2px #b45309, 0 4px 32px 0 rgba(13,28,46,.06)">
+    <div class="oh"><b>Windows</b><span>Malgun Gothic — 굵기 2단</span></div>
+    <div class="row"><span class="rl">700</span><span style="font-size:20px;font-weight:700;letter-spacing:-.015em">6,420,000원</span></div>
+    <div class="row"><span class="rl">600</span><span style="font-size:13px;font-weight:700">최근 거래</span></div>
+    <div class="row"><span class="rl">500</span><span style="font-size:11px;font-weight:400">결제수단</span></div>
+    <div class="row"><span class="rl">400</span><span style="font-size:12px">아파트 관리비</span></div>
+    <div class="cap"><b class="bad">굵기가 400·700 둘뿐이다.</b> 위 도식처럼 <b>600은 700으로 올라붙고 500은 400으로 내려앉아</b> 네 단계가 두 단계로 뭉친다 — 라벨(500)과 본문(400)이 같은 굵기가 되어 위계가 사라진다. 왼쪽 카드와 비교하면 <b>600·500 행이 눈에 띄게 다르다</b></div>
+  </div>
+</div>
+<table class="dt" style="margin-bottom:14px">
+<tr><th style="width:130px">항목</th><th>macOS</th><th>Windows</th><th>iOS</th><th>Android</th></tr>
+<tr><td><b>실제 폰트</b></td><td>Apple SD Gothic Neo</td><td class="bad">Malgun Gothic</td><td>Apple SD Gothic Neo</td><td>Noto Sans CJK KR</td></tr>
+<tr><td><b>지원 굵기</b></td><td>100–900</td><td class="bad">400 · 700 <b>둘뿐</b></td><td>100–900</td><td>400 · 500 · 700</td></tr>
+<tr><td><b>500 / 600</b></td><td>정상</td><td class="bad">합성 또는 무시</td><td>정상</td><td class="bad">600은 합성</td></tr>
+<tr><td><b><code>tabular-nums</code></b></td><td>동작</td><td class="bad">미지원 — 금액 자릿수 흔들림</td><td>동작</td><td>동작</td></tr>
+<tr><td><b>10px 라벨</b></td><td>기준</td><td>x-height가 커서 더 크게 보임</td><td>기준</td><td>기준</td></tr>
+</table>
+<p class="note" style="border:0;padding:0"><b><code>tabular-nums</code>가 특히 중요합니다.</b> 확정 스펙은 모든 금액을 고정폭 숫자로 우측 정렬하는데, Windows 기본 폰트에서 이게 동작하지 않으면 표의 자릿수가 행마다 어긋납니다 — 밀도를 올린 D안에서 가장 눈에 띄는 결함이 됩니다.</p>
+
+<h2>2. 세 가지 안</h2>
+<div class="g3">
+  <div>
+    <div class="oh"><b>① 시스템 폰트 그대로</b><span>웹폰트 없음</span></div>
+    <ul class="pros">
+      <li class="y">로딩 비용 0 · 깜빡임 없음</li>
+      <li class="y">각 OS에서 가장 익숙한 글꼴</li>
+      <li class="n"><b>플랫폼마다 다르게 보인다</b> — 질문하신 요구를 만족 못 함</li>
+      <li class="n">Windows에서 500·600 위계 소실</li>
+      <li class="n"><code>tabular-nums</code> 미동작 — 금액 정렬 깨짐</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>② Noto Sans KR 웹폰트</b><span>현행 폰트 유지 <span class="rec">권장</span></span></div>
+    <ul class="pros">
+      <li class="y"><b>모든 플랫폼 동일</b> — 굵기·자폭·숫자 정렬 전부</li>
+      <li class="y">이미 이 디자인의 기준 폰트라 시안 재검토 불필요</li>
+      <li class="y"><code>tabular-nums</code> 지원 — 금액 정렬 보장</li>
+      <li class="n">웹폰트 로딩 (한글 서브셋 필요)</li>
+      <li class="n">굵기를 3개로 줄여야 용량이 감당된다</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>③ Pretendard 웹폰트</b><span>교체</span></div>
+    <ul class="pros">
+      <li class="y">100–900 전 굵기 · 라틴/한글 자폭 일관</li>
+      <li class="y">시스템 UI 폰트와 metric 유사해 이질감 적음</li>
+      <li class="y">한국 금융·업무 서비스에서 사실상 표준</li>
+      <li class="n"><b>폰트 교체</b> — 확정된 시안 전체를 다시 봐야 한다</li>
+      <li class="n">현재 시안·감사 문서의 기준이 Noto Sans KR</li>
+    </ul>
+  </div>
+</div>
+
+<h2>3. 굵기 — 3단으로 축소</h2>
+<p class="note">현재 스펙은 400·500·600·700 네 단계를 씁니다. 웹폰트로 가더라도 <b>500과 600은 10~13px에서 육안 구분이 거의 안 되고</b>, 굵기 하나당 한글 웹폰트 용량이 크게 늘어납니다. 결정적으로 <b>Android가 실제로 갖고 있는 굵기가 정확히 400·500·700</b>이라 — 600만 합성됩니다 — 이 세 단으로 맞추면 웹폰트 로딩에 실패해도 Android에서 위계가 유지됩니다. <b>400 · 500 · 700</b> 세 단으로 줄이는 것을 권합니다.</p>
+<div class="demo g2">
+  <div class="card">
+    <div class="oh"><b>현행 4단</b><span>400 / 500 / 600 / 700</span></div>
+    <div class="ntk">
+      <div class="row"><span class="rl">400</span><span style="font-size:12px">아파트 관리비</span></div>
+      <div class="row"><span class="rl">500</span><span style="font-size:12px;font-weight:500">아파트 관리비</span></div>
+      <div class="row"><span class="rl">600</span><span style="font-size:12px;font-weight:600">아파트 관리비</span></div>
+      <div class="row"><span class="rl">700</span><span style="font-size:12px;font-weight:700">아파트 관리비</span></div>
+    </div>
+    <div class="cap">500과 600의 차이가 12px에서 거의 보이지 않는다</div>
+  </div>
+  <div class="card" style="box-shadow:0 0 0 2px #00695C, 0 4px 32px 0 rgba(13,28,46,.06)">
+    <div class="oh"><b>확정 3단</b><span>400 / 500 / 700</span></div>
+    <div class="ntk">
+      <div class="row"><span class="rl">400</span><span style="font-size:12px">본문 · 표 내역 · 값</span></div>
+      <div class="row"><span class="rl">500</span><span style="font-size:12px;font-weight:500">라벨 · 배지 · 헤더 · 보조 버튼</span></div>
+      <div class="row"><span class="rl">700</span><span style="font-size:12px;font-weight:700">금액 · 제목 · 주 버튼 · 선택 상태</span></div>
+    </div>
+    <div class="cap">기존 600은 전부 <b>500 또는 700</b>으로 흡수. 위계가 오히려 뚜렷해진다</div>
+  </div>
+</div>
+
+<h2>4. 크기 — 12단 → 7단</h2>
+<p class="note">감사 결과 코드에 <b>12가지 크기</b>가 흩어져 있습니다(7·9·10·11·12·13·14·16·18·20·24·48px). 확정 스펙이 쓰는 값만 남겨 <b>7단</b>으로 정리합니다.</p>
+<div class="demo">
+  <div class="card ntk">
+    <div class="row"><span class="rl">display</span><span style="font-size:22px;font-weight:700;letter-spacing:-.015em;font-variant-numeric:tabular-nums">128,450,000원</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">22 / 700 / -.015em · KPI 값</span></div>
+    <div class="row"><span class="rl">title</span><span style="font-size:20px;font-weight:700">포트폴리오</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">20 / 700 · 페이지 제목</span></div>
+    <div class="row"><span class="rl">heading</span><span style="font-size:15px;font-weight:700">거래 추가</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">15 / 700 · 모달 제목</span></div>
+    <div class="row"><span class="rl">subhead</span><span style="font-size:13px;font-weight:500">최근 거래</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">13 / 500 · 카드 제목 · 입력값</span></div>
+    <div class="row"><span class="rl">body</span><span style="font-size:12px">아파트 관리비 · 표 본문</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">12 / 400 · 본문 기본</span></div>
+    <div class="row"><span class="rl">meta</span><span style="font-size:11px;font-weight:500;color:#5b6a80">결제수단 · 폼 라벨</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">11 / 500 · 라벨 · 캡션</span></div>
+    <div class="row"><span class="rl">micro</span><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#5b6a80">TOTAL VALUE</span><span style="font-size:10px;color:#a8b3c4;margin-left:auto">10 / 500 / .08em · 표 헤더 · 배지</span></div>
+  </div>
+  <div class="cap"><b>9px 이하는 쓰지 않습니다</b> — 모바일에서 판독이 어렵고, 차트 축은 10px로 올립니다. 감사에서 발견된 7px 미니 범례는 삭제 대상입니다.</div>
+</div>
+<table class="dt">
+<tr><th style="width:90px">단계</th><th style="width:120px">크기 / 굵기</th><th>쓰는 곳</th><th style="width:150px">대체되는 현행 값</th></tr>
+<tr><td><b>display</b></td><td>22 / 700 / <code>-.015em</code></td><td>KPI 값 · 모달 금액 필드(20)</td><td><code>24</code> <code>18</code> <code>48</code></td></tr>
+<tr><td><b>title</b></td><td>20 / 700</td><td>페이지 제목</td><td><code>text-xl</code></td></tr>
+<tr><td><b>heading</b></td><td>15 / 700</td><td>모달 제목 · 섹션 제목</td><td><code>16</code> <code>14</code></td></tr>
+<tr><td><b>subhead</b></td><td>13 / 500</td><td>카드 제목 · 인풋 입력값 · 모바일 리스트 내역</td><td><code>14</code> <code>13</code></td></tr>
+<tr><td><b>body</b></td><td>12 / 400</td><td>표 본문 · 버튼 · 일반 텍스트</td><td><code>text-xs</code> (310회)</td></tr>
+<tr><td><b>meta</b></td><td>11 / 500</td><td>폼 라벨 · 캡션 · 부가 정보</td><td><code>text-[11px]</code> (56회)</td></tr>
+<tr><td><b>micro</b></td><td>10 / 500 / <code>.08em</code> 대문자</td><td>표 헤더 · 배지 · 차트 축</td><td><code>text-[10px]</code> (214회) · <code>9px</code> · <code>7px</code></td></tr>
+</table>
+
+<h2>5. 정리 — 이렇게 하면 동일해집니다</h2>
+<table class="dt">
+<tr><th style="width:120px">항목</th><th>확정 필요 사항</th></tr>
+<tr><td><b>폰트</b></td><td><b>② Noto Sans KR 웹폰트</b> — 자체 호스팅 + <code>font-display:swap</code>. 한글 서브셋(<code>unicode-range</code> 분할)으로 초기 로딩 최소화</td></tr>
+<tr><td><b>굵기</b></td><td><b>400 · 500 · 700</b> 3단만 로드. 600은 전부 500 또는 700으로 흡수</td></tr>
+<tr><td><b>크기</b></td><td><b>7단</b> 스케일. 9px 이하 금지 · 임의 픽셀값 금지</td></tr>
+<tr><td><b>숫자</b></td><td><code>font-variant-numeric:tabular-nums</code> — 웹폰트라 모든 플랫폼에서 동작 보장</td></tr>
+<tr><td><b>폴백</b></td><td><code>'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif</code> — 로딩 실패 시에도 한글이 깨지지 않도록</td></tr>
+<tr><td><b>렌더링</b></td><td><code>-webkit-font-smoothing:antialiased</code>는 <b>macOS에서만</b> 획을 가늘게 만든다. 플랫폼 간 동일하게 하려면 <b>쓰지 않는 편</b>이 낫다 — 확정 필요</td></tr>
+</table>
+
+<p style="font-size:11px;color:#475569;margin:14px 0 0;line-height:1.8;max-width:860px"><b>결론</b> — 색·간격·라운딩·밀도는 확정 스펙 그대로 어디서나 동일합니다. 폰트만 <b>웹폰트로 고정</b>하면 요청하신 "맥·윈도우·모바일 동일"이 성립합니다. 웹폰트를 쓰지 않으면 Windows에서 위계와 금액 정렬이 무너지므로, 이건 선택이라기보다 <b>D안이 성립하기 위한 전제</b>에 가깝습니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">문서 — <a href="../spec/color-surface.html">색·표면 스펙</a> · <a href="../spec/overlays-forms.html">폼·모달 스펙</a> · <a href="../spec/data-display.html">표·배지·차트 스펙</a> · <a href="../audit/typography.html">타이포 감사</a></p>
+</div></body></html>

@@ -72,7 +72,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
   }
 
   const raw = snapshots[0] ?? null
-  if (!raw) return <p className="p-8 text-slate-400">스냅샷을 찾을 수 없습니다.</p>
+  if (!raw) return <p className="p-8 text-ink-4">스냅샷을 찾을 수 없습니다.</p>
   const snapshot: Snapshot = {
     ...raw,
     date: (raw.date as unknown) instanceof Date

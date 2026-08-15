@@ -165,8 +165,8 @@ export default function CompareCharts({
 
   if (readyYears.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center">
-        <div className="animate-pulse text-slate-400 text-sm">데이터 로딩 중...</div>
+      <div className="bg-surface-card rounded-card shadow-card p-16 text-center">
+        <div className="animate-pulse text-ink-4 text-subhead">데이터 로딩 중...</div>
       </div>
     )
   }
@@ -182,27 +182,27 @@ export default function CompareCharts({
       {/* Monthly line chart */}
       <section>
         <div className="px-1 mb-3">
-          <h2 className="text-sm font-semibold text-slate-700">{chartTitle}</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">
+          <h2 className="text-subhead font-medium text-ink">{chartTitle}</h2>
+          <p className="text-meta text-ink-4 mt-0.5">
             {selectedDetail
-              ? <><span>항목별 월간 비교 </span><button onClick={() => onDetailSelect(null)} className="text-blue-400 hover:text-blue-600 ml-1">전체보기</button></>
+              ? <><span>항목별 월간 비교 </span><button onClick={() => onDetailSelect(null)} className="text-ink-3 hover:text-ink ml-1">전체보기</button></>
               : cumulative ? '연초부터 해당 월까지 누적 합계' : '선택한 연도별 월간 합계'}
           </p>
         </div>
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="bg-surface-card rounded-card shadow-card p-[13px]">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis
               tickFormatter={(v) => `${Math.round(v / 10000)}만`}
-              tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48}
+              tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48}
             />
             <Tooltip
               formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
-              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }}
+              contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }}
             />
-            <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+            <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
             {readyYears.map((year) => (
               <Line key={year} type="monotone" dataKey={year} stroke={colorMap[year]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
             ))}
@@ -230,38 +230,38 @@ export default function CompareCharts({
             : '카테고리별 연간 지출 합계'
           return (
             <div className="px-1 mb-3">
-              <h2 className="text-sm font-semibold text-slate-700">{secondTitle}</h2>
-              <p className="text-[11px] text-slate-400 mt-0.5">{secondSubtitle}</p>
+              <h2 className="text-subhead font-medium text-ink">{secondTitle}</h2>
+              <p className="text-meta text-ink-4 mt-0.5">{secondSubtitle}</p>
             </div>
           )
         })()}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+      <div className="bg-surface-card rounded-card shadow-card p-[13px]">
         {subDetailData ? (
           <>
             <div className="mb-3">
               <input type="text" value={detailSearch} onChange={e => setDetailSearch(e.target.value)}
                 placeholder="내역 검색..."
-                className="w-full max-w-sm text-xs border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                className="w-full max-w-sm text-body rounded-btn px-3 py-1.5 text-ink-2 focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
             </div>
             <ResponsiveContainer width="100%" height={Math.max(300, subDetailData.length * 44)}>
               <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
                 onClick={(e) => { if (e?.activeLabel) onDetailSelect(selectedDetail === e.activeLabel ? null : e.activeLabel) }}
                 style={{ cursor: 'pointer' }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="detail"
                   tick={({ x, y, payload }: any) => (
                     <text x={x} y={y} dy={4} textAnchor="end" fontSize={11}
-                      fill={selectedDetail === payload.value ? '#1e293b' : '#64748b'}
+                      fill={selectedDetail === payload.value ? '#1e293b' : '#5b6a80'}
                       fontWeight={selectedDetail === payload.value ? 700 : 400}>
                       {payload.value.length > 8 ? payload.value.slice(0, 8) + '…' : payload.value}
                     </text>
                   )}
                   axisLine={false} tickLine={false} width={72} />
-                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
+                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
-                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[0, 4, 4, 0]} />
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
@@ -271,12 +271,12 @@ export default function CompareCharts({
             <ResponsiveContainer width="100%" height={Math.max(200, memberData.length * 56)}>
               <BarChart data={memberData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="member" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} width={32} />
-                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="member" tick={{ fontSize: 12, fill: '#5b6a80' }} axisLine={false} tickLine={false} width={32} />
+                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
+                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
-                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[0, 4, 4, 0]} />
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
@@ -286,12 +286,12 @@ export default function CompareCharts({
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={incomeCategoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
-                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
+                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
+                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
-                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[4, 4, 0, 0]} />
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
               </BarChart>
             </ResponsiveContainer>
@@ -301,12 +301,12 @@ export default function CompareCharts({
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={categoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
-                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#64748b', fontSize: 12 }}>{value}년</span>} />
+                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
+                <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
+                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
-                  <Bar key={year} dataKey={year} fill={colorMap[year]} radius={[4, 4, 0, 0]} />
+                  <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
               </BarChart>
             </ResponsiveContainer>

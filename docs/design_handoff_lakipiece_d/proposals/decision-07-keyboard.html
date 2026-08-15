@@ -1,0 +1,126 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1120" name="D-07 키보드 · 연속 입력" subtitle="마지막 결정 — 명세와 신규 기능" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>D-07 — 키보드 · 연속 입력</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 44px;max-width:1180px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:840px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:30px 0 12px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+kbd{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-family:ui-monospace,monospace;font-size:10px;font-weight:700;padding:4px 7px;border-radius:6px;background:#131b2e;color:#fff;min-width:22px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.oh{margin-bottom:9px}
+.oh b{font-size:12.5px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.stage{background:#fafafb;border-radius:16px;padding:14px}
+.card{background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:13px}
+.pros{font-size:10.5px;line-height:1.7;margin:10px 0 0;padding:0;list-style:none}
+.pros li{padding-left:13px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.tab{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f1f3f7;font-size:12px}
+.tab:last-child{border-bottom:0}
+.tn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:9999px;background:#f1f3f7;color:#5b6a80;font-size:9px;font-weight:700;flex:none}
+</style></head><body><div class="wrap">
+<div class="tag">확정 12건 · 마지막 결정 D-07</div>
+<h1>D-07 — 키보드 명세 · 연속 입력</h1>
+<p class="lede">D안은 입력 화면에서 <kbd>⏎</kbd> 저장을 전제로 설계했습니다(입금 인라인 행은 <kbd>⏎</kbd>가 유일한 저장 수단). 현행에는 키보드 명세가 없어 새로 정해야 하고, "저장 후 계속 입력"은 <b>현행에 없는 기능</b>이라 개발 확인이 필요합니다.</p>
+
+<h2>키 배정 — 이대로 확정할지</h2>
+<div class="g2">
+  <div class="stage">
+    <div class="lbl" style="color:#8794a8;margin-bottom:9px">제안 명세</div>
+    <div class="card">
+      <div class="tab"><kbd>⏎</kbd><div style="flex:1;color:#3d4a5c">저장하고 닫기 <span style="color:#8794a8">— 토글 ON이면 저장하고 계속</span></div><span style="font-size:10px;color:#a8b3c4">모달</span></div>
+      <div class="tab"><kbd>⏎</kbd><div style="flex:1;color:#3d4a5c">저장하고 <b>계속</b> — 행 유지 · 커서 복귀</div><span style="font-size:10px;color:#a8b3c4">인라인 행</span></div>
+      <div class="tab"><kbd>⌘⏎</kbd><div style="flex:1;color:#3d4a5c">저장하고 <b>계속 입력</b></div><span style="font-size:10px;color:#a8b3c4">토글 상태와 무관</span></div>
+      <div class="tab"><kbd>Esc</kbd><div style="flex:1;color:#3d4a5c">취소 — 입력값 있으면 확인</div><span style="font-size:10px;color:#a8b3c4">모달</span></div>
+      <div class="tab"><kbd>Tab</kbd><div style="flex:1;color:#3d4a5c">다음 필드</div><span style="font-size:10px;color:#a8b3c4">아래 순서</span></div>
+      <div class="tab"><kbd>↑↓</kbd><div style="flex:1;color:#3d4a5c">드롭다운 항목 이동</div><span style="font-size:10px;color:#a8b3c4">계좌 · 결제수단</span></div>
+      <div class="tab"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd><div style="flex:1;color:#3d4a5c">분류 pill 직접 선택</div><span style="font-size:10px;color:#a8b3c4">금액 칸 밖에서</span></div>
+    </div>
+    <div style="font-size:10px;color:#8794a8;margin-top:8px"><kbd style="background:#e0e4ec;color:#3d4a5c">1</kbd>–<kbd style="background:#e0e4ec;color:#3d4a5c">4</kbd>는 숫자 입력과 충돌하므로 <b>금액 필드에 포커스가 없을 때만</b> 동작</div>
+  </div>
+  <div class="stage">
+    <div class="lbl" style="color:#8794a8;margin-bottom:9px">Tab 순서 — 거래 추가 모달</div>
+    <div class="card">
+      <div class="tab"><span class="tn">1</span><div style="flex:1;color:#3d4a5c"><b>금액</b></div><span style="font-size:10px;color:#a8b3c4">열자마자 포커스</span></div>
+      <div class="tab"><span class="tn">2</span><div style="flex:1;color:#3d4a5c">분류</div><span style="font-size:10px;color:#a8b3c4">pill 그룹 = 탭 스톱 1개</span></div>
+      <div class="tab"><span class="tn">3</span><div style="flex:1;color:#3d4a5c">내역</div></div>
+      <div class="tab"><span class="tn">4</span><div style="flex:1;color:#3d4a5c">날짜</div><span style="font-size:10px;color:#a8b3c4">기본 오늘</span></div>
+      <div class="tab"><span class="tn">5</span><div style="flex:1;color:#3d4a5c">결제수단</div><span style="font-size:10px;color:#a8b3c4">마지막 값 기억</span></div>
+      <div class="tab"><span class="tn">6</span><div style="flex:1;color:#3d4a5c">저장</div></div>
+    </div>
+    <div style="font-size:10px;color:#8794a8;margin-top:8px">화면 <b>배치 순서</b>(금액 → 날짜·수단 → 분류 → 내역)와 다릅니다. 날짜·결제수단은 기본값이 맞는 경우가 대부분이라 <b>뒤로 미루고</b>, 매번 바뀌는 값을 앞에 둡니다</div>
+  </div>
+</div>
+
+<h2>"저장 후 계속 입력" — 어떻게 넣을지</h2>
+<div class="g2">
+  <div>
+    <div class="oh"><b>① 토글 상시 노출</b><span>D안 초안 <span class="rec">권장</span></span></div>
+    <div class="stage">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#3d4a5c;margin-bottom:11px">
+          <span style="width:32px;height:18px;border-radius:9999px;background:#131b2e;position:relative;flex:none"><span style="position:absolute;right:2px;top:2px;width:14px;height:14px;border-radius:9999px;background:#fff"></span></span>
+          저장 후 계속 입력
+        </div>
+        <div style="display:flex;gap:7px;justify-content:flex-end">
+          <button style="padding:8px 15px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#e0e4ec;color:#3d4a5c;cursor:pointer;font-family:inherit">취소</button>
+          <button style="padding:8px 17px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#131b2e;color:#fff;cursor:pointer;font-family:inherit">저장 <span style="opacity:.6;font-weight:500">⏎</span></button>
+        </div>
+        <div style="margin-top:11px;padding-top:10px;border-top:1px solid #f1f3f7;font-size:11px;color:#5b6a80;line-height:1.7">토글 ON이면 <kbd style="background:#e0e4ec;color:#3d4a5c">⏎</kbd>가 <b>저장하고 계속</b>이 됩니다. 모달은 열린 채로 금액만 비워지고 커서가 금액 칸으로 돌아갑니다. 상태는 기억됩니다.</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">동작이 <b>눈에 보인다</b> — 모달이 왜 안 닫히는지 설명이 된다</li>
+      <li class="y">사용자가 스스로 켜고 끈다. 학습 불필요</li>
+      <li class="y">인라인 행(D-03)과 동작이 같아진다 — 규칙 한 벌</li>
+      <li class="n">폼에 컨트롤이 하나 늘어난다</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>② 단축키만</b><span>토글 없이 <kbd style="background:#e0e4ec;color:#3d4a5c">⌘⏎</kbd></span></div>
+    <div class="stage">
+      <div class="card">
+        <div style="display:flex;gap:7px;justify-content:flex-end;margin-bottom:11px">
+          <button style="padding:8px 15px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#e0e4ec;color:#3d4a5c;cursor:pointer;font-family:inherit">취소</button>
+          <button style="padding:8px 17px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#131b2e;color:#fff;cursor:pointer;font-family:inherit">저장 <span style="opacity:.6;font-weight:500">⏎</span></button>
+        </div>
+        <div style="padding-top:10px;border-top:1px solid #f1f3f7;font-size:11px;color:#5b6a80;line-height:1.7"><kbd style="background:#e0e4ec;color:#3d4a5c">⏎</kbd>는 저장하고 닫기, <kbd style="background:#e0e4ec;color:#3d4a5c">⌘⏎</kbd>는 저장하고 계속. UI에는 아무것도 추가하지 않습니다.</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">폼이 깨끗하다 — 신규 UI 0</li>
+      <li class="y">구현이 가장 가볍다</li>
+      <li class="n">발견되지 않는다 — <b>아는 사람만 쓴다</b></li>
+      <li class="n">모바일에는 존재하지 않는 기능이 된다</li>
+      <li class="n">가계부의 반복 입력 문제를 실질적으로 해결 못 함</li>
+    </ul>
+  </div>
+</div>
+
+<h2>정리</h2>
+<table class="dt">
+<tr><th style="width:120px">항목</th><th>권장</th><th>비고</th></tr>
+<tr><td><b>저장</b></td><td><kbd>⏎</kbd> — <b>모달</b>은 저장하고 닫기(토글 ON이면 계속), <b>인라인 행</b>은 저장하고 계속·커서 복귀</td><td>인라인 행에는 닫기 개념이 없고 <kbd>⏎</kbd>가 유일한 저장 수단이다. 토글을 켜면 모달도 인라인 행과 같은 동작이 된다</td></tr>
+<tr><td><b>취소</b></td><td><kbd>Esc</kbd> — 입력값 있으면 확인 한 번</td><td>실수로 닫혀 값이 날아가는 것을 막음</td></tr>
+<tr><td><b>Tab 순서</b></td><td>금액 → 분류 → 내역 → 날짜 → 결제수단 → 저장</td><td>화면 배치와 다름. 기본값이 맞는 필드를 뒤로</td></tr>
+<tr><td><b>분류 선택</b></td><td><kbd>1</kbd>–<kbd>4</kbd> · 금액 칸 밖에서만</td><td>pill 4개가 고정이라 가능. 숫자 입력과 충돌 방지</td></tr>
+<tr><td><b>연속 입력</b></td><td><b>① 토글 상시 노출</b> + <kbd>⌘⏎</kbd> 병행 (토글 상태와 무관하게 항상 동작)</td><td><span style="color:#b45309;font-weight:600">신규 기능</span> — 저장 후 폼 초기화·포커스 복귀·토글 상태 저장. 개발 확인 필요</td></tr>
+<tr><td><b>모바일</b></td><td>토글 유지 · 단축키 없음</td><td>토글이 있어야 모바일에서도 같은 동작을 쓸 수 있다 — ②를 고르면 모바일엔 기능이 없어짐</td></tr>
+</table>
+
+<p style="font-size:11px;color:#475569;margin:14px 0 0;line-height:1.8;max-width:860px"><b>①을 권합니다.</b> ②는 가볍지만 모바일에서 기능이 사라지고, 발견되지 않으면 반복 입력 문제가 그대로 남습니다. 토글을 넣으면 인라인 행(D-03)과 동작이 같아져 <b>규칙이 한 벌</b>로 유지됩니다. 단축키 <kbd>⌘⏎</kbd>는 토글과 병행해도 충돌하지 않으니 둘 다 넣는 편이 좋습니다.<br><br>이 항목만 <b>개발 확인이 필요</b>합니다 — 나머지 결정은 스타일 교체지만 연속 입력은 저장 후 폼 상태를 다루는 동작 변경입니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">문서 — <a href="decision-board.html">결정 현황판</a> · <a href="proposal-d.html">D안 전체</a> · <a href="decision-03-inline-entry.html">D-03</a> · <a href="decision-06-mobile.html">D-06</a></p>
+</div></body></html>

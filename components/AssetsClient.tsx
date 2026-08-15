@@ -74,25 +74,25 @@ function KpiCard({ label, value, sub, color, tooltip }: {
   label: string; value: string; sub: string; color: string; tooltip?: string
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 hover:-translate-y-0.5 transition-all">
+    <div className="bg-surface-card rounded-field shadow-card p-3 hover:-translate-y-0.5 transition-all">
       <div className="flex items-center gap-1.5 mb-1">
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
         <div className="relative group flex items-center gap-1">
-          <p className="text-[10px] text-slate-400 font-medium">{label}</p>
+          <p className="text-micro tracking-normal text-ink-4 font-medium">{label}</p>
           {tooltip && (
             <>
-              <svg className="w-3 h-3 text-slate-300 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-3 h-3 text-ink-5 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-10 w-48 bg-slate-800 text-white text-[11px] rounded-lg px-2.5 py-1.5 shadow-lg pointer-events-none">
+              <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-10 w-48 bg-action text-white text-meta rounded-btn px-2.5 py-1.5 shadow-card pointer-events-none">
                 {tooltip}
               </div>
             </>
           )}
         </div>
       </div>
-      <p className="text-base font-bold mt-0.5 text-slate-800">{value}</p>
-      <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>
+      <p className="text-heading font-bold mt-0.5 text-ink">{value}</p>
+      <p className="text-micro tracking-normal text-ink-4 mt-0.5">{sub}</p>
     </div>
   )
 }
@@ -135,42 +135,42 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
     ? item.current_value - item.acquisition_price : null
   const gainPct = gain != null && item.acquisition_price != null && item.acquisition_price > 0
     ? (gain / item.acquisition_price) * 100 : null
-  const gainColor = gain === null ? '#64748b' : gain >= 0 ? '#ef4444' : '#3b82f6'
+  const gainColor = gain === null ? '#5b6a80' : gain >= 0 ? '#ef4444' : '#3b82f6'
 
   const chartData = (valuations ?? [])
     .slice().sort((a, b) => a.val_date.localeCompare(b.val_date))
     .map(v => ({ date: v.val_date, amount: v.amount }))
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="p-5 cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={handleToggle}>
+    <div className="bg-surface-card rounded-card shadow-card overflow-hidden">
+      <div className="p-5 cursor-pointer hover:bg-surface-low/50 transition-colors" onClick={handleToggle}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <TypeBadge type={item.asset_type} />
-              <span className="text-sm font-semibold text-slate-800 truncate">{item.name}</span>
+              <span className="text-subhead font-medium text-ink truncate">{item.name}</span>
             </div>
-            {item.description ? <p className="text-xs text-slate-400 mb-2">{item.description}</p> : null}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
-              <span>취득가 <span className="font-medium text-slate-700">{item.acquisition_price != null ? fmtAmt(item.acquisition_price) : '-'}</span></span>
-              <span className="text-slate-200">·</span>
-              <span>현재 <span className="font-medium text-slate-700">{item.current_value != null ? fmtAmt(item.current_value) : '-'}</span></span>
-              <span className="text-slate-200">·</span>
+            {item.description ? <p className="text-body text-ink-4 mb-2">{item.description}</p> : null}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-body text-ink-3">
+              <span>취득가 <span className="font-medium text-ink">{item.acquisition_price != null ? fmtAmt(item.acquisition_price) : '-'}</span></span>
+              <span className="text-ink-5">·</span>
+              <span>현재 <span className="font-medium text-ink">{item.current_value != null ? fmtAmt(item.current_value) : '-'}</span></span>
+              <span className="text-ink-5">·</span>
               <span>시세차익 <span className="font-medium" style={{ color: gainColor }}>
                 {gain != null ? `${gain >= 0 ? '+' : ''}${fmtAmt(gain)}` : '-'}
                 {gainPct !== null ? ` (${gainPct.toFixed(1)}%)` : ''}
               </span></span>
             </div>
-            <p className="text-[10px] text-slate-300 mt-1">마지막 평가일: {item.last_val_date ?? '-'}</p>
+            <p className="text-micro tracking-normal text-ink-5 mt-1">마지막 평가일: {item.last_val_date ?? '-'}</p>
           </div>
-          <svg className={`w-4 h-4 text-slate-300 flex-shrink-0 transition-transform mt-1 ${expanded ? 'rotate-180' : ''}`}
+          <svg className={`w-4 h-4 text-ink-5 flex-shrink-0 transition-transform mt-1 ${expanded ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
         <div className="flex items-center justify-end gap-2 mt-3" onClick={e => e.stopPropagation()}>
           <button onClick={() => onValuation(item)}
-            className="px-3 py-1 rounded-lg text-[10px] font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 transition-colors">
+            className="px-3 py-1 rounded-btn text-micro tracking-normal font-medium text-ink-3 hover:text-ink transition-colors">
             평가액 업데이트
           </button>
           <button onClick={() => onEdit(item)} className={btn.icon} title="수정">
@@ -187,21 +187,21 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
       </div>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-5 py-4">
+        <div className="border-t border-surface-low px-[18px] py-[15px]">
           {loadingVal ? (
-            <div className="h-40 flex items-center justify-center text-xs text-slate-300">로딩 중...</div>
+            <div className="h-40 flex items-center justify-center text-body text-ink-5">로딩 중...</div>
           ) : chartData.length === 0 ? (
-            <div className="h-40 flex items-center justify-center text-xs text-slate-300">시세 이력이 없습니다</div>
+            <div className="h-40 flex items-center justify-center text-body text-ink-5">시세 이력이 없습니다</div>
           ) : (
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={['auto', 'auto']} />
                 <Tooltip
                   formatter={(value: number) => [formatWonFull(value), '시세']}
-                  labelStyle={{ fontSize: 11, color: '#64748b' }}
-                  contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                  labelStyle={{ fontSize: 11, color: '#5b6a80' }}
+                  contentStyle={{ fontSize: 11, borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)' }}
                 />
                 <Line type="monotone" dataKey="amount" stroke={palette.colors[0]} strokeWidth={2}
                   dot={{ r: 3, fill: palette.colors[0] }} activeDot={{ r: 4 }} />
@@ -260,8 +260,8 @@ function PensionSnapshotModal({ show, pensionId, pensionName, onClose, onSaved, 
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">스냅샷 기록</h2>
-            <p className="text-[10px] text-slate-400 mt-0.5">{pensionName}</p>
+            <h2 className="text-subhead font-medium text-ink">스냅샷 기록</h2>
+            <p className="text-micro tracking-normal text-ink-4 mt-0.5">{pensionName}</p>
           </div>
           <button onClick={onClose} className={modal.close} type="button">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -284,7 +284,7 @@ function PensionSnapshotModal({ show, pensionId, pensionName, onClose, onSaved, 
             <input type="text" value={note} onChange={e => setNote(e.target.value)}
               placeholder="메모" className={field.input} />
           </div>
-          {error && <p className="text-xs text-rose-400">{error}</p>}
+          {error && <p className="text-body text-danger">{error}</p>}
         </div>
         <div className={modal.footer}>
           <button type="button" onClick={onClose} className={btn.secondary}>취소</button>
@@ -342,7 +342,7 @@ function PensionFormModal({ show, onClose, onSaved, palette, editItem }: {
     <div className={modal.overlayTop}>
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
-          <h2 className="text-sm font-semibold text-slate-800">{editItem ? '연금자산 수정' : '연금자산 추가'}</h2>
+          <h2 className="text-subhead font-medium text-ink">{editItem ? '연금자산 수정' : '연금자산 추가'}</h2>
           <button onClick={onClose} className={modal.close} type="button">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -360,7 +360,7 @@ function PensionFormModal({ show, onClose, onSaved, palette, editItem }: {
             <input type="text" value={description} onChange={e => setDescription(e.target.value)}
               placeholder="설명 (선택)" className={field.input} />
           </div>
-          {error && <p className="text-xs text-rose-400">{error}</p>}
+          {error && <p className="text-body text-danger">{error}</p>}
         </div>
         <div className={modal.footer}>
           <button type="button" onClick={onClose} className={btn.secondary}>취소</button>
@@ -419,33 +419,33 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
     .map(s => ({ date: s.snapshot_date, amount: s.amount }))
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="p-5 cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={handleToggle}>
+    <div className="bg-surface-card rounded-card shadow-card overflow-hidden">
+      <div className="p-5 cursor-pointer hover:bg-surface-low/50 transition-colors" onClick={handleToggle}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className={badge.base} style={{ backgroundColor: `${PENSION_COLOR}1a`, color: PENSION_COLOR }}>연금</span>
-              <span className="text-sm font-semibold text-slate-800 truncate">{item.name}</span>
+              <span className="text-subhead font-medium text-ink truncate">{item.name}</span>
             </div>
-            {item.description && <p className="text-xs text-slate-400 mb-2">{item.description}</p>}
-            <div className="text-xs text-slate-500">
+            {item.description && <p className="text-body text-ink-4 mb-2">{item.description}</p>}
+            <div className="text-body text-ink-3">
               {item.current_amount != null
-                ? <span className="font-medium text-slate-700">{fmtAmt(item.current_amount)}</span>
-                : <span className="text-slate-300">스냅샷 없음</span>
+                ? <span className="font-medium text-ink">{fmtAmt(item.current_amount)}</span>
+                : <span className="text-ink-5">스냅샷 없음</span>
               }
             </div>
             {item.last_snapshot_date && (
-              <p className="text-[10px] text-slate-300 mt-1">마지막 기록일: {item.last_snapshot_date}</p>
+              <p className="text-micro tracking-normal text-ink-5 mt-1">마지막 기록일: {item.last_snapshot_date}</p>
             )}
           </div>
-          <svg className={`w-4 h-4 text-slate-300 flex-shrink-0 transition-transform mt-1 ${expanded ? 'rotate-180' : ''}`}
+          <svg className={`w-4 h-4 text-ink-5 flex-shrink-0 transition-transform mt-1 ${expanded ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
         <div className="flex items-center gap-2 mt-3" onClick={e => e.stopPropagation()}>
           <button onClick={() => onSnapshot(item)}
-            className="px-3 py-1 rounded-lg text-[10px] font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 transition-colors">
+            className="px-3 py-1 rounded-btn text-micro tracking-normal font-medium text-ink-3 hover:text-ink transition-colors">
             스냅샷 기록
           </button>
           <button onClick={() => onEdit(item)} className={btn.icon} title="수정">
@@ -462,11 +462,11 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
       </div>
 
       {expanded && (
-        <div className="border-t border-slate-100 px-5 py-4">
+        <div className="border-t border-surface-low px-[18px] py-[15px]">
           {loading ? (
-            <div className="h-32 flex items-center justify-center text-xs text-slate-300">로딩 중...</div>
+            <div className="h-32 flex items-center justify-center text-body text-ink-5">로딩 중...</div>
           ) : snapshots && snapshots.length === 0 ? (
-            <div className="h-24 flex items-center justify-center text-xs text-slate-300">기록된 스냅샷이 없습니다</div>
+            <div className="h-24 flex items-center justify-center text-body text-ink-5">기록된 스냅샷이 없습니다</div>
           ) : (
             <>
               {chartData.length >= 2 && (
@@ -474,12 +474,12 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
                   <ResponsiveContainer width="100%" height={140}>
                     <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
                       <YAxis hide domain={['auto', 'auto']} />
                       <Tooltip
                         formatter={(value: number) => [formatWonFull(value), '잔액']}
-                        labelStyle={{ fontSize: 11, color: '#64748b' }}
-                        contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                        labelStyle={{ fontSize: 11, color: '#5b6a80' }}
+                        contentStyle={{ fontSize: 11, borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)' }}
                       />
                       <Line type="monotone" dataKey="amount" stroke={PENSION_COLOR} strokeWidth={2}
                         dot={{ r: 3, fill: PENSION_COLOR }} activeDot={{ r: 4 }} />
@@ -489,12 +489,12 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
               )}
               <div className="space-y-1">
                 {[...(snapshots ?? [])].sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date)).map(s => (
-                  <div key={s.id} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-50 last:border-0">
-                    <span className="text-slate-400">{s.snapshot_date}</span>
-                    <span className="font-semibold text-slate-700">{fmtAmt(s.amount)}</span>
-                    {s.note && <span className="text-slate-300 truncate max-w-[120px]">{s.note}</span>}
+                  <div key={s.id} className="flex items-center justify-between text-body py-1.5 border-b border-surface-low last:border-0">
+                    <span className="text-ink-4">{s.snapshot_date}</span>
+                    <span className="font-medium text-ink">{fmtAmt(s.amount)}</span>
+                    {s.note && <span className="text-ink-5 truncate max-w-[120px]">{s.note}</span>}
                     <button onClick={() => handleDeleteSnapshot(s.id)}
-                      className="text-slate-200 hover:text-rose-400 transition-colors ml-2 opacity-0 group-hover:opacity-100">
+                      className="text-ink-5 hover:text-danger transition-colors ml-2 opacity-0 group-hover:opacity-100">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
@@ -527,14 +527,14 @@ function FinancialSection() {
   }, [])
 
   if (loading) {
-    return <div className="h-32 flex items-center justify-center text-xs text-slate-300 animate-pulse">로딩 중...</div>
+    return <div className="h-32 flex items-center justify-center text-body text-ink-5 animate-pulse">로딩 중...</div>
   }
 
   if (!snapshot) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center">
-        <p className="text-xs text-slate-300">포트폴리오 스냅샷 데이터가 없습니다</p>
-        <a href="/portfolio/snapshots" className="text-xs text-blue-400 hover:text-blue-600 mt-1 block">
+      <div className="bg-surface-card rounded-card shadow-card p-8 text-center">
+        <p className="text-body text-ink-5">포트폴리오 스냅샷 데이터가 없습니다</p>
+        <a href="/portfolio/snapshots" className="text-body text-ink-3 hover:text-ink mt-1 block">
           포트폴리오 스냅샷으로 이동 →
         </a>
       </div>
@@ -545,7 +545,7 @@ function FinancialSection() {
     ? snapshot.total_market_value - snapshot.total_invested : null
   const gainPct = gain != null && snapshot.total_invested && snapshot.total_invested > 0
     ? (gain / snapshot.total_invested) * 100 : null
-  const gainColor = gain === null ? '#64748b' : gain >= 0 ? '#ef4444' : '#3b82f6'
+  const gainColor = gain === null ? '#5b6a80' : gain >= 0 ? '#ef4444' : '#3b82f6'
 
   const gainSign = gain != null && gain >= 0 ? '+' : ''
 
@@ -553,10 +553,10 @@ function FinancialSection() {
     <div className="space-y-3">
       <div className="flex items-center justify-end">
         <a href="/portfolio/snapshots"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors group">
-          <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-700">최신 포트폴리오 스냅샷</span>
-          <span className="text-[10px] text-slate-400">{sliceDate(snapshot.date)}</span>
-          <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-surface-low hover:bg-surface-low transition-colors group">
+          <span className="text-meta font-medium text-ink-3 group-hover:text-ink">최신 포트폴리오 스냅샷</span>
+          <span className="text-micro tracking-normal text-ink-4">{sliceDate(snapshot.date)}</span>
+          <svg className="w-3.5 h-3.5 text-ink-4 group-hover:text-ink-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </a>
@@ -566,7 +566,7 @@ function FinancialSection() {
         <KpiCard label="투자원금" value={fmtAmt(snapshot.total_invested)} sub="누적 투자금" color={FINANCIAL_COLOR} />
         <KpiCard label="평가손익" value={gain != null ? `${gainSign}${fmtAmt(gain)}` : '-'} sub={gainPct != null ? `${gainSign}${gainPct.toFixed(1)}%` : '-'} color={gainColor} />
       </div>
-      {snapshot.memo && <p className="text-xs text-slate-400">{snapshot.memo}</p>}
+      {snapshot.memo && <p className="text-body text-ink-4">{snapshot.memo}</p>}
     </div>
   )
 }
@@ -631,13 +631,13 @@ export default function AssetsClient() {
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
   const donutData = [
-    { name: '유형자산', value: tangibleTotal, color: '#1A237E' },
+    { name: '유형자산', value: tangibleTotal, color: '#0d1c2e' },
     { name: '연금자산', value: pensionTotal, color: PENSION_COLOR },
     { name: '금융자산', value: financialTotal, color: FINANCIAL_COLOR },
   ].filter(d => d.value > 0)
 
   const TABS = [
-    { key: 'tangible' as const, label: '유형자산', color: '#1A237E' },
+    { key: 'tangible' as const, label: '유형자산', color: '#0d1c2e' },
     { key: 'pension' as const, label: '연금자산', color: PENSION_COLOR },
     { key: 'financial' as const, label: '금융자산', color: FINANCIAL_COLOR },
   ]
@@ -646,9 +646,9 @@ export default function AssetsClient() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-100 rounded-xl w-48" />
+          <div className="h-8 bg-surface-low rounded-field w-48" />
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-slate-100 rounded-2xl" />)}
+            {[1,2,3,4].map(i => <div key={i} className="h-24 bg-surface-low rounded-card" />)}
           </div>
         </div>
       </div>
@@ -687,8 +687,8 @@ export default function AssetsClient() {
 
       {/* 자산 구성 도넛 차트 */}
       {grandTotal > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4">
-          <p className="text-xs font-semibold text-slate-500 mb-3">자산 구성</p>
+        <div className="bg-surface-card rounded-card shadow-card p-[13px]">
+          <p className="text-body font-medium text-ink-3 mb-3">자산 구성</p>
           <div className="flex items-center gap-6">
             <div className="flex-shrink-0">
               <PieChart width={140} height={140}>
@@ -704,11 +704,11 @@ export default function AssetsClient() {
                 <div key={d.name} className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
-                    <span className="text-xs text-slate-600">{d.name}</span>
+                    <span className="text-body text-ink-2">{d.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-slate-700">{fmtAmt(d.value)}</span>
-                    <span className="text-[10px] text-slate-400 ml-1.5">{((d.value / grandTotal) * 100).toFixed(1)}%</span>
+                    <span className="text-body font-medium text-ink">{fmtAmt(d.value)}</span>
+                    <span className="text-micro tracking-normal text-ink-4 ml-1.5">{((d.value / grandTotal) * 100).toFixed(1)}%</span>
                   </div>
                 </div>
               ))}
@@ -718,13 +718,13 @@ export default function AssetsClient() {
       )}
 
       {/* 탭 */}
-      <div className="flex gap-0.5 bg-slate-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-0.5 bg-surface-low rounded-field p-1 w-fit">
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className="px-3 py-1 rounded-lg text-xs font-semibold transition-all"
+            className="px-3 py-1 rounded-btn text-body font-medium transition-all"
             style={activeTab === tab.key
               ? { background: '#fff', color: tab.color, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
-              : { color: '#94a3b8' }
+              : { color: '#a8b3c4' }
             }>
             {tab.label}
           </button>
@@ -734,7 +734,7 @@ export default function AssetsClient() {
       {/* 탭 콘텐츠 */}
       {activeTab === 'tangible' && (
         tangibleItems.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-16 text-center text-xs text-slate-300">
+          <div className="bg-surface-card rounded-card shadow-card px-[13px] py-16 text-center text-body text-ink-5">
             등록된 유형자산이 없습니다. 자산을 추가해보세요.
           </div>
         ) : (
@@ -753,7 +753,7 @@ export default function AssetsClient() {
 
       {activeTab === 'pension' && (
         pensionItems.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-16 text-center text-xs text-slate-300">
+          <div className="bg-surface-card rounded-card shadow-card px-[13px] py-16 text-center text-body text-ink-5">
             등록된 연금자산이 없습니다. 연금을 추가해보세요.
           </div>
         ) : (

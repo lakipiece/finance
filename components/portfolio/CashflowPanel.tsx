@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { Cashflow, CashflowType } from '@/lib/portfolio/types'
 import { CASHFLOW_INFLOW_TYPES, CASHFLOW_TYPE_LABELS } from '@/lib/portfolio/types'
 import { field, btn, badge, brand, skeleton } from '@/lib/styles'
@@ -16,7 +16,7 @@ export function isInflow(type: CashflowType) {
 }
 
 function typeColor(type: CashflowType) {
-  return type === 'opening' ? '#64748b' : isInflow(type) ? INFLOW_COLOR : OUTFLOW_COLOR
+  return type === 'opening' ? '#8794a8' : isInflow(type) ? INFLOW_COLOR : OUTFLOW_COLOR
 }
 
 function todayStr() {
@@ -50,6 +50,12 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const amountRef = useRef<HTMLInputElement>(null)
+
+  function onRowKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') { e.preventDefault(); handleSave() }
+    if (e.key === 'Escape' && editId) { e.preventDefault(); resetForm() }
+  }
 
   const load = useCallback(async () => {
     try {
@@ -105,6 +111,8 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
       resetForm()
       load()
       onChanged?.()
+      // 닫기 개념이 없다 — 커서는 금액 칸에 남는다
+      amountRef.current?.focus()
     } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
   }
@@ -120,89 +128,103 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
   return (
     <>
       {/* 요약 */}
-      <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+      <div className="px-5 py-3 border-b border-surface-low shrink-0">
         <div className="grid grid-cols-4 gap-3">
           <div>
-            <p className="text-[10px] text-slate-400">투자원금 <span className="text-slate-300">누적입금</span></p>
-            <p className="text-xs font-semibold tabular-nums" style={{ color: INFLOW_COLOR }}>{formatWonRound(totals.inflow)}</p>
+            <p className="text-micro tracking-normal text-ink-4">투자원금 <span className="text-ink-5">누적입금</span></p>
+            <p className="text-body font-bold tabular-nums" style={{ color: INFLOW_COLOR }}>{formatWonRound(totals.inflow)}</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400">누적출금</p>
-            <p className="text-xs font-semibold tabular-nums" style={{ color: OUTFLOW_COLOR }}>{formatWonRound(totals.outflow)}</p>
+            <p className="text-micro tracking-normal text-ink-4">누적출금</p>
+            <p className="text-body font-bold tabular-nums" style={{ color: OUTFLOW_COLOR }}>{formatWonRound(totals.outflow)}</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400">평가금액</p>
-            <p className="text-xs font-semibold text-slate-700 tabular-nums">{marketValue != null ? formatWonRound(marketValue) : '—'}</p>
+            <p className="text-micro tracking-normal text-ink-4">평가금액</p>
+            <p className="text-body font-bold text-ink tabular-nums">{marketValue != null ? formatWonRound(marketValue) : '—'}</p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-400">수익금액</p>
+            <p className="text-micro tracking-normal text-ink-4">수익금액</p>
             {totals.profit != null && totals.inflow > 0 ? (
-              <p className={`text-xs font-semibold tabular-nums ${totals.profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+              <p className={`text-body font-bold tabular-nums ${totals.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
                 {totals.profit >= 0 ? '+' : ''}{formatWonRound(totals.profit)}
                 {totals.rate != null ? (
-                  <span className="text-[10px] ml-1 opacity-80">({totals.rate >= 0 ? '+' : ''}{(totals.rate * 100).toFixed(1)}%)</span>
+                  <span className="text-micro tracking-normal ml-1 opacity-80">({totals.rate >= 0 ? '+' : ''}{(totals.rate * 100).toFixed(1)}%)</span>
                 ) : null}
               </p>
-            ) : <p className="text-xs text-slate-300">—</p>}
+            ) : <p className="text-body text-ink-5">—</p>}
           </div>
         </div>
       </div>
 
-      {/* 입력 폼 — 탭 안 인라인 */}
-      <div className={`px-5 py-4 border-b border-slate-100 shrink-0 ${editId ? 'bg-amber-50/40' : 'bg-slate-50/60'}`}>
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-          <div>
-            <label className={field.label}>날짜</label>
-            <DateInput value={date} onChange={setDate} className="w-32" />
-          </div>
-          <div>
-            <label className={field.label}>유형</label>
-            <div className="flex flex-wrap gap-1">
-              {TYPE_ORDER.map(t => {
-                const active = type === t
-                return (
-                  <button key={t} type="button" onClick={() => setType(t)}
-                    className={btn.pill(active)}
-                    style={active ? { backgroundColor: typeColor(t), borderColor: typeColor(t) } : undefined}>
-                    {CASHFLOW_TYPE_LABELS[t]}
-                  </button>
-                )
-              })}
+      {/* 입력 행 — D-03: 표 첫 행이 곧 입력 행.
+          ⏎ 저장 후 행이 바로 아래 쌓이고 커서는 금액 칸에 남는다(닫기 개념 없음).
+          입력 중에도 기존 내역이 보여 중복 입금을 즉시 확인할 수 있다.
+          <640px에서는 인라인 행이 들어가지 않으므로 세로 폼으로 폴백한다. */}
+      <div className="px-5 py-3 shrink-0">
+        <div className={`rounded-[9px] p-1.5 ${editId ? 'bg-warning/10' : 'bg-surface-low'}`}>
+          {/* ≥640px — 한 줄 인라인 행 */}
+          <div className="hidden sm:flex items-center gap-[5px]">
+            <DateInput value={date} onChange={setDate} variant="cell" className="w-[66px] shrink-0" />
+            <div className="relative w-[92px] shrink-0">
+              <select value={type} onChange={e => setType(e.target.value as CashflowType)}
+                className="w-full appearance-none rounded-cell bg-surface-card border-0 pl-2 pr-5 py-1.5 text-body text-ink focus:outline-none focus:shadow-focus transition-shadow">
+                {TYPE_ORDER.map(t => <option key={t} value={t}>{CASHFLOW_TYPE_LABELS[t]}</option>)}
+              </select>
+              <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-ink-5 pointer-events-none"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
-          </div>
-          <div className="w-32">
-            <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmountInput(e.target.value))}
-              onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-              placeholder="0" className={`${field.input} text-right`} />
-          </div>
-          <div className="flex-1 min-w-36">
-            <label className={field.label}>메모</label>
             <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-              placeholder="메모 (선택)" maxLength={100} className={field.input} />
-          </div>
-          <div className="flex items-center gap-1.5 pb-0.5">
+              onKeyDown={onRowKeyDown} placeholder="메모 (선택)" maxLength={100}
+              className="flex-1 min-w-0 rounded-cell bg-surface-card border-0 px-2 py-1.5 text-body text-ink placeholder:text-ink-5 focus:outline-none focus:shadow-focus transition-shadow" />
+            <input ref={amountRef} type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmountInput(e.target.value))}
+              onKeyDown={onRowKeyDown} placeholder="0"
+              className="w-24 shrink-0 rounded-cell bg-surface-card border-0 px-2 py-1.5 text-body font-bold text-right tabular-nums text-ink placeholder:text-ink-5 shadow-focus focus:outline-none" />
             {editId ? (
-              <button onClick={resetForm} className={btn.ghost}>취소</button>
+              <button onClick={resetForm} className="shrink-0 px-2 py-1.5 rounded-cell text-meta text-ink-3 hover:bg-surface-card transition-colors">취소</button>
             ) : null}
-            <button onClick={handleSave} disabled={saving}
-              className={btn.primary} style={{ backgroundColor: brand.primary }}>
-              {saving ? '저장 중…' : editId ? '수정' : '저장'}
+            <button onClick={() => handleSave()} disabled={saving}
+              className="shrink-0 px-[11px] py-1.5 rounded-cell bg-action text-white text-meta font-bold disabled:opacity-60 hover:opacity-90 transition-opacity">
+              {saving ? '…' : editId ? '수정' : '⏎'}
             </button>
           </div>
+
+          {/* <640px — 세로 폼 폴백 */}
+          <div className="sm:hidden grid gap-2 p-1">
+            <DateInput value={date} onChange={setDate} />
+            <div className="flex flex-wrap gap-1">
+              {TYPE_ORDER.map(t => (
+                <button key={t} type="button" onClick={() => setType(t)} className={btn.pill(type === t)}>
+                  {CASHFLOW_TYPE_LABELS[t]}
+                </button>
+              ))}
+            </div>
+            <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
+              placeholder="메모 (선택)" maxLength={100} className={field.input} />
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmountInput(e.target.value))}
+              placeholder="0" className={`${field.input} text-right font-bold`} />
+            <div className="flex justify-end gap-2">
+              {editId ? <button onClick={resetForm} className={btn.secondary}>취소</button> : null}
+              <button onClick={() => handleSave()} disabled={saving} className={btn.primary}>
+                {saving ? '저장 중…' : editId ? '수정' : '추가'}
+              </button>
+            </div>
+          </div>
         </div>
+
         {type === 'opening' ? (
-          <p className="text-[10px] text-slate-400 mt-2">기초잔액: 기록 시작 시점의 계좌 평가액을 입금으로 간주하는 앵커. 계좌당 1건만 넣고 이후는 실제 입출금만 기록하세요.</p>
+          <p className="text-micro tracking-normal text-ink-4 mt-2">기초잔액: 기록 시작 시점의 계좌 평가액을 입금으로 간주하는 앵커. 계좌당 1건만 넣고 이후는 실제 입출금만 기록하세요.</p>
         ) : null}
         {type === 'deposit' || type === 'withdrawal' ? (
-          <p className="text-[10px] text-slate-400 mt-2">계좌 간 이체는 보내는 계좌에 출금, 받는 계좌에 입금을 각각 기록하세요.</p>
+          <p className="text-micro tracking-normal text-ink-4 mt-2">계좌 간 이체는 보내는 계좌에 출금, 받는 계좌에 입금을 각각 기록하세요.</p>
         ) : null}
         {editId ? (
-          <p className="text-[10px] text-amber-600 mt-2">기존 기록을 수정하는 중입니다.</p>
+          <p className="text-micro tracking-normal text-warning mt-2">기존 기록을 수정하는 중입니다.</p>
         ) : null}
-        {err ? <p className="text-xs text-rose-500 mt-2">{err}</p> : null}
+        {err ? <p className="text-body text-danger mt-2">{err}</p> : null}
       </div>
 
       {/* 목록 */}
@@ -213,22 +235,23 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-10 px-5">
-            <p className="text-xs text-slate-400">입출금 기록이 없습니다</p>
-            <p className="text-[10px] text-slate-300 mt-1.5">
-              <span className="font-medium text-slate-400">기초잔액</span>으로 현재 평가액을 먼저 넣으면
+            <p className="text-body text-ink-4">입출금 기록이 없습니다</p>
+            <p className="text-micro tracking-normal text-ink-5 mt-1.5">
+              <span className="font-medium text-ink-4">기초잔액</span>으로 현재 평가액을 먼저 넣으면
               그 시점부터의 수익금액이 계산됩니다
             </p>
           </div>
         ) : (
           items.map(cf => (
             <div key={cf.id}
-              className={`flex items-center gap-3 px-5 py-2.5 border-b border-slate-50 hover:bg-slate-50 transition-colors group ${editId === cf.id ? 'bg-amber-50/60' : ''}`}>
-              <span className="text-[11px] text-slate-400 tabular-nums shrink-0 w-20">{cf.flow_date}</span>
-              <span className={`${badge.sm} shrink-0`} style={{ backgroundColor: `${typeColor(cf.type)}18`, color: typeColor(cf.type) }}>
+              className={`flex items-center gap-3 px-5 py-2.5 border-b border-surface-low hover:bg-surface-low transition-colors group ${editId === cf.id ? 'bg-warning/10' : ''}`}>
+              <span className="text-meta text-ink-4 tabular-nums shrink-0 w-20">{cf.flow_date}</span>
+              <span className={`${badge.sm} shrink-0`}>
+                <span className={badge.dot} style={{ backgroundColor: typeColor(cf.type) }} />
                 {CASHFLOW_TYPE_LABELS[cf.type]}
               </span>
-              <span className="text-[11px] text-slate-400 flex-1 min-w-0 truncate">{cf.memo}</span>
-              <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: typeColor(cf.type) }}>
+              <span className="text-meta text-ink-4 flex-1 min-w-0 truncate">{cf.memo}</span>
+              <span className="text-body font-bold tabular-nums shrink-0" style={{ color: typeColor(cf.type) }}>
                 {isInflow(cf.type) ? '+' : '−'}{formatWonRound(cf.amount)}
               </span>
               <span className="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">

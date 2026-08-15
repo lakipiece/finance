@@ -1,0 +1,159 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1180" name="D-04·05 정본 통합" subtitle="오버레이 · 날짜 입력" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>D-04·05 — 정본 통합</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 44px;max-width:1180px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:840px}
+h2{font-size:14px;font-weight:700;color:#0d1c2e;margin:32px 0 4px}
+.sub{font-size:11px;color:#94a3b8;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.oh{margin-bottom:8px}
+.oh b{font-size:12.5px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.pros{font-size:10.5px;line-height:1.7;margin:9px 0 0;padding:0;list-style:none}
+.pros li{padding-left:13px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.scene{position:relative;height:172px;border-radius:14px;overflow:hidden;background:#fafafb}
+.bg{position:absolute;inset:0;padding:11px}
+.bgcard{background:#fff;border-radius:11px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:9px;margin-bottom:7px}
+.ov{position:absolute;inset:0}
+.dlg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74%;background:#fff;border-radius:14px;box-shadow:0 12px 48px -8px rgba(13,28,46,.28);padding:12px}
+.rowline{height:7px;border-radius:3px;background:#f1f3f7;margin-bottom:5px}
+</style></head><body><div class="wrap">
+<div class="tag">확정 9건 · 결정 D-04 · D-05</div>
+<h1>D-04 · D-05 — 정본 통합 2건</h1>
+<p class="lede">둘 다 "같은 역할에 규칙이 여러 벌"인 항목입니다. D안은 이미 표면 램프·인풋·기간 선택기를 한 벌로 정리했으므로, 남은 두 개도 같은 원칙으로 닫습니다.</p>
+
+<h2>D-04 — 모달 오버레이</h2>
+<p class="sub">현재 오버레이 토큰이 두 벌입니다 — 실제로 쓰이는 <code>modal.overlay</code>(<code>bg-black/40</code>, z-index만 다른 <code>modal.overlayTop</code> 포함)와, 정의만 되고 <b>사용 0회</b>인 <code>glass.overlay</code>. 어느 쪽을 정본으로 삼을지 정합니다.</p>
+
+<div class="g3">
+  <div>
+    <div class="oh"><b>① 현행 <code>modal.overlay</code></b><span><code>bg-black/40</code></span></div>
+    <div class="scene">
+      <div class="bg"><div class="bgcard"><div class="rowline" style="width:56%"></div><div class="rowline" style="width:82%"></div><div class="rowline" style="width:40%;margin-bottom:0"></div></div><div class="bgcard" style="margin-bottom:0"><div class="rowline" style="width:70%"></div><div class="rowline" style="width:48%;margin-bottom:0"></div></div></div>
+      <div class="ov" style="background:rgba(0,0,0,.4)"></div>
+      <div class="dlg"><div style="font-size:11px;font-weight:700;color:#0d1c2e;margin-bottom:7px">거래 추가</div><div class="rowline" style="width:100%;height:16px"></div><div class="rowline" style="width:100%;height:16px;margin-bottom:0"></div></div>
+    </div>
+    <ul class="pros">
+      <li class="y">가장 익숙한 처리</li>
+      <li class="n">순수 검정이라 <b>브랜드 잉크와 무관한 회색</b>으로 죽는다</li>
+      <li class="n">뒤 카드의 흰 표면이 탁하게 눌린다</li>
+      <li class="n">이걸 정본으로 두면 <code>glass.overlay</code>는 죽은 채로 남는다</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>② <code>glass.overlay</code> 승격</b><span>잉크 30% + blur 6px <span class="rec">권장</span></span></div>
+    <div class="scene">
+      <div class="bg"><div class="bgcard"><div class="rowline" style="width:56%"></div><div class="rowline" style="width:82%"></div><div class="rowline" style="width:40%;margin-bottom:0"></div></div><div class="bgcard" style="margin-bottom:0"><div class="rowline" style="width:70%"></div><div class="rowline" style="width:48%;margin-bottom:0"></div></div></div>
+      <div class="ov" style="background:rgba(13,28,46,.3);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)"></div>
+      <div class="dlg"><div style="font-size:11px;font-weight:700;color:#0d1c2e;margin-bottom:7px">거래 추가</div><div class="rowline" style="width:100%;height:16px"></div><div class="rowline" style="width:100%;height:16px;margin-bottom:0"></div></div>
+    </div>
+    <ul class="pros">
+      <li class="y"><b>이미 정의된 토큰</b> — 신설 0, 죽은 토큰 1개 회수</li>
+      <li class="y">잉크 <code>#0d1c2e</code> 기반이라 표면 언어와 같은 계열</li>
+      <li class="y">blur가 뒤 내용을 <b>지우지 않고 물린다</b> — 맥락 유지</li>
+      <li class="n">저사양 기기에서 blur 비용. <code>@supports</code> 폴백 필요</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>③ blur 없이 잉크만</b><span>절충</span></div>
+    <div class="scene">
+      <div class="bg"><div class="bgcard"><div class="rowline" style="width:56%"></div><div class="rowline" style="width:82%"></div><div class="rowline" style="width:40%;margin-bottom:0"></div></div><div class="bgcard" style="margin-bottom:0"><div class="rowline" style="width:70%"></div><div class="rowline" style="width:48%;margin-bottom:0"></div></div></div>
+      <div class="ov" style="background:rgba(13,28,46,.42)"></div>
+      <div class="dlg"><div style="font-size:11px;font-weight:700;color:#0d1c2e;margin-bottom:7px">거래 추가</div><div class="rowline" style="width:100%;height:16px"></div><div class="rowline" style="width:100%;height:16px;margin-bottom:0"></div></div>
+    </div>
+    <ul class="pros">
+      <li class="y">성능 부담 없음 · 폴백 불필요</li>
+      <li class="y">잉크 계열은 유지</li>
+      <li class="n">blur가 없어 뒤 내용이 <b>읽히면서 어수선</b>하다 — 불투명도를 42%까지 올려야 함</li>
+      <li class="n"><code>glass.overlay</code> 토큰은 여전히 죽은 채로 남는다</li>
+    </ul>
+  </div>
+</div>
+
+<h2>D-05 — 날짜 입력</h2>
+<p class="sub"><code>DateInput.tsx</code>·<code>YearMonthPicker.tsx</code>가 <code>field.*</code>를 쓰지 않고 각자 스타일을 갖고 있습니다. 인풋을 일괄 채움형으로 바꾸기로 한 이상(D-02) 이 둘만 밑줄로 남습니다.</p>
+
+<div class="g2">
+  <div>
+    <div class="oh"><b>① <code>field.*</code>에 흡수</b><span>날짜도 그냥 인풋 <span class="rec">권장</span></span></div>
+    <div style="background:#fafafb;border-radius:16px;padding:14px">
+      <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:13px;display:grid;gap:14px">
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">날짜</div>
+          <div style="background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;display:flex;justify-content:space-between;font-variant-numeric:tabular-nums">2026.08.12 <span style="color:#a8b3c4">⌄</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">기간</div>
+          <div style="display:flex;gap:7px;align-items:center">
+            <div style="flex:1;background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08.01</div>
+            <span style="color:#a8b3c4;font-size:12px">—</span>
+            <div style="flex:1;background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08.31</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">월 선택</div>
+          <div style="background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;display:flex;justify-content:space-between;font-variant-numeric:tabular-nums">2026.08 <span style="color:#a8b3c4">⌄</span></div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8794a8;margin-top:7px">폼 안에서는 <b>다른 필드와 완전히 같은 모양</b>. 값이 날짜라는 것만 다르다</div>
+    </div>
+    <ul class="pros">
+      <li class="y">규칙 한 벌 — 날짜 전용 스타일이 사라진다</li>
+      <li class="y">D-02 일괄 전환과 자연스럽게 맞물림 (같은 PR에서 처리)</li>
+      <li class="y">기간 선택기(확정)와도 어긋나지 않음 — <b>폼 안=필드, 화면 상단=텍스트+셰브론</b>으로 자리에 따라 갈린다</li>
+      <li class="n">두 컴포넌트 내부 마크업을 실제로 고쳐야 함</li>
+    </ul>
+  </div>
+  <div>
+    <div class="oh"><b>② 날짜 전용 스타일 유지</b><span>현행 존치</span></div>
+    <div style="background:#fafafb;border-radius:16px;padding:14px">
+      <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:13px;display:grid;gap:14px">
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">날짜</div>
+          <input value="2026.08.12" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:5px 0 7px;font-size:13px;color:#475569;outline:none;font-family:inherit;font-variant-numeric:tabular-nums">
+        </div>
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">내역</div>
+          <div style="background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e">이마트 장보기</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">금액</div>
+          <div style="background:#f1f3f7;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;text-align:right;font-variant-numeric:tabular-nums">142,600</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8794a8;margin-top:7px">같은 폼 안에서 <b>날짜만 밑줄</b>로 남아 이질적이다 — 위 필드와 정렬선도 어긋난다</div>
+    </div>
+    <ul class="pros">
+      <li class="y">두 컴포넌트를 건드리지 않아 당장 작업이 없다</li>
+      <li class="n">일괄 전환(D-02)의 <b>유일한 예외</b>가 되어 규칙이 두 벌로 남는다</li>
+      <li class="n">한 폼 안에서 필드 높이·정렬선이 어긋난다</li>
+      <li class="n">밑줄형은 터치 타깃 미달 문제도 그대로 안고 간다</li>
+    </ul>
+  </div>
+</div>
+
+<h2 style="margin-top:32px">정리</h2>
+<table class="dt">
+<tr><th style="width:66px">결정</th><th style="width:150px">권장</th><th>이유</th></tr>
+<tr><td><b>D-04</b></td><td><b>② <code>glass.overlay</code> 승격</b><br><code>#0d1c2e/30 + blur(6px)</code></td><td>죽어 있던 토큰의 값을 정본으로 삼고, <code>modal.overlay</code>·<code>modal.overlayTop</code>이 그 값을 쓰도록 바꾼다(z-index 차이는 그대로 유지) — 오버레이 정의가 한 값으로 모인다. 잉크 기반이라 표면 언어와 같은 계열이고, blur가 뒤 맥락을 지우지 않는다. <code>@supports not (backdrop-filter)</code>일 때 <code>#0d1c2e/42</code>로 폴백 — ③을 폴백으로 쓰는 셈</td></tr>
+<tr><td><b>D-05</b></td><td><b>① <code>field.*</code>에 흡수</b></td><td>D-02를 일괄로 정한 이상 날짜만 예외로 두면 규칙이 다시 두 벌이 된다. 같은 PR에서 처리하면 추가 비용도 작다. 화면 상단 기간 선택기(텍스트+셰브론)와는 <b>자리로 구분</b>되므로 충돌하지 않는다</td></tr>
+</table>
+
+<p style="font-size:11px;color:#94a3b8;margin:14px 0 0">문서 — <a href="decision-board.html">결정 현황판</a> · <a href="proposal-d.html">D안 전체</a> · <a href="decision-03-inline-entry.html">D-03</a></p>
+</div></body></html>

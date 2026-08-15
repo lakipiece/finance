@@ -1,0 +1,203 @@
+<!-- @dsCard group="확정 스펙 (D안)" viewport="1280x1380" name="표 · 배지 · 차트" subtitle="밀도 · 모바일 · 데이터 표현" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"><title>확정 스펙 — 표 · 배지 · 차트</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#fff;color:#0d1c2e}
+.wrap{padding:28px 32px 44px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:10px;font-weight:500;padding:4px 9px;border-radius:9999px;background:#00695C;color:#fff;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:820px}
+h2{font-size:13px;font-weight:500;color:#334155;margin:30px 0 4px}
+.note{font-size:11px;color:#94a3b8;line-height:1.7;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.demo{background:#fafafb;border-radius:16px;padding:16px;margin-bottom:12px}
+.card{background:#fff;border-radius:16px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:13px}
+.lbl{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em}
+.mrow td{padding:5px 0;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:500;background:#f1f3f7;color:#3d4a5c;white-space:nowrap}
+.dot{display:inline-block;width:6px;height:6px;border-radius:9999px;flex:none}
+.new{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 7px;border-radius:9999px;background:#00695C;color:#fff;margin-left:6px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.cap{font-size:10px;color:#8794a8;margin-top:7px;line-height:1.6}
+.phone{width:290px;border-radius:20px;background:#fafafb;padding:11px 9px;box-shadow:0 4px 32px 0 rgba(13,28,46,.08)}
+</style></head><body><div class="wrap">
+<div class="tag">D안 확정</div>
+<h1>확정 스펙 — 표 · 배지 · 차트</h1>
+<p class="lede">D-01·D-06 결정과 코멘트 반영 사항을 담은 정본입니다. 표·리스트는 <b>밀도 압축 대상</b>이고, 입력 화면은 예외입니다(<a href="overlays-forms.html">폼 스펙</a>).</p>
+
+<h2>1. 배지 — 점 + 잉크 텍스트 <span class="new">변경</span></h2>
+<p class="note">카테고리색을 글자색으로 쓰던 방식을 폐기합니다. 밝은 색이 대비를 못 넘고(<code>#26A69A</code>는 흰 배경에서 3.0:1 — 본문 기준 AA 미달), 색약 사용자가 구분할 수 없기 때문입니다. <b>색은 점이 지고 글자는 <code>#3d4a5c</code> 고정</b>입니다.</p>
+<div class="demo">
+  <div class="card">
+    <div class="lbl" style="color:#a8b3c4;margin-bottom:9px">카테고리 — 점 + 잉크</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span>
+      <span class="pill"><span class="dot" style="background:#690043"></span>대출상환</span>
+      <span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span>
+      <span class="pill"><span class="dot" style="background:#8D6E63"></span>여행공연비</span>
+      <span class="pill" style="background:#131b2e;color:#fff"><span class="dot" style="background:#26A69A"></span>변동비 · 선택</span>
+    </div>
+    <div class="lbl" style="color:#a8b3c4;margin-bottom:9px">상태 — 의미색 틴트</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="pill" style="background:rgba(0,105,92,.1);color:#00695C">수입</span>
+      <span class="pill" style="background:rgba(0,105,92,.1);color:#00695C">추가입금</span>
+      <span class="pill" style="background:rgba(245,158,11,.12);color:#b45309">예산 초과</span>
+      <span class="pill" style="background:#e0e4ec;color:#131b2e">정기납입</span>
+    </div>
+    <div class="lbl" style="color:#a8b3c4;margin-bottom:9px">식별자 — 모노스페이스</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span class="pill" style="background:#e0e4ec;color:#131b2e;font-family:ui-monospace,monospace;font-weight:700">AAPL</span>
+      <span class="pill" style="background:#e0e4ec;color:#131b2e;font-family:ui-monospace,monospace;font-weight:700">005930</span>
+      <span class="pill" style="background:#e0e4ec;color:#131b2e">ISA</span>
+    </div>
+    <div class="cap">모든 배지는 <code>display:inline-flex</code> + <code>line-height:1</code> + <code>justify-content:center</code> — <b>글자가 박스 정중앙</b>에 온다. 세로 패딩만으로 맞추면 한글 baseline 때문에 아래로 쏠린다</div>
+  </div>
+</div>
+<table class="dt" style="margin-bottom:14px">
+<tr><th style="width:110px">종류</th><th>배경</th><th>글자</th><th>비고</th></tr>
+<tr><td><b>카테고리</b></td><td><code>#f1f3f7</code></td><td><code>#3d4a5c</code></td><td>색은 점(6px)이 진다. 선택 시 <code>#131b2e</code> 솔리드 + 흰 글자, 점은 유지</td></tr>
+<tr><td><b>상태 · 의미</b></td><td>의미색 10~12% 틴트</td><td>의미색 원본</td><td>수입 <code>#00695C</code> · 경고 <code>#b45309</code> — 대비 통과 색만</td></tr>
+<tr><td><b>식별자</b></td><td><code>#e0e4ec</code></td><td><code>#131b2e</code></td><td>티커·계좌·종목코드. 모노스페이스 700</td></tr>
+<tr><td colspan="4" style="color:#8794a8">공통 — <code>padding:4px 9px</code> · <code>border-radius:9999px</code> · <code>font-size:10px</code> · <code>gap:5px</code></td></tr>
+</table>
+
+<h2>2. 표 — 데스크톱 밀도</h2>
+<p class="note">행 패딩 7→5px, 카드 패딩 축소. 같은 카드 높이에 <b>5행 → 9행</b>이 들어갑니다. 구분선은 <code>#f1f3f7</code> 1px — 테두리가 아니라 <b>행 사이 톤 변화</b>로 취급합니다.</p>
+<div class="demo">
+  <div class="card">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:13px;font-weight:500;color:#0d1c2e">최근 거래</div>
+      <div style="font-size:10px;color:#8794a8">63건 중 6건</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:500;padding:0 0 4px;width:46px">날짜</th><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:500;padding:0 0 4px">내역</th><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:500;padding:0 0 4px 8px">분류</th><th class="lbl" style="text-align:right;color:#a8b3c4;font-weight:500;padding:0 0 4px 8px">금액</th></tr>
+      <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.15</td><td style="color:#3d4a5c">급여 (8월)</td><td style="padding-left:8px"><span class="pill" style="background:rgba(0,105,92,.1);color:#00695C">수입</span></td><td style="color:#00695C;text-align:right;padding-left:8px;font-weight:700">+6,420,000</td></tr>
+      <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.14</td><td style="color:#3d4a5c">주택담보대출 원리금</td><td style="padding-left:8px"><span class="pill"><span class="dot" style="background:#690043"></span>대출상환</span></td><td style="color:#0d1c2e;text-align:right;padding-left:8px">−980,000</td></tr>
+      <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.13</td><td style="color:#3d4a5c">아파트 관리비</td><td style="padding-left:8px"><span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span></td><td style="color:#0d1c2e;text-align:right;padding-left:8px">−318,000</td></tr>
+      <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.12</td><td style="color:#3d4a5c">이마트 장보기</td><td style="padding-left:8px"><span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span></td><td style="color:#0d1c2e;text-align:right;padding-left:8px">−142,600</td></tr>
+      <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.10</td><td style="color:#3d4a5c">제주 항공권 2매 <span class="pill" style="background:rgba(245,158,11,.12);color:#b45309;margin-left:4px">예산 초과</span></td><td style="padding-left:8px"><span class="pill"><span class="dot" style="background:#8D6E63"></span>여행공연비</span></td><td style="color:#b45309;text-align:right;padding-left:8px;font-weight:500">−286,000</td></tr>
+      <tr class="mrow"><td style="color:#8794a8">08.09</td><td style="color:#3d4a5c">주유 (셀프)</td><td style="padding-left:8px"><span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span></td><td style="color:#0d1c2e;text-align:right;padding-left:8px">−78,400</td></tr>
+    </table>
+    <div class="cap">수입은 <code>#00695C</code> 700 · 지출은 <code>#0d1c2e</code> 기본 굵기 · 경고 건만 <code>#b45309</code>. 금액은 전부 <code>tabular-nums</code> 우측 정렬</div>
+  </div>
+</div>
+<table class="dt" style="margin-bottom:14px">
+<tr><th style="width:110px">속성</th><th>값</th></tr>
+<tr><td>행 패딩</td><td><code>5px 0</code> · 구분선 <code>1px solid #f1f3f7</code> · 마지막 행 구분선 없음</td></tr>
+<tr><td>헤더</td><td>10px 대문자 · <code>letter-spacing:.08em</code> · <code>#a8b3c4</code> · <code>font-weight:500</code></td></tr>
+<tr><td>본문</td><td>12px · 내역 <code>#3d4a5c</code> · 날짜·부가정보 <code>#8794a8</code></td></tr>
+<tr><td>금액</td><td><code>font-variant-numeric:tabular-nums</code> · 우측 정렬 · 부호 항상 표기</td></tr>
+<tr><td>줄무늬</td><td><b>쓰지 않는다</b> — 밀도가 높아 구분선만으로 충분하고, 배경 톤이 표면 램프와 경쟁한다</td></tr>
+</table>
+
+<h2>3. 모바일 — 2행 접기 <span class="new">신규</span></h2>
+<p class="note">360px에서 4열은 들어가지 않습니다. 분류를 내역 아래로 접어 <b>2행 구조</b>로 만듭니다. 데스크톱 표와 컴포넌트가 갈리지만 토큰·색·타이포는 완전히 공유합니다.</p>
+<div class="demo" style="display:flex;gap:16px;align-items:flex-start">
+  <div class="phone">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 5px 9px;font-size:10px;color:#8794a8"><span>가계부</span><span>2026.08 ⌄</span></div>
+    <div class="card" style="padding:11px">
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">급여 (8월)</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.15</span><span class="pill" style="background:rgba(0,105,92,.1);color:#00695C">수입</span></div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#00695C;white-space:nowrap;font-variant-numeric:tabular-nums">+6,420,000</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">주택담보대출 원리금</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.14</span><span class="pill"><span class="dot" style="background:#690043"></span>대출상환</span></div>
+        </div>
+        <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;font-variant-numeric:tabular-nums">−980,000</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">아파트 관리비</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.13</span><span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span></div>
+        </div>
+        <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;font-variant-numeric:tabular-nums">−318,000</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:9px;padding:8px 0">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이마트 장보기</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.12</span><span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span></div>
+        </div>
+        <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;font-variant-numeric:tabular-nums">−142,600</div>
+      </div>
+    </div>
+  </div>
+  <table class="dt" style="flex:1">
+    <tr><th style="width:100px">속성</th><th>값</th></tr>
+    <tr><td>행 높이</td><td><b>57px</b> (배지 패딩 <code>4px 9px</code> 기준) — 터치 타깃 44px 여유 충족. 리스트 영역 560px 기준 약 9행</td></tr>
+    <tr><td>1행</td><td>내역 (13px, <code>#0d1c2e</code>, 넘치면 <code>ellipsis</code>) + 금액 (우측, <code>tabular-nums</code>)</td></tr>
+    <tr><td>2행</td><td>날짜 (10px 대문자 <code>#a8b3c4</code>) + 분류 배지 (점 + 라벨)</td></tr>
+    <tr><td>분류</td><td><b>점만 쓰지 않는다</b> — 라벨을 함께 유지. 색만으로 의미를 지게 하지 않는 원칙과 동일</td></tr>
+    <tr><td>전환점</td><td><code>&lt;640px</code> — 같은 지점에서 인라인 입력 행도 모달로 폴백</td></tr>
+    <tr><td>탭 영역</td><td>행 전체가 하나의 터치 타깃. 상세·수정 진입</td></tr>
+  </table>
+</div>
+
+<h2>4. 차트</h2>
+<p class="note">막대 끝 라운딩을 제거합니다 — 라운드가 있으면 막대의 끝이 실제 값 위치와 어긋나 보입니다. 그리드는 <code>#e9ecf2</code> 파선입니다.</p>
+<div class="demo g2">
+  <div class="card">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+      <div style="font-size:13px;font-weight:500;color:#0d1c2e">월별 수입 · 지출</div>
+      <div style="display:flex;gap:10px;font-size:10px;color:#8794a8">
+        <span><span style="display:inline-block;width:6px;height:6px;background:#00695C;margin-right:4px"></span>수입</span>
+        <span><span style="display:inline-block;width:6px;height:6px;background:#a8b3c4;margin-right:4px"></span>지출</span>
+      </div>
+    </div>
+    <svg width="100%" height="128" viewBox="0 0 400 128">
+      <g stroke="#e9ecf2" stroke-dasharray="3 3">
+        <line x1="32" y1="24" x2="392" y2="24"/><line x1="32" y1="52" x2="392" y2="52"/><line x1="32" y1="80" x2="392" y2="80"/><line x1="32" y1="108" x2="392" y2="108"/>
+      </g>
+      <g font-size="9" fill="#a8b3c4" text-anchor="end"><text x="28" y="27">800만</text><text x="28" y="55">600만</text><text x="28" y="83">400만</text></g>
+      <rect x="46" y="38" width="20" height="70" fill="#00695C"/><rect x="68" y="62" width="20" height="46" fill="#a8b3c4"/>
+      <rect x="108" y="34" width="20" height="74" fill="#00695C"/><rect x="130" y="55" width="20" height="53" fill="#a8b3c4"/>
+      <rect x="170" y="41" width="20" height="67" fill="#00695C"/><rect x="192" y="70" width="20" height="38" fill="#a8b3c4"/>
+      <rect x="232" y="30" width="20" height="78" fill="#00695C"/><rect x="254" y="49" width="20" height="59" fill="#a8b3c4"/>
+      <rect x="294" y="36" width="20" height="72" fill="#00695C"/><rect x="316" y="66" width="20" height="42" fill="#a8b3c4"/>
+      <rect x="356" y="33" width="20" height="75" fill="#00695C"/><rect x="378" y="58" width="14" height="50" fill="#a8b3c4"/>
+      <g font-size="9" fill="#8794a8" text-anchor="middle"><text x="67" y="122">3월</text><text x="129" y="122">4월</text><text x="191" y="122">5월</text><text x="253" y="122">6월</text><text x="315" y="122">7월</text><text x="377" y="122">8월</text></g>
+    </svg>
+    <div class="cap">가계부 차트는 <b>수입 <code>#00695C</code> · 지출 <code>#a8b3c4</code></b>. 지출은 무채색이라 표의 규칙과 일치</div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;color:#0d1c2e;margin-bottom:9px">분류 비중 — 100% 스택</div>
+    <div style="display:flex;height:10px;border-radius:9999px;overflow:hidden">
+      <div style="width:44%;background:#1A237E"></div><div style="width:23.4%;background:#690043"></div><div style="width:25%;background:#26A69A"></div><div style="width:7.6%;background:#8D6E63"></div>
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">
+      <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#1A237E"></span>고정비 44.0%</span>
+      <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#690043"></span>대출 23.4%</span>
+      <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#26A69A"></span>변동비 25.0%</span>
+      <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#8D6E63"></span>여행 7.6%</span>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f3f7">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px">
+        <div class="lbl" style="color:#5b6a80">예산 소진</div>
+        <div style="font-size:13px;font-weight:700;color:#0d1c2e;font-variant-numeric:tabular-nums">83.7%</div>
+      </div>
+      <div style="height:4px;border-radius:9999px;background:#f1f3f7;overflow:hidden"><div style="width:83.7%;height:100%;background:#b45309"></div></div>
+      <div class="cap">테두리 0 원칙이라 링·테두리형 게이지를 쓰지 않는다. <code>#f1f3f7</code> 트랙 + 4px 솔리드 바</div>
+    </div>
+  </div>
+</div>
+<table class="dt">
+<tr><th style="width:110px">속성</th><th>값</th></tr>
+<tr><td>막대</td><td><b>라운딩 없음</b> (<code>rx</code> 사용 안 함) · 값의 끝과 시각적 끝이 일치해야 함</td></tr>
+<tr><td>그리드</td><td><code>#e9ecf2</code> · <code>stroke-dasharray:3 3</code></td></tr>
+<tr><td>축 라벨</td><td>9px · <code>#a8b3c4</code>(값) / <code>#8794a8</code>(항목)</td></tr>
+<tr><td>범례</td><td>점 + 라벨. 카테고리 배지와 같은 형식이라 색 매핑이 이어진다</td></tr>
+<tr><td>게이지</td><td>트랙 <code>#f1f3f7</code> + 4px 솔리드 바. 정상 <code>#0d1c2e</code> · 임박·초과 <code>#b45309</code></td></tr>
+</table>
+
+<p style="font-size:11px;color:#94a3b8;margin:16px 0 0">근거 — <a href="../proposals/decision-01-amount-color.html">D-01</a> · <a href="../proposals/decision-06-mobile.html">D-06</a> · <a href="color-surface.html">색·표면 스펙</a> · <a href="overlays-forms.html">폼·모달 스펙</a></p>
+</div></body></html>

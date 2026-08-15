@@ -1,0 +1,90 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>카드 · 표면 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>카드 · 표면 (as-is)</h1><p class="lede">실사용 카드는 "흰 배경 + 1px slate-100 테두리 + shadow-sm". 문서가 금지한 방식이며, 대체안으로 정의된 surface.*는 쓰이지 않는다.</p>
+
+<h2>card.* — 실사용 <span class="flag ok">13회</span></h2>
+<div class="row" style="align-items:stretch">
+  <div style="flex:1;min-width:200px;background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px">
+    <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px">card.base</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6">페이지 주요 섹션.<br><code>bg-white rounded-2xl shadow-sm border-slate-100</code></div>
+  </div>
+  <div style="flex:1;min-width:200px;background:#fff;border-radius:16px;border:1px solid #f1f5f9;padding:20px">
+    <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px">card.inner</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6">카드 안의 카드. 그림자 없음.</div>
+  </div>
+  <div style="flex:1;min-width:200px;background:#fff;border-radius:16px;border:1px solid #f1f5f9;padding:20px;transform:translateY(-2px);box-shadow:0 4px 6px -1px rgb(0 0 0/.06)">
+    <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px">card.interactive <span style="font-weight:400;color:#94a3b8">(hover)</span></div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6"><code>hover:-translate-y-0.5</code> — 그림자 변화는 없어 부상감이 약하다</div>
+  </div>
+  <div style="flex:1;min-width:200px;background:#f8fafc;border-radius:12px;border:1px solid #f1f5f9;padding:20px">
+    <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px">card.sub</div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6">카드 내 구분 영역. <b>라운딩만 12px</b> <span class="flag">불일치</span></div>
+  </div>
+</div>
+
+<h2>surface.* — 정의만 <span class="flag dead">사용 0회</span></h2>
+<div style="background:#f8f9ff;padding:20px;border-radius:16px">
+  <div style="background:#eff4ff;padding:18px;border-radius:16px">
+    <div style="background:#fff;border-radius:16px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:18px">
+      <div style="font-size:12px;font-weight:600;color:#475569">surface.cardElevated</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.6">Foundation #f8f9ff → Canvas #eff4ff → Card #fff.<br>테두리 없이 배경 대비만으로 깊이를 만드는 방식.</div>
+    </div>
+  </div>
+</div>
+<p class="note" style="margin-top:12px"><b>핵심 갈림길:</b> 테두리 기반(현행 card.*) vs 배경 레이어 기반(설계된 surface.*) 중 하나를 정본으로 골라야 한다. 지금은 두 규칙이 문서·코드에 동시에 살아 있다.</p>
+
+<h2>실제 화면의 카드 변종</h2>
+<div class="row" style="align-items:stretch">
+  <div style="width:210px;border-radius:16px;box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);padding:18px;position:relative;overflow:hidden;background:linear-gradient(135deg,#1A237E 0%,#283593 60%,#00695C 100%);display:flex;flex-direction:column;height:104px">
+    <div style="font-size:10px;color:#bfdbfe;font-weight:600;text-transform:uppercase;letter-spacing:.1em">총 평가금액</div>
+    <div style="margin-top:auto;text-align:right;font-size:20px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums">128,450,000원</div>
+    <div style="position:absolute;right:-16px;bottom:-16px;width:80px;height:80px;border-radius:9999px;background:#fff;opacity:.1"></div>
+  </div>
+  <div style="width:210px;background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:18px;display:flex;flex-direction:column;height:104px">
+    <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em">평가손익</div>
+    <div style="margin-top:auto;text-align:right;font-size:18px;font-weight:700;color:#f43f5e;font-variant-numeric:tabular-nums">+16,150,000원</div>
+  </div>
+  <div style="width:210px;background:#fff;border-radius:12px;border:1px solid #f1f5f9;padding:12px;display:flex;flex-direction:column;height:104px">
+    <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#334155"><span style="width:7px;height:7px;border-radius:9999px;background:#1A237E"></span>Laki-ISA</div>
+    <div style="margin-top:auto;text-align:right"><div style="font-size:13px;font-weight:700;color:#1e293b;font-variant-numeric:tabular-nums">24,180,000원</div>
+    <div style="font-size:10px;color:#f43f5e;font-variant-numeric:tabular-nums">+1,940,000원</div></div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:#94a3b8;margin-top:4px"><span>10.9%</span><span style="color:#f43f5e">+8.5%</span></div>
+  </div>
+</div>
+<p class="note">KPI 강조 · KPI 일반 · 계좌 타일 — 라운딩(16/16/12), 그림자(md/sm/none), 레이블 트래킹(0.1em/0.05em/없음)이 전부 다르다. 한 화면에 나란히 놓인다.</p>
+
+</div></body></html>

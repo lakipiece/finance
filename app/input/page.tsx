@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull } from '@/lib/utils'
+import { useKeepOpen } from '@/lib/useKeepOpen'
+import { useEntryFormKeys } from '@/lib/useEntryFormKeys'
+import KeepOpenToggle from '@/components/ui/KeepOpenToggle'
 import DateInput from '@/components/ui/DateInput'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import PageHeader from '@/components/ui/PageHeader'
@@ -18,8 +21,8 @@ const DEFAULT_MEMBERS: MemberOpt[] = [
   { code: 'P', display_name: 'P', color: '#AD1457' },
 ]
 const DEFAULT_METHODS: MethodOpt[] = [
-  { name: '카드', color: '#94a3b8' },
-  { name: '현금', color: '#94a3b8' },
+  { name: '카드', color: '#a8b3c4' },
+  { name: '현금', color: '#a8b3c4' },
 ]
 const FormCtx = createContext<{
   memberOpts: MemberOpt[]
@@ -91,11 +94,11 @@ function PillBtn({ active, onClick, children, color, size = 'md' }: {
 }) {
   const { palette } = useTheme()
   const bg = active ? (color ?? palette.colors[0]) : undefined
-  const sizeClass = size === 'sm' ? 'px-2 py-0.5 rounded-md text-[11px]' : 'px-3 py-1 rounded-lg text-xs'
+  const sizeClass = size === 'sm' ? 'px-2 py-0.5 rounded-cell text-meta' : 'px-3 py-1 rounded-btn text-body'
   return (
     <button type="button" onClick={onClick}
       className={`${sizeClass} font-medium border transition-all whitespace-nowrap ${
-        active ? 'text-white border-transparent' : 'border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+        active ? 'text-white border-transparent' : 'border-surface-low text-ink-3 hover:text-ink'
       }`}
       style={bg ? { backgroundColor: bg, borderColor: bg } : undefined}>
       {children}
@@ -147,11 +150,11 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
         autoComplete="off"
         className={field.input} />
       {open && filtered.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-44 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-44 overflow-y-auto">
           {filtered.map(s => (
             <button key={s} type="button"
               onClick={() => { onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-slate-700 truncate">
+              className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink truncate">
               {s}
             </button>
           ))}
@@ -233,12 +236,12 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
           className={className} />
       )}
       {open && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-44 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-44 overflow-y-auto">
           {suggestions.map(s => (
             <button key={s} type="button"
               onMouseDown={e => e.preventDefault()}
               onClick={() => { onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 text-slate-700">
+              className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink">
               {s}
             </button>
           ))}
@@ -307,17 +310,17 @@ function ModalShell({ onClose, title, onDelete, children }: {
   onClose: () => void; title: string; onDelete?: () => void; children: React.ReactNode
 }) {
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+    <div className="modal-scrim fixed inset-0 z-50 flex items-center justify-center">
+      <div className="bg-surface-card rounded-card shadow-dialog w-full max-w-md mx-4 max-h-[92vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-[18px] pt-5 pb-3 border-b border-surface-low">
+          <h3 className="text-subhead font-medium text-ink">{title}</h3>
           <div className="flex items-center gap-1">
             {onDelete && (
-              <button onClick={onDelete} title="삭제" className="p-1.5 rounded-lg text-slate-200 hover:text-rose-400 hover:bg-rose-50 transition-all">
+              <button onClick={onDelete} title="삭제" className="p-1.5 rounded-btn text-ink-5 hover:text-danger hover:bg-danger/10 transition-all">
                 <TrashIcon />
               </button>
             )}
-            <button onClick={onClose} className="p-1.5 rounded-lg text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-all">
+            <button onClick={onClose} className="p-1.5 rounded-btn text-ink-5 hover:text-ink-2 hover:bg-surface-low transition-all">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           </div>
@@ -412,12 +415,12 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
               placeholder="0 또는 =수식"
               className={`${field.input} text-right`} />
             {isFormula(amount) && expenseEditFormulaResult !== null && (
-              <span className="text-[10px] text-right tabular-nums block text-blue-500 mt-0.5">
+              <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
                 = {expenseEditFormulaResult.toLocaleString('ko-KR')}원
               </span>
             )}
             {isFormula(amount) && expenseEditFormulaResult === null && (
-              <span className="text-[10px] text-right block text-rose-400 mt-0.5">수식 오류</span>
+              <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
             )}
           </div>
         </div>
@@ -426,12 +429,12 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
           <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
             className={field.input} />
         </div>
-        {err && <p className="text-xs text-rose-500">{err}</p>}
+        {err && <p className="text-body text-danger">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
+            className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: '#131b2e' }}>
             {saving ? '저장 중…' : '수정'}
           </button>
         </div>
@@ -509,12 +512,12 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
           <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
             className={field.input} />
         </div>
-        {err && <p className="text-xs text-rose-500">{err}</p>}
+        {err && <p className="text-body text-danger">{err}</p>}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
+            className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: '#131b2e' }}>
             {saving ? '저장 중…' : '수정'}
           </button>
         </div>
@@ -524,7 +527,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 }
 
 /* ── Expense Create Modal ── */
-function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: (keepOpen: boolean) => void }) {
   const { catColors } = useTheme()
   const { excludeLoan } = useFilter()
   const { memberOpts, methodOpts, detailsByCategory } = useContext(FormCtx)
@@ -538,6 +541,18 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const [keepOpen, setKeepOpen] = useKeepOpen()
+
+  // Tab 순서: 금액 → 분류 → 내역 → 날짜 → 결제수단 → 저장
+  const amountRef = useRef<HTMLInputElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
+  const detailRef = useRef<HTMLDivElement>(null)
+  const dateRef = useRef<HTMLDivElement>(null)
+  const methodRef = useRef<HTMLDivElement>(null)
+  const saveRef = useRef<HTMLButtonElement>(null)
+
+  // 금액은 가계부 입력 시간의 대부분을 차지하므로 열자마자 커서를 둔다
+  useEffect(() => { amountRef.current?.focus() }, [])
 
   function handleDateChange(v: string) { setDate(v); sessionStorage.setItem('exp-date', v) }
   function handleMemberChange(v: string) { setMember(v); sessionStorage.setItem('exp-member', v) }
@@ -550,10 +565,13 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   }
   const createFormulaResult = isFormula(amount) ? evalFormula(amount) : null
 
-  async function handleSave() {
+  // 저장 버튼은 비활성화하지 않는다 — 비활성 버튼은 이유를 알려주지 못한다.
+  // 클릭 시점에 오류를 표시한다.
+  async function handleSave(continueEntry = keepOpen) {
     resolveCreateAmount()
     const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
+    if (amt < 1) { setErr('금액은 1원 이상이어야 합니다.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
@@ -563,71 +581,101 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
-      onSaved()
+      onSaved(continueEntry)
+      if (continueEntry) {
+        // 금액만 비우고 커서를 되돌린다. 나머지는 다음 건에서도 대개 같은 값이다.
+        setAmount('')
+        amountRef.current?.focus()
+      }
     } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
   }
 
+  const isDirty = amount.trim() !== '' || detail.trim() !== '' || memo.trim() !== ''
+  function handleCancel() {
+    if (isDirty && !window.confirm('입력한 내용을 버리고 닫을까요?')) return
+    onClose()
+  }
+
+  useEntryFormKeys({
+    onSave: () => handleSave(),
+    onSaveAndContinue: () => handleSave(true),
+    onCancel: handleCancel,
+    onPickCategory: i => { if (visibleCategories[i]) setCategory(visibleCategories[i]) },
+    tabOrder: [amountRef, categoryRef, detailRef, dateRef, methodRef, saveRef],
+    disabled: saving,
+  })
+
   return (
-    <ModalShell onClose={onClose} title="지출 입력">
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-6 items-end">
+    <ModalShell onClose={handleCancel} title="지출 입력">
+      <div className="grid gap-[14px]">
+        {/* 금액 — 단독 확대. 입력 시간의 대부분이 여기 쓰인다 */}
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
+            <input ref={amountRef} type="text" inputMode="text" value={amount}
+              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
+              onBlur={resolveCreateAmount}
+              placeholder="0 또는 =수식"
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5 focus:outline-none" />
+            <span className="text-subhead font-bold text-ink-3 shrink-0">원</span>
+          </div>
+          {isFormula(amount) && createFormulaResult !== null && (
+            <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
+              = {createFormulaResult.toLocaleString('ko-KR')}원
+            </span>
+          )}
+          {isFormula(amount) && createFormulaResult === null && (
+            <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
+          )}
+        </div>
+        {/* 분류 — 드롭다운이 아니라 4개 상시 노출. 1–4로도 고른다 */}
+        <div>
+          <label className={field.label}>지출유형</label>
+          <div ref={categoryRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>세부유형</label>
+          <div ref={detailRef} tabIndex={-1} className="outline-none">
+            <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-[14px] items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
-            <DateInput value={date} onChange={handleDateChange} className="w-36" />
+            <div ref={dateRef} tabIndex={-1} className="outline-none">
+              <DateInput value={date} onChange={handleDateChange} className="w-36" />
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <label className={field.label}>작성자</label>
             <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
           </div>
         </div>
-        <div>
-          <label className={field.label}>지출유형</label>
-          <div className="flex flex-wrap gap-1 mt-1">
-            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
-          </div>
-        </div>
-        <div>
-          <label className={field.label}>세부유형</label>
-          <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
-        </div>
         <div className="flex gap-4 items-start">
           <div className="flex-1">
             <label className={field.label}>결제수단</label>
-            <div className="flex flex-wrap gap-1 mt-1">
+            <div ref={methodRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
               {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
             </div>
-          </div>
-          <div className="w-36">
-            <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="text" value={amount}
-              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
-              onBlur={resolveCreateAmount}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); resolveCreateAmount() } }}
-              placeholder="0 또는 =수식"
-              className={`${field.input} text-right`} />
-            {isFormula(amount) && createFormulaResult !== null && (
-              <span className="text-[10px] text-right tabular-nums block text-blue-500 mt-0.5">
-                = {createFormulaResult.toLocaleString('ko-KR')}원
-              </span>
-            )}
-            {isFormula(amount) && createFormulaResult === null && (
-              <span className="text-[10px] text-right block text-rose-400 mt-0.5">수식 오류</span>
-            )}
           </div>
         </div>
         <div>
           <label className={field.label}>비고</label>
           <SuggestInput value={memo} onChange={setMemo} fetcher={fetchExpenseMemos} placeholder="메모 (2글자+? 로 검색)" className={field.input} />
         </div>
-        {err && <p className="text-xs text-rose-500">{err}</p>}
-        <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-          <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
-            {saving ? '저장 중…' : '저장'}
-          </button>
+        {err ? <p className="text-body text-danger">{err}</p> : null}
+        <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
+          <KeepOpenToggle checked={keepOpen} onChange={setKeepOpen} />
+          <div className="flex gap-2">
+            <button onClick={handleCancel} className="px-[15px] py-2 rounded-btn text-body font-medium text-ink-2 bg-surface-high hover:opacity-90 transition-opacity">취소</button>
+            <button ref={saveRef} onClick={() => handleSave()} disabled={saving}
+              className="px-[17px] py-2 rounded-btn text-body font-bold text-white bg-action disabled:opacity-60 transition-opacity hover:opacity-90">
+              {saving ? '저장 중…' : <>저장 <span className="font-normal opacity-60">⏎</span></>}
+            </button>
+          </div>
         </div>
       </div>
     </ModalShell>
@@ -635,7 +683,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
 }
 
 /* ── Income Create Modal ── */
-function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved: (keepOpen: boolean) => void }) {
   const { memberOpts } = useContext(FormCtx)
   const [date, setDate] = useState(todayStr())
   const [member, setMember] = useState(memberOpts[0]?.code ?? DEFAULT_MEMBERS[0].code)
@@ -645,10 +693,19 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
   const [memo, setMemo] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState('')
+  const [keepOpen, setKeepOpen] = useKeepOpen()
 
-  async function handleSave() {
+  const amountRef = useRef<HTMLInputElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
+  const descRef = useRef<HTMLDivElement>(null)
+  const dateRef = useRef<HTMLDivElement>(null)
+  const saveRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => { amountRef.current?.focus() }, [])
+
+  async function handleSave(continueEntry = keepOpen) {
     const amt = parseAmount(amount)
-    if (!date || !category || !description || amt <= 0) { setErr('모든 필드를 입력해주세요.'); return }
+    if (!date || !category || !description || amt < 1) { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/incomes', {
@@ -658,44 +715,70 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
-      onSaved()
+      onSaved(continueEntry)
+      if (continueEntry) {
+        setAmount('')
+        amountRef.current?.focus()
+      }
     } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
   }
 
+  const isDirty = amount.trim() !== '' || description.trim() !== '' || memo.trim() !== ''
+  function handleCancel() {
+    if (isDirty && !window.confirm('입력한 내용을 버리고 닫을까요?')) return
+    onClose()
+  }
+
+  useEntryFormKeys({
+    onSave: () => handleSave(),
+    onSaveAndContinue: () => handleSave(true),
+    onCancel: handleCancel,
+    onPickCategory: i => { if (INCOME_CATEGORIES[i]) setCategory(INCOME_CATEGORIES[i]) },
+    tabOrder: [amountRef, categoryRef, descRef, dateRef, saveRef],
+    disabled: saving,
+  })
+
   return (
-    <ModalShell onClose={onClose} title="수입 입력">
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-6 items-end">
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>날짜</label>
-            <DateInput value={date} onChange={setDate} className="w-36" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={setMember} size="sm" />
+    <ModalShell onClose={handleCancel} title="수입 입력">
+      <div className="grid gap-[14px]">
+        {/* 금액 — 단독 확대 */}
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
+            <input ref={amountRef} type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              placeholder="0"
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
+            <span className="text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
         </div>
         <div>
           <label className={field.label}>카테고리</label>
-          <div className="flex flex-wrap gap-1 mt-1">
+          <div ref={categoryRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
             {INCOME_CATEGORIES.map(c => (
               <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={INCOME_COLORS[c]} size="sm">{c}</PillBtn>
             ))}
           </div>
         </div>
-        <div className="flex gap-4 items-start">
-          <div className="flex-1">
-            <label className={field.label}>설명</label>
+        <div>
+          <label className={field.label}>설명</label>
+          <div ref={descRef} tabIndex={-1} className="outline-none">
             <SuggestInput value={description} onChange={setDescription}
               fetcher={q => fetchIncomeSuggestions('description', q)}
               placeholder="수입 내용 (2글자+? 로 검색)" maxLength={50} multiline={false} className={field.input} />
           </div>
-          <div className="w-36">
-            <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmount(e.target.value))}
-              className={`${field.input} text-right`} />
+        </div>
+        <div className="flex flex-wrap gap-[14px] items-end">
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>날짜</label>
+            <div ref={dateRef} tabIndex={-1} className="outline-none">
+              <DateInput value={date} onChange={setDate} className="w-36" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>작성자</label>
+            <MemberToggle value={member} onChange={setMember} size="sm" />
           </div>
         </div>
         <div>
@@ -704,14 +787,16 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
             fetcher={q => fetchIncomeSuggestions('memo', q)}
             placeholder="메모 (2글자+? 로 검색)" className={field.input} />
         </div>
-        {err && <p className="text-xs text-rose-500">{err}</p>}
-        <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
-          <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
-            {saving ? '저장 중…' : '저장'}
-          </button>
+        {err ? <p className="text-body text-danger">{err}</p> : null}
+        <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
+          <KeepOpenToggle checked={keepOpen} onChange={setKeepOpen} />
+          <div className="flex gap-2">
+            <button onClick={handleCancel} className="px-[15px] py-2 rounded-btn text-body font-medium text-ink-2 bg-surface-high hover:opacity-90 transition-opacity">취소</button>
+            <button ref={saveRef} onClick={() => handleSave()} disabled={saving}
+              className="px-[17px] py-2 rounded-btn text-body font-bold text-white bg-action disabled:opacity-60 transition-opacity hover:opacity-90">
+              {saving ? '저장 중…' : <>저장 <span className="font-normal opacity-60">⏎</span></>}
+            </button>
+          </div>
         </div>
       </div>
     </ModalShell>
@@ -728,12 +813,12 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
 }) {
   const maxPct = items[0]?.pct ?? 1
   return (
-    <div className="mb-4 px-4 py-3 bg-slate-50 rounded-xl">
+    <div className="mb-4 px-4 py-3 bg-surface-low rounded-field">
       <div className="flex items-center gap-2 mb-3">
-        <p className="text-[11px] font-semibold text-slate-500">{category} 항목별 집계</p>
+        <p className="text-meta font-medium text-ink-3">{category} 항목별 집계</p>
         {activeItem && (
           <button onClick={() => onItemClick(activeItem)}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-white border border-slate-200 text-slate-500 hover:text-slate-700 transition-colors">
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-card text-ink-3 hover:text-ink transition-colors">
             {activeItem}
             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -747,21 +832,21 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
           return (
             <button key={item.name} onClick={() => onItemClick(item.name)}
               className={`flex items-center gap-2 min-w-0 w-full text-left rounded-lg px-1.5 py-1 transition-colors ${
-                isActive ? 'bg-slate-100' : 'hover:bg-slate-100/60'
+                isActive ? 'bg-surface-low' : 'hover:bg-surface-low/60'
               }`}>
-              <span className="text-[10px] text-slate-300 w-3.5 shrink-0 text-right">{idx + 1}</span>
+              <span className="text-micro tracking-normal text-ink-5 w-3.5 shrink-0 text-right">{idx + 1}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className={`text-[11px] truncate ${isActive ? 'font-semibold' : 'text-slate-600'}`}
+                  <span className={`text-[11px] truncate ${isActive ? 'font-medium' : 'text-ink-2'}`}
                     style={isActive ? { color } : undefined}>{item.name}</span>
-                  <span className="text-[10px] text-slate-400 shrink-0">{Math.round(item.pct * 100)}%</span>
+                  <span className="text-micro tracking-normal text-ink-4 shrink-0">{Math.round(item.pct * 100)}%</span>
                 </div>
-                <div className="h-0.5 bg-slate-200 rounded-full">
+                <div className="h-0.5 bg-surface-high rounded-full">
                   <div className="h-full rounded-full transition-all"
-                    style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#94a3b8', opacity: isActive ? 1 : 0.45 }} />
+                    style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#a8b3c4', opacity: isActive ? 1 : 0.45 }} />
                 </div>
               </div>
-              <span className={`text-[11px] font-semibold shrink-0 tabular-nums ${isActive ? '' : 'text-slate-700'}`}
+              <span className={`text-[11px] font-medium shrink-0 tabular-nums ${isActive ? '' : 'text-ink'}`}
                 style={isActive ? { color } : undefined}>
                 {item.amount.toLocaleString('ko-KR')}원
               </span>
@@ -781,46 +866,46 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
   const isExpense = record.type === 'expense'
   const label = isExpense ? (record.detail || record.category) : (record as IncomeRecord).description
   const incomeColor = !isExpense ? (INCOME_COLORS[record.category] ?? '#5A6476') : undefined
-  const memberColor = record.member ? (memberOpts.find(m => m.code === record.member)?.color ?? '#64748b') : undefined
+  const memberColor = record.member ? (memberOpts.find(m => m.code === record.member)?.color ?? '#5b6a80') : undefined
 
   return (
     <button onClick={onClick}
       className={`text-left w-full bg-white rounded-xl border p-3 hover:shadow-sm transition-all ${
         isExpense
-          ? 'border-slate-100 hover:border-slate-300'
-          : 'border-l-4 border-slate-100 hover:border-slate-200'
+          ? 'border-surface-low'
+          : 'border-l-4 border-surface-low'
       }`}
       style={!isExpense ? { borderLeftColor: incomeColor } : undefined}>
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* 수입/지출 아이콘 */}
           <span className={`flex items-center justify-center w-5 h-5 rounded-full ${
-            isExpense ? 'bg-slate-100 text-slate-400' : 'text-white'
+            isExpense ? 'bg-surface-low text-ink-4' : 'text-white'
           }`} style={!isExpense ? { backgroundColor: incomeColor } : undefined}>
             {isExpense ? <ExpenseIcon /> : <IncomeIcon />}
           </span>
           {isExpense ? (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white"
-              style={{ backgroundColor: catColors[record.category] ?? '#94a3b8' }}>{record.category}</span>
+            <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white"
+              style={{ backgroundColor: catColors[record.category] ?? '#a8b3c4' }}>{record.category}</span>
           ) : (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
+            <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
           )}
         </div>
-        <span className={`text-sm font-bold shrink-0 ${isExpense ? 'text-slate-800' : ''}`}
+        <span className={`text-sm font-bold shrink-0 ${isExpense ? 'text-ink' : ''}`}
           style={!isExpense ? { color: incomeColor } : undefined}>
           {formatWonFull(record.amount)}
         </span>
       </div>
-      <p className="text-xs text-slate-700 font-medium truncate mb-1">{label}</p>
+      <p className="text-body text-ink font-medium truncate mb-1">{label}</p>
       {record.memo && (
-        <p className="text-[10px] text-slate-400 truncate mb-1">{record.memo}</p>
+        <p className="text-micro tracking-normal text-ink-4 truncate mb-1">{record.memo}</p>
       )}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-slate-400">{record.date}</span>
+        <span className="text-micro tracking-normal text-ink-4">{record.date}</span>
         <div className="flex items-center gap-1.5">
-          {isExpense && record.method && <span className="text-[10px] text-slate-400">{record.method}</span>}
+          {isExpense && record.method && <span className="text-micro tracking-normal text-ink-4">{record.method}</span>}
           {record.member && memberColor && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+            <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
               style={{ backgroundColor: `${memberColor}22`, color: memberColor }}>{record.member}</span>
           )}
         </div>
@@ -838,14 +923,14 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
   onAddExpense: () => void; onAddIncome: () => void
 }) {
   return (
-    <div className="rounded-xl overflow-hidden flex"
+    <div className="rounded-field overflow-hidden flex"
       style={{ background: `linear-gradient(to right, ${EXPENSE_COLOR}, ${INCOME_COLOR})` }}>
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
         className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7l-7 7-7-7" />
             </svg>
@@ -856,8 +941,8 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <p className="text-xs text-white/60 mb-0.5 text-right">{expenseCount}건</p>
-        <p className="text-sm font-bold text-white tabular-nums leading-tight text-right">
+        <p className="text-body text-white/60 mb-0.5 text-right">{expenseCount}건</p>
+        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right">
           {expenseTotal.toLocaleString('ko-KR')}원
         </p>
       </button>
@@ -868,7 +953,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
         className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
             </svg>
@@ -879,8 +964,8 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
-        <p className="text-xs text-white/60 mb-0.5 text-right">{incomeCount}건</p>
-        <p className="text-sm font-bold text-white tabular-nums leading-tight text-right">
+        <p className="text-body text-white/60 mb-0.5 text-right">{incomeCount}건</p>
+        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right">
           {incomeTotal.toLocaleString('ko-KR')}원
         </p>
       </button>
@@ -917,7 +1002,7 @@ export default function InputPage() {
       }
     }).catch(() => {})
     fetch('/api/options/members').then(r => r.json()).then(data => { if (Array.isArray(data) && data.length) setMemberOpts(data) }).catch(() => {})
-    fetch('/api/options/methods').then(r => r.json()).then((data: MethodOpt[]) => { if (Array.isArray(data) && data.length) setMethodOpts(data.map(m => ({ name: m.name, color: m.color ?? '#94a3b8' }))) }).catch(() => {})
+    fetch('/api/options/methods').then(r => r.json()).then((data: MethodOpt[]) => { if (Array.isArray(data) && data.length) setMethodOpts(data.map(m => ({ name: m.name, color: m.color ?? '#a8b3c4' }))) }).catch(() => {})
   }, [])
 
   const fetchData = useCallback(async (query: string) => {
@@ -983,8 +1068,10 @@ export default function InputPage() {
     }
   }
 
-  function handleSaved() {
+  // keepOpen이면 목록만 갱신하고 모달은 열어 둔다 (연속 입력)
+  function handleSaved(keepOpen = false) {
     refetch()
+    if (keepOpen) return
     setEditRecord(null)
     setCreateType(null)
   }
@@ -1090,11 +1177,11 @@ export default function InputPage() {
       </PageHeader>
 
       {/* Records */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+      <div className="bg-surface-card rounded-card shadow-card p-[13px]">
         {/* Header with search */}
         <div className="flex items-center justify-end mb-4 gap-2 flex-wrap">
           <div className="relative flex items-center">
-            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -1103,11 +1190,11 @@ export default function InputPage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => { if (viewAllPeriod && e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
-              className="pl-5 pr-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors w-48"
+              className="pl-5 pr-5 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors w-48 border-0"
             />
             {searchQuery && (
               <button onClick={clearSearch}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -1116,8 +1203,8 @@ export default function InputPage() {
           </div>
           {viewAllPeriod ? (
             <button onClick={handleSearch}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors disabled:opacity-50"
-              style={{ backgroundColor: '#1A237E' }}>
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-btn text-body font-bold text-white transition-colors disabled:opacity-50"
+              style={{ backgroundColor: '#131b2e' }}>
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
@@ -1127,31 +1214,31 @@ export default function InputPage() {
         </div>
 
         {/* Filter + Sort row */}
-        <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-slate-50 mb-4">
+        <div className="flex items-center gap-2 flex-wrap mt-2 pt-2 border-t border-surface-low mb-4">
           {/* Type filter */}
           <div className="flex gap-1">
             {(['all', 'expense', 'income'] as const).map(t => (
               <button key={t} onClick={() => { setTypeFilter(t); setCategoryFilter(null); setDetailFilter(null) }}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
                 {t === 'all' ? '전체' : t === 'expense' ? '지출' : '수입'}
               </button>
             ))}
           </div>
-          <span className="text-slate-200 text-xs">|</span>
+          <span className="text-ink-5 text-body">|</span>
           {/* Member filter */}
           <div className="flex gap-1">
             {memberOpts.map(m => {
               const isActive = memberFilter === m.code
               return (
                 <button key={m.code} onClick={() => setMemberFilter(prev => prev === m.code ? null : m.code)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
                   style={isActive ? { backgroundColor: m.color } : undefined}>
                   {m.display_name}
                 </button>
               )
             })}
           </div>
-          <span className="text-slate-200 text-xs">|</span>
+          <span className="text-ink-5 text-body">|</span>
           {/* Category filter */}
           <div className="flex gap-1 flex-wrap">
             {availableCategories.map(cat => {
@@ -1160,7 +1247,7 @@ export default function InputPage() {
               return (
                 <button key={cat} onClick={() => { setCategoryFilter(prev => prev === cat ? null : cat); setDetailFilter(null) }}
                   className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                    isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                   }`}
                   style={isActive && color ? { backgroundColor: color } : undefined}>
                   {cat}
@@ -1168,20 +1255,20 @@ export default function InputPage() {
               )
             })}
           </div>
-          <span className="text-slate-200 text-xs">|</span>
+          <span className="text-ink-5 text-body">|</span>
           {/* Sort toggle buttons */}
           <div className="flex gap-1 ml-auto">
             <button
               onClick={() => setSortMode(m => m === 'date_desc' ? 'date_asc' : 'date_desc')}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                sortMode === 'date_desc' || sortMode === 'date_asc' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                sortMode === 'date_desc' || sortMode === 'date_asc' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
               }`}>
               날짜{sortMode === 'date_desc' ? ' ↓' : sortMode === 'date_asc' ? ' ↑' : ' ↕'}
             </button>
             <button
               onClick={() => setSortMode(m => m === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
               className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                sortMode === 'amount_desc' || sortMode === 'amount_asc' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                sortMode === 'amount_desc' || sortMode === 'amount_asc' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
               }`}>
               금액{sortMode === 'amount_desc' ? ' ↓' : sortMode === 'amount_asc' ? ' ↑' : ' ↕'}
             </button>
@@ -1201,7 +1288,7 @@ export default function InputPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 bg-slate-50 rounded-xl animate-pulse" />)}
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 bg-surface-low rounded-field animate-pulse" />)}
           </div>
         ) : (
           <>
@@ -1213,7 +1300,7 @@ export default function InputPage() {
               ))}
             </div>
             {filteredRecords.length === 0 && (
-              <p className="text-xs text-slate-400 py-8 text-center">
+              <p className="text-body text-ink-4 py-8 text-center">
                 {viewAllPeriod
                   ? (committedQuery ? '검색 결과가 없습니다.' : '검색어를 입력하고 검색 버튼을 누르세요.')
                   : searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}

@@ -122,33 +122,33 @@ function DividendTooltip({ active, payload, label, color }: ChartTooltipProps & 
   const title = p.label ?? p.month ?? label ?? ''
   const rows: { k: string; v: number; c: string }[] = [
     { k: '배당금', v: amount, c: color ?? '#10b981' },
-    { k: '투자금', v: invested, c: '#64748b' },
+    { k: '투자금', v: invested, c: '#8794a8' },
     { k: '평가금', v: marketValue, c: '#1A237E' },
   ]
   return (
-    <div className="bg-white border border-slate-100 rounded-lg px-3 py-2 shadow-sm min-w-[160px]">
-      <p className="text-[11px] font-semibold text-slate-700 mb-1.5">{title}</p>
+    <div className="bg-surface-card rounded-btn px-3 py-2 shadow-card min-w-[160px]">
+      <p className="text-meta font-medium text-ink mb-1.5">{title}</p>
       <div className="space-y-0.5">
         {rows.map(r => (
           <div key={r.k} className="flex items-center justify-between gap-4">
-            <span className="text-[10px] text-slate-400">{r.k}</span>
-            <span className="text-[11px] font-medium tabular-nums" style={{ color: r.c }}>
+            <span className="text-micro tracking-normal text-ink-4">{r.k}</span>
+            <span className="text-meta font-medium tabular-nums" style={{ color: r.c }}>
               {Math.round(r.v).toLocaleString()}원
             </span>
           </div>
         ))}
         {yieldPct !== null ? (
-          <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-slate-100">
-            <span className="text-[10px] text-slate-400">배당률</span>
-            <span className="text-[11px] font-semibold tabular-nums text-emerald-600">
+          <div className="flex items-center justify-between gap-4 pt-1 mt-1 border-t border-surface-low">
+            <span className="text-micro tracking-normal text-ink-4">배당률</span>
+            <span className="text-meta font-bold tabular-nums text-income">
               {yieldPct.toFixed(2)}%
             </span>
           </div>
         ) : null}
         {invested > 0 ? (
           <div className="flex items-center justify-between gap-4">
-            <span className="text-[10px] text-slate-400">평가손익</span>
-            <span className="text-[11px] font-medium tabular-nums" style={{ color: pnl >= 0 ? '#dc2626' : '#2563eb' }}>
+            <span className="text-micro tracking-normal text-ink-4">평가손익</span>
+            <span className="text-meta font-medium tabular-nums" style={{ color: pnl >= 0 ? '#dc2626' : '#2563eb' }}>
               {pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString()}원
             </span>
           </div>
@@ -369,36 +369,36 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           <button
             onClick={handleUpdateTax}
             disabled={taxUpdating}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700 disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 rounded-btn text-body font-medium text-ink-3 hover:text-ink disabled:opacity-50 transition-colors"
           >
             {taxUpdating ? '계산 중…' : '세금 자동계산'}
           </button>
       </PageHeader>
 
       {/* 필터: 사용자 · 계좌 */}
-      <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3 flex items-center gap-2 flex-wrap">
-        <span className="text-[11px] font-semibold text-slate-400 shrink-0">사용자</span>
+      <div className="bg-surface-card rounded-card px-[13px] py-3 flex items-center gap-2 flex-wrap">
+        <span className="text-meta font-medium text-ink-4 shrink-0">사용자</span>
         {owners.length > 0 ? owners.map(o => {
           const active = ownerFilter === o
           return (
             <button key={o} type="button" onClick={() => selectOwner(o)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
               style={active ? { backgroundColor: ownerColor(o) } : undefined}>
               {o}
             </button>
           )
-        }) : <span className="text-[11px] text-slate-300">없음</span>}
-        <span className="text-slate-200 text-xs">|</span>
-        <span className="text-[11px] font-semibold text-slate-400 shrink-0">계좌</span>
+        }) : <span className="text-meta text-ink-5">없음</span>}
+        <span className="text-ink-5 text-body">|</span>
+        <span className="text-meta font-medium text-ink-4 shrink-0">계좌</span>
         {filterAccounts.length > 0 ? filterAccounts.map(a => {
           const active = accountFilter === String(a.id)
           return (
             <button key={a.id} type="button" onClick={() => selectAccount(String(a.id))}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               {a.broker} · {a.name}
             </button>
           )
-        }) : <span className="text-[11px] text-slate-300">없음</span>}
+        }) : <span className="text-meta text-ink-5">없음</span>}
       </div>
 
       {/* KPI */}
@@ -412,36 +412,36 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : periodLabel
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 배당금</p>
-              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>
+            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
+              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 배당금</p>
+              <p className="text-title sm:text-display font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 추정 세금</p>
-              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-rose-400">{fmt(tax)}원</p>
+            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
+              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 추정 세금</p>
+              <p className="text-title sm:text-display font-bold mt-1 tabular-nums text-gain">{fmt(tax)}원</p>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-100 p-4 sm:p-5 hover:-translate-y-0.5 transition-all">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">{scopeLabel} 세후 배당금</p>
-              <p className="text-xl sm:text-2xl font-bold mt-1 tabular-nums text-slate-800">{fmt(net)}원</p>
+            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
+              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 세후 배당금</p>
+              <p className="text-title sm:text-display font-bold mt-1 tabular-nums text-ink">{fmt(net)}원</p>
             </div>
           </div>
         )
       })()}
 
       {/* 차트 탭 */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-5">
+      <div className="bg-surface-card rounded-card p-[13px]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700">
+          <h3 className="text-subhead font-medium text-ink">
             {periodLabel} 배당·분배금 집계
-            {selectedMonth ? <span className="text-xs text-slate-400 font-normal ml-2">· {selectedMonth}</span> : null}
+            {selectedMonth ? <span className="text-body text-ink-4 font-normal ml-2">· {selectedMonth}</span> : null}
           </h3>
           <div className="flex gap-1">
             {(['month', 'account', 'security'] as const).map(k => (
               <button key={k} onClick={() => setTab(k)}
-                className="px-2.5 py-1 rounded text-xs transition-colors"
+                className="px-2.5 py-1 rounded text-body transition-colors"
                 style={tab === k
                   ? { background: palette.colors[0], color: '#fff' }
-                  : { background: '#f1f5f9', color: '#64748b' }}>
+                  : { background: '#f1f5f9', color: '#8794a8' }}>
                 {k === 'month' ? '월별' : k === 'account' ? '계좌별' : '종목별'}
               </button>
             ))}
@@ -456,10 +456,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 if (label) setSelectedMonth(prev => prev === label ? null : label)
               }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} width={52} axisLine={false} tickLine={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} width={52} axisLine={false} tickLine={false} />
               <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="amount" radius={[3, 3, 0, 0]} maxBarSize={32}
+              <Bar dataKey="amount" maxBarSize={32}
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
           </ResponsiveContainer>
@@ -470,10 +470,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
             <BarChart data={accountData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={120} axisLine={false} tickLine={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={120} axisLine={false} tickLine={false} />
               <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={18} fill={palette.colors[0]} />
+              <Bar dataKey="amount" maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -488,10 +488,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 if (ticker) setSelectedSecurity(prev => prev === ticker ? null : ticker)
               }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#64748b' }} width={130} axisLine={false} tickLine={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={130} axisLine={false} tickLine={false} />
               <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
-              <Bar dataKey="amount" radius={[0, 3, 3, 0]} maxBarSize={14}
+              <Bar dataKey="amount" maxBarSize={14}
                 fill={palette.colors[0]}
                 label={false} />
             </BarChart>
@@ -506,13 +506,13 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         const total = entries.reduce((s, [, v]) => s + v, 0)
         const pieData = entries.map(([name, value], i) => ({
           name, value,
-          fill: palette.colors[i % palette.colors.length] ?? '#94a3b8',
+          fill: palette.colors[i % palette.colors.length] ?? '#a8b3c4',
         }))
         return (
-          <div className="bg-white rounded-2xl border border-slate-100 px-6 py-4">
+          <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-semibold text-slate-600">{selectedMonth} 종목별 배당</h4>
-              <button onClick={() => setSelectedMonth(null)} className="text-slate-300 hover:text-slate-500 text-xs">닫기</button>
+              <h4 className="text-body font-medium text-ink-2">{selectedMonth} 종목별 배당</h4>
+              <button onClick={() => setSelectedMonth(null)} className="text-ink-5 hover:text-ink-3 text-body">닫기</button>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
               <PieChart width={160} height={160}>
@@ -528,12 +528,12 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 {entries.map(([name, value], i) => (
                   <div key={name} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: palette.colors[i % palette.colors.length] ?? '#94a3b8' }} />
-                    <span className="text-[10px] text-slate-600 flex-1 truncate">{name}</span>
-                    <span className="text-[10px] tabular-nums text-slate-500">
+                      style={{ backgroundColor: palette.colors[i % palette.colors.length] ?? '#a8b3c4' }} />
+                    <span className="text-micro tracking-normal text-ink-2 flex-1 truncate">{name}</span>
+                    <span className="text-micro tracking-normal tabular-nums text-ink-3">
                       {total > 0 ? (value / total * 100).toFixed(1) : 0}%
                     </span>
-                    <span className="text-[10px] tabular-nums text-slate-400">
+                    <span className="text-micro tracking-normal tabular-nums text-ink-4">
                       {Math.round(value).toLocaleString()}원
                     </span>
                   </div>

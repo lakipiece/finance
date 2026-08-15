@@ -1,0 +1,156 @@
+<!-- @dsCard group="시안 (To-be)" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>시안 A — 현행 정제 (Refined Ledger)</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:760px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.sw{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.sw div{text-align:center}
+.sw i{display:block;width:64px;height:34px;border-radius:6px}
+.sw span{display:block;font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace;margin-top:4px}
+</style></head><body><div class="wrap">
+<h1>시안 A — 현행 정제 (Refined Ledger)</h1>
+<div class="tag">리스크 최소 · 코드 변경 국소</div>
+<p class="lede">지금의 "흰 카드 + 얇은 테두리" 언어를 정본으로 확정하고, 흩어진 값만 계단으로 정리한다. 죽은 토큰 6그룹을 삭제하고 대비·크기 규칙만 바로잡는 방향.</p>
+
+<h2>같은 화면, 이 시안으로</h2>
+
+<div style="background:#f6f8fc;padding:22px;border-radius:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div style="font-size:20px;font-weight:700;color:#1A237E">포트폴리오</div>
+      <div style="font-size:12px;color:#64748b;margin-top:2px">전체 보유 현황 및 수익률</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;
+        border:1px solid #dfe5ee;background:#fff;
+        color:#475569;cursor:pointer">2026</button>
+      <button style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;
+        border:none;background:#1A237E;color:#fff;cursor:pointer">종목 추가</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+    
+    <div style="background:#1A237E;
+      border-radius:16px;box-shadow:none;padding:14px 16px;
+      display:flex;flex-direction:column;min-height:88px">
+      <div style="font-size:11px;color:rgba(255,255,255,.72);font-weight:500">총 평가금액</div>
+      <div style="margin-top:auto;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;
+        letter-spacing:-.01em;color:#fff;text-align:right">128,450,000원</div>
+    </div>
+    
+    <div style="background:#fff;border:1px solid #e8edf5;
+      border-radius:16px;box-shadow:0 1px 2px 0 rgba(13,28,46,.04);padding:14px 16px;
+      display:flex;flex-direction:column;min-height:88px">
+      <div style="font-size:11px;color:#64748b;font-weight:500">투자원금</div>
+      <div style="margin-top:auto;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;
+        letter-spacing:-.01em;color:#1e293b;text-align:right">112,300,000원</div>
+    </div>
+    
+    <div style="background:#fff;border:1px solid #e8edf5;
+      border-radius:16px;box-shadow:0 1px 2px 0 rgba(13,28,46,.04);padding:14px 16px;
+      display:flex;flex-direction:column;min-height:88px">
+      <div style="font-size:11px;color:#64748b;font-weight:500">평가손익</div>
+      <div style="margin-top:auto;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;
+        letter-spacing:-.01em;color:#e11d48;text-align:right">+16,150,000원</div>
+    </div>
+    
+    <div style="background:#fff;border:1px solid #e8edf5;
+      border-radius:16px;box-shadow:0 1px 2px 0 rgba(13,28,46,.04);padding:14px 16px;
+      display:flex;flex-direction:column;min-height:88px">
+      <div style="font-size:11px;color:#64748b;font-weight:500">누적 분배금</div>
+      <div style="margin-top:auto;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;
+        letter-spacing:-.01em;color:#1e293b;text-align:right">1,860,000원</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:10px">
+    <div style="background:#fff;border:1px solid #e8edf5;border-radius:16px;box-shadow:0 1px 2px 0 rgba(13,28,46,.04);padding:16px">
+      <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px">월별 평가액</div>
+      <svg width="100%" height="150" viewBox="0 0 400 150">
+        <g stroke="#eef2f7" stroke-dasharray="3 3">
+          <line x1="32" y1="36" x2="392" y2="36"/><line x1="32" y1="68" x2="392" y2="68"/><line x1="32" y1="100" x2="392" y2="100"/><line x1="32" y1="132" x2="392" y2="132"/>
+        </g>
+        <rect x="44" y="80" width="26" height="52" rx="3" fill="#1A237E"/>
+            <rect x="44" y="58" width="26" height="22" rx="3" fill="#00695C"/><rect x="106" y="58" width="26" height="74" rx="3" fill="#1A237E"/>
+            <rect x="106" y="28" width="26" height="30" rx="3" fill="#00695C"/><rect x="168" y="86" width="26" height="46" rx="3" fill="#1A237E"/>
+            <rect x="168" y="68" width="26" height="18" rx="3" fill="#00695C"/><rect x="230" y="40" width="26" height="92" rx="3" fill="#1A237E"/>
+            <rect x="230" y="14" width="26" height="26" rx="3" fill="#00695C"/><rect x="292" y="66" width="26" height="66" rx="3" fill="#1A237E"/>
+            <rect x="292" y="32" width="26" height="34" rx="3" fill="#00695C"/><rect x="354" y="28" width="26" height="104" rx="3" fill="#1A237E"/>
+            <rect x="354" y="8" width="26" height="20" rx="3" fill="#00695C"/>
+        <text x="57" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">3월</text><text x="119" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">4월</text><text x="181" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">5월</text><text x="243" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">6월</text><text x="305" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">7월</text><text x="367" y="146" font-size="10" fill="#94a3b8" text-anchor="middle">8월</text>
+      </svg>
+    </div>
+    <div style="background:#fff;border:1px solid #e8edf5;border-radius:16px;box-shadow:0 1px 2px 0 rgba(13,28,46,.04);padding:16px">
+      <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:10px">계좌별 비중</div>
+      <table style="width:100%;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #eef2f7;
+            ">
+            <td style="padding:7px 0;font-size:12px;color:#475569">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#1A237E;margin-right:7px"></span>Laki-ISA</td>
+            <td style="padding:7px 0;font-size:12px;color:#1e293b;text-align:right;font-variant-numeric:tabular-nums">24,180,000원</td>
+            <td style="padding:7px 0 7px 10px;font-size:12px;text-align:right;
+              font-variant-numeric:tabular-nums;color:#e11d48">+8.5%</td></tr><tr style="border-bottom:1px solid #eef2f7;
+            background:#fafbfd;">
+            <td style="padding:7px 0;font-size:12px;color:#475569">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#00695C;margin-right:7px"></span>Piece-IRP회사</td>
+            <td style="padding:7px 0;font-size:12px;color:#1e293b;text-align:right;font-variant-numeric:tabular-nums">21,650,000원</td>
+            <td style="padding:7px 0 7px 10px;font-size:12px;text-align:right;
+              font-variant-numeric:tabular-nums;color:#e11d48">+9.0%</td></tr><tr style="border-bottom:1px solid #eef2f7;
+            ">
+            <td style="padding:7px 0;font-size:12px;color:#475569">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#690043;margin-right:7px"></span>Laki-카카오증권</td>
+            <td style="padding:7px 0;font-size:12px;color:#1e293b;text-align:right;font-variant-numeric:tabular-nums">19,720,000원</td>
+            <td style="padding:7px 0 7px 10px;font-size:12px;text-align:right;
+              font-variant-numeric:tabular-nums;color:#e11d48">+13.6%</td></tr><tr style="border-bottom:1px solid #eef2f7;
+            background:#fafbfd;">
+            <td style="padding:7px 0;font-size:12px;color:#475569">
+              <span style="display:inline-block;width:6px;height:6px;border-radius:9999px;background:#8D6E63;margin-right:7px"></span>삼성전자</td>
+            <td style="padding:7px 0;font-size:12px;color:#1e293b;text-align:right;font-variant-numeric:tabular-nums">3,120,000원</td>
+            <td style="padding:7px 0 7px 10px;font-size:12px;text-align:right;
+              font-variant-numeric:tabular-nums;color:#2563eb">−12.4%</td></tr>
+      </table>
+      <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+        <span style="padding:2px 9px;border-radius:9999px;font-size:10px;font-weight:600;
+          background:#e8f5ee;color:#047857">정상</span>
+        <span style="padding:2px 9px;border-radius:9999px;font-size:10px;font-weight:600;
+          background:#fdf3e3;color:#b45309">리밸런싱 필요</span>
+        <span style="padding:2px 9px;border-radius:9999px;font-size:10px;font-weight:600;
+          background:#eef1fa;color:#1A237E">ISA</span>
+        <span style="padding:2px 9px;border-radius:9999px;font-size:10px;font-weight:700;
+          font-family:ui-monospace,monospace;background:#eef1fa;color:#1A237E">AAPL</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>토큰</h2>
+<div class="sw">
+  <div><i style="background:#f6f8fc;border:1px solid #e6e9ef"></i><span>#f6f8fc<br>바닥</span></div>
+  <div><i style="background:#fff;border:1px solid #e6e9ef"></i><span>#fff<br>캔버스</span></div>
+  <div><i style="background:#fff;border:1px solid #e6e9ef"></i><span>#fff<br>카드</span></div>
+  <div><i style="background:#1A237E"></i><span>#1A237E<br>액션</span></div>
+  <div><i style="background:#e11d48"></i><span>#e11d48<br>상승</span></div>
+  <div><i style="background:#2563eb"></i><span>#2563eb<br>하락</span></div>
+</div>
+<div class="sw">
+  <div><i style="background:#1A237E"></i><span>#1A237E</span></div><div><i style="background:#00695C"></i><span>#00695C</span></div><div><i style="background:#690043"></i><span>#690043</span></div><div><i style="background:#8D6E63"></i><span>#8D6E63</span></div><div><i style="background:#3949AB"></i><span>#3949AB</span></div><div><i style="background:#26A69A"></i><span>#26A69A</span></div>
+</div>
+<p style="font-size:11px;color:#94a3b8;margin:0 0 6px">↑ 차트 시리즈 6색 — 알파 확장 없이 색상·명도가 함께 돌도록 구성</p>
+
+<h2>규칙</h2>
+<table class="dt">
+<tr><th style="width:110px">축</th><th>내용</th></tr>
+<tr><td><b>표면</b></td><td>흰 카드 + <code>#e8edf5</code> 1px 테두리 + 미세 그림자 — 현행 유지, 테두리 색만 한 단계 또렷하게</td></tr><tr><td><b>타이포</b></td><td>11 · 12 · 14 · 16 · 20 · 28 <b>6단계로 고정</b>. <code>[9px] [10px] [13px]</code> 폐기</td></tr><tr><td><b>보조 텍스트</b></td><td><code>slate-400</code> → <code>slate-500</code> 승격 (대비 2.6:1 → 4.8:1)</td></tr><tr><td><b>버튼</b></td><td><code>btn.*</code> 규격 유지 + sm/md/lg 3단계 + <code>focus-visible</code> 링 추가</td></tr><tr><td><b>배지</b></td><td>solid 유지. 분류=solid / 상태=투명으로 역할 분리</td></tr><tr><td><b>차트</b></td><td>4색 + 알파 확장 폐기 → 6색 정규 팔레트, 막대 라운딩 3px 통일</td></tr><tr><td><b>작업량</b></td><td>토큰 정리 + 치환 위주. 레이아웃 변경 거의 없음</td></tr>
+</table>
+</div></body></html>

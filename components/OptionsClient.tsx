@@ -72,15 +72,15 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
   return (
     <div>
       <div ref={triggerRef} onClick={handleOpen}
-        className="w-3.5 h-3.5 rounded-full border border-slate-200 cursor-pointer shrink-0"
+        className="w-3.5 h-3.5 rounded-full cursor-pointer shrink-0"
         style={{ backgroundColor: color }} />
       {open && (
-        <div ref={dropdownRef} className="fixed z-[9999] bg-white border border-slate-200 rounded-xl p-2.5 shadow-xl"
+        <div ref={dropdownRef} className="fixed z-[9999] bg-surface-card rounded-field p-2.5 shadow-dialog"
           style={{ top: pos.top, left: pos.left }}>
           <div className="grid grid-cols-8 gap-1.5 mb-2.5" style={{ width: 272 }}>
             {OPTION_COLORS.map(c => (
               <button key={c} onClick={() => handlePresetClick(c)} title={c}
-                className="w-7 h-7 rounded-md border-2 transition-all hover:scale-110 relative"
+                className="w-7 h-7 rounded-cell border-2 transition-all hover:scale-110 relative"
                 style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }}>
                 {copied === c && (
                   <span className="absolute inset-0 flex items-center justify-center">
@@ -92,18 +92,18 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
-            <div className="w-6 h-6 rounded-md border border-slate-200 cursor-pointer shrink-0 overflow-hidden relative"
+          <div className="flex items-center gap-1.5 pt-2 border-t border-surface-low">
+            <div className="w-6 h-6 rounded-cell cursor-pointer shrink-0 overflow-hidden relative"
               style={{ backgroundColor: color }} onClick={() => nativeRef.current?.click()}>
               <input ref={nativeRef} type="color" value={color}
                 onChange={e => { onChange(e.target.value); setHexInput(e.target.value) }}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
             </div>
             <input value={hexInput} onChange={e => { setHexInput(e.target.value); if (isValidHex(e.target.value)) onChange(e.target.value) }}
               placeholder="#3b82f6"
-              className="w-[80px] border border-slate-200 rounded-md px-1.5 py-0.5 text-[10px] text-slate-500 font-mono focus:outline-none focus:ring-1 focus:ring-blue-300"
+              className="w-[80px] rounded-cell px-1.5 py-0.5 text-micro tracking-normal text-ink-3 font-mono focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
               maxLength={7} />
-            <span className="text-[9px] text-slate-300">클릭→복사</span>
+            <span className="text-micro tracking-normal text-ink-5">클릭→복사</span>
           </div>
         </div>
       )}
@@ -118,7 +118,7 @@ function OptionCard({ title, count, accentColor, onAccentColorChange, children, 
   children: React.ReactNode; footer: React.ReactNode; headerExtra?: React.ReactNode
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col h-full">
+    <div className="bg-surface-card rounded-card p-[13px] flex flex-col h-full">
       <div className="flex items-center justify-between mb-2.5">
         <div className="flex items-center gap-1.5">
           {accentColor !== undefined && (
@@ -126,17 +126,17 @@ function OptionCard({ title, count, accentColor, onAccentColorChange, children, 
               ? <ColorPicker color={accentColor} onChange={onAccentColorChange} />
               : <span className="w-3.5 h-3.5 rounded-full shrink-0" style={{ backgroundColor: accentColor }} />
           )}
-          <h4 className="text-xs font-semibold text-slate-700">{title}</h4>
+          <h4 className="text-body font-medium text-ink">{title}</h4>
         </div>
         <div className="flex items-center gap-1.5">
           {headerExtra}
-          <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full">{count}개</span>
+          <span className="text-micro tracking-normal text-ink-4 bg-surface-low px-1.5 py-0.5 rounded-full">{count}개</span>
         </div>
       </div>
       <div className="space-y-0.5 mb-3 overflow-y-auto flex-1" style={{ maxHeight: 240 }}>
         {children}
       </div>
-      <div className="pt-2.5 border-t border-slate-50 mt-auto">
+      <div className="pt-2.5 border-t border-surface-low mt-auto">
         {footer}
       </div>
     </div>
@@ -148,7 +148,7 @@ function OptionCard({ title, count, accentColor, onAccentColorChange, children, 
 function DragHandle(props: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button {...props}
-      className="text-slate-300 hover:text-slate-400 cursor-grab active:cursor-grabbing p-0.5 shrink-0 touch-none">
+      className="text-ink-5 hover:text-ink-4 cursor-grab active:cursor-grabbing p-0.5 shrink-0 touch-none">
       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
       </svg>
@@ -190,18 +190,18 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange
           onChange={e => setDraft(e.target.value)}
           onBlur={commitEdit}
           onKeyDown={e => { if (e.key === 'Enter') commitEdit(); if (e.key === 'Escape') { setEditing(false); setDraft(label) } }}
-          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="flex-1 px-1 py-0.5 text-body text-ink focus:outline-none bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
           autoFocus />
       ) : (
         <span onClick={onLabelChange ? startEdit : undefined}
           title={onLabelChange ? '클릭하여 편집' : undefined}
-          className={`text-xs font-medium text-slate-600 flex-1 truncate ${onLabelChange ? 'cursor-text hover:text-blue-600 transition-colors' : ''}`}>
+          className={`text-xs font-medium text-ink-2 flex-1 truncate ${onLabelChange ? 'cursor-text hover:text-ink transition-colors' : ''}`}>
           {label}
         </span>
       )}
       {extra}
       <button onClick={onDelete}
-        className="p-0.5 text-slate-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        className="p-0.5 text-ink-5 hover:text-danger transition-colors opacity-0 group-hover:opacity-100 shrink-0">
         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -253,22 +253,22 @@ function MemberRow({ member, onUpdate, onDelete }: {
   return (
     <div className="flex items-center gap-1.5 group py-0.5">
       <ColorPicker color={member.color} onChange={c => onUpdate(member.display_name, c)} />
-      <span className="text-[10px] font-mono font-semibold text-slate-400 w-8 shrink-0">{member.code}</span>
+      <span className="text-micro tracking-normal font-mono font-medium text-ink-4 w-8 shrink-0">{member.code}</span>
       {editing ? (
         <input ref={inputRef} value={draft}
           onChange={e => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setEditing(false); setDraft(member.display_name) } }}
-          className="flex-1 border border-blue-300 rounded px-1 py-0.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="flex-1 px-1 py-0.5 text-body text-ink focus:outline-none bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
           autoFocus />
       ) : (
         <span onClick={startEdit} title="클릭하여 편집"
-          className="text-xs font-medium text-slate-600 flex-1 truncate cursor-text hover:text-blue-600 transition-colors">
+          className="text-body font-medium text-ink-2 flex-1 truncate cursor-text hover:text-ink transition-colors">
           {member.display_name}
         </span>
       )}
       <button onClick={onDelete}
-        className="p-0.5 text-slate-300 hover:text-rose-400 transition-colors opacity-0 group-hover:opacity-100 shrink-0">
+        className="p-0.5 text-ink-5 hover:text-danger transition-colors opacity-0 group-hover:opacity-100 shrink-0">
         <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -310,7 +310,7 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
         headerExtra={details.length > 0 && (
           <button onClick={onApplyColorToAll}
             title="세부유형 전체에 이 색상 적용"
-            className="text-[10px] text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-400 rounded-md px-1.5 py-0.5 transition-colors whitespace-nowrap">
+            className="text-micro tracking-normal text-ink-4 hover:text-ink rounded-cell px-1.5 py-0.5 transition-colors whitespace-nowrap">
             전체 적용
           </button>
         )}
@@ -332,7 +332,7 @@ function CategoryDetailCard({ category, details, accentColor, onCategoryColorCha
               onLabelChange={name => onUpdate(d.id, name, d.category, d.color)}
               onDelete={() => onDelete(d.id)} />
           ))}
-          {details.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+          {details.length === 0 && <p className="text-body text-ink-5 py-2">항목 없음</p>}
         </SortableContext>
       </OptionCard>
     </DndContext>
@@ -474,7 +474,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   }
 
   async function applyColorToAll(category: string) {
-    const color = catColors[category] ?? '#94a3b8'
+    const color = catColors[category] ?? '#a8b3c4'
     const targets = details.filter(d => d.category === category)
     setDetails(prev => prev.map(d => d.category === category ? { ...d, color } : d))
     await Promise.all(targets.map(d =>
@@ -536,7 +536,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
               onUpdate={(display_name, color) => updateMember(m.code, display_name, color)}
               onDelete={() => deleteMember(m.code)} />
           ))}
-          {members.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+          {members.length === 0 && <p className="text-body text-ink-5 py-2">항목 없음</p>}
         </OptionCard>
 
         {/* ── 결제수단 (드래그 정렬) ── */}
@@ -561,7 +561,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
                   onLabelChange={name => updateMethod(m.id, name, m.color)}
                   onDelete={() => deleteMethod(m.id)} />
               ))}
-              {methods.length === 0 && <p className="text-xs text-slate-300 py-2">항목 없음</p>}
+              {methods.length === 0 && <p className="text-body text-ink-5 py-2">항목 없음</p>}
             </OptionCard>
           </SortableContext>
         </DndContext>
@@ -572,7 +572,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             key={cat}
             category={cat}
             details={details.filter(d => d.category === cat)}
-            accentColor={catColors[cat] ?? (CAT_COLORS as Record<string, string>)[cat] ?? '#94a3b8'}
+            accentColor={catColors[cat] ?? (CAT_COLORS as Record<string, string>)[cat] ?? '#a8b3c4'}
             onCategoryColorChange={color => updateCategoryColor(cat, color)}
             onAdd={addDetail}
             onUpdate={updateDetail}

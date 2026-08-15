@@ -1,0 +1,87 @@
+<!-- @dsCard group="Audit" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>통합 진단 — 무엇을 정해야 하는가</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>통합 진단 — 무엇을 정해야 하는가</h1><p class="lede">27개 화면·73개 컴포넌트 전수 조사 결과. 큰 문제는 "스타일이 없다"가 아니라 "정본이 두 벌"이라는 점이다.</p>
+
+<h2>한 줄 요약</h2>
+<div class="panel" style="margin-bottom:20px">
+<p style="margin:0;font-size:13px;line-height:1.85;color:#334155">
+디자인 토큰 파일(<code>lib/styles.ts</code>)과 문서(<code>docs/design-system.md</code>)는 이미 충실하다. 문제는 <b>그 안에 서로 다른 두 디자인 철학이 동시에 살아 있고, 화면은 그중 옛 쪽만 쓰고 있다</b>는 것이다.
+"The Orchestrated Lens"(테두리 없는 배경 레이어링 + 글래스 + 그라디언트 CTA)로 설계된 <code>surface · glass · cta · statusBadge · font · layout</code> 6개 토큰 그룹은 <b>단 한 번도 import되지 않았다.</b>
+</p>
+</div>
+
+<h2>토큰 그룹별 실사용</h2>
+<table class="dt">
+<tr><th style="width:130px">토큰 그룹</th><th style="width:80px">사용</th><th>상태</th></tr>
+<tr><td><code>field.*</code></td><td>155회</td><td>정착 — 앱의 실질 표준 <span class="flag ok">양호</span></td></tr><tr><td><code>btn.*</code></td><td>58회</td><td>정착 — 단, 배경색을 style prop으로 넘기는 암묵 계약이 있다 <span class="flag ok">양호</span></td></tr><tr><td><code>modal.*</code></td><td>45회</td><td>정착 <span class="flag ok">양호</span></td></tr><tr><td><code>tbl.*</code></td><td>35회</td><td>정착 <span class="flag ok">양호</span></td></tr><tr><td><code>card.*</code></td><td>13회</td><td>부분 정착 — 나머지는 같은 클래스를 직접 하드코딩 <span class="flag">보강</span></td></tr><tr><td><code>badge.*</code></td><td>9회</td><td>부분 정착 <span class="flag">보강</span></td></tr><tr><td><code>text.*</code></td><td>7회</td><td>거의 미사용 — <code>text-xs</code> 310회가 직접 박혀 있다 <span class="flag">보강</span></td></tr><tr><td><code>skeleton.*</code></td><td>1회</td><td>사실상 미사용 <span class="flag">보강</span></td></tr><tr><td><code>surface.*</code></td><td>0회</td><td>죽은 토큰 <span class="flag dead">삭제 또는 승격</span></td></tr><tr><td><code>glass.*</code></td><td>0회</td><td>죽은 토큰 <span class="flag dead">삭제 또는 승격</span></td></tr><tr><td><code>cta.*</code></td><td>0회</td><td>죽은 토큰 — btn.primary와 규격 충돌 <span class="flag dead">삭제 또는 승격</span></td></tr><tr><td><code>statusBadge.*</code></td><td>0회</td><td>죽은 토큰 — badge.*와 규격 충돌 <span class="flag dead">삭제 또는 승격</span></td></tr><tr><td><code>font.*</code></td><td>0회</td><td>죽은 토큰 — text.*와 규격 충돌 <span class="flag dead">삭제 또는 승격</span></td></tr><tr><td><code>layout.*</code></td><td>0회</td><td>죽은 토큰 <span class="flag dead">삭제 또는 승격</span></td></tr>
+</table>
+
+<h2>결정이 필요한 5가지</h2>
+<table class="dt">
+<tr><th style="width:34px">#</th><th style="width:170px">쟁점</th><th>선택지</th></tr>
+<tr><td>1</td><td>표면 표현</td><td><b>A.</b> 현행 유지 — 흰 카드 + 1px slate-100 테두리 + shadow-sm &nbsp;/&nbsp; <b>B.</b> 설계안 채택 — 테두리 제거, #f8f9ff→#eff4ff→#fff 배경 레이어링</td></tr>
+<tr><td>2</td><td>버튼 정본</td><td><b>A.</b> <code>btn.*</code>(8px·테마색·py-1.5) &nbsp;/&nbsp; <b>B.</b> <code>cta.*</code>(6px·그라디언트·py-2) &nbsp;/&nbsp; <b>C.</b> 새 규격 + size 3단계 신설</td></tr>
+<tr><td>3</td><td>배지 정본</td><td><b>A.</b> solid(<code>badge.*</code>) &nbsp;/&nbsp; <b>B.</b> 10% 투명(<code>statusBadge.*</code>) &nbsp;/&nbsp; <b>C.</b> 의미별 분리 — 분류=solid, 상태=투명</td></tr>
+<tr><td>4</td><td>타이포 계단</td><td>12단계(7~48px) → <b>6단계로 축소</b>. <code>[9px] [11px] [13px]</code> 임의값을 어디에 흡수시킬지 결정</td></tr>
+<tr><td>5</td><td>차트 시리즈 색</td><td>4색+알파 확장을 유지할지, <b>명도·색상이 함께 도는 8~10색 정규 팔레트</b>를 새로 만들지</td></tr>
+</table>
+
+<h2>결정과 무관하게 채워야 할 빈칸</h2>
+<table class="dt">
+<tr><th style="width:150px">항목</th><th>현재</th></tr>
+<tr><td>공통 토스트</td><td>1개 화면에만 로컬 구현 · 나머지는 <code>alert()</code> 5곳 <span class="flag">최우선</span></td></tr>
+<tr><td>확인 다이얼로그</td><td>브라우저 <code>confirm()</code> 19곳</td></tr>
+<tr><td>폼 에러 상태</td><td>정의 없음</td></tr>
+<tr><td>버튼 focus-visible</td><td>전 버튼 미정의 — 키보드 접근성</td></tr>
+<tr><td>버튼 size 단계</td><td>단일 크기만 존재</td></tr>
+<tr><td>탭 컴포넌트</td><td>없음 — <code>btn.pill</code>로 대체 중</td></tr>
+<tr><td>아이콘 세트</td><td>인라인 SVG가 파일마다 중복 정의 — 공통 <code>ui/icons.tsx</code> 부재</td></tr>
+<tr><td>모바일 테이블</td><td>카드 전환 규칙 없음</td></tr>
+</table>
+
+<h2>접근성 (WCAG AA 기준 미달 지점)</h2>
+<table class="dt">
+<tr><th style="width:200px">대상</th><th style="width:90px">대비</th><th>비고</th></tr>
+<tr><td>placeholder <code>slate-300</code> / 흰 배경</td><td>1.5 : 1</td><td>기준 4.5:1</td></tr>
+<tr><td>아이콘 버튼 기본 <code>slate-300</code></td><td>1.5 : 1</td><td>기준 3:1 (UI 컴포넌트)</td></tr>
+<tr><td>차트 축·레이블 <code>slate-400</code> / 흰 배경</td><td>2.6 : 1</td><td>기준 4.5:1 — 앱 전체에서 가장 많이 쓰이는 보조 텍스트색</td></tr>
+<tr><td>캡션 <code>text-[10px] slate-400</code></td><td>2.6 : 1</td><td>10px 크기까지 겹쳐 가독성 낮음</td></tr>
+<tr><td>본문 <code>slate-600</code> · 메타 <code>slate-500</code></td><td>7.6 : 1 · 4.8 : 1</td><td><span class="flag ok">통과</span></td></tr>
+</table>
+<p class="note">가장 큰 지렛대는 <b>보조 텍스트를 <code>slate-400</code> → <code>slate-500</code>으로 한 단계 올리는 것</b>이다. 이 한 번의 치환으로 2.6:1 → 4.8:1이 되며, 영향 범위는 레이블·캡션·차트 축 전체다.</p>
+
+</div></body></html>

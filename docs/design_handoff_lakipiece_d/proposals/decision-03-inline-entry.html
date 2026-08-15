@@ -1,0 +1,133 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1080" name="D-03 입금 인라인 입력" subtitle="모달 vs 표 안 입력 행" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>D-03 — 입금 인라인 입력 행</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 44px;max-width:1180px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:840px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.stage{background:#fafafb;border-radius:16px;padding:14px}
+.oh{margin-bottom:9px}
+.oh b{font-size:13px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.mrow td{padding:6px 0;font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pros{font-size:11px;line-height:1.75;margin:10px 0 0;padding:0;list-style:none}
+.pros li{padding-left:14px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.step{display:flex;align-items:center;gap:6px;font-size:11px;color:#5b6a80;padding:5px 0}
+.step i{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:9999px;background:#e0e4ec;color:#3d4a5c;font-size:9px;font-weight:700;flex:none;font-style:normal}
+</style></head><body><div class="wrap">
+<div class="tag">확정 8건 · 결정 D-03</div>
+<h1>D-03 — 입금 인라인 입력 행</h1>
+<p class="lede">입금은 <b>같은 계좌에 같은 금액을 반복</b>하는 동작입니다(정기납입 4계좌 × 매월). 모달은 1건 입력에는 좋지만 반복에는 왕복 비용이 큽니다. D안 초안은 표 첫 행을 그대로 입력 행으로 쓰는 방식을 제안했는데, 이건 <code>modal.*</code>과 별개의 <b>신규 패턴</b>이라 1단계에 넣을지 정해야 합니다.</p>
+
+<div class="g2">
+  <div>
+    <div class="oh"><b>① 모달 재사용</b><span>거래 추가와 같은 컴포넌트</span></div>
+    <div class="stage">
+      <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+          <div style="font-size:13px;font-weight:600;color:#0d1c2e">입금 내역</div>
+          <button style="padding:6px 13px;border-radius:9px;font-size:12px;font-weight:600;border:none;background:#131b2e;color:#fff;cursor:pointer;font-family:inherit">입금 추가</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px;width:50px">날짜</th><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px">계좌</th><th class="lbl" style="text-align:right;color:#a8b3c4;font-weight:600;padding:0 0 5px">금액</th></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.14</td><td style="color:#3d4a5c">Piece-연금저축</td><td style="color:#0d1c2e;text-align:right;font-weight:600">300,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.13</td><td style="color:#3d4a5c">Laki-해외주식</td><td style="color:#0d1c2e;text-align:right;font-weight:600">1,200,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.10</td><td style="color:#3d4a5c">Piece-IRP회사</td><td style="color:#0d1c2e;text-align:right;font-weight:600">250,000</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.05</td><td style="color:#3d4a5c">Laki-카카오증권</td><td style="color:#0d1c2e;text-align:right;font-weight:600">400,000</td></tr>
+          <tr class="mrow"><td style="color:#8794a8">08.01</td><td style="color:#3d4a5c">Laki-ISA</td><td style="color:#0d1c2e;text-align:right;font-weight:600">500,000</td></tr>
+        </table>
+      </div>
+      <div style="margin-top:10px;background:#fff;border-radius:12px;padding:10px 12px">
+        <div class="lbl" style="color:#a8b3c4;margin-bottom:5px">4계좌 정기납입 입력</div>
+        <div class="step"><i>1</i> 입금 추가 클릭 → 모달 열림</div>
+        <div class="step"><i>2</i> 계좌 선택 · 금액 입력 · 저장</div>
+        <div class="step"><i>3</i> 모달 닫힘 → 다시 1번으로</div>
+        <div style="margin-top:7px;padding-top:7px;border-top:1px solid #f1f3f7;font-size:11px;color:#0d1c2e"><b>왕복 4회 · 클릭 약 20회</b></div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">신규 패턴 0 — 거래 추가 모달을 그대로 씀</li>
+      <li class="y">모바일에서 동일하게 동작 (별도 대응 불필요)</li>
+      <li class="y">1단계 범위가 깔끔하게 닫힌다</li>
+      <li class="n">반복 입력에서 모달 왕복이 그대로 남는다</li>
+      <li class="n">입력 중 기존 내역을 볼 수 없다 — 중복 입금 확인 불가</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="oh"><b>② 인라인 입력 행</b><span>표 첫 행이 입력 행 <span class="rec">권장</span></span></div>
+    <div class="stage">
+      <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+          <div style="font-size:13px;font-weight:600;color:#0d1c2e">입금 내역</div>
+          <div style="font-size:10px;color:#8794a8">8월 · 12건</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px;width:50px">날짜</th><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px">계좌</th><th class="lbl" style="text-align:right;color:#a8b3c4;font-weight:600;padding:0 0 5px">금액</th><th style="width:22px"></th></tr>
+          <tr style="background:#f1f3f7"><td colspan="4" style="padding:6px;border-radius:9px">
+            <div style="display:flex;gap:5px;align-items:center">
+              <div style="background:#fff;border-radius:7px;padding:6px 8px;font-size:12px;color:#0d1c2e;font-variant-numeric:tabular-nums;width:66px">08.15</div>
+              <div style="background:#fff;border-radius:7px;padding:6px 8px;font-size:12px;color:#0d1c2e;flex:1;display:flex;justify-content:space-between">Laki-ISA <span style="color:#a8b3c4">⌄</span></div>
+              <div style="background:#fff;box-shadow:0 0 0 2px #131b2e;border-radius:7px;padding:6px 8px;font-size:12px;color:#0d1c2e;text-align:right;font-variant-numeric:tabular-nums;font-weight:700;width:96px">500,000|</div>
+              <button style="padding:6px 11px;border-radius:7px;font-size:11px;font-weight:700;border:none;background:#131b2e;color:#fff;cursor:pointer;flex:none;font-family:inherit">⏎</button>
+            </div>
+          </td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.14</td><td style="color:#3d4a5c">Piece-연금저축</td><td style="color:#0d1c2e;text-align:right;font-weight:600">300,000</td><td style="text-align:right;color:#c3ccd9">⋯</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.13</td><td style="color:#3d4a5c">Laki-해외주식</td><td style="color:#0d1c2e;text-align:right;font-weight:600">1,200,000</td><td style="text-align:right;color:#c3ccd9">⋯</td></tr>
+          <tr class="mrow" style="border-bottom:1px solid #f1f3f7"><td style="color:#8794a8">08.10</td><td style="color:#3d4a5c">Piece-IRP회사</td><td style="color:#0d1c2e;text-align:right;font-weight:600">250,000</td><td style="text-align:right;color:#c3ccd9">⋯</td></tr>
+          <tr class="mrow"><td style="color:#8794a8">08.05</td><td style="color:#3d4a5c">Laki-카카오증권</td><td style="color:#0d1c2e;text-align:right;font-weight:600">400,000</td><td style="text-align:right;color:#c3ccd9">⋯</td></tr>
+        </table>
+      </div>
+      <div style="margin-top:10px;background:#fff;border-radius:12px;padding:10px 12px">
+        <div class="lbl" style="color:#a8b3c4;margin-bottom:5px">4계좌 정기납입 입력</div>
+        <div class="step"><i>1</i> 계좌 선택 · 금액 입력 · ⏎</div>
+        <div class="step"><i>2</i> 커서가 계좌 칸으로 복귀 — 표에 방금 행이 쌓임</div>
+        <div class="step"><i>3</i> 1번 반복</div>
+        <div style="margin-top:7px;padding-top:7px;border-top:1px solid #f1f3f7;font-size:11px;color:#0d1c2e"><b>왕복 0회 · 클릭 약 8회</b></div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li class="y">모달 왕복이 사라진다 — 반복 입력 비용 절반 이하</li>
+      <li class="y">입력하면서 <b>기존 내역이 계속 보인다</b> — 중복 입금 즉시 확인</li>
+      <li class="y">방금 넣은 행이 바로 아래 쌓여 결과가 확인된다</li>
+      <li class="n"><b>신규 패턴</b> — <code>modal.*</code>과 별개로 정의·구현·QA 필요</li>
+      <li class="n">모바일 360px에서 4열이 안 들어간다 → 별도 대응 필요 (D-06과 묶임)</li>
+      <li class="n">유효성 오류를 행 안에서 보여줄 자리가 좁다</li>
+    </ul>
+  </div>
+</div>
+
+<h2>절충안 — 1단계 축소 적용</h2>
+<div style="background:#fafafb;border-radius:16px;padding:14px">
+  <p style="font-size:12px;color:#475569;line-height:1.8;margin:0">인라인 행을 <b>입금 화면 한 곳에만</b> 넣고, 가계부 거래·포트폴리오 매매는 모달을 유지하는 방법이 있습니다. 신규 패턴이 한 화면에만 살아 있으므로 범위가 닫히고, 실제 사용량을 보고 2단계에서 확대할지 판단할 수 있습니다. 모바일은 1단계에서 <b>모달로 폴백</b>(<code>&lt;640px</code>이면 인라인 행 대신 모달) — D-06의 4열 문제를 1단계에서 피할 수 있습니다.</p>
+</div>
+
+<h2>비교</h2>
+<table class="dt">
+<tr><th style="width:110px">항목</th><th>① 모달 재사용</th><th>② 인라인 행 (전면)</th><th>③ 절충 — 입금만 + 모바일 폴백</th></tr>
+<tr><td><b>4계좌 입력</b></td><td>클릭 20회</td><td style="color:#00695C">클릭 8회</td><td style="color:#00695C">클릭 8회 (데스크톱)</td></tr>
+<tr><td><b>신규 패턴</b></td><td style="color:#00695C">없음</td><td style="color:#b45309">1개 · 전 화면</td><td>1개 · 1화면</td></tr>
+<tr><td><b>모바일</b></td><td style="color:#00695C">그대로 동작</td><td style="color:#e11d48">별도 설계 필요</td><td style="color:#00695C">모달 폴백</td></tr>
+<tr><td><b>중복 확인</b></td><td style="color:#e11d48">불가</td><td style="color:#00695C">가능</td><td style="color:#00695C">가능</td></tr>
+<tr><td><b>1단계 범위</b></td><td style="color:#00695C">가장 작음</td><td style="color:#e11d48">가장 큼</td><td>중간</td></tr>
+<tr><td><b>D-06 의존</b></td><td>없음</td><td style="color:#b45309">선결 필요</td><td style="color:#00695C">분리 가능</td></tr>
+</table>
+
+<p style="font-size:11px;color:#475569;margin:14px 0 0;line-height:1.8;max-width:860px"><b>③을 권합니다.</b> ②의 이득(왕복 제거·중복 확인)은 <b>입금 화면에서 거의 전부 나옵니다</b> — 반복 입력이 그 화면의 성질이기 때문입니다. 나머지 화면까지 확대하면 신규 패턴만 커지고 이득은 늘지 않습니다. 모바일 모달 폴백을 함께 정하면 D-06(4열 문제)을 1단계에서 분리할 수 있어 일정도 갈립니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">문서 — <a href="decision-board.html">결정 현황판</a> · <a href="proposal-d.html">D안 전체</a></p>
+</div></body></html>

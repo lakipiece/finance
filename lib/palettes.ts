@@ -10,11 +10,18 @@ export const DEFAULT_PALETTE: Palette = {
   id: 'metric-slate',
   name: 'Metric Slate',
   // 가계부 카테고리 색상: [고정비, 대출상환, 변동비, 여행공연비]
-  colors: ['#1A237E', '#690043', '#00695C', '#8D6E63'],
+  // D-01a: 변동비가 수입색(#00695C)과 겹쳐 #26A69A로 이동
+  colors: ['#1A237E', '#690043', '#26A69A', '#8D6E63'],
   headerGradient: 'linear-gradient(135deg, #1A237E 0%, #00695C 100%)',
 }
 
 export const PALETTES: Palette[] = [DEFAULT_PALETTE]
+
+// 포트폴리오 계좌 시리즈 색 — 마지막은 예수금 전용
+export const SERIES_COLORS: string[] = [
+  '#1A237E', '#00695C', '#690043', '#8D6E63', '#3949AB', '#26A69A',
+]
+export const CASH_COLOR = '#a8b3c4'
 
 // 옵션 항목용 72색 팔레트 — 메인 테마 6색 선두, 이후 색상 계열별 정렬
 export const OPTION_COLORS: string[] = [

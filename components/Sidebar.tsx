@@ -139,19 +139,19 @@ function SectionHeader({ href, icon, label, pathname, inSection, onClose }: Sect
     <Link
       href={href}
       onClick={onClose}
-      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
         active
-          ? 'text-[#1A237E]'
+          ? 'text-ink'
           : inSection
-          ? 'text-slate-700 hover:bg-slate-50'
-          : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+          ? 'text-ink hover:bg-surface-low'
+          : 'text-ink-3 hover:bg-surface-low hover:text-ink'
       }`}
       style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
     >
       {active ? (
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
       ) : null}
-      <span className={active ? 'text-[#1A237E]' : inSection ? 'text-slate-500' : 'text-slate-400'}>{icon}</span>
+      <span className={active ? 'text-ink' : inSection ? 'text-ink-3' : 'text-ink-4'}>{icon}</span>
       {label}
     </Link>
   )
@@ -173,15 +173,15 @@ function SubItem({ href, icon, label, pathname, onClose }: SubItemProps) {
       onClick={onClose}
       className={`relative flex items-center gap-2.5 pl-9 pr-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
         active
-          ? 'text-[#1A237E]'
-          : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700'
+          ? 'text-ink'
+          : 'text-ink-4 hover:bg-surface-low hover:text-ink'
       }`}
       style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
     >
       {active ? (
         <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full" style={{ background: '#00695C' }} />
       ) : null}
-      <span className={active ? 'text-[#1A237E]' : 'text-slate-300'}>{icon}</span>
+      <span className={active ? 'text-ink' : 'text-ink-5'}>{icon}</span>
       {label}
     </Link>
   )
@@ -198,14 +198,14 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const inPortfolio = pathname.startsWith('/portfolio')
 
   return (
-    <div className="flex flex-col h-full w-[220px] border-r border-slate-100 bg-white">
+    <div className="flex flex-col h-full w-[220px] border-r border-surface-low bg-surface-card">
       {/* 로고 — 본문 py-8과 상단 라인을 맞춘다 */}
       <div className="flex items-center gap-2.5 px-4 pb-5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
         <IconLogo />
         <div className="leading-none">
-          <p className="text-[13px] font-bold tracking-widest text-slate-700 uppercase leading-tight">Lakipiece</p>
-          <p className="text-[13px] font-bold tracking-widest uppercase leading-tight" style={{ color: '#1A237E' }}>Finance</p>
+          <p className="text-[13px] font-bold tracking-widest text-ink uppercase leading-tight">Lakipiece</p>
+          <p className="text-[13px] font-bold tracking-widest uppercase leading-tight" style={{ color: '#0d1c2e' }}>Finance</p>
         </div>
       </div>
 
@@ -218,7 +218,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SubItem href="/compare" icon={<IconBarChart />}   label="연도비교"       pathname={pathname} onClose={onClose} />
         <SubItem href="/options" icon={<IconSettings />}   label="옵션"          pathname={pathname} onClose={onClose} />
 
-        <div className="mx-3 my-3 border-t border-slate-100" />
+        <div className="mx-3 my-3 border-t border-surface-low" />
 
         {/* 포트폴리오 섹션 */}
         <SectionHeader href="/portfolio" icon={<IconGrid />} label="포트폴리오" pathname={pathname} inSection={inPortfolio} onClose={onClose} />
@@ -229,12 +229,12 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SubItem href="/portfolio/options"    icon={<IconSliders />}  label="옵션"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/rebalance"  icon={<IconScale />}    label="리밸런싱" pathname={pathname} onClose={onClose} />
 
-        <div className="mx-3 my-3 border-t border-slate-100" />
+        <div className="mx-3 my-3 border-t border-surface-low" />
 
         {/* 자산 섹션 */}
         <SectionHeader href="/assets" icon={<IconBuilding />} label="자산" pathname={pathname} inSection={pathname === '/assets'} onClose={onClose} />
 
-        <div className="mx-3 my-3 border-t border-slate-100" />
+        <div className="mx-3 my-3 border-t border-surface-low" />
 
         {/* 설정 */}
         <SectionHeader href="/settings" icon={<IconSettings />} label="설정" pathname={pathname} inSection={pathname === '/settings'} onClose={onClose} />

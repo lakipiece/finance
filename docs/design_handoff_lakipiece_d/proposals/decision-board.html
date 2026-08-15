@@ -1,0 +1,60 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1000" name="결정 현황판" subtitle="확정된 것과 남은 선택" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"><title>D안 결정 현황판</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#fff;color:#0d1c2e}
+.wrap{padding:28px 32px 44px;max-width:1060px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:500;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 22px;line-height:1.7;max-width:800px}
+h2{font-size:13px;font-weight:500;color:#334155;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.list{display:flex;flex-direction:column;gap:6px}
+.it{display:grid;grid-template-columns:44px 1fr 96px;gap:12px;align-items:start;background:#fafafb;border-radius:12px;padding:11px 13px}
+.n{font-size:10px;font-weight:700;font-family:ui-monospace,monospace;color:#a8b3c4;padding-top:1px}
+.t{font-size:12.5px;font-weight:500;color:#0d1c2e;margin-bottom:3px}
+.d{font-size:11px;color:#64748b;line-height:1.65}
+.s{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:10px;font-weight:700;padding:5px 9px;border-radius:9999px;white-space:nowrap;justify-self:end}
+.ok{background:#131b2e;color:#fff}
+.wait{background:#e0e4ec;color:#3d4a5c}
+.now{background:#00695C;color:#fff}
+.hint{font-size:11px;color:#94a3b8;line-height:1.7;margin:10px 0 0}
+.grp{display:flex;align-items:baseline;gap:8px;margin:22px 0 9px}
+.grp b{font-size:12px;color:#0d1c2e}
+.grp span{font-size:10px;color:#a8b3c4}
+kbd{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-family:ui-monospace,monospace;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;background:#e0e4ec;color:#3d4a5c}
+</style></head><body><div class="wrap">
+<div class="tag">시안 D 최종 확정</div>
+<h1>D안 결정 현황판</h1>
+<p class="lede">D안의 모든 결정이 끝났습니다. 아래가 확정된 13건 전부입니다 — 이 목록이 곧 구현 스펙의 목차가 됩니다.</p>
+
+<div class="grp"><b>확정</b><span>14건 — 전부 확정</span></div>
+<div class="list">
+  <div class="it"><span class="n">시안</span><div><div class="t">D안 — B 표면 언어 × C 정보 밀도</div><div class="d">테두리 0, 배경 톤 이동 + 확산 그림자로 깊이. 밀도는 표·리스트에만 적용</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-00</span><div><div class="t">표면 램프 — 전면 중성</div><div class="d"><code>#fafafb → #f1f3f7 → #e9ecf2 → #e0e4ec</code>. 청색 램프 폐기, 램프는 한 벌만</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">입력</span><div><div class="t">입력 화면은 B안 여백</div><div class="d">필드 간격 14px · 라운딩 11~18px · 11px 국문 라벨. <b>밀도 압축의 예외 구역</b></div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">배지</span><div><div class="t">배지·라벨 글자는 정중앙</div><div class="d"><code>inline-flex</code> + <code>line-height:1</code>. 시각 중심과 박스 중심을 일치시킴</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">차트</span><div><div class="t">차트 막대는 라운드 없음</div><div class="d">막대 끝 <code>rx</code> 제거. 값의 끝이 실제 위치와 어긋나지 않도록</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-01</span><div><div class="t">수입 금액 색 — 딥 틸 <code>#00695C</code></div><div class="d">크림슨 폐기. 지출은 무채색 <code>#0d1c2e</code>. 포트폴리오 손익 2색은 그대로 두고 재사용하지 않음<br><b>연쇄</b> — 변동비 카테고리를 <code>#26A69A</code>로 이동, 카테고리 배지는 <b>점 + 잉크 텍스트</b>로 변경</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-02</span><div><div class="t">채움형 인풋 전환 — 일괄</div><div class="d">27개 화면 <code>field.*</code> 전면 치환. 밑줄형 잔존 없음 — 과도기 두 벌 상태를 만들지 않는다</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-03</span><div><div class="t">입금 인라인 입력 행 — 채택</div><div class="d">표 첫 행이 곧 입력 행. ⏎ 저장 후 커서 유지 · 방금 넣은 행이 바로 아래 쌓임<br><b>범위</b> — 입금 화면 우선, 모바일(<code>&lt;640px</code>)은 모달 폴백 → <a href="decision-03-inline-entry.html">D-03 문서</a></div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-04</span><div><div class="t">모달 오버레이 — <code>glass.overlay</code> 값으로 통일</div><div class="d"><code>#0d1c2e/30 + blur(6px)</code>. <code>modal.overlay</code>·<code>modal.overlayTop</code>이 이 값을 쓰고 z-index 차이만 유지. blur 미지원 시 <code>#0d1c2e/42</code> 폴백</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-05</span><div><div class="t">날짜 입력 — <code>field.*</code>에 흡수</div><div class="d"><code>DateInput</code>·<code>YearMonthPicker</code>를 일반 채움형 필드와 동일하게. 폼 안=필드, 화면 상단=텍스트+셰브론으로 <b>자리에 따라</b> 구분</div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-06</span><div><div class="t">모바일 거래 리스트 — 2행 접기</div><div class="d">분류를 내역 아래로. 행 높이 57px · 리스트 영역 560px에 약 9행. 분류는 <b>점 + 라벨</b>을 함께 유지 → <a href="decision-06-mobile.html">D-06 문서</a></div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-07</span><div><div class="t">키보드 명세 · 연속 입력 토글</div><div class="d"><kbd>⏎</kbd> 저장(모달=닫기 / 인라인=계속·커서 복귀) · <kbd>Esc</kbd> 취소 · Tab 금액→분류→내역→날짜→수단→저장 · <kbd>1</kbd>–<kbd>4</kbd> 분류<br><b>연속 입력 토글 + ⌘⏎ 병행</b> — 유일한 신규 기능, 개발 확인 필요 → <a href="decision-07-keyboard.html">D-07 문서</a></div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">D-08</span><div><div class="t">타이포그래피 — Pretendard 웹폰트</div><div class="d">폰트 고정으로 mac·Windows·iOS 동일 렌더 (Android 비대상). 굵기 <b>400·500·700</b> 3단 · 크기 <b>7단</b> · <code>-webkit-font-smoothing</code> 제거 → <a href="decision-08-font-compare.html">폰트 비교</a></div></div><span class="s ok">확정</span></div>
+  <div class="it"><span class="n">기간</span><div><div class="t">기간 선택기는 단일 컴포넌트</div><div class="d">배경 없는 텍스트 + 셰브론. 포트폴리오·가계부 동일. 배경 있는 보조 버튼은 <b>실제 액션 전용</b></div></div><span class="s ok">확정</span></div>
+</div>
+
+<div class="grp"><b>남은 항목</b><span>없음</span></div>
+<div class="list">
+  <div class="it" style="background:#131b2e"><span class="n" style="color:rgba(255,255,255,.5)">완료</span><div><div class="t" style="color:#fff">D-01 ~ D-08 전부 확정</div><div class="d" style="color:rgba(255,255,255,.72)">남은 선택 없음. 다음은 확정 사항을 디자인 시스템 문서(foundations·components)에 반영하는 작업입니다</div></div><span class="s" style="background:#00695C;color:#fff">결정 완료</span></div>
+  
+  
+</div>
+
+<p class="hint">문서 — <a href="proposal-d.html">D안 전체</a> · <a href="decision-00-surface-ramp.html">D-00 표면 램프</a> · <a href="decision-01-amount-color.html">D-01 금액 색</a> · <a href="input-compare.html">입력부 4안 비교</a></p>
+</div></body></html>

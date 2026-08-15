@@ -51,8 +51,8 @@ function Sparkline({ data }: { data: { price: number }[] }) {
 }
 
 function getColorHex(options: Record<string, OptionItem[]>, type: string, value: string | null): string {
-  if (!value) return '#94a3b8'
-  return options[type]?.find(o => o.value === value)?.color_hex ?? '#94a3b8'
+  if (!value) return '#a8b3c4'
+  return options[type]?.find(o => o.value === value)?.color_hex ?? '#a8b3c4'
 }
 
 function cardColors(options: Record<string, OptionItem[]>, country: string | null, assetClass: string | null) {
@@ -76,26 +76,26 @@ function HoldingCard({
   const [hovered, setHovered] = useState(false)
   return (
     <div
-      className="relative flex flex-col items-center justify-center rounded-xl bg-white border border-slate-100 px-2 py-3 text-center min-w-0 cursor-default"
+      className="relative flex flex-col items-center justify-center rounded-field bg-surface-card px-2 py-3 text-center min-w-0 cursor-default"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <p className="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">{label}</p>
-      <p className={`text-sm font-semibold tabular-nums leading-tight ${valueColor ?? 'text-slate-700'}`}>{value}</p>
+      <p className="text-micro text-ink-4 mb-1 uppercase tracking-wider">{label}</p>
+      <p className={`text-sm font-medium tabular-nums leading-tight ${valueColor ?? 'text-ink'}`}>{value}</p>
       {sub && (
-        <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-green-600' : sub.positive === false ? 'text-red-500' : 'text-slate-400'}`}>
+        <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
           {sub.text}
         </p>
       )}
       {hovered && hoverLines && hoverLines.length > 0 && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-10 bg-slate-800 text-white rounded-lg px-3 py-2 shadow-xl whitespace-nowrap min-w-max">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-10 bg-action text-white rounded-btn px-3 py-2 shadow-dialog whitespace-nowrap min-w-max">
           {hoverLines.map((l, i) => (
-            <div key={i} className="flex items-center justify-between gap-4 text-[10px]">
-              <span className="text-slate-300">{l.left}</span>
+            <div key={i} className="flex items-center justify-between gap-4 text-micro tracking-normal">
+              <span className="text-ink-5">{l.left}</span>
               <span className="font-medium">{l.right}</span>
             </div>
           ))}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-action" />
         </div>
       )}
     </div>
@@ -181,7 +181,7 @@ function PriceHistoryModal({
     return `${Math.round(v).toLocaleString()}원`
   }
   const fmtPnl = (v: number) => `${v > 0 ? '+' : ''}${fmtKrw(v)}`
-  const pnlColor = (v: number | null) => v == null ? 'text-slate-700' : v > 0 ? 'text-red-500' : v < 0 ? 'text-blue-500' : 'text-slate-700'
+  const pnlColor = (v: number | null) => v == null ? 'text-ink' : v > 0 ? 'text-gain' : v < 0 ? 'text-loss' : 'text-ink'
 
   // 차트 min/max
   const minIdx = chartData.length >= 2 ? chartData.reduce((mi, d, i) => d.price < chartData[mi].price ? i : mi, 0) : -1
@@ -209,23 +209,23 @@ function PriceHistoryModal({
               {tickerUrl ? (
                 <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  className="text-xs font-bold px-2 py-0.5 rounded font-mono hover:opacity-75 transition-opacity"
+                  className="text-body font-bold px-2 py-0.5 rounded font-mono hover:opacity-75 transition-opacity"
                   style={{ backgroundColor: hex + '20', color: hex }}>
                   {security.ticker}
                 </a>
               ) : (
-                <span className="text-xs font-bold px-2 py-0.5 rounded font-mono"
+                <span className="text-body font-bold px-2 py-0.5 rounded font-mono"
                   style={{ backgroundColor: hex + '20', color: hex }}>
                   {security.ticker}
                 </span>
               )}
-              {security.asset_class && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.asset_class}</span>}
-              {security.country    && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.country}</span>}
-              {security.sector     && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{security.sector}</span>}
-              <span className="text-[10px] text-slate-300 ml-0.5">{security.currency}</span>
+              {security.asset_class && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.asset_class}</span>}
+              {security.country    && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.country}</span>}
+              {security.sector     && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.sector}</span>}
+              <span className="text-micro tracking-normal text-ink-5 ml-0.5">{security.currency}</span>
             </div>
             {/* Name */}
-            <p className="text-xl font-bold text-slate-500 leading-tight">{security.name}</p>
+            <p className="text-title font-bold text-ink-3 leading-tight">{security.name}</p>
           </div>
 
           {/* 증감율(좌) + 가격(우, hover→날짜 툴팁) */}
@@ -233,15 +233,15 @@ function PriceHistoryModal({
             <div className="ml-4 shrink-0">
               <div className="flex items-baseline gap-1.5 justify-end">
                 {latestPrice.change_pct != null && (
-                  <span className={`text-[10px] font-medium ${latestPrice.change_pct > 0 ? 'text-red-400' : latestPrice.change_pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                  <span className={`text-[10px] font-medium ${latestPrice.change_pct > 0 ? 'text-gain' : latestPrice.change_pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                     {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
                   </span>
                 )}
                 <div className="relative group cursor-default">
-                  <p className="text-base font-semibold text-slate-400 tabular-nums">
+                  <p className="text-heading font-bold text-ink-4 tabular-nums">
                     {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
                   </p>
-                  <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-slate-800 text-white text-[10px] rounded px-2 py-1 whitespace-nowrap z-10 shadow-lg">
+                  <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-action text-white text-micro tracking-normal rounded px-2 py-1 whitespace-nowrap z-10 shadow-card">
                     {latestPrice.date}
                   </div>
                 </div>
@@ -305,17 +305,17 @@ function PriceHistoryModal({
         )}
 
         {/* ── Chart ── */}
-        <div className="mx-5 mb-3 rounded-xl bg-slate-50 border border-slate-100 p-3 shrink-0">
+        <div className="mx-5 mb-3 rounded-field bg-surface-low p-3 shrink-0">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-micro font-medium text-ink-4 uppercase tracking-wider">
               가격 이력 {chartData.length > 0 ? `(${chartData.length}일)` : ''}
             </p>
             {/* MA 범례 */}
             {chartData.length >= 5 && (
               <div className="flex items-center gap-2">
-                {chartData.length >= 5  && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
-                {chartData.length >= 20 && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
-                {chartData.length >= 60 && <span className="flex items-center gap-1 text-[10px] text-slate-400"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
+                {chartData.length >= 5  && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
+                {chartData.length >= 20 && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
+                {chartData.length >= 60 && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
               </div>
             )}
           </div>
@@ -323,22 +323,22 @@ function PriceHistoryModal({
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={chartData} margin={{ top: 22, right: 12, left: 0, bottom: 8 }}
                 style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94a3b8' }} tickLine={false} axisLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecf2" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} tickLine={false} axisLine={false}
                   interval="preserveStartEnd"
                   tickFormatter={d => String(d).slice(5)}
                   padding={{ left: 12, right: 12 }}
                 />
                 <YAxis
                   domain={yDomain}
-                  tick={{ fontSize: 9, fill: '#94a3b8' }}
+                  tick={{ fontSize: 10, fill: '#a8b3c4' }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={fmtChartPrice}
                   width={44}
                 />
                 <Tooltip
-                  contentStyle={{ fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
+                  contentStyle={{ fontSize: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', borderRadius: 11, padding: '6px 10px' }}
                   formatter={(v: number, name: string) => {
                     const label = name === 'price' ? '가격' : name === 'ma5' ? 'MA5' : name === 'ma20' ? 'MA20' : 'MA60'
                     return [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, label]
@@ -355,29 +355,29 @@ function PriceHistoryModal({
                 {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx && (
                   <>
                     <ReferenceDot x={chartData[minIdx].date} y={chartData[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 8, fill: '#64748b' }} />
+                      label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 10, fill: '#8794a8' }} />
                     <ReferenceDot x={chartData[maxIdx].date} y={chartData[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 8, fill: '#64748b' }} />
+                      label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 10, fill: '#8794a8' }} />
                   </>
                 )}
               </LineChart>
             </ResponsiveContainer>
           ) : chartData.length === 1 ? (
-            <p className="text-xs text-slate-400 text-center py-4">데이터가 1개뿐이라 차트를 표시할 수 없습니다</p>
+            <p className="text-body text-ink-4 text-center py-4">데이터가 1개뿐이라 차트를 표시할 수 없습니다</p>
           ) : (
-            <p className="text-xs text-slate-400 text-center py-4">수집된 가격 이력이 없습니다</p>
+            <p className="text-body text-ink-4 text-center py-4">수집된 가격 이력이 없습니다</p>
           )}
         </div>
 
         {/* ── Table ── */}
         {tableRows.length > 0 && (
-          <div className="overflow-y-auto mx-5 mb-5 rounded-xl border border-slate-100 shrink-1">
+          <div className="overflow-y-auto mx-5 mb-5 rounded-field shrink-1">
             <table className="w-full">
-              <thead className="sticky top-0 bg-slate-50">
-                <tr className="text-[10px] text-slate-400 uppercase tracking-wider">
-                  <th className="text-left px-4 py-2">날짜</th>
-                  <th className="text-right px-4 py-2">가격</th>
-                  <th className="text-right px-4 py-2">등락</th>
+              <thead className="sticky top-0 bg-surface-low">
+                <tr className="text-micro text-ink-4 uppercase tracking-wider">
+                  <th className="text-left px-2 py-[5px]">날짜</th>
+                  <th className="text-right px-2 py-[5px]">가격</th>
+                  <th className="text-right px-2 py-[5px]">등락</th>
                 </tr>
               </thead>
               <tbody>
@@ -385,12 +385,12 @@ function PriceHistoryModal({
                   const prev = tableRows[i + 1]
                   const pct = prev ? ((r.price - prev.price) / prev.price) * 100 : null
                   return (
-                    <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
-                      <td className="px-4 py-1.5 text-[10px] font-sans text-slate-500 tabular-nums">{r.date}</td>
-                      <td className="px-4 py-1.5 text-[10px] text-right font-sans text-slate-400 tabular-nums">
+                    <tr key={r.date} className="border-t border-surface-low hover:bg-surface-low">
+                      <td className="px-2 py-[5px] text-micro tracking-normal font-sans text-ink-3 tabular-nums">{r.date}</td>
+                      <td className="px-2 py-[5px] text-micro tracking-normal text-right font-sans text-ink-4 tabular-nums">
                         {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                       </td>
-                      <td className={`px-4 py-1.5 text-[10px] text-right font-sans tabular-nums ${pct == null ? 'text-slate-300' : pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                      <td className={`px-4 py-1.5 text-[10px] text-right font-sans tabular-nums ${pct == null ? 'text-ink-5' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                         {pct != null ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—'}
                       </td>
                     </tr>
@@ -548,7 +548,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
-        <div className={`px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+        <div className={`px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
         </div>
       )}
@@ -559,57 +559,57 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-48">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
             placeholder="티커 또는 종목명 검색"
-            className="w-full pl-7 pr-6 pb-1.5 pt-1 text-xs border-0 border-b border-slate-200 bg-transparent focus:outline-none focus:border-[#1A237E] transition-colors placeholder:text-slate-300" />
+            className="w-full pl-7 pr-6 py-[9px] text-subhead rounded-field bg-surface-low focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors placeholder:text-ink-5 border-0" />
           {secSearch && (
-            <button onClick={() => setSecSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+            <button onClick={() => setSecSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
         </div>
         <select value={secFilter.asset_class} onChange={e => setSecFilter(p => ({ ...p, asset_class: e.target.value }))}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="">전체 자산군</option>
           {assetClasses.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.country} onChange={e => setSecFilter(p => ({ ...p, country: e.target.value }))}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="">전체 국가</option>
           {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.style} onChange={e => setSecFilter(p => ({ ...p, style: e.target.value }))}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="">전체 스타일</option>
           {etfStyles.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.sector} onChange={e => setSecFilter(p => ({ ...p, sector: e.target.value }))}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="">전체 섹터</option>
           {sectors.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
         <select value={secFilter.currency} onChange={e => setSecFilter(p => ({ ...p, currency: e.target.value }))}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="">전체 통화</option>
           <option value="KRW">KRW</option>
           <option value="USD">USD</option>
         </select>
         <select value={secSort} onChange={e => setSecSort(e.target.value as 'ticker' | 'name' | 'country_name')}
-          className="border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors appearance-none">
+          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
           <option value="country_name">국가/이름순</option>
           <option value="ticker">티커순</option>
           <option value="name">이름순</option>
         </select>
         {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) && (
           <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
-            className="text-[10px] text-slate-400 hover:text-slate-600 border border-slate-200 rounded-lg px-2 py-1.5 hover:bg-slate-50 transition-colors whitespace-nowrap">
+            className="text-micro tracking-normal text-ink-4 hover:text-ink-2 rounded-btn px-2 py-1.5 hover:bg-surface-low transition-colors whitespace-nowrap">
             필터 초기화
           </button>
         )}
-        <span className="text-[10px] text-slate-400">{filteredSecurities.length}개</span>
+        <span className="text-micro tracking-normal text-ink-4">{filteredSecurities.length}개</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={handleRefreshAll} disabled={refreshingAll}
             className={`${btn.primary} ${refreshingAll ? 'opacity-100' : ''}`}
@@ -625,10 +625,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           const { hex } = cardColors(options, s.country, s.asset_class)
           return (
             <div key={s.id}
-              className="group flex bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-md transition-all">
+              className="group flex bg-surface-card rounded-field overflow-hidden hover:shadow-card transition-all">
               <div className="w-1.5 shrink-0 rounded-l-xl" style={{ backgroundColor: hex }} />
               <div onClick={() => setHistoryModalSecurity(s)}
-                className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-slate-50/30 transition-all min-w-0">
+                className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-surface-low/30 transition-all min-w-0">
               {/* Row 1: ticker (left, clickable) + currency (right) */}
               <div className="flex items-center justify-between gap-1">
                 {(() => {
@@ -655,32 +655,32 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   return tickerUrl ? (
                     <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
                       onClick={e => e.stopPropagation()}
-                      className="text-[10px] px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity"
+                      className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity"
                       style={{ backgroundColor: hex + '15', color: hex }}>
                       {s.ticker}
                     </a>
                   ) : (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-mono leading-none"
+                    <span className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono leading-none"
                       style={{ backgroundColor: hex + '15', color: hex }}>{s.ticker}</span>
                   )
                 })()}
-                <span className="text-[10px] text-slate-300 ml-auto">{s.currency}</span>
+                <span className="text-micro tracking-normal text-ink-5 ml-auto">{s.currency}</span>
               </div>
               {/* Row 2: name (left) + price (right) */}
               <div className="flex items-start justify-between gap-1">
-                <p className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug flex-1">{s.name}</p>
+                <p className="text-subhead font-bold text-ink line-clamp-2 leading-snug flex-1">{s.name}</p>
                 <div className="text-right shrink-0">
                   {latestPrices[s.ticker] ? (() => {
                     const lp = latestPrices[s.ticker]
                     const pct = lp.change_pct
-                    const priceColor = pct == null ? 'text-slate-500' : pct > 0 ? 'text-red-500' : pct < 0 ? 'text-blue-500' : 'text-slate-500'
+                    const priceColor = pct == null ? 'text-ink-3' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-3'
                     return (
                       <>
-                        <span className={`text-xs font-semibold font-sans ${priceColor} cursor-default`} title={lp.date}>
+                        <span className={`text-body font-medium font-sans ${priceColor} cursor-default`} title={lp.date}>
                           {lp.currency === 'KRW' ? `${lp.price.toLocaleString()}원` : `$${lp.price.toFixed(2)}`}
                         </span>
                         {pct != null && (
-                          <div className={`text-[10px] font-sans ${pct > 0 ? 'text-red-400' : pct < 0 ? 'text-blue-400' : 'text-slate-400'}`}>
+                          <div className={`text-[10px] font-sans ${pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
                           </div>
                         )}
@@ -691,41 +691,41 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                         )}
                       </>
                     )
-                  })() : <span className="text-[10px] text-slate-300">-</span>}
+                  })() : <span className="text-micro tracking-normal text-ink-5">-</span>}
                 </div>
               </div>
               {/* Row 3: tags + action icons */}
               <div className="flex items-center gap-0.5 flex-wrap" onClick={e => e.stopPropagation()}>
                 {s.asset_class && (
                   <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
-                    className="text-[10px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.asset_class}
                   </button>
                 )}
                 {s.country && (
                   <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
-                    className="text-[10px] px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
+                    className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.country}
                   </button>
                 )}
                 {s.etf_style && (
                   <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
-                    className="text-[10px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    className="text-micro tracking-normal text-ink-3 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.etf_style}
                   </button>
                 )}
                 {s.sector && (
                   <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
-                    className="text-[10px] text-slate-400 bg-slate-50 px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    className="text-micro tracking-normal text-ink-4 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.sector}
                   </button>
                 )}
                 <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
                   {s.asset_class !== '현금' ? (
                     <button onClick={() => fetchHistory(s.ticker)} disabled={fetchingHist === s.ticker} title="과거 데이터 수집 (90일)"
-                      className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
+                      className="p-0.5 rounded hover:bg-surface-low text-ink-5 hover:text-ink-3 transition-colors disabled:opacity-40">
                       {fetchingHist === s.ticker ? (
                         <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -739,14 +739,14 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     </button>
                   ) : null}
                   <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
-                    className="p-0.5 rounded hover:bg-slate-100 text-slate-200 hover:text-slate-500 transition-colors disabled:opacity-40">
+                    className="p-0.5 rounded hover:bg-surface-low text-ink-5 hover:text-ink-3 transition-colors disabled:opacity-40">
                     {syncing === s.ticker ? (
                       <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                       </svg>
                     ) : syncMsg[s.ticker] ? (
-                      <span className="text-[10px] font-mono text-slate-400">{syncMsg[s.ticker]}</span>
+                      <span className="text-micro tracking-normal font-mono text-ink-4">{syncMsg[s.ticker]}</span>
                     ) : (
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -774,11 +774,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
 
         {/* Add card */}
         <button onClick={() => setShowAddModal(true)}
-          className="bg-white rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[80px]">
+          className="bg-surface-card rounded-field border border-dashed border-surface-low flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[80px]">
           <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
-          <span className="text-xs">추가</span>
+          <span className="text-body">추가</span>
         </button>
       </div>
 

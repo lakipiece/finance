@@ -1,0 +1,148 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>색상 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>색상 (as-is)</h1><p class="lede">현재 코드에 실제로 존재하는 모든 색상 소스. 브랜드·팔레트·Surface·시맨틱이 서로 다른 세 체계로 갈라져 있다.</p>
+
+<h2>1. 브랜드 (lib/styles.ts › brand)</h2>
+<div class="sw-grid">
+  <div><div class="swatch" style="background:#1A237E"></div>
+  <div class="sw-name">brand.primary</div><div class="sw-hex">#1A237E</div>
+  <div class="sw-use">페이지 타이틀, 주 버튼, 포커스 링 — 코드 내 81회 하드코딩</div></div>
+  <div><div class="swatch" style="background:#00695C"></div>
+  <div class="sw-name">brand.accent</div><div class="sw-hex">#00695C</div>
+  <div class="sw-use">액센트 바, 보조 강조 — 14회 하드코딩</div></div></div>
+<div class="row"><div style="flex:1;height:60px;border-radius:12px;background:linear-gradient(135deg,#1A237E 0%,#00695C 100%)"></div></div>
+<p class="note"><code>palette.headerGradient</code> — 헤더/로그인 배경</p>
+<div class="row"><div style="flex:1;height:60px;border-radius:12px;background:linear-gradient(135deg,#1A237E 0%,#283593 60%,#00695C 100%)"></div></div>
+<p class="note">KPI 강조 카드 그라디언트 — <code>PortfolioKpiCards.tsx</code>에만 인라인 존재 <span class="flag">토큰 없음</span></p>
+
+<h2>2. 카테고리 팔레트 (lib/palettes.ts › DEFAULT_PALETTE)</h2>
+<p class="note">가계부 4대 분류에 1:1 고정. 차트 시리즈 색상의 기본 소스이며, 부족하면 <code>+CC</code>/<code>+99</code> 알파를 덧붙여 12색까지 늘려 쓴다.</p>
+<div class="sw-grid">
+  <div><div class="swatch" style="background:#1A237E"></div>
+  <div class="sw-name">colors[0]</div><div class="sw-hex">#1A237E</div>
+  <div class="sw-use">고정비</div></div>
+  <div><div class="swatch" style="background:#690043"></div>
+  <div class="sw-name">colors[1]</div><div class="sw-hex">#690043</div>
+  <div class="sw-use">대출상환</div></div>
+  <div><div class="swatch" style="background:#00695C"></div>
+  <div class="sw-name">colors[2]</div><div class="sw-hex">#00695C</div>
+  <div class="sw-use">변동비</div></div>
+  <div><div class="swatch" style="background:#8D6E63"></div>
+  <div class="sw-name">colors[3]</div><div class="sw-hex">#8D6E63</div>
+  <div class="sw-use">여행공연비</div></div></div>
+
+<h2>3. Surface 계층 (tailwind.config.ts) <span class="flag dead">코드 사용 0회</span></h2>
+<p class="note">"The Orchestrated Lens" 철학용으로 정의됐지만 <b>어느 컴포넌트도 import하지 않는다.</b> 실제 화면은 전부 <code>bg-white</code> + <code>border-slate-100</code>으로 그려져 있다.</p>
+<div class="sw-grid">
+  <div><div class="swatch" style="background:#f8f9ff"></div>
+  <div class="sw-name">surface</div><div class="sw-hex">#f8f9ff</div>
+  <div class="sw-use">Foundation — 앱 배경</div></div>
+  <div><div class="swatch" style="background:#eff4ff"></div>
+  <div class="sw-name">surface-low</div><div class="sw-hex">#eff4ff</div>
+  <div class="sw-use">Canvas — 사이드바</div></div>
+  <div><div class="swatch" style="background:#e6eeff"></div>
+  <div class="sw-name">surface-container</div><div class="sw-hex">#e6eeff</div>
+  <div class="sw-use">Container — 구분 존</div></div>
+  <div><div class="swatch" style="background:#dce9ff"></div>
+  <div class="sw-name">surface-container-high</div><div class="sw-hex">#dce9ff</div>
+  <div class="sw-use">보조 버튼 배경</div></div>
+  <div><div class="swatch" style="background:#ccdbf3"></div>
+  <div class="sw-name">surface-dim</div><div class="sw-hex">#ccdbf3</div>
+  <div class="sw-use">비활성</div></div>
+  <div><div class="swatch" style="background:#ffffff"></div>
+  <div class="sw-name">surface-card</div><div class="sw-hex">#ffffff</div>
+  <div class="sw-use">High-Focus Card</div></div>
+  <div><div class="swatch" style="background:#131b2e"></div>
+  <div class="sw-name">primary-container</div><div class="sw-hex">#131b2e</div>
+  <div class="sw-use">CTA 배경</div></div>
+  <div><div class="swatch" style="background:#0d1c2e"></div>
+  <div class="sw-name">on-surface</div><div class="sw-hex">#0d1c2e</div>
+  <div class="sw-use">기본 텍스트</div></div></div>
+
+<h2>4. 실사용 중립 스케일 (Tailwind slate)</h2>
+<p class="note">화면의 90%를 차지하는 실질 색상 체계. 표면·테두리·텍스트가 모두 여기서 나온다.</p>
+<div class="sw-grid">
+  <div><div class="swatch" style="background:#1e293b"></div>
+  <div class="sw-name">slate-800</div><div class="sw-hex">#1e293b</div>
+  <div class="sw-use">금액 강조</div></div>
+  <div><div class="swatch" style="background:#334155"></div>
+  <div class="sw-name">slate-700</div><div class="sw-hex">#334155</div>
+  <div class="sw-use">섹션 제목</div></div>
+  <div><div class="swatch" style="background:#475569"></div>
+  <div class="sw-name">slate-600</div><div class="sw-hex">#475569</div>
+  <div class="sw-use">본문</div></div>
+  <div><div class="swatch" style="background:#64748b"></div>
+  <div class="sw-name">slate-500</div><div class="sw-hex">#64748b</div>
+  <div class="sw-use">메타 · 차트 범례</div></div>
+  <div><div class="swatch" style="background:#94a3b8"></div>
+  <div class="sw-name">slate-400</div><div class="sw-hex">#94a3b8</div>
+  <div class="sw-use">레이블 · 차트 축</div></div>
+  <div><div class="swatch" style="background:#cbd5e1"></div>
+  <div class="sw-name">slate-300</div><div class="sw-hex">#cbd5e1</div>
+  <div class="sw-use">플레이스홀더 · 비활성 아이콘</div></div>
+  <div><div class="swatch" style="background:#e2e8f0"></div>
+  <div class="sw-name">slate-200</div><div class="sw-hex">#e2e8f0</div>
+  <div class="sw-use">인풋 밑줄 · 툴팁 테두리</div></div>
+  <div><div class="swatch" style="background:#f1f5f9"></div>
+  <div class="sw-name">slate-100</div><div class="sw-hex">#f1f5f9</div>
+  <div class="sw-use">카드 테두리 · 차트 그리드</div></div>
+  <div><div class="swatch" style="background:#f8fafc"></div>
+  <div class="sw-name">slate-50</div><div class="sw-hex">#f8fafc</div>
+  <div class="sw-use">줄무늬 행 · 호버 배경</div></div></div>
+
+<h2>5. 시맨틱 — 손익 <span class="flag">3중 정의</span></h2>
+<p class="note">한국 관례(상승=빨강 / 하락=파랑)는 일관되지만, <b>같은 의미에 세 벌의 hex가 돌아다닌다.</b></p>
+<table class="dt">
+<tr><th>의미</th><th>styles.ts</th><th>차트</th><th>IncomeDashboard</th></tr>
+<tr><td>상승 / 이익</td>
+  <td><span style="color:#f43f5e;font-weight:600">rose-500 #f43f5e</span></td>
+  <td><span style="color:#ef4444;font-weight:600">#ef4444</span></td>
+  <td><span style="color:#dc2626;font-weight:600">#dc2626</span></td></tr>
+<tr><td>하락 / 손실</td>
+  <td><span style="color:#3b82f6;font-weight:600">blue-500 #3b82f6</span></td>
+  <td><span style="color:#3b82f6;font-weight:600">#3b82f6</span></td>
+  <td><span style="color:#2563eb;font-weight:600">#2563eb</span></td></tr>
+</table>
+<p class="note">그 밖에 <code>rose-400</code>(세금), <code>emerald-500 #10b981</code>(배당), <code>#6B8CAE</code>(드릴다운 폴백)이 개별 파일에 하드코딩되어 있다.</p>
+
+<h2>6. 옵션 컬러 72색 (lib/palettes.ts › OPTION_COLORS)</h2>
+<p class="note">사용자가 카테고리·계좌·종목에 직접 지정하는 색. 계열별 정렬. 차트에서 이 색이 팔레트 색과 섞여 나오면서 채도 리듬이 깨진다.</p>
+<div style="display:grid;grid-template-columns:repeat(18,1fr);gap:3px;margin-bottom:8px">
+<div style="aspect-ratio:1;border-radius:4px;background:#1A237E"></div><div style="aspect-ratio:1;border-radius:4px;background:#00695C"></div><div style="aspect-ratio:1;border-radius:4px;background:#390069"></div><div style="aspect-ratio:1;border-radius:4px;background:#690043"></div><div style="aspect-ratio:1;border-radius:4px;background:#396900"></div><div style="aspect-ratio:1;border-radius:4px;background:#006769"></div><div style="aspect-ratio:1;border-radius:4px;background:#0D1B5E"></div><div style="aspect-ratio:1;border-radius:4px;background:#283593"></div><div style="aspect-ratio:1;border-radius:4px;background:#1565C0"></div><div style="aspect-ratio:1;border-radius:4px;background:#01579B"></div><div style="aspect-ratio:1;border-radius:4px;background:#0277BD"></div><div style="aspect-ratio:1;border-radius:4px;background:#0288D1"></div><div style="aspect-ratio:1;border-radius:4px;background:#311B92"></div><div style="aspect-ratio:1;border-radius:4px;background:#4527A0"></div><div style="aspect-ratio:1;border-radius:4px;background:#512DA8"></div><div style="aspect-ratio:1;border-radius:4px;background:#4A148C"></div><div style="aspect-ratio:1;border-radius:4px;background:#6A1B9A"></div><div style="aspect-ratio:1;border-radius:4px;background:#7B1FA2"></div><div style="aspect-ratio:1;border-radius:4px;background:#6D28D9"></div><div style="aspect-ratio:1;border-radius:4px;background:#880E4F"></div><div style="aspect-ratio:1;border-radius:4px;background:#AD1457"></div><div style="aspect-ratio:1;border-radius:4px;background:#C2185B"></div><div style="aspect-ratio:1;border-radius:4px;background:#D81B60"></div><div style="aspect-ratio:1;border-radius:4px;background:#E91E8C"></div><div style="aspect-ratio:1;border-radius:4px;background:#7F1D1D"></div><div style="aspect-ratio:1;border-radius:4px;background:#B71C1C"></div><div style="aspect-ratio:1;border-radius:4px;background:#C62828"></div><div style="aspect-ratio:1;border-radius:4px;background:#D32F2F"></div><div style="aspect-ratio:1;border-radius:4px;background:#C0392B"></div><div style="aspect-ratio:1;border-radius:4px;background:#BF360C"></div><div style="aspect-ratio:1;border-radius:4px;background:#D84315"></div><div style="aspect-ratio:1;border-radius:4px;background:#E64A19"></div><div style="aspect-ratio:1;border-radius:4px;background:#E65100"></div><div style="aspect-ratio:1;border-radius:4px;background:#FF6D00"></div><div style="aspect-ratio:1;border-radius:4px;background:#F57C00"></div><div style="aspect-ratio:1;border-radius:4px;background:#FF8F00"></div><div style="aspect-ratio:1;border-radius:4px;background:#F9A825"></div><div style="aspect-ratio:1;border-radius:4px;background:#E67E22"></div><div style="aspect-ratio:1;border-radius:4px;background:#5D4037"></div><div style="aspect-ratio:1;border-radius:4px;background:#6D4C41"></div><div style="aspect-ratio:1;border-radius:4px;background:#795548"></div><div style="aspect-ratio:1;border-radius:4px;background:#8D6E63"></div><div style="aspect-ratio:1;border-radius:4px;background:#693D00"></div><div style="aspect-ratio:1;border-radius:4px;background:#7C4A00"></div><div style="aspect-ratio:1;border-radius:4px;background:#92600A"></div><div style="aspect-ratio:1;border-radius:4px;background:#C8961A"></div><div style="aspect-ratio:1;border-radius:4px;background:#33691E"></div><div style="aspect-ratio:1;border-radius:4px;background:#558B2F"></div><div style="aspect-ratio:1;border-radius:4px;background:#7C8B12"></div><div style="aspect-ratio:1;border-radius:4px;background:#827717"></div><div style="aspect-ratio:1;border-radius:4px;background:#1B5E20"></div><div style="aspect-ratio:1;border-radius:4px;background:#2E7D32"></div><div style="aspect-ratio:1;border-radius:4px;background:#388E3C"></div><div style="aspect-ratio:1;border-radius:4px;background:#2D6A4F"></div><div style="aspect-ratio:1;border-radius:4px;background:#43A047"></div><div style="aspect-ratio:1;border-radius:4px;background:#004D40"></div><div style="aspect-ratio:1;border-radius:4px;background:#00796B"></div><div style="aspect-ratio:1;border-radius:4px;background:#006064"></div><div style="aspect-ratio:1;border-radius:4px;background:#1A2940"></div><div style="aspect-ratio:1;border-radius:4px;background:#37474F"></div><div style="aspect-ratio:1;border-radius:4px;background:#455A64"></div><div style="aspect-ratio:1;border-radius:4px;background:#546E7A"></div><div style="aspect-ratio:1;border-radius:4px;background:#607D8B"></div><div style="aspect-ratio:1;border-radius:4px;background:#111827"></div><div style="aspect-ratio:1;border-radius:4px;background:#1F2937"></div><div style="aspect-ratio:1;border-radius:4px;background:#2D3748"></div><div style="aspect-ratio:1;border-radius:4px;background:#374151"></div><div style="aspect-ratio:1;border-radius:4px;background:#3D4558"></div><div style="aspect-ratio:1;border-radius:4px;background:#424242"></div><div style="aspect-ratio:1;border-radius:4px;background:#4A5568"></div><div style="aspect-ratio:1;border-radius:4px;background:#4B5563"></div><div style="aspect-ratio:1;border-radius:4px;background:#5A6476"></div><div style="aspect-ratio:1;border-radius:4px;background:#64748B"></div><div style="aspect-ratio:1;border-radius:4px;background:#718096"></div><div style="aspect-ratio:1;border-radius:4px;background:#8492A6"></div><div style="aspect-ratio:1;border-radius:4px;background:#4E342E"></div><div style="aspect-ratio:1;border-radius:4px;background:#5D4037"></div><div style="aspect-ratio:1;border-radius:4px;background:#6D4C41"></div>
+</div>
+
+</div></body></html>

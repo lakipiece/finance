@@ -1,0 +1,226 @@
+<!-- @dsCard group="시안 (To-be)" viewport="1400x1000" name="입력부 4안 비교" subtitle="거래 입력 모달을 A·B·C·D 언어로" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>입력부 4안 비교 — 거래 입력 모달</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1340px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:860px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:26px 0 10px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.scroller{overflow-x:auto;padding-bottom:6px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start;min-width:1276px}
+.seg{white-space:nowrap}
+.pill{white-space:nowrap}
+.col>.hd{display:flex;align-items:baseline;gap:6px;margin-bottom:7px}
+.col>.hd b{font-size:12px;color:#0d1c2e}
+.col>.hd span{font-size:10px;color:#94a3b8}
+.stage{padding:12px;border-radius:14px}
+.cap{font-size:10px;color:#8794a8;line-height:1.6;margin-top:7px}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+input{font-family:inherit}
+.win{margin-bottom:14px}
+</style></head><body><div class="wrap">
+<h1>입력부 4안 비교 — 거래 입력 모달</h1>
+<div class="tag">가계부에서 가장 많이 쓰는 화면</div>
+<p class="lede">같은 "지출 1건 추가" 모달을 네 시안의 언어로 그렸다. 필드 구성·내용은 완전히 동일하고, <b>표면·인풋 형태·밀도만</b> 다르다. 각 시안 문서는 <a href="proposal-a.html">A</a> · <a href="proposal-b.html">B</a> · <a href="proposal-c.html">C</a> · <a href="proposal-d.html">D</a>.</p>
+
+<div class="scroller"><div class="grid4">
+
+  <!-- A -->
+  <div class="col">
+    <div class="hd"><b>A — 현행 정제</b><span>Refined Ledger</span></div>
+    <div class="stage" style="background:#f8fafc">
+      <div class="win" style="background:#fff;border:1px solid #f1f5f9;border-radius:16px;box-shadow:0 10px 15px -3px rgb(0 0 0/.1);overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:14px;font-weight:600;color:#334155">거래 추가</div><div style="font-size:15px;color:#cbd5e1;line-height:1">×</div>
+        </div>
+        <div style="padding:16px 20px;display:grid;gap:15px">
+          <div style="display:flex;gap:16px;font-size:12px">
+            <span style="color:#1A237E;font-weight:600;border-bottom:2px solid #1A237E;padding-bottom:4px;white-space:nowrap">지출</span>
+            <span style="color:#94a3b8;padding-bottom:4px;white-space:nowrap">수입</span>
+            <span style="color:#94a3b8;padding-bottom:4px;white-space:nowrap">이체</span>
+          </div>
+          <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">금액</label>
+            <input value="142,600" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:13px;color:#475569;outline:none;text-align:right;font-variant-numeric:tabular-nums"></div>
+          <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">날짜</label>
+            <input value="2026.08.12" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:13px;color:#475569;outline:none"></div>
+          <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">결제수단</label>
+            <input value="신한체크" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:13px;color:#475569;outline:none"></div>
+          <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">분류</label>
+            <input value="변동비" style="width:100%;border:0;border-bottom:1px solid #1A237E;background:transparent;padding:4px 0 6px;font-size:13px;color:#475569;outline:none"></div>
+          <div><label style="display:block;font-size:10px;color:#94a3b8;margin-bottom:4px">내역</label>
+            <input value="이마트 장보기" style="width:100%;border:0;border-bottom:1px solid #e2e8f0;background:transparent;padding:4px 0 6px;font-size:13px;color:#475569;outline:none"></div>
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:8px;justify-content:flex-end">
+          <button style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;border:1px solid #e2e8f0;background:#fff;color:#475569;cursor:pointer">취소</button>
+          <button style="padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;border:none;background:#1A237E;color:#fff;cursor:pointer">저장</button>
+        </div>
+      </div>
+      <div class="cap"><b style="color:#0d1c2e">인풋 밑줄 유지</b> · 필드 세로 1열 · 분류는 드롭다운 · 라벨 10px 국문<br>변경 코드 최소. 대신 스크롤이 생기고 금액이 다른 필드와 같은 급으로 보인다.</div>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="col">
+    <div class="hd"><b>B — 표면 레이어링</b><span>Orchestrated Lens</span></div>
+    <div class="stage" style="background:#f8f9ff">
+      <div class="win" style="background:#fff;border-radius:18px;box-shadow:0 12px 48px -8px rgba(13,28,46,.22);overflow:hidden">
+        <div style="padding:15px 18px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:15px;font-weight:700;color:#0d1c2e">거래 추가</div><div style="font-size:16px;color:#a8b3c4;line-height:1">×</div>
+        </div>
+        <div style="padding:0 18px 16px;display:grid;gap:14px">
+          <div style="display:flex;gap:0">
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:8px 0;font-size:12px;font-weight:700;color:#fff;background:#131b2e;border-radius:10px 0 0 10px">지출</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:8px 0;font-size:12px;font-weight:600;color:#5b6a80;background:#eff4ff">수입</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:8px 0;font-size:12px;font-weight:600;color:#5b6a80;background:#eff4ff;border-radius:0 10px 10px 0">이체</div>
+          </div>
+          <div><div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">금액</div>
+            <div style="background:#eff4ff;border-radius:11px;padding:9px 12px;display:flex;align-items:baseline;gap:6px">
+              <input value="142,600" style="flex:1;border:0;background:transparent;padding:0;font-size:20px;font-weight:700;color:#0d1c2e;outline:none;text-align:right;font-variant-numeric:tabular-nums">
+              <span style="font-size:13px;color:#5b6a80;font-weight:600">원</span></div></div>
+          <div><div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">날짜</div>
+            <div style="background:#eff4ff;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08.12</div></div>
+          <div><div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">결제수단</div>
+            <div style="background:#eff4ff;border-radius:11px;padding:9px 12px;font-size:13px;color:#0d1c2e;display:flex;justify-content:space-between">신한체크 <span style="color:#a8b3c4">⌄</span></div></div>
+          <div><div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">분류</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span style="padding:6px 11px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:600;background:rgba(26,35,126,.1);color:#1A237E">고정비</span>
+              <span style="padding:6px 11px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:700;background:#00695C;color:#fff">변동비</span>
+              <span style="padding:6px 11px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:600;background:rgba(141,110,99,.14);color:#8D6E63">여행공연비</span>
+            </div></div>
+          <div><div style="font-size:11px;color:#5b6a80;font-weight:500;margin-bottom:5px">내역</div>
+            <input value="이마트 장보기" style="width:100%;border:0;border-radius:11px;background:#eff4ff;padding:9px 12px;font-size:13px;color:#0d1c2e;outline:none"></div>
+        </div>
+        <div style="padding:12px 18px;background:#f8f9ff;display:flex;gap:7px;justify-content:flex-end">
+          <button style="padding:8px 15px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#dce9ff;color:#3d4a5c;cursor:pointer">취소</button>
+          <button style="padding:8px 17px;border-radius:10px;font-size:12px;font-weight:600;border:none;background:#131b2e;color:#fff;cursor:pointer">저장</button>
+        </div>
+      </div>
+      <div class="cap"><b style="color:#0d1c2e">채움형 인풋 필수</b> · 테두리 0 · 라운딩 11~18px · 분류 pill<br>가장 부드럽고 모바일 친화적. 다만 여백이 커서 필드 6개에 스크롤이 걸린다.</div>
+    </div>
+  </div>
+
+  <!-- C -->
+  <div class="col">
+    <div class="hd"><b>C — 데이터 우선</b><span>Precision Terminal</span></div>
+    <div class="stage" style="background:#fbfcfd">
+      <div class="win" style="background:#fff;border:1px solid #e6e9ef;border-radius:8px;box-shadow:0 4px 6px -1px rgb(0 0 0/.06);overflow:hidden">
+        <div style="padding:9px 13px;border-bottom:1px solid #e6e9ef;display:flex;align-items:center;justify-content:space-between">
+          <div class="lbl" style="color:#101a3d">거래 추가</div><div style="font-size:14px;color:#a8b3c4;line-height:1">×</div>
+        </div>
+        <div style="padding:11px 13px;display:grid;gap:8px">
+          <div style="display:flex;gap:0">
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:5px 0;font-size:11px;font-weight:700;color:#fff;background:#101a3d;border:1px solid #101a3d;border-radius:5px 0 0 5px">지출</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:5px 0;font-size:11px;font-weight:600;color:#475569;background:#fff;border:1px solid #dfe5ee;border-left:0">수입</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:5px 0;font-size:11px;font-weight:600;color:#475569;background:#fff;border:1px solid #dfe5ee;border-left:0;border-radius:0 5px 5px 0">이체</div>
+          </div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">금액</div>
+            <input value="142,600" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:14px;font-weight:700;color:#0f172a;outline:none;text-align:right;font-variant-numeric:tabular-nums"></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">날짜</div>
+            <input value="2026.08.12" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:12px;color:#334155;outline:none;font-variant-numeric:tabular-nums"></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">결제수단</div>
+            <input value="신한체크" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:12px;color:#334155;outline:none"></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">분류</div>
+            <div style="display:flex;gap:3px">
+              <span style="padding:3px 7px;white-space:nowrap;border-radius:3px;font-size:10px;font-weight:600;background:#f1f3f9;color:#101a3d">고정비</span>
+              <span style="padding:3px 7px;white-space:nowrap;border-radius:3px;font-size:10px;font-weight:700;background:#101a3d;color:#fff">변동비</span>
+              <span style="padding:3px 7px;white-space:nowrap;border-radius:3px;font-size:10px;font-weight:600;background:#f1f3f9;color:#101a3d">여행</span>
+            </div></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">내역</div>
+            <input value="이마트 장보기" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:12px;color:#334155;outline:none"></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">메모</div>
+            <input placeholder="선택" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:12px;color:#334155;outline:none"></div>
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr);align-items:center;gap:8px">
+            <div class="lbl" style="color:#5b6b82">반복</div>
+            <input placeholder="없음" style="width:100%;border:1px solid #dfe5ee;border-radius:5px;background:#fff;padding:5px 8px;font-size:12px;color:#334155;outline:none"></div>
+        </div>
+        <div style="padding:9px 13px;border-top:1px solid #e6e9ef;display:flex;gap:6px;justify-content:flex-end">
+          <button style="padding:5px 11px;border-radius:5px;font-size:11px;font-weight:600;border:none;background:transparent;color:#5b6b82;cursor:pointer">취소</button>
+          <button style="padding:5px 13px;border-radius:5px;font-size:11px;font-weight:600;border:none;background:#101a3d;color:#fff;cursor:pointer">저장</button>
+        </div>
+      </div>
+      <div class="cap"><b style="color:#0d1c2e">라벨 좌측 정렬 2열</b> · 테두리 인풋 · 10px 대문자 라벨 · 여백 최소<br>필드 8개가 스크롤 없이 들어간다. 대신 터치 타깃 30px로 <b style="color:#b45309">모바일 44px 미달</b>.</div>
+    </div>
+  </div>
+
+  <!-- D -->
+  <div class="col">
+    <div class="hd"><b>D — B표면 × C밀도</b><span style="color:#1A237E;font-weight:600">현재 검토안</span></div>
+    <div class="stage" style="background:#f8f9fb;box-shadow:0 0 0 2px #e6e9f0">
+      <div class="win" style="background:#fff;border-radius:16px;box-shadow:0 12px 48px -8px rgba(13,28,46,.22);overflow:hidden">
+        <div style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:14px;font-weight:700;color:#0d1c2e">거래 추가</div><div style="font-size:16px;color:#a8b3c4;line-height:1">×</div>
+        </div>
+        <div style="padding:0 14px 12px;display:grid;gap:9px">
+          <div style="display:flex;gap:0">
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:6px 0;font-size:12px;font-weight:700;color:#fff;background:#131b2e;border-radius:9px 0 0 9px">지출</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:6px 0;font-size:12px;font-weight:600;color:#5b6a80;background:#f1f3f7">수입</div>
+            <div style="flex:1;white-space:nowrap;text-align:center;padding:6px 0;font-size:12px;font-weight:600;color:#5b6a80;background:#f1f3f7;border-radius:0 9px 9px 0">이체</div>
+          </div>
+          <div><div class="lbl" style="color:#5b6a80;margin-bottom:3px">금액</div>
+            <div style="display:flex;align-items:baseline;gap:6px;background:#f1f3f7;border-radius:9px;padding:6px 10px">
+              <input value="142,600" style="flex:1;border:0;background:transparent;padding:0;font-size:22px;font-weight:700;color:#0d1c2e;outline:none;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.015em">
+              <span style="font-size:13px;color:#5b6a80;font-weight:600">원</span></div>
+            <div style="display:flex;gap:4px;margin-top:5px">
+              <span style="padding:3px 8px;white-space:nowrap;border-radius:9999px;font-size:10px;font-weight:600;background:#f1f3f7;color:#3d4a5c">+1천</span>
+              <span style="padding:3px 8px;white-space:nowrap;border-radius:9999px;font-size:10px;font-weight:600;background:#f1f3f7;color:#3d4a5c">+1만</span>
+              <span style="padding:3px 8px;white-space:nowrap;border-radius:9999px;font-size:10px;font-weight:600;background:#f1f3f7;color:#3d4a5c">+10만</span>
+              <span style="padding:3px 8px;white-space:nowrap;border-radius:9999px;font-size:10px;font-weight:600;background:#e6e9f0;color:#131b2e">지우기</span>
+            </div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><div class="lbl" style="color:#5b6a80;margin-bottom:3px">날짜</div>
+              <div style="background:#f1f3f7;border-radius:9px;padding:7px 10px;font-size:13px;color:#0d1c2e;font-variant-numeric:tabular-nums">2026.08.12</div></div>
+            <div><div class="lbl" style="color:#5b6a80;margin-bottom:3px">결제수단</div>
+              <div style="background:#f1f3f7;border-radius:9px;padding:7px 10px;font-size:13px;color:#0d1c2e;display:flex;justify-content:space-between">신한체크 <span style="color:#a8b3c4">⌄</span></div></div>
+          </div>
+          <div><div class="lbl" style="color:#5b6a80;margin-bottom:3px">분류</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <span style="padding:5px 10px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:600;background:rgba(26,35,126,.1);color:#1A237E">고정비</span>
+              <span style="padding:5px 10px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:600;background:rgba(105,0,67,.1);color:#690043">대출상환</span>
+              <span style="padding:5px 10px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:700;background:#00695C;color:#fff">변동비</span>
+              <span style="padding:5px 10px;white-space:nowrap;border-radius:9999px;font-size:11px;font-weight:600;background:rgba(141,110,99,.14);color:#8D6E63">여행공연비</span>
+            </div></div>
+          <div><div class="lbl" style="color:#5b6a80;margin-bottom:3px">내역</div>
+            <input value="이마트 장보기" style="width:100%;border:0;border-radius:9px;background:#f1f3f7;padding:7px 10px;font-size:13px;color:#0d1c2e;outline:none"></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:#3d4a5c">
+            <span style="width:30px;height:17px;border-radius:9999px;background:#131b2e;position:relative;flex:none"><span style="position:absolute;right:2px;top:2px;width:13px;height:13px;border-radius:9999px;background:#fff"></span></span>
+            저장 후 계속 입력
+          </div>
+        </div>
+        <div style="padding:10px 14px;background:#f8f9fb;display:flex;gap:6px;justify-content:flex-end">
+          <button style="padding:7px 14px;border-radius:9px;font-size:12px;font-weight:600;border:none;background:#e6e9f0;color:#3d4a5c;cursor:pointer">취소</button>
+          <button style="padding:7px 16px;border-radius:9px;font-size:12px;font-weight:600;border:none;background:#131b2e;color:#fff;cursor:pointer">저장 <span style="opacity:.6;font-weight:500">⏎</span></button>
+        </div>
+      </div>
+      <div class="cap"><b style="color:#0d1c2e">B 표면 + C 밀도 + 금액 단독 확대</b> · 날짜·수단 2열 병치 · 퀵 칩<br>같은 높이에 필드 6개 + 퀵 칩 + 연속입력 토글까지. 터치 타깃 44px 유지.</div>
+    </div>
+  </div>
+</div></div>
+
+<h2>축별 비교</h2>
+<table class="dt">
+<tr><th style="width:92px">축</th><th>A 현행 정제</th><th>B 표면 레이어링</th><th>C 데이터 우선</th><th>D 검토안</th></tr>
+<tr><td><b>인풋</b></td><td>밑줄 <code>#e2e8f0</code></td><td>채움 <code>#eff4ff</code> (필수 전환)</td><td>테두리 <code>#dfe5ee</code> 5px</td><td>채움 <code>#f1f3f7</code> 9px (중성)</td></tr>
+<tr><td><b>포커스</b></td><td>밑줄만 브랜드색</td><td>흰 배경 + 잉크 링</td><td>테두리 브랜드색</td><td>흰 배경 + 잉크 링 2px</td></tr>
+<tr><td><b>라벨</b></td><td>10px 국문 · 상단</td><td>11px 국문 · 상단</td><td>10px 대문자 · <b>좌측</b></td><td>10px 대문자 · 상단</td></tr>
+<tr><td><b>금액</b></td><td>다른 필드와 동급 13px</td><td>20px 확대</td><td>14px · 우측정렬</td><td><b>22px + 퀵 칩</b></td></tr>
+<tr><td><b>분류</b></td><td>드롭다운</td><td>pill (틴트/솔리드)</td><td>사각 배지 소형</td><td>pill 4개 상시</td></tr>
+<tr><td><b>필드/화면</b></td><td>6개 (스크롤 발생)</td><td>6개 (스크롤 발생)</td><td><b>8개</b></td><td>6개 + 칩 + 토글</td></tr>
+<tr><td><b>터치 타깃</b></td><td>28px <span style="color:#b45309">미달</span></td><td>40px</td><td>30px <span style="color:#b45309">미달</span></td><td>44px <span style="color:#047857">충족</span></td></tr>
+<tr><td><b>작업량</b></td><td>낮음 — 값 정리만</td><td>높음 — 인풋 전면 치환</td><td>중간 — 밀도 변수화</td><td>높음 — B + 밀도 + 신규 패턴</td></tr>
+</table>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">※ A·B·C의 입력부는 각 시안의 규칙에서 <b>연역해 그린 것</b>이다. 원 시안 문서(<a href="proposal-a.html">A</a>/<a href="proposal-b.html">B</a>/<a href="proposal-c.html">C</a>)에는 포트폴리오 화면만 있다. 입금 인라인 입력 행은 D안에만 존재 — <a href="proposal-d.html">D 문서</a> 참조.</p>
+</div></body></html>

@@ -29,8 +29,8 @@ function groupPct(
 }
 
 function diffColor(diff: number) {
-  if (Math.abs(diff) < 0.001) return 'text-slate-400'
-  return diff > 0 ? 'text-rose-500' : 'text-blue-500'
+  if (Math.abs(diff) < 0.001) return 'text-ink-4'
+  return diff > 0 ? 'text-gain' : 'text-loss'
 }
 
 function TargetInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
@@ -40,9 +40,9 @@ function TargetInput({ value, onChange }: { value: number; onChange: (v: number)
         type="number" min={0} max={100} step={0.1}
         value={(value * 100).toFixed(1)}
         onChange={e => onChange(parseFloat(e.target.value) / 100)}
-        className="w-14 text-right border-0 border-b border-slate-200 bg-transparent pb-0.5 text-xs text-slate-600 focus:outline-none focus:border-[#1A237E] transition-colors tabular-nums"
+        className="w-14 text-right rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5"
       />
-      <span className="text-xs text-slate-400">%</span>
+      <span className="text-body text-ink-4">%</span>
     </span>
   )
 }
@@ -55,39 +55,39 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
   setTarget: (level: string, key: string, pct: number) => void
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-slate-100">
-        <p className="text-xs font-semibold text-slate-600">{title}</p>
+    <div className="bg-surface-card rounded-card shadow-card overflow-hidden">
+      <div className="px-5 py-3.5 border-b border-surface-low">
+        <p className="text-body font-medium text-ink-2">{title}</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-50">
-              <th className="text-left px-5 py-2.5 text-[10px] font-medium text-slate-400">항목</th>
-              <th className="text-right px-4 py-2.5 text-[10px] font-medium text-slate-400">현재</th>
-              <th className="text-right px-4 py-2.5 text-[10px] font-medium text-slate-400">목표</th>
-              <th className="text-right px-4 py-2.5 text-[10px] font-medium text-slate-400">차이</th>
-              <th className="text-right px-5 py-2.5 text-[10px] font-medium text-slate-400">필요 금액</th>
+            <tr className="border-b border-surface-low">
+              <th className="text-left px-5 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">항목</th>
+              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">현재</th>
+              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">목표</th>
+              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">차이</th>
+              <th className="text-right px-5 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">필요 금액</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-surface-low">
             {rows.map(({ key, actual_pct, level, mono }) => {
               const target = getTarget(level, key)
               const diff = actual_pct - target
               const needed = (target - actual_pct) * total
               return (
-                <tr key={key} className="hover:bg-slate-50/60 transition-colors">
-                  <td className={`px-5 py-2.5 text-xs font-medium text-slate-700 ${mono ? 'font-mono' : ''}`}>{key}</td>
-                  <td className="px-4 py-2.5 text-right text-xs text-slate-500 tabular-nums">
+                <tr key={key} className="hover:bg-surface-low/60 transition-colors">
+                  <td className={`px-5 py-2.5 text-xs font-medium text-ink ${mono ? 'font-mono' : ''}`}>{key}</td>
+                  <td className="px-2 py-[5px].5 text-right text-body text-ink-3 tabular-nums">
                     {(actual_pct * 100).toFixed(1)}%
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-2 py-[5px].5 text-right">
                     <TargetInput value={target} onChange={v => setTarget(level, key, v)} />
                   </td>
-                  <td className={`px-4 py-2.5 text-right text-xs font-semibold tabular-nums ${diffColor(diff)}`}>
+                  <td className={`px-4 py-2.5 text-right text-body font-bold tabular-nums ${diffColor(diff)}`}>
                     {diff >= 0 ? '+' : ''}{(diff * 100).toFixed(1)}%
                   </td>
-                  <td className={`px-5 py-2.5 text-right text-xs tabular-nums ${needed >= 0 ? 'text-blue-500' : 'text-rose-500'}`}>
+                  <td className={`px-5 py-2.5 text-right text-xs tabular-nums ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
                     {Math.round(Math.abs(needed) / 10000).toLocaleString()}만원 {needed >= 0 ? '매수' : '매도'}
                   </td>
                 </tr>

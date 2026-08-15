@@ -1,251 +1,280 @@
 // lib/styles.ts
-// 앱 전체 공유 Tailwind 클래스 상수.
-// 컴포넌트에서 인라인으로 정의하던 const inp = '...' 등을 여기서 가져다 쓴다.
+// 앱 전체 공유 Tailwind 클래스 상수 — 시안 D 디자인 시스템.
+//
+// 원칙
+//  1. 테두리를 쓰지 않는다. 구분은 배경 톤 이동 또는 그림자로 만든다.
+//     유일한 예외는 표의 행 구분선(#f1f3f7)이며, 이는 "행 사이 톤 변화"로 취급한다.
+//  2. 굵기는 400·500·700 세 단만 쓴다. 600은 폐기.
+//  3. 크기는 display/title/heading/subhead/body/meta/micro 7단만 쓴다. 9px 이하 금지.
+//  4. 카테고리색은 점으로만 쓴다. 글자색으로 쓰지 않는다.
+//  5. 표·리스트만 조인다. 입력 화면에는 밀도 압축을 적용하지 않는다.
 
 // ─── 버튼 ──────────────────────────────────────────────────────────────────
-// 사용: <button className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>
-// 주의: primary는 backgroundColor를 style prop으로 별도 지정해야 함 (테마 색상)
 export const btn = {
-  // 주 액션 버튼 — 배경색은 style={{ backgroundColor: palette.colors[0] }}로 지정
+  // 주 액션 — 잉크 배경 고정 (테마색 지정 불필요)
   primary:
-    'px-4 py-1.5 rounded-lg text-xs font-medium text-white ' +
-    'hover:opacity-90 transition-opacity whitespace-nowrap',
-  // 보조 버튼 — 아웃라인
+    'px-[13px] py-1.5 rounded-btn text-body font-bold text-white bg-action ' +
+    'hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap',
+  // 보조 액션 — surface-high 배경. 실제 액션에만 쓴다(기간 선택 등 탐색에는 금지)
   secondary:
-    'px-4 py-1.5 rounded-lg text-xs font-medium border border-slate-200 ' +
-    'text-slate-600 hover:bg-slate-50 disabled:opacity-50 transition-colors whitespace-nowrap',
-  // 고스트 버튼 — 배경 없음
+    'px-[15px] py-2 rounded-btn text-body font-medium bg-surface-high text-ink-2 ' +
+    'hover:opacity-90 disabled:opacity-50 transition-opacity whitespace-nowrap',
+  // 고스트 — 배경 없음
   ghost:
-    'px-4 py-1.5 rounded-lg text-xs text-slate-500 ' +
-    'hover:bg-slate-100 transition-colors',
-  // 아이콘 버튼 — SVG 래퍼
+    'px-3 py-1.5 rounded-btn text-body text-ink-3 ' +
+    'hover:bg-surface-low transition-colors',
+  // 텍스트 + 셰브론 — 기간 선택기 등 탐색 전용. 배경 없음
+  chevron:
+    'inline-flex items-center gap-[5px] px-1 py-1.5 text-subhead font-bold text-ink ' +
+    'hover:opacity-70 transition-opacity whitespace-nowrap',
+  // 아이콘 버튼
   icon:
-    'p-1.5 rounded-lg text-slate-300 hover:text-slate-600 ' +
-    'hover:bg-slate-100 transition-colors',
+    'p-1.5 rounded-btn text-ink-5 hover:text-ink-2 ' +
+    'hover:bg-surface-low transition-colors',
   // 위험 아이콘 버튼 — 삭제 등
   danger:
-    'p-1.5 rounded-lg text-slate-300 hover:text-rose-400 ' +
-    'hover:bg-rose-50 transition-colors',
-  // 토글 필터 — pill 형태, active 여부를 외부에서 style로 제어
-  // 사용: className={btn.pill(isActive)} style={isActive ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}
+    'p-1.5 rounded-btn text-ink-5 hover:text-gain ' +
+    'hover:bg-surface-low transition-colors',
+  // 토글 pill — 분류 선택 등. 선택 시 잉크 배경, 점은 그대로 유지
   pill: (active: boolean) =>
-    `text-xs px-2.5 py-1 rounded-full border transition-colors ${
+    `inline-flex items-center justify-center gap-[5px] leading-none px-[11px] py-1.5 rounded-full transition-colors ${
       active
-        ? 'text-white border-transparent'
-        : 'border-slate-200 text-slate-500 hover:border-slate-400'
+        ? 'bg-action text-white text-meta font-bold'
+        : 'bg-surface-low text-ink-2 text-meta font-medium hover:opacity-80'
+    }`,
+  // 세그먼트 컨트롤 한 칸 — 양 끝만 라운딩은 호출 측에서 first/last로 처리
+  segment: (active: boolean) =>
+    `flex-1 text-center py-2 whitespace-nowrap transition-colors ${
+      active
+        ? 'bg-action text-white text-body font-bold'
+        : 'bg-surface-low text-ink-3 text-body font-medium'
     }`,
 } as const
 
 // ─── 카드 ──────────────────────────────────────────────────────────────────
-// rounded-2xl 고정. rounded-xl은 카드에 사용 금지.
-// shadow-sm은 페이지 최상위 카드에만. 내부 서브카드는 shadow 없음.
+// 테두리 없음. 흰 배경 + 확산 그림자로만 부상시킨다.
 export const card = {
   // 기본 카드 — 페이지 주요 섹션
-  base: 'bg-white rounded-2xl shadow-sm border border-slate-100',
-  // 내부 서브카드 — 카드 안의 카드 (shadow 없음)
-  inner: 'bg-white rounded-2xl border border-slate-100',
-  // 호버 효과 카드 — 클릭 가능한 카드
-  interactive: 'bg-white rounded-2xl border border-slate-100 hover:-translate-y-0.5 transition-all cursor-pointer',
-  // 배경 서브 영역 — 카드 내 구분 영역
-  sub: 'bg-slate-50 rounded-xl border border-slate-100',
+  base: 'bg-surface-card rounded-card shadow-card',
+  // 내부 서브카드 — 카드 안의 카드 (그림자 없음)
+  inner: 'bg-surface-card rounded-card',
+  // 호버 효과 카드 — 클릭 가능
+  interactive:
+    'bg-surface-card rounded-card shadow-card hover:-translate-y-0.5 transition-transform cursor-pointer',
+  // 배경 서브 영역 — 카드 내 구분 존
+  sub: 'bg-surface-container rounded-card',
+  // 카드 내부 패딩
+  padTable: 'p-[13px]',       // 표 카드
+  padKpi: 'px-[13px] py-[11px]', // KPI 카드
+  padForm: 'p-[14px]',        // 폼 카드
 } as const
 
 // ─── 폼 ───────────────────────────────────────────────────────────────────
-// 인풋: 박스 테두리 제거, 하단 테두리만 유지 + 포커스 시 테마 색상
+// D-02: 밑줄형 → 채움형 일괄 전환. 27개 화면 동시 적용, 과도기 두 벌 상태 금지.
+// 5상태: 기본 / 포커스(흰 배경 + 잉크 링) / 오류 / 비활성 / 플레이스홀더
+const FIELD_BASE =
+  'rounded-field bg-surface-low px-3 py-[9px] text-subhead font-normal text-ink border-0 ' +
+  'placeholder:text-ink-5 transition-colors ' +
+  'focus:outline-none focus:bg-white focus:shadow-focus ' +
+  'disabled:bg-surface disabled:text-ink-5'
+
 export const field = {
-  // 텍스트 인풋 — w-full, 하단 테두리만
-  input:
-    'w-full border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
-    'focus:outline-none focus:border-[#1A237E] transition-colors placeholder:text-slate-300',
-  // 셀렉트 — 자동 너비, 하단 테두리만
-  select:
-    'border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
-    'focus:outline-none focus:border-[#1A237E] transition-colors appearance-none',
-  // 숫자/짧은 인풋 — 고정 너비 없음 (호출 측에서 w-* 지정)
-  inputFit:
-    'border-0 border-b border-slate-200 bg-transparent px-0 pb-1.5 pt-1 text-xs text-slate-600 ' +
-    'focus:outline-none focus:border-[#1A237E] transition-colors',
-  // 검색 인풋 — 박스 유지 (독립 검색 UI)
-  search:
-    'w-full border border-slate-200 rounded-lg pl-7 pr-3 py-1.5 text-xs text-slate-500 ' +
-    'placeholder:text-slate-300 focus:outline-none focus:ring-1 focus:ring-[#1A237E]/30 bg-white',
-  // 텍스트에어리어 — 박스 유지 (여러 줄)
-  textarea:
-    'w-full border border-slate-100 rounded-lg px-3 py-2 text-xs text-slate-600 ' +
-    'focus:outline-none focus:border-[#1A237E] focus:ring-0 bg-white resize-none transition-colors',
-  // 폼 레이블
-  label: 'block text-[10px] text-slate-400 mb-1',
-  // 컴팩트 레이블
-  labelSm: 'block text-[10px] text-slate-500 mb-0.5',
-  // 드래그존
+  // 텍스트 인풋 — w-full
+  input: `w-full ${FIELD_BASE}`,
+  // 셀렉트 — 셰브론은 호출 측에서 겹쳐 놓거나 appearance-none 유지
+  select: `w-full appearance-none ${FIELD_BASE}`,
+  // 고정 너비 없는 인풋 (호출 측에서 w-* 지정)
+  inputFit: FIELD_BASE,
+  // 검색 인풋 — 아이콘 자리 확보
+  search: `w-full rounded-field bg-surface-low pl-7 pr-3 py-[9px] text-subhead text-ink border-0
+    placeholder:text-ink-5 focus:outline-none focus:bg-white focus:shadow-focus transition-colors`,
+  // 텍스트에어리어
+  textarea: `w-full ${FIELD_BASE} resize-none`,
+  // 인라인 입력 행 내부 필드 — 흰 배경 · 7px · 더 조인 패딩
+  cell:
+    'rounded-cell bg-white px-2 py-1.5 text-body font-normal text-ink border-0 ' +
+    'placeholder:text-ink-5 focus:outline-none focus:shadow-focus transition-colors',
+  // 오류 상태 — 기본/셀에 덧붙인다
+  error: 'bg-gain/[.07] text-gain shadow-error focus:bg-gain/[.07] focus:shadow-error',
+  // 오류 메시지
+  errorMsg: 'mt-1 text-[10px] font-normal text-gain',
+  // 폼 라벨
+  label: 'block text-meta font-medium text-ink-3 mb-1',
+  labelSm: 'block text-meta font-medium text-ink-4 mb-0.5',
+  // 폼 필드 간격 — 입력 화면은 밀도 압축 예외 구역
+  gap: 'grid gap-[14px]',
+  // 드래그존 — 테두리 대신 배경 존으로
   dropzone:
-    'border-2 border-dashed border-slate-200 rounded-xl p-6 text-center ' +
-    'cursor-pointer hover:border-slate-300 transition-colors',
+    'bg-surface-low rounded-field p-6 text-center cursor-pointer ' +
+    'hover:bg-surface-container transition-colors',
 } as const
 
 // ─── 배지 ──────────────────────────────────────────────────────────────────
+// D-01b: 점(6px) + 잉크 텍스트. 카테고리색을 글자색으로 쓰지 않는다.
 export const badge = {
-  // 기본 배지 — 카테고리, 중립 태그
-  base: 'inline-block px-2 py-0.5 rounded-full text-xs font-medium',
-  // 소형 배지 — rounded (pill 아님)
-  sm: 'inline-block px-1.5 py-0.5 rounded text-[10px] font-medium',
-  // 티커 배지 — 고정폭 폰트
-  ticker: 'inline-block px-1.5 py-0.5 rounded text-[10px] font-bold font-mono',
-  // 사용자(owner) 배지 — 고정 blue 계열
-  owner: 'inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600',
-  // 최신 배지 — 파란 pill
-  latest: 'inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-500',
-  // 성공 배지 (Sheets)
-  success: 'inline-block px-1.5 py-0.5 rounded text-[10px] bg-green-100 text-green-700',
-  // 정보 배지 (Excel)
-  info: 'inline-block px-1.5 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700',
-  // 중립 배지 (slate)
-  neutral: 'inline-block px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-500',
+  // 기본 배지 — 점과 함께 쓴다 (<CategoryBadge> 권장)
+  base: 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-micro uppercase bg-surface-low text-ink-2',
+  // 소형 배지
+  sm: 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-2',
+  // 6px 점
+  dot: 'inline-block w-1.5 h-1.5 rounded-full shrink-0',
+  // 티커 배지 — 고정폭
+  ticker: 'inline-block px-1.5 py-0.5 rounded-full text-micro font-bold font-mono bg-surface-low text-ink-2',
+  // 사용자(owner) 배지
+  owner: 'inline-block px-1.5 py-0.5 rounded-full text-micro font-bold bg-surface-low text-ink-2',
+  // 최신 배지
+  latest: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
+  // 경고 배지 — 예산 초과 · 임박
+  warning: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-warning/10 text-warning',
+  // 성공 · 정보 · 중립 — 전부 중성 표면 + 잉크. 색은 의미가 있을 때만 쓴다
+  success: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-income/10 text-income',
+  info: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
+  neutral: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-4',
 } as const
 
 // ─── 모달 ──────────────────────────────────────────────────────────────────
-// z-index 체계: 드롭다운 z-40 / 기본 모달 z-50 / 최상위 모달 z-[9999]
-// overlay: bg-black/40 으로 통일
+// D-04: 오버레이는 #0d1c2e/30 + blur(6px)로 통일. z-index 차이만 유지.
+// blur 미지원 시 #0d1c2e/42 폴백 — globals.css의 @supports 규칙이 처리한다.
 export const modal = {
-  // 전체화면 오버레이
   overlay:
-    'fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4',
-  // 최상위 오버레이 (모달 위의 모달, createPortal 사용 시)
+    'modal-scrim fixed inset-0 z-50 flex items-center justify-center px-4',
   overlayTop:
-    'fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4',
-  // 모달 컨테이너 — 기본 (max-w-md)
+    'modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4',
   container:
-    'bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col ' +
+    'bg-surface-card rounded-dialog shadow-dialog w-full max-w-md flex flex-col ' +
     'max-h-[95dvh] sm:max-h-[90vh] overflow-hidden',
-  // 모달 컨테이너 — 넓음 (max-w-lg)
   containerLg:
-    'bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col ' +
+    'bg-surface-card rounded-dialog shadow-dialog w-full max-w-lg flex flex-col ' +
     'max-h-[95dvh] sm:max-h-[90vh] overflow-hidden',
-  // 헤더
+  // 헤더 15px 18px — 구분선 없음
   header:
-    'flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0',
-  // 스크롤 바디
-  body: 'px-6 py-4 space-y-4 overflow-y-auto flex-1',
-  // 푸터
+    'flex items-center justify-between px-[18px] py-[15px] shrink-0',
+  title: 'text-heading text-ink',
+  // 본문 0 18px 16px · gap 14px
+  body: 'px-[18px] pb-4 grid gap-[14px] overflow-y-auto flex-1 content-start',
+  // 푸터 12px 18px — 바닥색이라 구분선 없이 분리된다
   footer:
-    'flex justify-end gap-2 px-6 py-4 border-t border-slate-100 shrink-0',
-  // 닫기 버튼
+    'flex justify-end gap-2 px-[18px] py-3 bg-surface shrink-0',
   close:
-    'text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 ' +
+    'text-ink-5 hover:text-ink-2 p-1 rounded-btn hover:bg-surface-low ' +
     'transition-colors shrink-0',
 } as const
 
 // ─── 브랜드 색상 ────────────────────────────────────────────────────────────
-// 페이지 타이틀·주요 CTA 등에서 인라인 하드코딩하던 값의 단일 소스
 export const brand = {
-  primary: '#1A237E',   // 딥 네이비 — 타이틀, 주 버튼
-  accent:  '#00695C',   // 틸 — 액센트 바, 보조 강조
+  primary: '#131b2e',   // action — 주 버튼 · 선택 상태 · 포커스 링
+  navy: '#1A237E',      // 카테고리/시리즈 1번 색
+  accent: '#00695C',    // income — 수입 · 입금
+} as const
+
+// 의미색 리터럴 — SVG·Recharts 등 클래스를 못 쓰는 곳에서 참조
+export const color = {
+  surface: '#fafafb',
+  surfaceLow: '#f1f3f7',
+  surfaceContainer: '#e9ecf2',
+  surfaceHigh: '#e0e4ec',
+  ink: '#0d1c2e',
+  ink2: '#3d4a5c',
+  ink3: '#5b6a80',
+  ink4: '#8794a8',
+  ink5: '#a8b3c4',
+  income: '#00695C',
+  warning: '#b45309',
+  action: '#131b2e',
+  gain: '#e11d48',
+  loss: '#2563eb',
 } as const
 
 // ─── 텍스트 계층 ────────────────────────────────────────────────────────────
 export const text = {
-  pageTitle:    'text-xl font-bold text-[#1A237E]',
-  sectionTitle: 'text-sm font-semibold text-slate-700',
-  cardTitle:    'text-xs font-semibold text-slate-600',
-  label:        'text-xs text-slate-400 font-medium uppercase tracking-wider',
-  body:         'text-xs text-slate-600',
-  caption:      'text-[10px] text-slate-400',
-  muted:        'text-xs text-slate-300',
-  // 금액 표시 — 크기는 별도 지정
-  amount:       'font-bold tabular-nums text-slate-800',
-  amountSm:     'font-semibold tabular-nums text-slate-700',
-  // PnL 색상 (한국 관례: 상승=빨강, 하락=파랑)
-  positive:     'text-rose-500',
-  negative:     'text-blue-500',
+  pageTitle:    'text-title text-ink',
+  sectionTitle: 'text-heading text-ink',
+  cardTitle:    'text-subhead font-medium text-ink',
+  label:        'text-micro uppercase text-ink-4',
+  body:         'text-body text-ink-2',
+  caption:      'text-micro text-ink-4 normal-case tracking-normal',
+  muted:        'text-body text-ink-5',
+  // 금액 — 크기는 별도 지정
+  amount:       'font-bold tabular-nums text-ink',
+  amountSm:     'font-medium tabular-nums text-ink-2',
+  // 가계부 금액 색 (D-01) — 수입만 틸, 지출은 무채색
+  income:       'font-bold tabular-nums text-income',
+  expense:      'font-normal tabular-nums text-ink',
+  // 포트폴리오 손익 2색 — 가계부에 쓰지 않는다
+  positive:     'text-gain',
+  negative:     'text-loss',
 } as const
 
 // ─── 테이블 ─────────────────────────────────────────────────────────────────
+// C안 밀도: 행 패딩 5px 0. 행 구분선은 톤 변화이므로 유일하게 허용되는 선.
 export const tbl = {
-  th:      'text-left py-2 px-3 text-xs text-slate-400 font-medium',
-  thRight: 'text-right py-2 px-3 text-xs text-slate-400 font-medium',
-  td:      'py-2.5 px-3 text-xs text-slate-600',
-  tdRight: 'py-2.5 px-3 text-xs text-slate-600 text-right tabular-nums',
-  // 짝수행 기본, 홀수행 줄무늬
-  rowEven: 'border-b border-slate-50 hover:bg-slate-50 transition-colors',
-  rowOdd:  'border-b border-slate-50 hover:bg-slate-50 transition-colors bg-slate-50/40',
+  th:      'text-left py-[5px] px-2 text-micro uppercase text-ink-5',
+  thRight: 'text-right py-[5px] px-2 text-micro uppercase text-ink-5',
+  td:      'py-[5px] px-2 text-body text-ink-2',
+  tdRight: 'py-[5px] px-2 text-body text-ink text-right tabular-nums',
+  // 행 — 줄무늬 없음. 구분선만
+  row:     'border-b border-surface-low last:border-0 hover:bg-surface-low/60 transition-colors',
+  // 하위 호환 (줄무늬 폐기 — 둘 다 동일)
+  rowEven: 'border-b border-surface-low last:border-0 hover:bg-surface-low/60 transition-colors',
+  rowOdd:  'border-b border-surface-low last:border-0 hover:bg-surface-low/60 transition-colors',
 } as const
 
 // ─── 로딩 ───────────────────────────────────────────────────────────────────
 export const skeleton = {
-  line:  'h-4 bg-slate-100 rounded animate-pulse',
-  card:  'h-24 bg-slate-50 rounded-xl animate-pulse',
-  chart: 'h-[200px] bg-slate-50 rounded-xl animate-pulse',
+  line:  'h-4 bg-surface-low rounded animate-pulse',
+  card:  'h-24 bg-surface-low rounded-card animate-pulse',
+  chart: 'h-[200px] bg-surface-low rounded-card animate-pulse',
 } as const
 
 // ─── 레이아웃 ────────────────────────────────────────────────────────────────
 export const layout = {
   page:    'max-w-7xl mx-auto px-4 py-8 space-y-6',
   section: 'space-y-4',
+  // 대시보드 외곽 컨테이너 — 바닥색 · 18px · 16px 패딩
+  container: 'bg-surface rounded-dialog p-4',
+  // 카드 간 gap
+  grid: 'grid gap-2',
 } as const
 
-// ─── The Orchestrated Lens — 고급 편집 디자인 토큰 ─────────────────────────
-// 경계선 대신 배경 레이어링으로 깊이를 표현한다. 1px 경계선 섹션 분리 금지.
-
-// Surface 계층 — tailwind.config.ts의 surface.* 색상 토큰에 대응
-// Foundation(#f8f9ff) → Canvas(#eff4ff) → Card(#fff) 순으로 "부상"
+// ─── 표면 계층 ──────────────────────────────────────────────────────────────
 export const surface = {
-  // 앱 최상위 배경
   foundation: 'bg-surface',
-  // 사이드바, 보조 패널
   canvas: 'bg-surface-low',
-  // 주요 카드 — 경계선 없이 배경 대비로 "팝업" 효과
-  card: 'bg-surface-card rounded-2xl',
-  // 강조 카드 — 그림자로 부상감
-  cardElevated: 'bg-surface-card rounded-2xl shadow-[0_4px_32px_0_rgba(13,28,46,0.06)]',
-  // 구분 존 (섹션 분리 배경)
-  zone: 'bg-surface-container rounded-2xl',
+  card: 'bg-surface-card rounded-card',
+  cardElevated: 'bg-surface-card rounded-card shadow-card',
+  zone: 'bg-surface-container rounded-card',
 } as const
 
-// 글래스모피즘 — 모달, 플로팅 메뉴 등 포커스 필요 요소
+// 글래스 — 오버레이는 modal.overlay와 같은 값을 쓴다 (D-04)
 export const glass = {
-  // 표준 글래스 패널
-  panel:
-    'bg-white/70 backdrop-blur-[20px] ' +
-    'shadow-[0_4px_32px_0_rgba(13,28,46,0.08)] rounded-2xl',
-  // 오버레이 — 모달 배경 (기존 modal.overlay 대체 가능)
-  overlay:
-    'fixed inset-0 z-50 flex items-center justify-center ' +
-    'bg-[#0d1c2e]/30 backdrop-blur-[6px] px-4',
+  panel: 'bg-surface-card shadow-card rounded-card',
+  overlay: 'modal-scrim fixed inset-0 z-50 flex items-center justify-center px-4',
 } as const
 
-// 폰트 — Noto Sans KR 고딕 단일 폰트 체계
+// ─── 폰트 스케일 ────────────────────────────────────────────────────────────
 export const font = {
-  // 대형 KPI 숫자
-  display: 'text-[2.75rem] font-bold leading-none tracking-tight tabular-nums',
-  // 페이지/섹션 타이틀
-  headline: 'text-2xl font-semibold',
-  // 카드 타이틀
-  title: 'text-lg font-semibold text-slate-800',
-  // 본문
-  body: 'text-sm text-slate-700',
-  // 메타
-  meta: 'text-[11px] font-medium text-slate-500',
+  display:  'text-display tabular-nums',
+  headline: 'text-title',
+  title:    'text-heading text-ink',
+  body:     'text-body text-ink-2',
+  meta:     'text-meta text-ink-3',
 } as const
 
-// 주요 CTA 버튼 — "Machined Metal" 그라디언트
-// primary는 기존 btn.primary(테마색)와 병행. 이건 다크 네이비 고정 CTA용.
+// 주요 CTA — 그라디언트 폐기. 단색 잉크 배경
 export const cta = {
-  // 다크 네이비 그라디언트 — 135° "machined metal" 효과
   primary:
-    'px-4 py-2 rounded-md text-xs font-semibold text-white transition-opacity ' +
-    'bg-gradient-to-br from-[#131b2e] to-[#7c839b] hover:opacity-90 disabled:opacity-50',
-  // 보조 — surface-container-high 배경, 경계선 없음
+    'px-[17px] py-2 rounded-btn text-body font-bold text-white bg-action ' +
+    'hover:opacity-90 disabled:opacity-50 transition-opacity',
   secondary:
-    'px-4 py-2 rounded-md text-xs font-semibold transition-colors ' +
-    'bg-surface-container-high text-[#131b2e] hover:bg-surface-dim disabled:opacity-50',
+    'px-[15px] py-2 rounded-btn text-body font-medium bg-surface-high text-ink-2 ' +
+    'hover:opacity-90 disabled:opacity-50 transition-opacity',
 } as const
 
-// Intelligence Badge — 상태 표시 반투명 배지 (solid pill 금지)
-// 배경: 상태색 10% 불투명도 + 고대비 텍스트
+// 상태 배지 — 손익 2색은 포트폴리오 전용, 가계부에서는 warning/income만 쓴다
 export const statusBadge = {
-  success:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-700',
-  warning:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-700',
-  danger:   'px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-600',
-  info:     'px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-500/10 text-sky-700',
-  neutral:  'px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/10 text-slate-600',
+  success:  'px-2 py-0.5 rounded-full text-micro bg-income/10 text-income',
+  warning:  'px-2 py-0.5 rounded-full text-micro bg-warning/10 text-warning',
+  danger:   'px-2 py-0.5 rounded-full text-micro bg-gain/10 text-gain',
+  info:     'px-2 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
+  neutral:  'px-2 py-0.5 rounded-full text-micro bg-surface-low text-ink-4',
 } as const

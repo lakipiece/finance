@@ -1,0 +1,104 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>테이블 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>테이블 (as-is)</h1><p class="lede">tbl.* 35회 사용으로 비교적 일관. 다만 줄무늬 + 호버가 같은 색 계열이라 호버 피드백이 약하다.</p>
+
+<h2>tbl.* 기본형</h2>
+<div class="panel" style="padding:8px 4px">
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+  <th style="text-align:left;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">날짜</th>
+  <th style="text-align:left;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">종목</th>
+  <th style="text-align:left;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">계좌</th>
+  <th style="text-align:right;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">수량</th>
+  <th style="text-align:right;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">평가금액</th>
+  <th style="text-align:right;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:500">손익</th>
+</tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid #f8fafc;background:rgba(248,250,252,.4)">
+  <td style="padding:10px 12px;font-size:12px;color:#475569">2026-08-14</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">KODEX 미국S&P500</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">Laki-ISA</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">120</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">12,480,000원</td>
+  <td style="padding:10px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:#f43f5e">+1,120,000원</td></tr><tr style="border-bottom:1px solid #f8fafc;">
+  <td style="padding:10px 12px;font-size:12px;color:#475569">2026-08-13</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">TIGER 미국S&P500</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">Piece-IRP</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">86</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">9,260,000원</td>
+  <td style="padding:10px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:#f43f5e">+840,000원</td></tr><tr style="border-bottom:1px solid #f8fafc;background:rgba(248,250,252,.4)">
+  <td style="padding:10px 12px;font-size:12px;color:#475569">2026-08-12</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">ACE 미국배당다우존스</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">Laki-연금저축</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">240</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">7,140,000원</td>
+  <td style="padding:10px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:#f43f5e">+1,530,000원</td></tr><tr style="border-bottom:1px solid #f8fafc;">
+  <td style="padding:10px 12px;font-size:12px;color:#475569">2026-08-11</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">삼성전자</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">Laki-KB예금</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">30</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">3,120,000원</td>
+  <td style="padding:10px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:#3b82f6">−262,000원</td></tr>
+<tr style="border-bottom:1px solid #f8fafc;background:#f8fafc">
+  <td style="padding:10px 12px;font-size:12px;color:#475569">2026-08-10</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">엔비디아 <span style="font-size:10px;color:#cbd5e1">← hover 상태</span></td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569">Laki-ISA</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">12</td>
+  <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;font-variant-numeric:tabular-nums">4,380,000원</td>
+  <td style="padding:10px 12px;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:#f43f5e">+416,000원</td></tr>
+</tbody></table>
+</div>
+<table class="dt" style="margin-top:16px">
+<tr><th style="width:110px">토큰</th><th>스펙</th></tr>
+<tr><td><code>tbl.th / thRight</code></td><td><code>py-2 px-3 text-xs text-slate-400 font-medium</code></td></tr>
+<tr><td><code>tbl.td / tdRight</code></td><td><code>py-2.5 px-3 text-xs text-slate-600</code> (+ <code>tabular-nums</code>)</td></tr>
+<tr><td><code>tbl.rowEven</code></td><td><code>border-b border-slate-50 hover:bg-slate-50</code></td></tr>
+<tr><td><code>tbl.rowOdd</code></td><td>위 + <code>bg-slate-50/40</code></td></tr>
+</table>
+<p class="note">홀수행 배경 <code>slate-50/40</code>와 호버 배경 <code>slate-50</code>의 차이가 40% 알파뿐이라 <b>홀수행에 마우스를 올려도 거의 변화가 없다.</b></p>
+
+<h2>비어 있는 축</h2>
+<table class="dt">
+<tr><th style="width:150px">축</th><th>현황</th></tr>
+<tr><td>정렬 헤더</td><td>토큰 없음 — 정렬 가능 여부·방향 아이콘이 화면마다 다르게 구현</td></tr>
+<tr><td>고정 헤더</td><td>일부 화면만 <code>sticky top-0</code> 인라인</td></tr>
+<tr><td>합계 행</td><td>토큰 없음 — 굵기·배경이 화면마다 다름</td></tr>
+<tr><td>빈 상태</td><td>이모지 + <code>text-xl</code> 문구(연도비교) vs 회색 한 줄 — 통일 안 됨</td></tr>
+<tr><td>모바일 전환</td><td>테이블 → 카드 전환 규칙 없음. 가로 스크롤로 방치되는 화면 존재</td></tr>
+</table>
+
+</div></body></html>

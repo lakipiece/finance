@@ -98,7 +98,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         {/* 헤더 */}
         <div className={modal.header}>
-          <h2 className="text-sm font-semibold text-slate-800">
+          <h2 className="text-subhead font-medium text-ink">
             {editItem ? '자산 수정' : '자산 추가'}
           </h2>
           <button onClick={onClose} className={modal.close} type="button">
@@ -185,7 +185,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
           </div>
 
           {error ? (
-            <p className="text-xs text-rose-400">{error}</p>
+            <p className="text-body text-danger">{error}</p>
           ) : null}
         </form>
 

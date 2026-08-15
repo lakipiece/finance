@@ -21,14 +21,14 @@ function YearPickerInner({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
   }, [])
 
   if (years === null) {
-    return <div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-slate-100'} animate-pulse`} />
+    return <div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />
   }
 
   if (years.length === 0) return null
 
   const selectCls = variant === 'dark'
-    ? 'bg-white/20 text-white text-sm font-semibold rounded-lg px-3 py-1.5 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer'
-    : 'bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer'
+    ? 'bg-white/20 text-white text-subhead font-bold rounded-field px-3 py-[9px] border-0 focus:outline-none focus:bg-white/30 cursor-pointer'
+    : 'bg-surface-low text-ink text-subhead font-medium rounded-field px-3 py-[9px] border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus cursor-pointer transition-colors'
 
   return (
     <select
@@ -41,7 +41,7 @@ function YearPickerInner({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
       className={selectCls}
     >
       {years.map(y => (
-        <option key={y} value={y} className="text-slate-800 bg-white">{y}년</option>
+        <option key={y} value={y} className="text-ink bg-surface-card">{y}년</option>
       ))}
     </select>
   )
@@ -49,7 +49,7 @@ function YearPickerInner({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
 
 export default function YearPicker({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
   return (
-    <Suspense fallback={<div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-slate-100'} animate-pulse`} />}>
+    <Suspense fallback={<div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />}>
       <YearPickerInner variant={variant} />
     </Suspense>
   )

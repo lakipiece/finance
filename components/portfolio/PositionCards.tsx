@@ -24,51 +24,51 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
   sectorColors?: Record<string, string>
 }) {
   const pnlPos = p.unrealized_pnl >= 0
-  const pnlColor = pnlPos ? 'text-rose-500' : 'text-blue-500'
+  const pnlColor = pnlPos ? 'text-gain' : 'text-loss'
   const weight = totalValue > 0 ? (p.market_value / totalValue * 100) : 0
   const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? '#334155') : '#334155'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-surface-card rounded-card shadow-dialog w-full max-w-sm overflow-hidden" onClick={e => e.stopPropagation()}>
 
         {/* 헤더 */}
-        <div className="px-5 pt-5 pb-4 border-b border-slate-100">
+        <div className="px-[18px] pt-5 pb-4 border-b border-surface-low">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-white text-xs font-bold px-2 py-0.5 rounded font-mono leading-none shrink-0"
+              <span className="text-white text-body font-bold px-2 py-0.5 rounded font-mono leading-none shrink-0"
                 style={{ backgroundColor: sectorColor }}>
                 {p.security.ticker}
               </span>
               {p.security.sector && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 text-slate-500">
+                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-3">
                   {p.security.sector}
                 </span>
               )}
               {p.security.asset_class && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 text-slate-400">
+                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
                   {p.security.asset_class}
                 </span>
               )}
               {p.security.country && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-200 text-slate-400">
+                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
                   {p.security.country}
                 </span>
               )}
             </div>
-            <button onClick={onClose} className="text-slate-300 hover:text-slate-500 p-1 rounded hover:bg-slate-100 transition-colors shrink-0">
+            <button onClick={onClose} className="text-ink-5 hover:text-ink-3 p-1 rounded hover:bg-surface-low transition-colors shrink-0">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <p className="text-sm font-bold text-slate-800 leading-snug flex-1">{p.security.name}</p>
+            <p className="text-subhead font-bold text-ink leading-snug flex-1">{p.security.name}</p>
             {onEdit && (
               <button
                 onClick={() => onEdit(p.security)}
                 title="종목 수정"
-                className="shrink-0 text-slate-200 hover:text-slate-500 p-1 rounded hover:bg-slate-100 transition-colors">
+                className="shrink-0 text-ink-5 hover:text-ink-3 p-1 rounded hover:bg-surface-low transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
@@ -78,64 +78,64 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
         </div>
 
         {/* 카드 그리드 3열 2행 */}
-        <div className="px-5 py-4 grid grid-cols-3 gap-2.5">
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">수량</p>
-            <p className="text-sm font-semibold text-slate-700 tabular-nums">{p.quantity.toLocaleString()}</p>
+        <div className="px-[18px] py-[15px] grid grid-cols-3 gap-2.5">
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">수량</p>
+            <p className="text-subhead font-bold text-ink tabular-nums">{p.quantity.toLocaleString()}</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">투자원금</p>
-            <p className="text-sm font-semibold text-slate-700 tabular-nums">{fmt(p.total_invested)}원</p>
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">투자원금</p>
+            <p className="text-subhead font-bold text-ink tabular-nums">{fmt(p.total_invested)}원</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">포트폴리오</p>
-            <p className="text-sm font-semibold text-slate-700 tabular-nums">{weight.toFixed(1)}%</p>
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">포트폴리오</p>
+            <p className="text-subhead font-bold text-ink tabular-nums">{weight.toFixed(1)}%</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">현재가</p>
-            <p className="text-sm font-semibold text-slate-700 tabular-nums">
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">현재가</p>
+            <p className="text-subhead font-bold text-ink tabular-nums">
               {fmt(p.current_price)}원
               {p.current_price_usd != null && (
-                <span className="text-[10px] text-slate-400 block">${Number(p.current_price_usd).toFixed(2)}</span>
+                <span className="text-micro tracking-normal text-ink-4 block">${Number(p.current_price_usd).toFixed(2)}</span>
               )}
             </p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">평가금액</p>
-            <p className="text-sm font-semibold text-slate-700 tabular-nums">{fmt(p.market_value)}원</p>
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">평가금액</p>
+            <p className="text-subhead font-bold text-ink tabular-nums">{fmt(p.market_value)}원</p>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3">
-            <p className="text-[10px] text-slate-400 mb-1">손익</p>
-            <p className={`text-sm font-semibold tabular-nums ${pnlColor}`}>
+          <div className="bg-surface-low rounded-field p-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-1">손익</p>
+            <p className={`text-subhead font-bold tabular-nums ${pnlColor}`}>
               {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
-              <span className="text-[10px] block">{pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(2)}%</span>
+              <span className="text-micro tracking-normal block">{pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(2)}%</span>
             </p>
           </div>
         </div>
 
         {/* 연결 계좌 */}
         {p.accounts.length > 0 && (
-          <div className="px-5 pb-5 border-t border-slate-50 pt-3">
-            <p className="text-[10px] text-slate-400 mb-2">연결 계좌</p>
+          <div className="px-[18px] pb-5 border-t border-surface-low pt-3">
+            <p className="text-micro tracking-normal text-ink-4 mb-2">연결 계좌</p>
             <div className="space-y-1.5">
               {p.accounts.map(a => {
                 const acctValue = p.accountValues[a.id] ?? 0
                 const acctPct = p.market_value > 0 ? (acctValue / p.market_value * 100) : 0
                 return (
                   <div key={a.id} className="flex items-center justify-between">
-                    <span className="text-xs text-slate-600">{a.broker} · {a.name}</span>
+                    <span className="text-body text-ink-2">{a.broker} · {a.name}</span>
                     <div className="text-right">
-                      <span className="text-xs font-medium text-slate-700 tabular-nums">{fmt(acctValue)}원</span>
-                      <span className="text-[10px] text-slate-400 ml-1.5 tabular-nums">({acctPct.toFixed(1)}%)</span>
+                      <span className="text-body font-medium text-ink tabular-nums">{fmt(acctValue)}원</span>
+                      <span className="text-micro tracking-normal text-ink-4 ml-1.5 tabular-nums">({acctPct.toFixed(1)}%)</span>
                     </div>
                   </div>
                 )
               })}
             </div>
             {p.total_dividends > 0 && (
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
-                <span className="text-[10px] text-slate-400">수령 배당금</span>
-                <span className="text-xs font-medium text-slate-600 tabular-nums">{fmt(p.total_dividends)}원</span>
+              <div className="flex items-center justify-between mt-3 pt-2 border-t border-surface-low">
+                <span className="text-micro tracking-normal text-ink-4">수령 배당금</span>
+                <span className="text-body font-medium text-ink-2 tabular-nums">{fmt(p.total_dividends)}원</span>
               </div>
             )}
           </div>
@@ -175,7 +175,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
   }
 
   if (sorted.length === 0) {
-    return <p className="text-center text-slate-400 text-sm py-8">선택한 조건에 해당하는 종목이 없습니다.</p>
+    return <p className="text-center text-ink-4 text-subhead py-8">선택한 조건에 해당하는 종목이 없습니다.</p>
   }
 
   return (
@@ -198,25 +198,25 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
           return (
             <div key={p.security.id}
               onClick={() => setModal(p)}
-              className="bg-white rounded-2xl border border-slate-100 px-4 py-3 cursor-pointer hover:shadow-sm hover:border-slate-200 hover:-translate-y-0.5 transition-all flex flex-col gap-1.5">
+              className="bg-surface-card rounded-card px-[13px] py-3 cursor-pointer hover:shadow-card hover:-translate-y-0.5 transition-all flex flex-col gap-1.5">
 
               {/* 헤더: 티커 배지 + 계좌수 + 새로고침 */}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <span
-                    className="text-white text-[10px] font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
+                    className="text-white text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
                     style={{ backgroundColor: tickerBgColor ?? '#334155' }}>
                     {ticker}
                   </span>
-                  <span className="text-[10px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="text-micro tracking-normal text-ink-4 bg-surface-low px-1.5 py-0.5 rounded-full shrink-0">
                     {p.accounts.length}개 계좌
                   </span>
                 </div>
                 <button onClick={e => syncTicker(ticker, e)} disabled={isSyncing}
-                  className="shrink-0 text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors"
+                  className="shrink-0 text-ink-5 hover:text-ink-3 disabled:opacity-40 transition-colors"
                   title="가격 새로고침">
-                  {msg === '✓' ? <span className="text-xs text-green-500">✓</span>
-                    : msg === '✗' ? <span className="text-xs text-red-400">✗</span>
+                  {msg === '✓' ? <span className="text-body text-income">✓</span>
+                    : msg === '✗' ? <span className="text-body text-gain">✗</span>
                     : (
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                         className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`}>
@@ -227,30 +227,30 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
               </div>
 
               {/* 종목명 */}
-              <p className="text-xs font-bold text-slate-700 leading-tight">{p.security.name}</p>
+              <p className="text-body font-bold text-ink leading-tight">{p.security.name}</p>
 
-              <div className="border-t border-slate-50" />
+              <div className="border-t border-surface-low" />
 
               {/* 평가금액 (hover → 현재가 툴팁) */}
               <div className="relative group/price flex justify-end">
-                <p className="text-sm font-bold text-slate-500 tabular-nums cursor-default">{fmt(p.market_value)}원</p>
-                <div className="absolute bottom-full right-0 mb-1 px-2.5 py-1.5 bg-slate-800 text-white text-[10px] rounded-lg whitespace-nowrap opacity-0 group-hover/price:opacity-100 transition-opacity pointer-events-none z-10 tabular-nums shadow-lg">
+                <p className="text-subhead font-bold text-ink-3 tabular-nums cursor-default">{fmt(p.market_value)}원</p>
+                <div className="absolute bottom-full right-0 mb-1 px-2.5 py-1.5 bg-action text-white text-micro tracking-normal rounded-btn whitespace-nowrap opacity-0 group-hover/price:opacity-100 transition-opacity pointer-events-none z-10 tabular-nums shadow-card">
                   현재가 {currentPriceLabel}
                 </div>
               </div>
 
               {/* 손익 금액 */}
               <div className="flex justify-end">
-                <span className={`text-xs font-semibold tabular-nums ${pnlPos ? 'text-rose-500' : 'text-blue-500'}`}>
+                <span className={`text-xs font-medium tabular-nums ${pnlPos ? 'text-gain' : 'text-loss'}`}>
                   {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
                 </span>
               </div>
 
               {/* 비중(좌) + 수익률 배지(우) */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
-                <span className="text-[10px] text-slate-400 tabular-nums">{weight}%</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums shrink-0 ${
-                  pnlPos ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+                <span className="text-micro tracking-normal text-ink-4 tabular-nums">{weight}%</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums shrink-0 ${
+                  pnlPos ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'
                 }`}>
                   {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%
                 </span>

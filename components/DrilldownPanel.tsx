@@ -4,7 +4,8 @@ import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend, LineChart, Line } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import type { CategoryDetailsData } from './DashboardClient'
-import { formatWonFull, catBadgeStyle, CATEGORIES } from '@/lib/utils'
+import { formatWonFull, CATEGORIES } from '@/lib/utils'
+import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
 import { tbl, field } from '@/lib/styles'
@@ -188,13 +189,13 @@ export default function DrilldownPanel({
       ? (incomeMonthData[cat as '급여' | '기타'] ?? 0)
       : (monthData[cat as keyof MonthlyData] as number)
   const getCatColor = (cat: string) =>
-    drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? '#64748b') : catColors[cat]
+    drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? '#5b6a80') : catColors[cat]
 
   return (
   <>
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 mb-4 sm:mb-6">
+    <div className="bg-surface-card rounded-card shadow-card p-[13px] sm:p-[13px] mb-4 sm:mb-6">
       {/* KPI Cards — 수입 row */}
-      <p className="text-[10px] text-slate-400 font-medium mb-1.5 mt-3">수입</p>
+      <p className="text-micro tracking-normal text-ink-4 font-medium mb-1.5 mt-3">수입</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-2">
         {/* 전체 수입 */}
         {(() => {
@@ -207,17 +208,17 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-xl p-3 transition-all"
+              className="text-left rounded-field p-3 transition-all"
               style={{
                 background: isActive ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.05)',
                 outline: isActive ? '2px solid #3b82f6' : '2px solid transparent',
               }}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#3b82f6' : '#94a3b8' }} />
-                <span className="text-xs font-medium" style={{ color: isActive ? '#3b82f6' : '#64748b' }}>전체 수입</span>
+                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#3b82f6' : '#a8b3c4' }} />
+                <span className="text-body font-medium" style={{ color: isActive ? '#3b82f6' : '#5b6a80' }}>전체 수입</span>
               </div>
-              <p className="text-base font-bold text-slate-800">{formatWonFull(incomeMonthData.total)}</p>
+              <p className="text-heading font-bold text-ink">{formatWonFull(incomeMonthData.total)}</p>
             </button>
           )
         })()}
@@ -236,7 +237,7 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-xl p-3 transition-all"
+              className="text-left rounded-field p-3 transition-all"
               style={{
                 background: `${color}${isActive ? '20' : '0d'}`,
                 outline: isActive ? `2px solid ${color}` : '2px solid transparent',
@@ -244,17 +245,17 @@ export default function DrilldownPanel({
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                <span className="text-xs font-medium" style={{ color }}>{cat}</span>
+                <span className="text-body font-medium" style={{ color }}>{cat}</span>
               </div>
-              <p className="text-base font-bold text-slate-800">{formatWonFull(amount)}</p>
-              <p className="text-[10px] text-slate-400">{pct}%</p>
+              <p className="text-heading font-bold text-ink">{formatWonFull(amount)}</p>
+              <p className="text-micro tracking-normal text-ink-4">{pct}%</p>
             </button>
           )
         })}
       </div>
 
       {/* KPI Cards — 지출 row */}
-      <p className="text-[10px] text-slate-400 font-medium mb-1.5">지출</p>
+      <p className="text-micro tracking-normal text-ink-4 font-medium mb-1.5">지출</p>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
         {/* 전체 지출 */}
         {(() => {
@@ -267,17 +268,17 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-xl p-3 transition-all"
+              className="text-left rounded-field p-3 transition-all"
               style={{
                 background: isActive ? 'rgba(26,35,126,0.1)' : 'rgba(26,35,126,0.04)',
-                outline: isActive ? '2px solid #1A237E' : '2px solid transparent',
+                outline: isActive ? '2px solid #131b2e' : '2px solid transparent',
               }}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#1A237E' : '#94a3b8' }} />
-                <span className="text-xs font-medium" style={{ color: isActive ? '#1A237E' : '#64748b' }}>전체 지출</span>
+                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#1A237E' : '#a8b3c4' }} />
+                <span className="text-body font-medium" style={{ color: isActive ? '#1A237E' : '#5b6a80' }}>전체 지출</span>
               </div>
-              <p className="text-base font-bold text-slate-800">{formatWonFull(monthData.total)}</p>
+              <p className="text-heading font-bold text-ink">{formatWonFull(monthData.total)}</p>
             </button>
           )
         })()}
@@ -294,7 +295,7 @@ export default function DrilldownPanel({
                 setDrilldownType('expense')
                 setSelectedCat(isSelected ? null : cat)
               }}
-              className="text-left rounded-xl p-3 transition-all"
+              className="text-left rounded-field p-3 transition-all"
               style={{
                 background: `${catColors[cat]}${isSelected ? '28' : '14'}`,
                 outline: isSelected ? `2px solid ${catColors[cat]}` : '2px solid transparent',
@@ -302,10 +303,10 @@ export default function DrilldownPanel({
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="w-2 h-2 rounded-full" style={{ background: catColors[cat] }} />
-                <span className="text-xs font-medium" style={{ color: catColors[cat] }}>{cat}</span>
+                <span className="text-body font-medium" style={{ color: catColors[cat] }}>{cat}</span>
               </div>
-              <p className="text-base font-bold text-slate-800">{formatWonFull(amount)}</p>
-              <p className="text-[10px] text-slate-400">{pct}%</p>
+              <p className="text-heading font-bold text-ink">{formatWonFull(amount)}</p>
+              <p className="text-micro tracking-normal text-ink-4">{pct}%</p>
             </button>
           )
         })}
@@ -314,21 +315,21 @@ export default function DrilldownPanel({
       {/* Chart */}
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-semibold text-slate-500">
+          <p className="text-body font-medium text-ink-3">
             {isCategory ? `${selectedCat} 월별 추이` : selectedIncomeCard ? `${selectedIncomeCard} 월별 추이` : '월별 수입·지출 현황'}
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCumulative(v => !v)}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
             >
               {cumulative ? '누적' : '월별'}
             </button>
             {selectedMonth && (
               <button
                 onClick={() => onMonthSelect?.(selectedMonth)}
-                className="text-xs font-medium"
-                style={{ color: '#1A237E' }}
+                className="text-body font-medium"
+                style={{ color: '#0d1c2e' }}
               >
                 월 필터 해제
               </button>
@@ -336,7 +337,7 @@ export default function DrilldownPanel({
             {onClose && (
               <button
                 onClick={onClose}
-                className="text-slate-300 hover:text-slate-500 transition-colors p-1 rounded-lg hover:bg-slate-100"
+                className="text-ink-5 hover:text-ink-3 transition-colors p-1 rounded-btn hover:bg-surface-low"
                 aria-label="닫기"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -347,7 +348,7 @@ export default function DrilldownPanel({
           </div>
         </div>
         {isCategory && catDetailsLoading ? (
-          <div className="h-[220px] bg-slate-50 rounded-xl animate-pulse" />
+          <div className="h-[220px] bg-surface-low rounded-field animate-pulse" />
         ) : cumulative ? (
           // 누적 라인 차트
           (() => {
@@ -391,11 +392,11 @@ export default function DrilldownPanel({
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={cumulData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
                   <Tooltip
                     formatter={(value: number, name: string) => [formatWonFull(value), name]}
-                    contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                    contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
                   />
                   {lineKeys.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} />}
                   {lineKeys.map(key => (
@@ -410,17 +411,16 @@ export default function DrilldownPanel({
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number) => [formatWonFull(value), selectedIncomeCard]}
-                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
               />
               <Bar
                 dataKey={selectedIncomeCard}
                 stackId="a"
-                fill={INCOME_CHART_COLORS[selectedIncomeCard] ?? '#64748b'}
-                radius={[3, 3, 0, 0]}
+                fill={INCOME_CHART_COLORS[selectedIncomeCard] ?? '#5b6a80'}
                 cursor="pointer"
                 onClick={(_: unknown, index: number) => onMonthSelect?.(index + 1)}
               >
@@ -434,11 +434,11 @@ export default function DrilldownPanel({
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number, name: string) => [formatWonFull(value), name]}
-                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {chartKeys.map((key, idx) => (
@@ -462,11 +462,11 @@ export default function DrilldownPanel({
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barCategoryGap="20%" barGap={2}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={40} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number, name: string) => [formatWonFull(value), name]}
-                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {/* 수입 Bars — 전체 수입 선택 시에만 표시 */}
@@ -477,7 +477,6 @@ export default function DrilldownPanel({
                     stackId="income"
                     name="급여"
                     fill={INCOME_CHART_COLORS['급여']}
-                    radius={[0, 0, 0, 0]}
                     cursor="pointer"
                     onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
                   >
@@ -490,7 +489,6 @@ export default function DrilldownPanel({
                     stackId="income"
                     name="기타"
                     fill={INCOME_CHART_COLORS['기타']}
-                    radius={[3, 3, 0, 0]}
                     cursor="pointer"
                     onClick={(_: unknown, index: number) => { setDrilldownType('income'); onMonthSelect?.(index + 1) }}
                   >
@@ -530,9 +528,9 @@ export default function DrilldownPanel({
               key={t}
               onClick={() => setDrilldownType(t)}
               className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                drilldownType === t ? 'text-white' : 'bg-slate-100 text-slate-500'
+                drilldownType === t ? 'text-white' : 'bg-surface-low text-ink-3'
               }`}
-              style={drilldownType === t ? { background: '#1A237E' } : undefined}
+              style={drilldownType === t ? { background: '#131b2e' } : undefined}
             >
               {t === 'income' ? '수입' : '지출'}
             </button>
@@ -550,24 +548,24 @@ export default function DrilldownPanel({
             return (
               <div key={cat} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between text-xs mb-0.5">
+                  <div className="flex items-center justify-between text-body mb-0.5">
                     {drilldownType === 'income' ? (
                       <span
-                        className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium text-white"
+                        className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white"
                         style={{ backgroundColor: color }}
                       >
                         {cat}
                       </span>
                     ) : (
-                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(cat)}>{cat}</span>
+                      <CategoryBadge category={cat} size="sm" />
                     )}
-                    <span className="text-slate-400 ml-2 shrink-0">{pct}%</span>
+                    <span className="text-ink-4 ml-2 shrink-0">{pct}%</span>
                   </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1.5">
+                  <div className="h-1.5 bg-surface-low rounded-full overflow-hidden mt-1.5">
                     <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-slate-800 shrink-0 w-24 text-right">{formatWonFull(amount)}</span>
+                <span className="text-subhead font-medium text-ink shrink-0 w-24 text-right">{formatWonFull(amount)}</span>
               </div>
             )
           })}
@@ -577,10 +575,10 @@ export default function DrilldownPanel({
       {/* Detail summary (category selected) */}
       {isCategory && (
         <div className="mb-5">
-          <h3 className="text-sm font-semibold mb-2" style={{ color: '#1A237E' }}>{selectedCat} 항목별 집계</h3>
+          <h3 className="text-subhead font-medium mb-2" style={{ color: '#0d1c2e' }}>{selectedCat} 항목별 집계</h3>
           {catDetailsLoading ? (
             <div className="space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-8 bg-slate-50 rounded-lg animate-pulse" />)}
+              {[1,2,3].map(i => <div key={i} className="h-8 bg-surface-low rounded-btn animate-pulse" />)}
             </div>
           ) : (
             <div
@@ -596,29 +594,29 @@ export default function DrilldownPanel({
                 return (
                   <div
                     key={d.name}
-                    className={`flex items-center gap-2 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-slate-100' : 'hover:bg-slate-50'}`}
+                    className={`flex items-center gap-2 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-surface-low' : 'hover:bg-surface-low'}`}
                     onClick={() => setSelectedTrendDetail(isDetailSelected ? null : d.name)}
                   >
-                    <span className="text-[10px] text-slate-300 w-4 shrink-0 text-right">{rank + 1}</span>
+                    <span className="text-micro tracking-normal text-ink-5 w-4 shrink-0 text-right">{rank + 1}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between text-xs mb-0.5">
+                      <div className="flex items-center justify-between text-body mb-0.5">
                         <span
-                          className={`truncate max-w-[100px] ${isDetailSelected ? 'text-slate-800 font-bold' : 'text-slate-600'}`}
+                          className={`truncate max-w-[100px] ${isDetailSelected ? 'text-ink font-bold' : 'text-ink-2'}`}
                           title={d.name}
                         >
                           {d.name}
                         </span>
-                        <span className="text-slate-400 ml-1 shrink-0">{pct}%</span>
+                        <span className="text-ink-4 ml-1 shrink-0">{pct}%</span>
                       </div>
-                      <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-1 bg-surface-low rounded-full overflow-hidden">
                         <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: catColors[selectedCat!] }} />
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-slate-800 shrink-0 w-16 text-right">{formatWonFull(d.amount)}</span>
+                    <span className="text-body font-medium text-ink shrink-0 w-16 text-right">{formatWonFull(d.amount)}</span>
                   </div>
                 )
               }) : (
-                <p className="text-xs text-slate-400 py-2">{detailSearch ? '검색 결과가 없습니다.' : '내역이 없습니다.'}</p>
+                <p className="text-body text-ink-4 py-2">{detailSearch ? '검색 결과가 없습니다.' : '내역이 없습니다.'}</p>
               )}
             </div>
           )}
@@ -705,12 +703,12 @@ function ExpenseTableCard({
   const slice = tableData.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <div className="bg-surface-card rounded-card shadow-card p-[13px]">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h3 className="text-base font-semibold text-slate-700">
+        <h3 className="text-heading font-bold text-ink">
           {selectedTrendDetail ? `${selectedCat} > ${selectedTrendDetail} 내역` : isCategory ? `${selectedCat} 내역` : '지출 내역'}
           {(selectedCat || selectedTrendDetail) && (
-            <button onClick={onReset} className="ml-2 text-xs text-slate-400 hover:text-slate-600 font-normal">전체보기</button>
+            <button onClick={onReset} className="ml-2 text-body text-ink-4 hover:text-ink-2 font-normal">전체보기</button>
           )}
         </h3>
         <input
@@ -718,123 +716,122 @@ function ExpenseTableCard({
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="검색..."
-          className="w-44 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-300 bg-white"
+          className="w-44 rounded-btn px-3 py-1.5 text-body text-ink-2 focus:outline-none bg-surface-card border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
         />
       </div>
 
       {loading ? (
         <div className="space-y-2">
-          {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-slate-50 rounded-lg animate-pulse" />)}
+          {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-surface-low rounded-btn animate-pulse" />)}
         </div>
       ) : (
         <>
-          {/* Mobile: card list */}
-          <div className="md:hidden space-y-2">
+          {/* Mobile(<640px): 2행 접기 — D-06.
+              360px에서 4열이 들어가지 않으므로 분류를 내역 아래로 내린다.
+              행 높이 57px으로 터치 타깃 44px을 여유 있게 넘긴다. */}
+          <div className="sm:hidden">
             <div className="flex gap-2 mb-3 flex-wrap">
               {(['date', 'category', 'detail', 'amount'] as const).map(key => (
                 <button
                   key={key}
                   onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey !== key ? 'bg-slate-100 text-slate-500' : ''}`}
-                  style={sortKey === key ? { background: '#1A237E', color: '#fff' } : undefined}
+                  className={`px-2 py-1 rounded-btn text-body transition-colors ${
+                    sortKey === key ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3'
+                  }`}
                 >
                   {{ date: '날짜', category: '분류', detail: '내역', amount: '금액' }[key]}{sortIcon(key)}
                 </button>
               ))}
             </div>
             {slice.map((e, i) => (
-              <div key={`${e.date}-${e.detail}-${e.amount}-${i}`} className="border border-slate-100 rounded-xl p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style={catBadgeStyle(e.category)}>{e.category}</span>
-                    {e.detail && <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">{e.detail}</span>}
-                  </div>
-                  <span className="font-semibold text-slate-800 text-sm">{formatWonFull(e.amount)}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span>{e.date}</span>
-                  <div className="flex items-center gap-1.5">
-                    {e.member && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                        e.member === 'L' ? 'bg-blue-50 text-blue-600' :
-                        e.member === 'P' ? 'bg-pink-50 text-pink-600' :
-                        'bg-slate-100 text-slate-500'
-                      }`}>{e.member}</span>
-                    )}
-                    <span>{e.method}</span>
+              <div
+                key={`${e.date}-${e.detail}-${e.amount}-${i}`}
+                className="flex items-center gap-[9px] py-2 h-[57px] border-b border-surface-low last:border-0"
+              >
+                {/* 좌측 블록 — min-w-0이 없으면 ellipsis가 동작하지 않는다 */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-subhead font-normal text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                    {e.detail || e.category}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-[3px]">
+                    <span className="text-micro text-ink-5 tabular-nums shrink-0">{e.date}</span>
+                    {/* 색만으로 의미를 지게 하지 않는다 — 점과 라벨을 함께 유지 */}
+                    <CategoryBadge category={e.category} size="sm" />
                   </div>
                 </div>
-                {e.memo && <p className="text-xs text-slate-400 mt-1 break-words">{e.memo}</p>}
+                <span className="text-subhead font-normal text-ink tabular-nums whitespace-nowrap shrink-0">
+                  {formatWonFull(e.amount)}
+                </span>
               </div>
             ))}
           </div>
 
-          {/* Desktop: table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
+          {/* Desktop(≥640px): 표 */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-subhead">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-surface-low">
                   <th className={tbl.th}>#</th>
-                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
-                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
-                  <th className={`${tbl.th} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-ink-2 select-none`} onClick={() => handleSort('date')}>날짜{sortIcon('date')}</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-ink-2 select-none`} onClick={() => handleSort('category')}>분류{sortIcon('category')}</th>
+                  <th className={`${tbl.th} cursor-pointer hover:text-ink-2 select-none`} onClick={() => handleSort('detail')}>내역{sortIcon('detail')}</th>
                   <th className={tbl.th}>사용자</th>
                   <th className={tbl.th}>비고</th>
                   <th className={tbl.th}>결제수단</th>
-                  <th className={`${tbl.thRight} cursor-pointer hover:text-slate-600 select-none`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
+                  <th className={`${tbl.thRight} cursor-pointer hover:text-ink-2 select-none`} onClick={() => handleSort('amount')}>금액{sortIcon('amount')}</th>
                 </tr>
               </thead>
               <tbody>
                 {slice.map((e, i) => (
                   <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
-                    <td className="py-2 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
-                    <td className="py-2 px-3 text-slate-400 text-xs whitespace-nowrap">{e.date}</td>
-                    <td className="py-2 px-3">
-                      <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium" style={catBadgeStyle(e.category)}>{e.category}</span>
+                    <td className="py-[5px] px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap">{e.date}</td>
+                    <td className="py-[5px] px-2">
+                      <CategoryBadge category={e.category} size="sm" />
                     </td>
-                    <td className="py-2 px-3">
-                      {e.detail ? <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700">{e.detail}</span> : <span className="text-slate-300">—</span>}
+                    <td className="py-[5px] px-2">
+                      {e.detail ? <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-low text-ink">{e.detail}</span> : <span className="text-ink-5">—</span>}
                     </td>
-                    <td className="py-2 px-3">
+                    <td className="py-[5px] px-2">
                       {e.member ? (
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          e.member === 'L' ? 'bg-blue-50 text-blue-600' :
-                          e.member === 'P' ? 'bg-pink-50 text-pink-600' :
-                          'bg-slate-100 text-slate-500'
+                          e.member === 'L' ? 'bg-surface-low text-ink-2' :
+                          e.member === 'P' ? 'bg-surface-low text-ink-2' :
+                          'bg-surface-low text-ink-3'
                         }`}>{e.member}</span>
-                      ) : <span className="text-slate-300 text-xs">-</span>}
+                      ) : <span className="text-ink-5 text-body">-</span>}
                     </td>
-                    <td className="py-2 px-3 text-slate-400 text-xs max-w-[180px]">
-                      {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-slate-200">—</span>}
+                    <td className="py-[5px] px-2 text-ink-4 text-body max-w-[180px]">
+                      {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-ink-5">—</span>}
                     </td>
-                    <td className="py-2 px-3 text-slate-400 text-xs">{e.method || <span className="text-slate-300">—</span>}</td>
-                    <td className="py-2 px-3 text-right font-semibold text-slate-800 text-xs whitespace-nowrap">{formatWonFull(e.amount)}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-body">{e.method || <span className="text-ink-5">—</span>}</td>
+                    <td className="py-[5px] px-2 text-right font-medium text-ink text-body whitespace-nowrap">{formatWonFull(e.amount)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 flex-wrap gap-3">
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-surface-low flex-wrap gap-3">
+            <div className="flex items-center gap-2 text-body text-ink-4">
               <span>총 {tableData.length.toLocaleString()}건</span>
-              <span className="text-slate-200">|</span>
+              <span className="text-ink-5">|</span>
               <span>페이지당</span>
               {PAGE_SIZES.map(size => (
                 <button
                   key={size}
                   onClick={() => { setPageSize(size); setPage(1) }}
-                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
-                  style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}
+                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
+                  style={pageSize === size ? { background: '#131b2e', color: '#fff' } : undefined}
                 >{size}</button>
               ))}
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">처음</button>
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">이전</button>
-              <span className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
-              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed">끝</button>
+              <button onClick={() => setPage(1)} disabled={safePage === 1} className="px-2 py-1 rounded text-body text-ink-3 hover:bg-surface-low disabled:opacity-50 disabled:cursor-not-allowed">처음</button>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1 rounded text-body text-ink-3 hover:bg-surface-low disabled:opacity-50 disabled:cursor-not-allowed">이전</button>
+              <span className="px-3 py-1 text-body text-ink-2 font-medium">{safePage} / {totalPages}</span>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1 rounded text-body text-ink-3 hover:bg-surface-low disabled:opacity-50 disabled:cursor-not-allowed">다음</button>
+              <button onClick={() => setPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1 rounded text-body text-ink-3 hover:bg-surface-low disabled:opacity-50 disabled:cursor-not-allowed">끝</button>
             </div>
           </div>
         </>

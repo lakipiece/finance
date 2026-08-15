@@ -21,7 +21,7 @@ export default async function SettingsPage() {
       </PageHeader>
       <SettingsClient initialYears={years} />
       <div>
-        <h3 className="text-xs font-semibold text-slate-500 mb-3">포트폴리오 데이터 관리</h3>
+        <h3 className="text-body font-medium text-ink-3 mb-3">포트폴리오 데이터 관리</h3>
         <HistoricalPriceFetcher />
       </div>
     </div>

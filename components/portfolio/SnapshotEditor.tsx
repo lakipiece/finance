@@ -229,7 +229,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     if (isDirty) { setShowDirtyAlert(true) } else { setModalAccountId(null) }
   }
 
-  const inputCls = 'w-full border-0 border-b border-slate-200 bg-transparent pb-1 pt-1 text-xs text-slate-700 text-right focus:outline-none focus:border-[#1A237E] transition-colors'
+  const inputCls = 'w-full rounded-field bg-surface-low border-0 px-3 py-[9px] text-subhead text-ink text-right focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors'
 
   const accountCounts = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -327,10 +327,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <button onClick={handleBack} className="text-xs text-slate-400 hover:text-slate-600 mb-1">← 목록</button>
+          <button onClick={handleBack} className="text-body text-ink-4 hover:text-ink-2 mb-1">← 목록</button>
           <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-semibold" style={{ color: '#1A237E' }}>스냅샷 편집</h2>
-            <span className="text-slate-300 text-sm">—</span>
+            <h2 className="text-heading font-bold" style={{ color: '#1A237E' }}>스냅샷 편집</h2>
+            <span className="text-ink-5 text-subhead">—</span>
             <DateInput
               value={snapshotDate}
               onChange={v => { setSnapshotDate(v); setIsDirty(true) }}
@@ -338,25 +338,25 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
-          {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
+          {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
+          {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
           {totalValue > 0 && (
             <div className="text-right leading-tight">
-              <p className="text-[10px] text-slate-400 tabular-nums"
+              <p className="text-micro tracking-normal text-ink-4 tabular-nums"
                 title={totalMetrics.hasLedger ? '투자원금 (누적입금, 미기록 계좌는 평균매수금액)' : '평균매수금액 합계'}>
                 투자원금 {Math.round(totalMetrics.basis).toLocaleString()}원
               </p>
-              <p className="text-sm font-semibold text-slate-700 tabular-nums">
+              <p className="text-subhead font-bold text-ink tabular-nums">
                 평가금액 {Math.round(totalValue).toLocaleString()}원
               </p>
-              <p className={`text-[11px] font-semibold tabular-nums ${totalMetrics.profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+              <p className={`text-[11px] font-medium tabular-nums ${totalMetrics.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
                 수익 {totalMetrics.profit >= 0 ? '+' : ''}{Math.round(totalMetrics.profit).toLocaleString()}원
                 {totalMetrics.rate != null ? ` (${totalMetrics.rate >= 0 ? '+' : ''}${(totalMetrics.rate * 100).toFixed(1)}%)` : ''}
               </p>
             </div>
           )}
           <button onClick={handleSave} disabled={saving}
-            className="text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+            className="text-white px-4 py-2 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
             style={{ backgroundColor: palette.colors[0] }}>
             {saving ? '저장 중...' : '저장'}
           </button>
@@ -372,41 +372,41 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           const typeColor = typeColors[a.type ?? ''] ?? null
           return (
             <div key={a.id}
-              className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md transition-all min-h-[110px]">
+              className="flex bg-surface-card rounded-card overflow-hidden hover:shadow-card transition-all min-h-[110px]">
               {/* 왼쪽 색상 바 */}
               <div className="w-1.5 shrink-0 rounded-l-2xl"
-                style={{ backgroundColor: typeColor ?? '#e2e8f0' }} />
+                style={{ backgroundColor: typeColor ?? '#e9ecf2' }} />
               {/* 카드 내용 */}
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
                 {/* 이름 + 뱃지 */}
                 <div className="flex items-start justify-between gap-1 mb-0.5">
-                  <p className="text-sm font-bold text-slate-800 leading-tight flex-1 min-w-0">{a.name}</p>
+                  <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{a.name}</p>
                   {a.type && typeColor && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                    <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                       style={{ backgroundColor: typeColor + '20', color: typeColor }}>
                       {a.type}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-400">{a.broker}</p>
+                <p className="text-body text-ink-4">{a.broker}</p>
                 {/* 하단: 종목수 + 투자원금/평가금액/수익 */}
                 <div className="mt-auto pt-2 space-y-0.5">
-                  <p className="text-[10px] text-slate-400">
-                    <span className="font-semibold text-slate-600 text-[10px]">{count}</span>종목
+                  <p className="text-micro tracking-normal text-ink-4">
+                    <span className="font-medium text-ink-2 text-micro tracking-normal">{count}</span>종목
                   </p>
                   {aVal > 0 ? (() => {
                     const m = accountMetrics[a.id]
                     return (
                       <>
-                        <div className="flex justify-between text-[10px] tabular-nums">
-                          <span className="text-slate-400"
+                        <div className="flex justify-between text-micro tracking-normal tabular-nums">
+                          <span className="text-ink-4"
                             title={m?.hasLedger ? '투자원금 (누적입금)' : '평균매수금액 (원장 미기록)'}>
                             {Math.round(m?.basis ?? 0).toLocaleString()}원
                           </span>
-                          <span className="text-slate-600 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
+                          <span className="text-ink-2 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
                         </div>
                         {m != null ? (
-                          <div className={`text-right text-[10px] font-semibold tabular-nums ${m.profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+                          <div className={`text-right text-[10px] font-medium tabular-nums ${m.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
                             {m.hasLedger ? '수익' : '평익'} {m.profit >= 0 ? '+' : ''}{Math.round(m.profit).toLocaleString()}원
                             {m.rate != null ? ` (${m.rate >= 0 ? '+' : ''}${(m.rate * 100).toFixed(1)}%)` : ''}
                           </div>
@@ -414,7 +414,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                       </>
                     )
                   })() : (
-                    <p className="text-xs text-slate-300">—</p>
+                    <p className="text-body text-ink-5">—</p>
                   )}
                 </div>
               </div>
@@ -425,16 +425,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
       {/* Account Modal */}
       {modalAccountId && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-5xl flex flex-col shadow-2xl"
+        <div className="modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-surface-card rounded-card w-full max-w-5xl flex flex-col shadow-dialog"
             style={{ maxHeight: '90vh' }}
             onClick={e => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+            <div className="flex items-center justify-between px-[18px] py-[15px] border-b border-surface-low shrink-0">
               <div>
-                <p className="font-bold text-slate-800 text-base leading-tight">{modalAccount?.name}</p>
+                <p className="font-bold text-ink text-heading leading-tight">{modalAccount?.name}</p>
                 {modalAccount?.broker && (
-                  <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] text-slate-400 bg-slate-100">{modalAccount.broker}</span>
+                  <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-micro tracking-normal text-ink-4 bg-surface-low">{modalAccount.broker}</span>
                 )}
                 {modalAccountValue > 0 ? (() => {
                   const id = modalAccountId ?? ''
@@ -442,9 +442,9 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   const cost = accountInvested[id] ?? 0
                   const pnl = modalAccountValue - cost           // 평가손익 (평가금액 − 평균매수금액)
                   const m = accountMetrics[id]
-                  const row = (label: string, val: string, cls = 'text-slate-600') => (
-                    <div className="flex items-center justify-between gap-6 text-xs">
-                      <span className="text-slate-400 shrink-0">{label}</span>
+                  const row = (label: string, val: string, cls = 'text-ink-2') => (
+                    <div className="flex items-center justify-between gap-6 text-body">
+                      <span className="text-ink-4 shrink-0">{label}</span>
                       <span className={`font-medium tabular-nums ${cls}`}>{val}</span>
                     </div>
                   )
@@ -457,27 +457,27 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                         : row('투자원금 (매수원가 기준)', `${Math.round(cost).toLocaleString()}원`)}
                       {cf && cf.outflow > 0 ? row('누적출금', `${Math.round(cf.outflow).toLocaleString()}원`) : null}
                       {cf ? row('평균매수금액', `${Math.round(cost).toLocaleString()}원`) : null}
-                      {row('평가금액', `${Math.round(modalAccountValue).toLocaleString()}원`, 'text-slate-700 font-semibold')}
+                      {row('평가금액', `${Math.round(modalAccountValue).toLocaleString()}원`, 'text-ink font-medium')}
                       {cost > 0
-                        ? row('평가손익', signed(pnl) + pct(pnl, cost), pnl >= 0 ? 'text-rose-500' : 'text-blue-500')
+                        ? row('평가손익', signed(pnl) + pct(pnl, cost), pnl >= 0 ? 'text-gain' : 'text-loss')
                         : null}
                       {cf && m != null
-                        ? row('수익금액', signed(m.profit) + pct(m.profit, cf.inflow), m.profit >= 0 ? 'text-rose-500' : 'text-blue-500')
+                        ? row('수익금액', signed(m.profit) + pct(m.profit, cf.inflow), m.profit >= 0 ? 'text-gain' : 'text-loss')
                         : null}
                     </div>
                   )
                 })() : null}
               </div>
               <div className="flex items-center gap-2">
-                {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-red-500' : 'text-green-600'}`}>{msg}</span>}
-                {isDirty && !msg && <span className="text-xs text-amber-500">미저장</span>}
+                {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
+                {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
-                  className="text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                  className="text-white px-3 py-1.5 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: palette.colors[0] }}>
                   {saving ? '저장 중...' : '저장'}
                 </button>
                 <button onClick={handleModalClose}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+                  className="p-1.5 rounded-btn hover:bg-surface-low text-ink-4 hover:text-ink-2">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -487,7 +487,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto p-5 min-h-0">
               {selectedRows.length === 0 ? (
-                <div className="text-center py-12 text-sm text-slate-400">
+                <div className="text-center py-12 text-subhead text-ink-4">
                   연결된 종목이 없습니다 — 계좌 관리에서 종목을 연결해주세요
                 </div>
               ) : (
@@ -510,29 +510,29 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                       <div key={`${row.account_id}__${row.security_id}`}
                         className={`group rounded-xl border p-3 transition-all ${
                           currentRow.quantity > 0
-                            ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-slate-200 bg-white'
-                            : 'border-slate-100 bg-white opacity-60'
+                            ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-surface-low bg-surface-card'
+                            : 'border-surface-low bg-surface-card opacity-60'
                         }`}>
                         <div className="flex items-center gap-1.5 mb-2.5">
                           {(() => {
                             const color = sec.sector ? sectorColors[sec.sector] : null
                             return (
                               <span
-                                className="text-[10px] px-1.5 py-0.5 rounded font-mono"
+                                className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono"
                                 style={color
                                   ? { backgroundColor: color + '22', color }
-                                  : { backgroundColor: '#f1f5f9', color: '#64748b' }}>
+                                  : { backgroundColor: '#f1f5f9', color: '#8794a8' }}>
                                 {sec.ticker}
                               </span>
                             )
                           })()}
-                          <span className="text-xs text-slate-600 truncate font-medium flex-1">{sec.name}</span>
+                          <span className="text-body text-ink-2 truncate font-medium flex-1">{sec.name}</span>
                           {row.orphaned && (
-                            <span className="text-[10px] bg-orange-100 text-orange-500 px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
+                            <span className="text-micro tracking-normal bg-orange-100 text-warning px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
                           )}
                           <button
                             onClick={() => deleteHolding(row.account_id, row.security_id)}
-                            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 text-slate-200 hover:text-red-400 transition-all shrink-0"
+                            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-gain/10 text-ink-5 hover:text-gain transition-all shrink-0"
                             title="홀딩 삭제">
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -541,30 +541,30 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                         </div>
                         <div className="grid grid-cols-2 gap-2 mb-2">
                           <div>
-                            <p className="text-[10px] text-slate-400 mb-0.5">수량</p>
+                            <p className="text-micro tracking-normal text-ink-4 mb-0.5">수량</p>
                             <NumInput value={currentRow.quantity || null}
                               onChange={v => updateRow(row.account_id, row.security_id, 'quantity', v)}
                               placeholder="0" tabIndex={qtyTabIdx} className={inputCls} />
                           </div>
                           <div>
-                            <p className="text-[10px] text-slate-400 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
+                            <p className="text-micro tracking-normal text-ink-4 mb-0.5">평균매수단가({isKrw ? 'KRW' : currency})</p>
                             <NumInput value={currentRow.avg_price}
                               onChange={v => updateRow(row.account_id, row.security_id, 'avg_price', v)}
                               placeholder="0" tabIndex={avgTabIdx} className={inputCls} />
                           </div>
                         </div>
-                        <div className="pt-2 border-t border-slate-50 space-y-1">
+                        <div className="pt-2 border-t border-surface-low space-y-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-slate-400">총 매수금액</p>
-                            <p className="text-xs font-medium text-slate-500">
+                            <p className="text-micro tracking-normal text-ink-4">총 매수금액</p>
+                            <p className="text-body font-medium text-ink-3">
                               {totalPurchased != null
                                 ? isKrw ? `${Math.round(totalPurchased).toLocaleString()}원` : `${currency} ${totalPurchased.toFixed(2)}`
                                 : '—'}
                             </p>
                           </div>
                           <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-slate-400">평가금액</p>
-                            <p className={`text-xs font-medium ${marketValue != null ? 'text-slate-600' : 'text-slate-300'}`}>
+                            <p className="text-micro tracking-normal text-ink-4">평가금액</p>
+                            <p className={`text-xs font-medium ${marketValue != null ? 'text-ink-2' : 'text-ink-5'}`}>
                               {marketValue != null ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
                             </p>
                           </div>
@@ -582,18 +582,18 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
       {/* Dirty Alert */}
       {showDirtyAlert && createPortal(
-        <div className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full">
-            <p className="text-sm font-semibold text-slate-800">저장하지 않은 변경사항</p>
-            <p className="text-xs text-slate-500 mt-1.5">수정한 내용이 저장되지 않았습니다.</p>
+        <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          <div className="bg-surface-card rounded-card p-[13px] shadow-dialog max-w-sm w-full">
+            <p className="text-subhead font-medium text-ink">저장하지 않은 변경사항</p>
+            <p className="text-body text-ink-3 mt-1.5">수정한 내용이 저장되지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className="flex-1 text-white px-4 py-2 rounded-lg text-xs font-medium hover:opacity-90 transition-opacity"
+                className="flex-1 text-white px-4 py-2 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: palette.colors[0] }}>
                 계속 편집
               </button>
               <button onClick={() => { setShowDirtyAlert(false); setModalAccountId(null) }}
-                className="flex-1 text-slate-500 px-4 py-2 rounded-lg text-xs hover:bg-slate-100 border border-slate-200">
+                className="flex-1 text-ink-3 px-4 py-2 rounded-btn text-body hover:bg-surface-low">
                 저장안함
               </button>
             </div>

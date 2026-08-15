@@ -1,15 +1,8 @@
 import type { Metadata, Viewport } from 'next'
-import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/lib/ThemeContext'
 import { FilterProvider } from '@/lib/FilterContext'
 import SidebarLayout from '@/components/SidebarLayout'
-
-const notoSans = Noto_Sans_KR({
-  weight: ['300', '400', '500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   title: 'Lakipiece Finance',
@@ -38,7 +31,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={notoSans.className}>
+      <head>
+        {/* Pretendard 자체 호스팅 — 한글 unicode-range 동적 서브셋, 400/500/700 */}
+        <link rel="stylesheet" href="/fonts/pretendard.css" />
+      </head>
+      <body className="bg-surface text-ink">
         <ThemeProvider>
           <FilterProvider>
             <SidebarLayout>{children}</SidebarLayout>

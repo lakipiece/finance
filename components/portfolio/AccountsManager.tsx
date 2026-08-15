@@ -43,11 +43,11 @@ function SortableAccountCard({
   onCardClick: () => void; onEdit: () => void; onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-  const typeColor = typeColors[account.type ?? ''] ?? '#e2e8f0'
+  const typeColor = typeColors[account.type ?? ''] ?? '#e9ecf2'
 
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
-      <div className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden group hover:shadow-md hover:-translate-y-0.5 transition-all min-h-[110px]">
+      <div className="flex bg-surface-card rounded-card overflow-hidden group hover:shadow-card hover:-translate-y-0.5 transition-all min-h-[110px]">
         {/* 왼쪽 색상 바 = 드래그 핸들 */}
         <div {...attributes} {...listeners}
           onClick={e => e.stopPropagation()}
@@ -57,20 +57,20 @@ function SortableAccountCard({
         <div onClick={onCardClick} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
           {/* 이름 + 뱃지 */}
           <div className="flex items-start justify-between gap-1 mb-0.5">
-            <p className="text-sm font-bold text-slate-800 leading-tight flex-1 min-w-0">{account.name}</p>
+            <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{account.name}</p>
             {account.type && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
+              <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                 style={{ backgroundColor: typeColor + '20', color: typeColor }}>
                 {account.type}
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400">{account.broker}</p>
-          {account.owner && <p className="text-xs text-slate-300 mt-0.5">{account.owner}</p>}
+          <p className="text-body text-ink-4">{account.broker}</p>
+          {account.owner && <p className="text-body text-ink-5 mt-0.5">{account.owner}</p>}
           {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
           <div className="flex items-center justify-between mt-auto pt-2">
-            <p className="text-xs text-slate-400">
-              <span className="font-semibold text-slate-600">{linkedCount}</span>종목
+            <p className="text-body text-ink-4">
+              <span className="font-medium text-ink-2">{linkedCount}</span>종목
             </p>
             <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
               <button onClick={onEdit} className={btn.icon}>
@@ -256,7 +256,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
-        <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+        <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
         </div>
       )}
@@ -286,11 +286,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 name: '', broker: '', owner: '', type_id: '',
                 dividend_eligible: true, dividend_tax_rate: '',
               }) }}
-              className="bg-white rounded-2xl border border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors min-h-[110px]">
+              className="bg-surface-card rounded-card border border-dashed border-surface-low flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[110px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="text-xs">추가</span>
+              <span className="text-body">추가</span>
             </button>
           </div>
         </SortableContext>
@@ -299,18 +299,18 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Link Modal */}
       {modalLinkAccountId && createPortal(
         <div className={modal.overlayTop}>
-          <div className="bg-white rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl"
+          <div className="bg-surface-card rounded-card w-full max-w-3xl flex flex-col shadow-dialog"
             style={{ maxHeight: '88vh' }}
             onClick={e => e.stopPropagation()}>
             <div className={modal.header}>
               <div>
-                <h3 className="font-semibold text-slate-800">{modalAccount?.name}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">{modalAccount?.broker}{modalAccount?.type ? ` · ${modalAccount.type}` : ''}</p>
+                <h3 className="font-medium text-ink">{modalAccount?.name}</h3>
+                <p className="text-body text-ink-4 mt-0.5">{modalAccount?.broker}{modalAccount?.type ? ` · ${modalAccount.type}` : ''}</p>
               </div>
               <div className="flex items-center gap-2">
                 {modalTab === 'securities' ? (
                   <>
-                    {isDirty && <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">미저장</span>}
+                    {isDirty && <span className="text-micro tracking-normal text-warning bg-warning/10 px-2 py-0.5 rounded-full">미저장</span>}
                     <button onClick={saveLinks} disabled={!isDirty || savingLinks}
                       className={btn.primary}
                       style={{ backgroundColor: palette.colors[0] }}>
@@ -327,7 +327,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             </div>
 
             {/* 탭 */}
-            <div className="flex gap-1 px-5 pt-3 shrink-0">
+            <div className="flex gap-1 px-[18px] pt-3 shrink-0">
               {([
                 { key: 'securities' as const, label: '종목 연결', badge: `${pendingIds.size}` },
                 { key: 'cashflows' as const, label: '입출금', badge: null },
@@ -336,11 +336,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 return (
                   <button key={t.key} onClick={() => setModalTab(t.key)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      active ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                     }`}
                     style={active ? { backgroundColor: palette.colors[0] } : undefined}>
                     {t.label}
-                    {t.badge ? <span className={`ml-1.5 ${active ? 'opacity-70' : 'text-slate-400'}`}>{t.badge}</span> : null}
+                    {t.badge ? <span className={`ml-1.5 ${active ? 'opacity-70' : 'text-ink-4'}`}>{t.badge}</span> : null}
                   </button>
                 )
               })}
@@ -353,16 +353,16 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               />
             ) : (
             <>
-            <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+            <div className="px-[18px] py-3 border-b border-surface-low shrink-0">
               <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input value={linkSearch} onChange={e => setLinkSearch(e.target.value)}
                   placeholder="티커 또는 종목명 검색"
-                  className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-300" />
+                  className="w-full pl-9 pr-3 py-1.5 text-body rounded-btn focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
               </div>
-              <p className="text-[10px] text-slate-400 mt-1.5">{pendingIds.size}종목 선택됨 · {filteredLinkSecurities.length}개 표시</p>
+              <p className="text-micro tracking-normal text-ink-4 mt-1.5">{pendingIds.size}종목 선택됨 · {filteredLinkSecurities.length}개 표시</p>
             </div>
             <div className="flex-1 overflow-y-auto min-h-0">
               {filteredLinkSecurities.map(s => {
@@ -372,38 +372,38 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 const currencyColor = s.currency ? currencyColors[s.currency] : undefined
                 return (
                   <label key={s.id}
-                    className="flex items-center gap-3 px-5 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50">
+                    className="flex items-center gap-3 px-[18px] py-2.5 hover:bg-surface-low cursor-pointer transition-colors border-b border-surface-low">
                     <input type="checkbox" checked={checked}
                       onChange={e => setPendingIds(prev => {
                         const next = new Set(prev)
                         e.target.checked ? next.add(s.id) : next.delete(s.id)
                         return next
                       })}
-                      className="w-3.5 h-3.5 rounded cursor-pointer shrink-0 accent-[#1A237E]" />
+                      className="w-3.5 h-3.5 cursor-pointer shrink-0 accent-[#1A237E] bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
                     <span
                       className={`${badge.ticker} shrink-0`}
                       style={sectorColor
                         ? { backgroundColor: sectorColor + '22', color: sectorColor }
                         : { backgroundColor: '#f1f5f9', color: '#475569' }}
                     >{s.ticker}</span>
-                    <span className="text-xs text-slate-700 flex-1 min-w-0 truncate">{s.name}</span>
+                    <span className="text-body text-ink flex-1 min-w-0 truncate">{s.name}</span>
                     {s.country && (
                       <span
                         className={`${badge.sm} shrink-0`}
                         style={countryColor
                           ? { backgroundColor: countryColor + '18', color: countryColor }
-                          : { backgroundColor: '#f1f5f9', color: '#64748b' }}
+                          : { backgroundColor: '#f1f5f9', color: '#8794a8' }}
                       >{s.country}</span>
                     )}
                     <span
-                      className="text-[10px] shrink-0 font-medium"
-                      style={currencyColor ? { color: currencyColor } : { color: '#94a3b8' }}
+                      className="text-micro tracking-normal shrink-0 font-medium"
+                      style={currencyColor ? { color: currencyColor } : { color: '#a8b3c4' }}
                     >{s.currency}</span>
                   </label>
                 )
               })}
               {filteredLinkSecurities.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-8">검색 결과가 없습니다</p>
+                <p className="text-body text-ink-4 text-center py-8">검색 결과가 없습니다</p>
               )}
             </div>
             </>
@@ -415,10 +415,10 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       {/* Dirty Alert */}
       {showDirtyAlert && createPortal(
-        <div className="fixed inset-0 z-[10000] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-sm w-full">
-            <p className="text-sm font-semibold text-slate-800">저장하지 않은 변경사항</p>
-            <p className="text-xs text-slate-500 mt-1.5">연결 종목을 수정했지만 저장하지 않았습니다.</p>
+        <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          <div className="bg-surface-card rounded-card p-[13px] shadow-dialog max-w-sm w-full">
+            <p className="text-subhead font-medium text-ink">저장하지 않은 변경사항</p>
+            <p className="text-body text-ink-3 mt-1.5">연결 종목을 수정했지만 저장하지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
                 className={`flex-1 ${btn.primary}`}
@@ -438,9 +438,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Add Account Modal */}
       {showAddModal && createPortal(
         <div className={modal.overlayTop}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+          <div className="bg-surface-card rounded-card p-[13px] w-full max-w-sm shadow-dialog"
             onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-semibold text-slate-700 mb-4">계좌 추가</p>
+            <p className="text-subhead font-medium text-ink mb-4">계좌 추가</p>
             <div className="space-y-3">
               {[{key:'name',label:'계좌명 *',placeholder:'종합위탁'},{key:'broker',label:'금융사 *',placeholder:'카카오페이'},{key:'owner',label:'소유자',placeholder:''}].map(f => (
                 <div key={f.key}>
@@ -458,11 +458,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </select>
               </div>
               <div>
-                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                <label className="flex items-center gap-2 text-body text-ink-2 cursor-pointer">
                   <input type="checkbox"
                     checked={accountForm.dividend_eligible}
                     onChange={e => setAccountForm(p => ({ ...p, dividend_eligible: e.target.checked }))}
-                    className="rounded"
+                    className="bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
                   />
                   배당 대상 계좌
                 </label>
@@ -488,9 +488,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Edit Account Modal */}
       {editingAccountId && createPortal(
         <div className={modal.overlayTop}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+          <div className="bg-surface-card rounded-card p-[13px] w-full max-w-sm shadow-dialog"
             onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-semibold text-slate-700 mb-4">계좌 수정</p>
+            <p className="text-subhead font-medium text-ink mb-4">계좌 수정</p>
             <div className="space-y-3">
               {[{key:'name',label:'계좌명 *'},{key:'broker',label:'금융사 *'},{key:'owner',label:'소유자'}].map(f => (
                 <div key={f.key}>
@@ -508,11 +508,11 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 </select>
               </div>
               <div>
-                <label className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                <label className="flex items-center gap-2 text-body text-ink-2 cursor-pointer">
                   <input type="checkbox"
                     checked={accountForm.dividend_eligible}
                     onChange={e => setAccountForm(p => ({ ...p, dividend_eligible: e.target.checked }))}
-                    className="rounded"
+                    className="bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
                   />
                   배당 대상 계좌
                 </label>

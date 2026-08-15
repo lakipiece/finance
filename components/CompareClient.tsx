@@ -11,7 +11,7 @@ import PageHeader from '@/components/ui/PageHeader'
 
 const CompareCharts = dynamic(() => import('./CompareCharts'), {
   ssr: false,
-  loading: () => <div className="animate-pulse bg-slate-100 rounded-xl h-64" />,
+  loading: () => <div className="animate-pulse bg-surface-low rounded-field h-64" />,
 })
 
 interface IncomeSummary {
@@ -82,10 +82,10 @@ export default function CompareClient({ availableYears }: Props) {
   if (availableYears.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 inline-block">
+        <div className="bg-surface-card rounded-card shadow-card p-12 inline-block">
           <div className="text-5xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-slate-700 mb-2">데이터가 없습니다</h2>
-          <p className="text-slate-400 text-sm">관리 탭에서 연도별 데이터를 업로드하면 비교할 수 있습니다.</p>
+          <h2 className="text-title font-bold text-ink mb-2">데이터가 없습니다</h2>
+          <p className="text-ink-4 text-subhead">관리 탭에서 연도별 데이터를 업로드하면 비교할 수 있습니다.</p>
         </div>
       </div>
     )
@@ -106,7 +106,7 @@ export default function CompareClient({ availableYears }: Props) {
             const isLoading = loading[y.year]
             return (
               <button key={y.year} onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isSelected ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isSelected ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
                 style={isSelected ? { background: color } : {}}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
@@ -122,13 +122,13 @@ export default function CompareClient({ availableYears }: Props) {
       {selectedYears.length > 0 && (
         <div className="px-1 flex items-center gap-1.5 flex-wrap">
           <button onClick={() => setCumulative(prev => !prev)}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
             {cumulative ? '누적 보기' : '월별 보기'}
           </button>
-          <span className="text-slate-200 mx-0.5">|</span>
+          <span className="text-ink-5 mx-0.5">|</span>
             <button
               onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               전체 지출
             </button>
             {expenseCategories.map(cat => {
@@ -138,25 +138,25 @@ export default function CompareClient({ availableYears }: Props) {
                 <button key={cat}
                   onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
                   className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                    isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                   }`}
                   style={isActive && color ? { backgroundColor: color } : undefined}>
                   {cat}
                 </button>
               )
             })}
-            <span className="text-slate-200 mx-0.5">|</span>
+            <span className="text-ink-5 mx-0.5">|</span>
             {/* 전체 수입 */}
             <button
               onClick={() => { setSelectedCategory(prev => prev === '전체수입' ? null : '전체수입'); setSelectedDetail(null) }}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === '전체수입' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === '전체수입' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               전체 수입
             </button>
             {/* 수입 카테고리 */}
           {INCOME_CATEGORIES.map(cat => (
             <button key={cat}
               onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-              className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors"
+              className="px-2.5 py-1 rounded-full text-meta font-medium transition-colors"
               style={selectedCategory === cat
                 ? { backgroundColor: INCOME_COLORS[cat], color: '#fff' }
                 : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
@@ -168,8 +168,8 @@ export default function CompareClient({ availableYears }: Props) {
       )}
 
       {selectedYears.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-16 text-center">
-          <p className="text-slate-400 text-sm">위에서 비교할 연도를 선택하세요</p>
+        <div className="bg-surface-card rounded-card shadow-card p-16 text-center">
+          <p className="text-ink-4 text-subhead">위에서 비교할 연도를 선택하세요</p>
         </div>
       ) : (
         <CompareCharts

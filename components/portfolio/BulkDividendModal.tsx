@@ -76,7 +76,7 @@ export default function BulkDividendModal({
   }, [show])
 
   function ownerColor(code: string): string {
-    return memberOpts.find(m => m.code === code)?.color ?? '#64748b'
+    return memberOpts.find(m => m.code === code)?.color ?? '#8794a8'
   }
 
   const modalAccounts = useMemo(() =>
@@ -146,7 +146,7 @@ export default function BulkDividendModal({
     <div className={modal.overlay}>
       <div className={modal.containerLg}>
         <div className={modal.header}>
-          <h2 className="text-sm font-semibold text-slate-700">배당·분배금 일괄 추가</h2>
+          <h2 className="text-subhead font-medium text-ink">배당·분배금 일괄 추가</h2>
           <button onClick={onClose} className={modal.close}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12"/>
@@ -163,8 +163,8 @@ export default function BulkDividendModal({
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
                   onClick={() => { setModalOwner(''); setAccountId('') }}
-                  className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
-                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0], color: '#fff' } : { backgroundColor: '#f8fafc', borderColor: '#e2e8f0', color: '#64748b' }}>
+                  className="px-2.5 py-1 rounded-full text-body font-medium border transition-colors"
+                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0], color: '#fff' } : { backgroundColor: '#f8fafc', borderColor: '#e9ecf2', color: '#8794a8' }}>
                   전체
                 </button>
                 {owners.map(o => {
@@ -173,7 +173,7 @@ export default function BulkDividendModal({
                   return (
                     <button type="button" key={o}
                       onClick={() => { setModalOwner(o); setAccountId('') }}
-                      className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                      className="px-2.5 py-1 rounded-full text-body font-medium border transition-colors"
                       style={isActive
                         ? { backgroundColor: color, borderColor: color, color: '#fff' }
                         : { backgroundColor: `${color}18`, borderColor: `${color}40`, color }}>
@@ -197,7 +197,7 @@ export default function BulkDividendModal({
               ))}
             </select>
             {selectedAccount && (
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-micro tracking-normal text-ink-4 mt-0.5">
                 기본 세율: {selectedAccount.dividend_tax_rate ?? 15.4}%
               </p>
             )}
@@ -238,7 +238,7 @@ export default function BulkDividendModal({
 
           {/* 종목 카드 리스트 */}
           {accountId && rows.length === 0 && (
-            <p className="text-xs text-slate-400 text-center py-4">연결된 종목이 없습니다</p>
+            <p className="text-body text-ink-4 text-center py-4">연결된 종목이 없습니다</p>
           )}
           {rows.length > 0 && (
             <div className="space-y-2">
@@ -247,14 +247,14 @@ export default function BulkDividendModal({
                 const sec = securities.find(s => s.id === row.security_id)
                 if (!sec) return null
                 return (
-                  <div key={row.security_id} className="border border-slate-100 rounded-xl p-3">
+                  <div key={row.security_id} className="rounded-field p-3">
                     <div className="mb-2">
-                      <span className="block text-[10px] font-mono text-slate-500 mb-0.5">{sec.ticker}</span>
-                      <span className="text-xs text-slate-700 font-medium truncate block">{sec.name}</span>
+                      <span className="block text-micro tracking-normal font-mono text-ink-3 mb-0.5">{sec.ticker}</span>
+                      <span className="text-body text-ink font-medium truncate block">{sec.name}</span>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-0.5">금액({currency})</label>
+                        <label className="text-micro tracking-normal text-ink-4 block mb-0.5">금액({currency})</label>
                         <input type="text" inputMode="decimal"
                           value={row.amount}
                           onChange={e => updateAmount(idx, e.target.value)}
@@ -262,7 +262,7 @@ export default function BulkDividendModal({
                           className={`${field.input} text-right`} />
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-0.5">세금({currency})</label>
+                        <label className="text-micro tracking-normal text-ink-4 block mb-0.5">세금({currency})</label>
                         <input type="text" inputMode="decimal"
                           value={row.tax}
                           onChange={e => updateRow(idx, 'tax', fmtNumber(e.target.value.replace(/,/g, '')))}
@@ -270,7 +270,7 @@ export default function BulkDividendModal({
                           className={`${field.input} text-right`} />
                       </div>
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-0.5">메모</label>
+                        <label className="text-micro tracking-normal text-ink-4 block mb-0.5">메모</label>
                         <input type="text"
                           value={row.memo}
                           onChange={e => updateRow(idx, 'memo', e.target.value)}

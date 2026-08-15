@@ -168,7 +168,7 @@ export default function DividendFormModal({
     <div className={modal.overlay}>
       <div className={modal.containerLg}>
         <div className={modal.header}>
-          <h2 className="text-sm font-semibold text-slate-700">
+          <h2 className="text-subhead font-medium text-ink">
             {editTarget ? '배당·분배금 수정' : '배당·분배금 추가'}
           </h2>
           <button onClick={onClose} className={modal.close}>
@@ -220,14 +220,14 @@ export default function DividendFormModal({
           <div>
             <p className={field.label}>종목</p>
             {form.security_id ? (
-              <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5">
-                <span className="text-xs font-medium text-slate-700 flex-1 truncate">
+              <div className="flex items-center gap-2 rounded-btn px-3 py-1.5">
+                <span className="text-body font-medium text-ink flex-1 truncate">
                   {modalSecurities.find(s => s.id === form.security_id)?.ticker}
                   {' '}{modalSecurities.find(s => s.id === form.security_id)?.name}
                 </span>
                 <button type="button"
                   onClick={() => { setForm(p => ({ ...p, security_id: '' })); setSecSearch('') }}
-                  className="text-slate-400 hover:text-slate-600 text-xs shrink-0">변경</button>
+                  className="text-ink-4 hover:text-ink-2 text-body shrink-0">변경</button>
               </div>
             ) : (
               <div className="relative" ref={secDropRef}>
@@ -241,16 +241,16 @@ export default function DividendFormModal({
                   autoComplete="off"
                 />
                 {secDropOpen && filteredModalSecurities.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 bg-white border border-slate-200 rounded-lg shadow-lg mt-0.5 max-h-48 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-48 overflow-y-auto">
                     {filteredModalSecurities.map(s => (
                       <button
                         key={s.id}
                         type="button"
                         onClick={() => { handleSecurityChange(s.id); setSecSearch(''); setSecDropOpen(false) }}
-                        className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-body hover:bg-surface-low flex items-center gap-2"
                       >
-                        <span className="font-mono font-semibold text-slate-700 w-16 shrink-0">{s.ticker}</span>
-                        <span className="text-slate-500 truncate">{s.name}</span>
+                        <span className="font-mono font-medium text-ink w-16 shrink-0">{s.ticker}</span>
+                        <span className="text-ink-3 truncate">{s.name}</span>
                       </button>
                     ))}
                   </div>
@@ -304,14 +304,14 @@ export default function DividendFormModal({
 
           {/* USD 환산 미리보기 */}
           {form.currency === 'USD' && form.amount && form.exchange_rate && (
-            <p className="text-xs text-slate-400 -mt-2">
+            <p className="text-body text-ink-4 -mt-2">
               ≈ {Math.round(parseNum(form.amount) * parseNum(form.exchange_rate)).toLocaleString()}원
             </p>
           )}
 
           {/* 세금 */}
           <div>
-            <p className={field.label}>세금 ({form.currency}) <span className="text-slate-300">· 15.4% 자동계산</span></p>
+            <p className={field.label}>세금 ({form.currency}) <span className="text-ink-5">· 15.4% 자동계산</span></p>
             <input type="text" inputMode="decimal"
               placeholder="0"
               value={form.tax}

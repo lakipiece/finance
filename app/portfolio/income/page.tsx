@@ -65,8 +65,8 @@ export default async function IncomePage() {
     console.error('[IncomePage] DB 오류:', e?.message ?? e)
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-        <p className="text-red-500 font-semibold mb-2">데이터 로드 실패</p>
-        <p className="text-xs text-slate-400">{e?.message ?? '알 수 없는 오류'}</p>
+        <p className="text-gain font-medium mb-2">데이터 로드 실패</p>
+        <p className="text-body text-ink-4">{e?.message ?? '알 수 없는 오류'}</p>
       </div>
     )
   }

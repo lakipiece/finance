@@ -104,10 +104,10 @@ function KpiCard({ label, value, sub, subColor }: {
   subColor?: string
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 px-4 py-3">
-      <p className="text-[10px] text-slate-400 mb-1">{label}</p>
-      <p className="text-base font-bold text-slate-700 tabular-nums leading-tight">{value}</p>
-      {sub ? <p className={`text-[10px] tabular-nums mt-1 ${subColor ?? 'text-slate-400'}`}>{sub}</p> : null}
+    <div className="bg-surface-card rounded-card px-[13px] py-3">
+      <p className="text-micro tracking-normal text-ink-4 mb-1">{label}</p>
+      <p className="text-heading font-bold text-ink tabular-nums leading-tight">{value}</p>
+      {sub ? <p className={`text-[10px] tabular-nums mt-1 ${subColor ?? 'text-ink-4'}`}>{sub}</p> : null}
     </div>
   )
 }
@@ -158,25 +158,25 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
+    <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-slate-700">태그 비중 변화</h3>
-          <p className="text-[10px] text-slate-400 mt-0.5">
+          <h3 className="text-subhead font-medium text-ink">태그 비중 변화</h3>
+          <p className="text-micro tracking-normal text-ink-4 mt-0.5">
             태그를 가진 종목 합산 — 한 종목이 여러 태그면 중복 합산
           </p>
         </div>
         {selected.size === 0 ? (
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] text-slate-400">임계치</span>
+            <span className="text-micro tracking-normal text-ink-4">임계치</span>
             <input type="range" min={1} max={20} step={1} value={threshold}
               onChange={e => setThreshold(Number(e.target.value))}
-              className="w-20 accent-slate-400" />
-            <span className="text-[10px] tabular-nums text-slate-500 w-7">{threshold}%</span>
+              className="w-20 accent-ink-4 bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
+            <span className="text-micro tracking-normal tabular-nums text-ink-3 w-7">{threshold}%</span>
           </div>
         ) : (
           <button onClick={() => setSelected(new Set())}
-            className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors shrink-0">
+            className="text-micro tracking-normal text-ink-4 hover:text-ink-2 transition-colors shrink-0">
             선택 해제
           </button>
         )}
@@ -184,7 +184,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
 
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <div className="relative">
-          <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"
+          <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
           </svg>
@@ -193,11 +193,11 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="태그 검색"
-            className="text-[10px] pl-6 pr-6 py-1 rounded-full border border-slate-200 bg-white text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-slate-400 transition-colors w-32"
+            className="text-micro tracking-normal pl-6 pr-6 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-32 border-0 focus:bg-surface-card focus:shadow-focus"
           />
           {search ? (
             <button onClick={() => setSearch('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -213,7 +213,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
                 className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
                   active
                     ? 'text-white border-transparent'
-                    : 'border-slate-200 text-slate-500 hover:border-slate-400'
+                    : 'border-surface-low text-ink-3'
                 }`}
                 style={active ? { backgroundColor: palette.colors[0] } : undefined}>
                 #{t}
@@ -221,19 +221,19 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
             )
           })}
           {filteredTagList.length > 50 ? (
-            <span className="text-[10px] text-slate-300 self-center">+{filteredTagList.length - 50}</span>
+            <span className="text-micro tracking-normal text-ink-5 self-center">+{filteredTagList.length - 50}</span>
           ) : null}
         </div>
       </div>
 
       {visibleTags.length === 0 ? (
-        <p className="text-xs text-slate-400 py-12 text-center">표시할 태그가 없습니다. 칩을 선택하거나 임계치를 낮춰주세요.</p>
+        <p className="text-body text-ink-4 py-12 text-center">표시할 태그가 없습니다. 칩을 선택하거나 임계치를 낮춰주세요.</p>
       ) : (
         <>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data} margin={{ left: 0, right: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip content={<BreakdownTooltip />} />
               {visibleTags.map((k, i) => (
@@ -243,7 +243,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-x-2 gap-y-1 mt-3">
             {visibleTags.map((k, i) => (
-              <span key={k} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+              <span key={k} className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
                 {k}
               </span>
@@ -299,40 +299,40 @@ function StackedBreakdownCard({
 
   const fallback = [palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3]]
   function colorFor(k: string, i: number): string {
-    if (k === '기타') return '#cbd5e1'
+    if (k === '기타') return '#a8b3c4'
     return colorMap[k] ?? fallback[i % fallback.length]
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
+    <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
-          {description ? <p className="text-[10px] text-slate-400 mt-0.5">{description}</p> : null}
+          <h3 className="text-subhead font-medium text-ink">{title}</h3>
+          {description ? <p className="text-micro tracking-normal text-ink-4 mt-0.5">{description}</p> : null}
         </div>
         {enableTopNControl && threshold === undefined && (
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] text-slate-400">Top</span>
+            <span className="text-micro tracking-normal text-ink-4">Top</span>
             <input type="range" min={3} max={12} value={n}
               onChange={e => setN(Number(e.target.value))}
-              className="w-20 accent-slate-400" />
-            <span className="text-[10px] tabular-nums text-slate-500 w-4">{n}</span>
+              className="w-20 accent-ink-4 bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
+            <span className="text-micro tracking-normal tabular-nums text-ink-3 w-4">{n}</span>
           </div>
         )}
         {threshold !== undefined && (
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-[10px] text-slate-400">임계치</span>
+            <span className="text-micro tracking-normal text-ink-4">임계치</span>
             <input type="range" min={1} max={15} step={1} value={thr}
               onChange={e => setThr(Number(e.target.value))}
-              className="w-20 accent-slate-400" />
-            <span className="text-[10px] tabular-nums text-slate-500 w-7">{thr}%</span>
+              className="w-20 accent-ink-4 bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
+            <span className="text-micro tracking-normal tabular-nums text-ink-3 w-7">{thr}%</span>
           </div>
         )}
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ left: 0, right: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-          <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
           <YAxis hide />
           <Tooltip content={<BreakdownTooltip />} />
           {chartKeys.map((k, i) => (
@@ -342,7 +342,7 @@ function StackedBreakdownCard({
       </ResponsiveContainer>
       <div className="flex flex-wrap gap-1 mt-3">
         {chartKeys.map((k, i) => (
-          <span key={k} className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+          <span key={k} className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
             {k}
           </span>
@@ -357,8 +357,8 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
   const mv = (payload[0]?.payload?.total_market_value as number) ?? 0
   const total = payload.reduce((s, p) => s + (Number(p.value) || 0), 0)
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs max-w-[220px]">
-      <p className="text-slate-400 mb-1.5">{label}</p>
+    <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body max-w-[220px]">
+      <p className="text-ink-4 mb-1.5">{label}</p>
       {payload.slice().reverse().map((p) => {
         const pct = Number(p.value) || 0
         if (pct <= 0) return null
@@ -366,15 +366,15 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
         return (
           <div key={p.dataKey} className="flex items-center gap-1.5 mb-0.5">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.fill }} />
-            <span className="text-slate-700 truncate flex-1">{p.name}</span>
-            <span className="tabular-nums text-slate-800 font-medium">{pct.toFixed(1)}%</span>
-            {mv > 0 ? <span className="tabular-nums text-slate-400">{fmtY(amt)}</span> : null}
+            <span className="text-ink truncate flex-1">{p.name}</span>
+            <span className="tabular-nums text-ink font-medium">{pct.toFixed(1)}%</span>
+            {mv > 0 ? <span className="tabular-nums text-ink-4">{fmtY(amt)}</span> : null}
           </div>
         )
       })}
-      <div className="border-t border-slate-100 mt-1.5 pt-1.5 flex justify-between">
-        <span className="text-slate-400">합계</span>
-        <span className="font-semibold text-slate-700">{total.toFixed(1)}%</span>
+      <div className="border-t border-surface-low mt-1.5 pt-1.5 flex justify-between">
+        <span className="text-ink-4">합계</span>
+        <span className="font-medium text-ink">{total.toFixed(1)}%</span>
       </div>
     </div>
   )
@@ -470,16 +470,16 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
             </button>
           )
         })}
-        <span className="text-[10px] text-slate-300 ml-1">{points.length}개 시점</span>
+        <span className="text-micro tracking-normal text-ink-5 ml-1">{points.length}개 시점</span>
       </div>
 
       {needsBackfill && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs text-amber-700">
+        <div className="bg-warning/10 border rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-body text-warning">
             자산군·태그 분해 데이터가 비어 있습니다. 한 번 새로고침이 필요합니다.
           </p>
           <button onClick={handleBackfill} disabled={refreshing}
-            className="text-xs px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors">
+            className="text-body px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors">
             {refreshing ? '계산 중...' : '값 새로고침'}
           </button>
         </div>
@@ -491,21 +491,21 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           label="현재 평가액"
           value={fmtKrw(currentValue)}
           sub={`첫 스냅샷 대비 ${fmtPctSigned(pctFromFirst)} (${fmtY(diffFromFirst)})`}
-          subColor={diffFromFirst >= 0 ? 'text-rose-500' : 'text-blue-500'}
+          subColor={diffFromFirst >= 0 ? 'text-gain' : 'text-loss'}
         />
         {currentProfit != null ? (
           <KpiCard
             label="수익금액"
             value={fmtKrw(currentProfit)}
             sub={`수익률 ${currentProfitRate != null ? fmtPctSigned(currentProfitRate * 100) : '-'} — 계좌별 입금·원가 기준`}
-            subColor={currentProfit >= 0 ? 'text-rose-500' : 'text-blue-500'}
+            subColor={currentProfit >= 0 ? 'text-gain' : 'text-loss'}
           />
         ) : (
           <KpiCard
             label="평가손익"
             value={fmtKrw(currentPnl)}
             sub={`수익률 ${fmtPctSigned(currentReturn * 100)} — 매수원가 대비`}
-            subColor={currentPnl >= 0 ? 'text-rose-500' : 'text-blue-500'}
+            subColor={currentPnl >= 0 ? 'text-gain' : 'text-loss'}
           />
         )}
         {lastM?.ledgerApplied ? (
@@ -527,27 +527,27 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           label="직전 대비"
           value={prev ? fmtPctSigned(pctFromPrev) : '-'}
           sub={prev ? `${fmtY(diffFromPrev)} (${prev.date} → ${last.date})` : undefined}
-          subColor={diffFromPrev >= 0 ? 'text-rose-500' : 'text-blue-500'}
+          subColor={diffFromPrev >= 0 ? 'text-gain' : 'text-loss'}
         />
       </div>
 
       {/* 평가액 vs 원금 */}
-      <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">
+      <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
+        <h3 className="text-subhead font-medium text-ink mb-3">
           평가액 vs {hasProfitSeries ? '투자원금(누적입금) · 평균매수금액' : '평균매수금액'}
         </h3>
         <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={composedData} margin={{ left: 0, right: 8, top: 24 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide />
             <Tooltip content={<ValuesTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <Bar dataKey="평가액" fill={palette.colors[0]} radius={[4, 4, 0, 0]}>
+            <Bar dataKey="평가액" fill={palette.colors[0]}>
               <LabelList dataKey="평가액" position="top" formatter={(v: number) => fmtY(v)}
-                style={{ fontSize: 10, fill: '#94a3b8' }} />
+                style={{ fontSize: 10, fill: '#a8b3c4' }} />
             </Bar>
-            <Line type="monotone" dataKey="평균매수금액" stroke="#64748b" strokeWidth={2}
-              dot={{ r: 3, fill: '#fff', stroke: '#64748b' }} />
+            <Line type="monotone" dataKey="평균매수금액" stroke="#8794a8" strokeWidth={2}
+              dot={{ r: 3, fill: '#fff', stroke: '#8794a8' }} />
             {hasProfitSeries ? (
               <Line type="monotone" dataKey="투자원금" stroke="#00695C" strokeWidth={2}
                 strokeDasharray="5 3" dot={{ r: 3, fill: '#fff', stroke: '#00695C' }} />
@@ -557,18 +557,18 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
       </div>
 
       {/* 수익 추이 라인 */}
-      <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">
+      <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
+        <h3 className="text-subhead font-medium text-ink mb-3">
           {hasProfitSeries ? '수익금액 추이 (평가액＋출금−입금)' : '누적 손익 추이'}
         </h3>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={pnlData} margin={{ left: 0, right: 8, top: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false}
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => fmtY(v)} width={50} />
             <Tooltip content={<SinglePnlTooltip />} />
-            <ReferenceLine y={0} stroke="#cbd5e1" strokeDasharray="3 3" />
+            <ReferenceLine y={0} stroke="#a8b3c4" strokeDasharray="3 3" />
             <Line type="monotone" dataKey="손익" stroke={currentPnl >= 0 ? POS : NEG} strokeWidth={2.5}
               dot={{ r: 3 }} />
           </LineChart>
@@ -576,21 +576,21 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
       </div>
 
       {/* MoM 증감 */}
-      <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">직전 대비 증감</h3>
+      <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
+        <h3 className="text-subhead font-medium text-ink mb-3">직전 대비 증감</h3>
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={momData} margin={{ left: 0, right: 8, top: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide />
             <Tooltip content={<MomTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <ReferenceLine y={0} stroke="#cbd5e1" />
-            <Bar dataKey="증감" radius={[4, 4, 4, 4]}>
+            <ReferenceLine y={0} stroke="#a8b3c4" />
+            <Bar dataKey="증감">
               {momData.map((d, i) => (
                 <Cell key={i} fill={d.증감 >= 0 ? POS : NEG} />
               ))}
               <LabelList dataKey="증감" position="top" formatter={(v: number) => v === 0 ? '' : fmtY(v)}
-                style={{ fontSize: 10, fill: '#64748b' }} />
+                style={{ fontSize: 10, fill: '#8794a8' }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -636,25 +636,25 @@ function ValuesTooltip({ active, payload, label }: ChartTooltipProps) {
   const base = basis ?? cost
   const ret = base > 0 ? (profit / base) * 100 : 0
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
-      <p className="text-slate-400 mb-1.5">{label}</p>
+    <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body">
+      <p className="text-ink-4 mb-1.5">{label}</p>
       <div className="flex justify-between gap-3">
-        <span className="text-slate-500">평가액</span>
-        <span className="font-semibold text-slate-700 tabular-nums">{fmtKrw(mv)}</span>
+        <span className="text-ink-3">평가액</span>
+        <span className="font-bold text-ink tabular-nums">{fmtKrw(mv)}</span>
       </div>
       {basis != null ? (
         <div className="flex justify-between gap-3">
-          <span className="text-slate-500">투자원금</span>
-          <span className="text-slate-600 tabular-nums">{fmtKrw(basis)}</span>
+          <span className="text-ink-3">투자원금</span>
+          <span className="text-ink-2 tabular-nums">{fmtKrw(basis)}</span>
         </div>
       ) : null}
       <div className="flex justify-between gap-3">
-        <span className="text-slate-500">평균매수금액</span>
-        <span className="text-slate-600 tabular-nums">{fmtKrw(cost)}</span>
+        <span className="text-ink-3">평균매수금액</span>
+        <span className="text-ink-2 tabular-nums">{fmtKrw(cost)}</span>
       </div>
-      <div className="flex justify-between gap-3 border-t border-slate-100 mt-1.5 pt-1.5">
-        <span className="text-slate-400">수익</span>
-        <span className={`font-semibold tabular-nums ${profit >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+      <div className="flex justify-between gap-3 border-t border-surface-low mt-1.5 pt-1.5">
+        <span className="text-ink-4">수익</span>
+        <span className={`font-medium tabular-nums ${profit >= 0 ? 'text-gain' : 'text-loss'}`}>
           {profit >= 0 ? '+' : ''}{fmtKrw(profit)} ({fmtPctSigned(ret)})
         </span>
       </div>
@@ -666,9 +666,9 @@ function SinglePnlTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const v = Number(payload[0].value)
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
-      <p className="text-slate-400 mb-0.5">{label}</p>
-      <p className={`font-semibold tabular-nums ${v >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+    <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body">
+      <p className="text-ink-4 mb-0.5">{label}</p>
+      <p className={`font-medium tabular-nums ${v >= 0 ? 'text-gain' : 'text-loss'}`}>
         {v >= 0 ? '+' : ''}{fmtKrw(v)}
       </p>
     </div>
@@ -679,9 +679,9 @@ function MomTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const v = Number(payload[0].value)
   return (
-    <div className="bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
-      <p className="text-slate-400 mb-0.5">{label}</p>
-      <p className={`font-semibold tabular-nums ${v >= 0 ? 'text-rose-500' : 'text-blue-500'}`}>
+    <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body">
+      <p className="text-ink-4 mb-0.5">{label}</p>
+      <p className={`font-medium tabular-nums ${v >= 0 ? 'text-gain' : 'text-loss'}`}>
         {v === 0 ? '시작점' : `${v >= 0 ? '+' : ''}${fmtKrw(v)}`}
       </p>
     </div>

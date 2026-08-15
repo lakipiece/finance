@@ -122,16 +122,16 @@ export default function DashboardClient({ year }: { year: number }) {
   if (summaryLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
+        <div className="bg-surface-card rounded-card shadow-card p-[13px] mb-6">
           <div className="animate-pulse space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-slate-100 rounded-xl" />)}
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-surface-low rounded-field" />)}
             </div>
-            <div className="h-56 bg-slate-100 rounded-xl" />
+            <div className="h-56 bg-surface-low rounded-field" />
           </div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-          <div className="animate-pulse h-40 bg-slate-100 rounded-xl" />
+        <div className="bg-surface-card rounded-card shadow-card p-[13px]">
+          <div className="animate-pulse h-40 bg-surface-low rounded-field" />
         </div>
       </div>
     )
@@ -140,9 +140,9 @@ export default function DashboardClient({ year }: { year: number }) {
   if (summaryError) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-8 text-center">
-          <p className="text-red-400 text-sm mb-2">데이터를 불러오지 못했습니다</p>
-          <p className="text-slate-300 text-xs">{summaryError}</p>
+        <div className="bg-surface-card rounded-card shadow-card border p-8 text-center">
+          <p className="text-danger text-subhead mb-2">데이터를 불러오지 못했습니다</p>
+          <p className="text-ink-5 text-body">{summaryError}</p>
         </div>
       </div>
     )

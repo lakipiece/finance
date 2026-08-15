@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const sql = getSql()
   const { name, category, color } = await req.json()
   if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
-  const defaultColor = color ?? CAT_DEFAULT_COLORS[category ?? ''] ?? '#94a3b8'
+  const defaultColor = color ?? CAT_DEFAULT_COLORS[category ?? ''] ?? '#a8b3c4'
   const [row] = await sql`
     INSERT INTO detail_options (name, category, color)
     VALUES (${name}, ${category ?? ''}, ${defaultColor})

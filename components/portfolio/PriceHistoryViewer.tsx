@@ -27,7 +27,7 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
   if (securities.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-sm text-slate-400">
+        <div className="bg-surface-card rounded-card p-8 text-center text-subhead text-ink-4">
           등록된 종목이 없습니다
         </div>
       </div>
@@ -38,43 +38,43 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
-        <h2 className="text-sm font-semibold text-slate-700">가격 수집 이력</h2>
+        <h2 className="text-subhead font-medium text-ink">가격 수집 이력</h2>
         <select
           value={selectedTicker}
           onChange={e => setSelectedTicker(e.target.value)}
-          className="border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-300"
+          className="rounded-btn px-3 py-1.5 text-body focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
         >
           {securities.map(s => (
             <option key={s.ticker} value={s.ticker}>{s.ticker} — {s.name}</option>
           ))}
         </select>
-        <span className="text-xs text-slate-400">{rows.length}개 데이터</span>
+        <span className="text-body text-ink-4">{rows.length}개 데이터</span>
       </div>
 
       {/* Chart */}
       {rows.length > 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-4">
+        <div className="bg-surface-card rounded-card p-[13px]">
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={chartData} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 9, fill: '#94a3b8' }}
+                tick={{ fontSize: 10, fill: '#a8b3c4' }}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 9, fill: '#94a3b8' }}
+                tick={{ fontSize: 10, fill: '#a8b3c4' }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`}
                 width={48}
               />
               <Tooltip
-                contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px' }}
+                contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', borderRadius: 11, padding: '6px 10px' }}
                 itemStyle={{ color: '#334155' }}
-                labelStyle={{ color: '#94a3b8', marginBottom: 2 }}
+                labelStyle={{ color: '#a8b3c4', marginBottom: 2 }}
                 formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
                 labelFormatter={l => `${l}`}
               />
@@ -83,34 +83,34 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center text-sm text-slate-400">
+        <div className="bg-surface-card rounded-card p-8 text-center text-subhead text-ink-4">
           수집된 가격 이력이 없습니다
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        <table className="w-full text-xs">
+      <div className="bg-surface-card rounded-card overflow-hidden">
+        <table className="w-full text-body">
           <thead>
-            <tr className="bg-slate-50 text-slate-400 uppercase tracking-wider">
-              <th className="text-left px-4 py-2.5">날짜</th>
-              <th className="text-right px-4 py-2.5">가격</th>
-              <th className="text-right px-4 py-2.5">통화</th>
+            <tr className="bg-surface-low text-ink-4 uppercase tracking-wider">
+              <th className="text-left px-2 py-[5px].5">날짜</th>
+              <th className="text-right px-2 py-[5px].5">가격</th>
+              <th className="text-right px-2 py-[5px].5">통화</th>
             </tr>
           </thead>
           <tbody>
             {reversedRows.map(r => (
-              <tr key={r.date} className="border-t border-slate-50 hover:bg-slate-50">
-                <td className="px-4 py-2 text-slate-600">{r.date}</td>
-                <td className="px-4 py-2 text-right font-mono text-slate-700">
+              <tr key={r.date} className="border-t border-surface-low hover:bg-surface-low">
+                <td className="px-2 py-[5px] text-ink-2">{r.date}</td>
+                <td className="px-2 py-[5px] text-right font-mono text-ink">
                   {r.currency === 'USD' ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                 </td>
-                <td className="px-4 py-2 text-right text-slate-400">{r.currency}</td>
+                <td className="px-2 py-[5px] text-right text-ink-4">{r.currency}</td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-slate-400">데이터 없음</td>
+                <td colSpan={3} className="px-2 py-6 text-center text-ink-4">데이터 없음</td>
               </tr>
             )}
           </tbody>

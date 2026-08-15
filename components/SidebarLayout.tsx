@@ -38,7 +38,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 모바일 오버레이 */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          className="modal-scrim fixed inset-0 z-40 md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
@@ -55,11 +55,11 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 */}
       <div className="md:pl-[220px] min-h-screen flex flex-col">
         {/* 모바일 햄버거 바 */}
-        <div className="md:hidden sticky top-0 z-30 border-b border-slate-200" style={{ background: '#F8FAFC', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="md:hidden sticky top-0 z-30 border-b border-surface-low" style={{ background: '#F8FAFC', paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center h-12 px-4">
           <button
             onClick={() => setOpen(true)}
-            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-btn text-ink-3 hover:bg-surface-low transition-colors"
             aria-label="메뉴 열기"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

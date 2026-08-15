@@ -49,8 +49,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0D1B5E 0%, #1A237E 40%, #00695C 100%)' }}>
       {/* 배경 장식 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10 bg-white" />
-        <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full opacity-5 bg-white" />
+        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10 bg-surface-card" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full opacity-5 bg-surface-card" />
       </div>
 
       <div className="relative w-full max-w-sm px-4">
@@ -58,48 +58,48 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <BrandLogo />
           <div className="mt-3 text-center">
-            <p className="text-lg font-bold tracking-widest text-white uppercase leading-tight">Lakipiece</p>
-            <p className="text-lg font-bold tracking-widest uppercase leading-tight" style={{ color: '#80CBC4' }}>Finance</p>
-            <p className="text-[10px] text-white/40 tracking-widest mt-1 uppercase">The Precision Curator</p>
+            <p className="text-heading font-bold tracking-widest text-white uppercase leading-tight">Lakipiece</p>
+            <p className="text-heading font-bold tracking-widest uppercase leading-tight" style={{ color: '#80CBC4' }}>Finance</p>
+            <p className="text-micro text-white/40 tracking-widest mt-1 uppercase">The Precision Curator</p>
           </div>
         </div>
 
         {/* 로그인 카드 */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 p-7">
-          <h2 className="text-sm font-semibold text-white mb-5">로그인</h2>
+        <div className="bg-white/10 backdrop-blur-sm rounded-card border border-white/20 p-7">
+          <h2 className="text-subhead font-bold text-white mb-5">로그인</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[10px] text-white/50 mb-1.5 uppercase tracking-wider">이메일</label>
+              <label className="block text-micro text-white/50 mb-1.5 uppercase tracking-wider">이메일</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border-0 border-b border-white/30 bg-transparent pb-1.5 pt-1 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors"
+                className="w-full border-b border-white/30 pb-1.5 pt-1 text-subhead text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus"
                 placeholder="admin@example.com"
               />
             </div>
             <div>
-              <label className="block text-[10px] text-white/50 mb-1.5 uppercase tracking-wider">비밀번호</label>
+              <label className="block text-micro text-white/50 mb-1.5 uppercase tracking-wider">비밀번호</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border-0 border-b border-white/30 bg-transparent pb-1.5 pt-1 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors"
+                className="w-full border-b border-white/30 pb-1.5 pt-1 text-subhead text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-xs text-red-300 bg-red-500/10 rounded-lg px-3 py-2 border border-red-400/20">{error}</p>
+              <p className="text-body text-red-300 bg-red-500/10 rounded-btn px-3 py-2 bg-danger/10 text-danger/20">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-xl text-sm font-semibold text-[#1A237E] hover:opacity-90 transition-opacity mt-2"
+              className="w-full py-2.5 rounded-field text-subhead font-medium text-ink hover:opacity-90 transition-opacity mt-2"
               style={{ background: 'linear-gradient(135deg, #ffffff 0%, #e8f0fe 100%)' }}
             >
               {loading ? '로그인 중...' : '로그인'}

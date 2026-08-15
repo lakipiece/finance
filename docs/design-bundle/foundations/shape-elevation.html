@@ -1,0 +1,93 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>형태 · 그림자 · 간격 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>형태 · 그림자 · 간격 (as-is)</h1><p class="lede">라운딩 6단계, 그림자 5단계가 규칙 없이 혼재. 카드 = rounded-2xl 규칙은 문서에만 있고 실제로는 xl/lg도 카드에 쓰인다.</p>
+
+<h2>라운딩 — 실사용 분포</h2>
+<div class="row">
+<div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:4px"></div>
+    <div class="sw-name">rounded</div><div class="sw-hex">4px · 60회</div><div class="sw-use">배지·작은 태그</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:6px"></div>
+    <div class="sw-name">rounded-md</div><div class="sw-hex">6px · 13회</div><div class="sw-use">cta 버튼(미사용 토큰)</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:8px"></div>
+    <div class="sw-name">rounded-lg</div><div class="sw-hex">8px · 82회</div><div class="sw-use">버튼·인풋·툴팁</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:12px"></div>
+    <div class="sw-name">rounded-xl</div><div class="sw-hex">12px · 57회</div><div class="sw-use">서브 영역·드롭존</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:16px"></div>
+    <div class="sw-name">rounded-2xl</div><div class="sw-hex">16px · 76회</div><div class="sw-use">카드·모달</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border:1px solid #e2e8f0;border-radius:9999px"></div>
+    <div class="sw-name">rounded-full</div><div class="sw-hex">9999px · 101회</div><div class="sw-use">pill·아바타·점</div></div>
+</div>
+
+<h2>그림자 — 실사용 분포</h2>
+<div class="row">
+<div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border-radius:16px;box-shadow:0 1px 2px 0 rgb(0 0 0/.05)"></div>
+    <div class="sw-name">shadow-sm</div><div class="sw-hex">30회</div><div class="sw-use">기본 카드</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border-radius:16px;box-shadow:0 1px 3px 0 rgb(0 0 0/.1),0 1px 2px -1px rgb(0 0 0/.1)"></div>
+    <div class="sw-name">shadow</div><div class="sw-hex">11회</div><div class="sw-use">—</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border-radius:16px;box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1)"></div>
+    <div class="sw-name">shadow-md</div><div class="sw-hex">4회</div><div class="sw-use">KPI 강조 카드</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border-radius:16px;box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)"></div>
+    <div class="sw-name">shadow-lg</div><div class="sw-hex">15회</div><div class="sw-use">툴팁·드롭다운</div></div><div style="text-align:center">
+    <div style="width:92px;height:64px;background:#fff;border-radius:16px;box-shadow:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1)"></div>
+    <div class="sw-name">shadow-xl</div><div class="sw-hex">8회</div><div class="sw-use">모달</div></div>
+</div>
+<p class="note">미사용 토큰 <code>surface.cardElevated</code>는 <code>0 4px 32px 0 rgba(13,28,46,.06)</code>라는 <b>여섯 번째</b> 그림자를 또 정의한다. <span class="flag dead">사용 0회</span></p>
+
+<h2>간격 리듬</h2>
+<table class="dt">
+<tr><th>맥락</th><th>값</th><th>비고</th></tr>
+<tr><td>페이지 컨테이너</td><td><code>max-w-7xl mx-auto px-4 py-8 space-y-6</code></td><td>layout.page 토큰 정의됨 <span class="flag dead">사용 0회</span> — 각 페이지가 직접 반복</td></tr>
+<tr><td>카드 패딩</td><td><code>p-4 sm:p-6</code> / <code>p-4 sm:p-5</code> / <code>p-3</code></td><td>3종 혼재</td></tr>
+<tr><td>카드 그리드 갭</td><td><code>gap-3 sm:gap-4</code> / <code>gap-2</code> / <code>gap-4</code></td><td>3종 혼재</td></tr>
+<tr><td>모달 패딩</td><td><code>px-6 py-4</code></td><td>header·body·footer 통일 <span class="flag ok">일관</span></td></tr>
+<tr><td>테이블 셀</td><td><code>py-2 px-3</code> (th) / <code>py-2.5 px-3</code> (td)</td><td><span class="flag ok">일관</span></td></tr>
+</table>
+
+<h2>모션</h2>
+<table class="dt">
+<tr><th>토큰</th><th>사용</th></tr>
+<tr><td><code>transition-colors</code></td><td>버튼·인풋·행 호버 — 기본값(150ms)</td></tr>
+<tr><td><code>transition-opacity</code></td><td>primary 버튼 · 툴팁 페이드</td></tr>
+<tr><td><code>transition-all</code> + <code>hover:-translate-y-0.5</code></td><td>KPI·포지션 카드 부상 (9회)</td></tr>
+<tr><td><code>hover:scale-110</code></td><td>아이콘 3회 — 다른 카드와 리듬 불일치 <span class="flag">규칙 없음</span></td></tr>
+<tr><td><code>animate-pulse</code></td><td>스켈레톤</td></tr>
+</table>
+<p class="note">duration을 명시한 곳이 없어 전부 Tailwind 기본 150ms. easing 토큰 없음.</p>
+
+</div></body></html>

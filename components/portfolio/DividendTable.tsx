@@ -41,8 +41,8 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
   }, [])
 
   function ownerColor(code: string | null | undefined): string {
-    if (!code) return '#64748b'
-    return memberOpts.find(m => m.code === code)?.color ?? '#64748b'
+    if (!code) return '#8794a8'
+    return memberOpts.find(m => m.code === code)?.color ?? '#8794a8'
   }
 
   const filtered = useMemo(() => {
@@ -70,24 +70,24 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
   const slice = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+    <div className="bg-surface-card rounded-card shadow-card p-[13px]">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h3 className="text-base font-semibold text-slate-700 shrink-0">배당·분배금 내역</h3>
+        <h3 className="text-heading font-bold text-ink shrink-0">배당·분배금 내역</h3>
         <div className="flex items-center gap-2">
           {selectedMonth && (
-            <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600">
+            <span className="text-meta px-2 py-0.5 rounded-full bg-loss/10 text-loss">
               {selectedMonth} 필터링중
             </span>
           )}
           {selectedSecurity && (
             <button onClick={onClearSecurity}
-              className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+              className="text-meta px-2 py-0.5 rounded-full bg-income/10 text-income hover:bg-income/10 transition-colors">
               {selectedSecurity} ✕
             </button>
           )}
           <div className="relative">
-            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -95,7 +95,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               placeholder="검색..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              className="w-36 pl-5 border-0 border-b border-slate-200 bg-transparent pb-1.5 pt-1 text-xs text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-[#1A237E] transition-colors"
+              className="w-36 pl-5 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors border-0"
             />
           </div>
           <button
@@ -110,7 +110,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
       {/* 모바일 카드 뷰 */}
       <div className="md:hidden space-y-2">
         {filtered.length === 0 && (
-          <p className="text-center text-slate-400 text-xs py-8">내역이 없습니다</p>
+          <p className="text-center text-ink-4 text-body py-8">내역이 없습니다</p>
         )}
         {slice.map((d) => {
           const gross = toKrw(d)
@@ -118,27 +118,27 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           const net = gross - tax
           const color = ownerColor(d.account.owner)
           return (
-            <div key={d.id} className="border border-slate-100 rounded-xl px-4 py-3 bg-white">
+            <div key={d.id} className="rounded-field px-4 py-3 bg-surface-card">
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div className="flex-1 min-w-0">
-                  <span className="block text-[10px] font-mono text-slate-500">{d.security.ticker}</span>
-                  <span className="text-xs font-medium text-slate-700 truncate">{d.security.name}</span>
+                  <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>
+                  <span className="text-body font-medium text-ink truncate">{d.security.name}</span>
                 </div>
-                <span className="font-semibold text-slate-800 text-sm shrink-0 tabular-nums whitespace-nowrap">
+                <span className="font-bold text-ink text-subhead shrink-0 tabular-nums whitespace-nowrap">
                   {formatWonRound(net)}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center justify-between text-body text-ink-4">
                 <span className="tabular-nums">{fmtDate(d.paid_at)}</span>
-                <span className="text-slate-500">{d.account.broker} · {d.account.name}</span>
+                <span className="text-ink-3">{d.account.broker} · {d.account.name}</span>
               </div>
               {d.account.owner && (
                 <div className="mt-1">
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                  <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
                     style={{ backgroundColor: `${color}22`, color }}>{d.account.owner}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-slate-50 text-[10px] text-slate-400 tabular-nums">
+              <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-surface-low text-micro tracking-normal text-ink-4 tabular-nums">
                 <span>배당금 {formatWonRound(gross)}</span>
                 {tax > 0 && <span>추정 세금 {formatWonRound(tax)}</span>}
               </div>
@@ -163,9 +163,9 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
 
       {/* 데스크탑 테이블 뷰 */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-subhead">
           <thead>
-            <tr className="border-b border-slate-100">
+            <tr className="border-b border-surface-low">
               <th className={tbl.th}>#</th>
               <th className={tbl.th}>날짜</th>
               <th className={tbl.th}>종목</th>
@@ -175,12 +175,12 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               <th className={tbl.thRight}>추정 세금</th>
               <th className={tbl.thRight}>세후 배당금</th>
               <th className={tbl.th}>메모</th>
-              <th className="py-2 px-3"></th>
+              <th className="py-[5px] px-2"></th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={10} className="py-10 text-center text-slate-400 text-xs">내역이 없습니다</td></tr>
+              <tr><td colSpan={10} className="py-10 text-center text-ink-4 text-body">내역이 없습니다</td></tr>
             )}
             {slice.map((d, i) => {
               const gross = toKrw(d)
@@ -189,47 +189,47 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               const color = ownerColor(d.account.owner)
               return (
                 <tr key={d.id} className={`group ${i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}`}>
-                  <td className="py-2.5 px-3 text-slate-300 text-xs">{(safePage - 1) * pageSize + i + 1}</td>
-                  <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{fmtDate(d.paid_at)}</td>
+                  <td className="py-[5px].5 px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
+                  <td className="py-[5px].5 px-2 text-ink-4 text-body whitespace-nowrap">{fmtDate(d.paid_at)}</td>
                   <td className={tbl.td}>
-                    <span className="block text-[10px] font-mono text-slate-500">{d.security.ticker}</span>
-                    <span className="text-xs font-medium text-slate-700 max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
+                    <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>
+                    <span className="text-body font-medium text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
                   </td>
                   <td className={tbl.td}>
-                    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-body font-medium bg-surface-low text-ink-2">
                       {d.account.broker}
                     </span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{d.account.name}</p>
+                    <p className="text-micro tracking-normal text-ink-4 mt-0.5">{d.account.name}</p>
                   </td>
-                  <td className="py-2 px-3">
+                  <td className="py-[5px] px-2">
                     {d.account.owner
-                      ? <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                      ? <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
                           style={{ backgroundColor: `${color}22`, color }}>
                           {d.account.owner}
                         </span>
-                      : <span className="text-slate-300 text-xs">-</span>}
+                      : <span className="text-ink-5 text-body">-</span>}
                   </td>
-                  <td className={`${tbl.tdRight} font-semibold text-slate-800 whitespace-nowrap`}>{formatWonRound(gross)}</td>
-                  <td className={`${tbl.tdRight} text-slate-400 whitespace-nowrap`}>
-                    {tax > 0 ? formatWonRound(tax) : <span className="text-slate-200">—</span>}
+                  <td className={`${tbl.tdRight} font-medium text-ink whitespace-nowrap`}>{formatWonRound(gross)}</td>
+                  <td className={`${tbl.tdRight} text-ink-4 whitespace-nowrap`}>
+                    {tax > 0 ? formatWonRound(tax) : <span className="text-ink-5">—</span>}
                   </td>
-                  <td className={`${tbl.tdRight} font-semibold text-slate-700 whitespace-nowrap`}>{formatWonRound(net)}</td>
-                  <td className="py-2.5 px-3 text-slate-400 text-xs max-w-[160px]">
+                  <td className={`${tbl.tdRight} font-medium text-ink whitespace-nowrap`}>{formatWonRound(net)}</td>
+                  <td className="py-[5px].5 px-2 text-ink-4 text-body max-w-[160px]">
                     {d.memo
                       ? <span className="block truncate" title={d.memo}>{d.memo}</span>
-                      : <span className="text-slate-200">—</span>}
+                      : <span className="text-ink-5">—</span>}
                   </td>
-                  <td className="py-2.5 px-3">
+                  <td className="py-[5px].5 px-2">
                     <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => onEdit(d)}
-                        className="p-1 rounded text-slate-300 hover:text-blue-500 hover:bg-blue-50 transition-colors" title="수정">
+                        className="p-1 rounded text-ink-5 hover:text-loss hover:bg-loss/10 transition-colors" title="수정">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
                       <button onClick={() => onDelete(d.id)}
-                        className="p-1 rounded text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors" title="삭제">
+                        className="p-1 rounded text-ink-5 hover:text-gain hover:bg-gain/10 transition-colors" title="삭제">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -245,22 +245,22 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
       </div>
 
       {/* 페이지네이션 */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100 flex-wrap gap-3">
-        <div className="flex items-center gap-2 text-xs text-slate-400">
+      <div className="flex items-center justify-between pt-3 border-t border-surface-low flex-wrap gap-3">
+        <div className="flex items-center gap-2 text-body text-ink-4">
           <span>총 {filtered.length.toLocaleString()}건</span>
-          <span className="text-slate-200">|</span>
+          <span className="text-ink-5">|</span>
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${sortMode !== mode ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${sortMode !== mode ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
               style={sortMode === mode ? { background: '#1A237E', color: '#fff' } : undefined}>
               {mode === 'date' ? '날짜순' : '금액순'}
             </button>
           ))}
-          <span className="text-slate-200">|</span>
+          <span className="text-ink-5">|</span>
           <span>페이지당</span>
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'font-semibold'}`}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
               style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}>
               {size}
             </button>
@@ -277,11 +277,11 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               () => setPage(totalPages),
             ][idx]
             if (label === null) return (
-              <span key="cur" className="px-3 py-1 text-xs text-slate-600 font-medium">{safePage} / {totalPages}</span>
+              <span key="cur" className="px-3 py-1 text-body text-ink-2 font-medium">{safePage} / {totalPages}</span>
             )
             return (
               <button key={label} onClick={onClick!} disabled={disabled}
-                className="px-2 py-1 rounded text-xs text-slate-500 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed">
+                className="px-2 py-1 rounded text-body text-ink-3 hover:bg-surface-low disabled:opacity-30 disabled:cursor-not-allowed">
                 {label}
               </button>
             )

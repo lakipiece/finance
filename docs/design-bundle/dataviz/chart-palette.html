@@ -1,0 +1,77 @@
+<!-- @dsCard group="Data Viz" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>차트 색상 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>차트 색상 (as-is)</h1><p class="lede">시리즈 색이 네 군데서 나온다 — 4색 팔레트+알파, 72색 사용자 지정, 파일별 하드코딩 상수, 회색 폴백.</p>
+
+<h2>① 팔레트 4색 + 알파 확장 (AllocationCharts)</h2>
+<p class="note">시리즈가 5개를 넘으면 같은 색에 <code>CC</code>(80%) → <code>99</code>(60%) 알파를 붙여 12색을 만든다. 명도만 다른 같은 색상이 인접 세그먼트에 놓이면 구분이 어렵다.</p>
+<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:6px">
+<div style="height:44px;border-radius:8px;background:#1A237E"></div><div style="height:44px;border-radius:8px;background:#690043"></div><div style="height:44px;border-radius:8px;background:#00695C"></div><div style="height:44px;border-radius:8px;background:#8D6E63"></div><div style="height:44px;border-radius:8px;background:#1A237ECC"></div><div style="height:44px;border-radius:8px;background:#690043CC"></div><div style="height:44px;border-radius:8px;background:#00695CCC"></div><div style="height:44px;border-radius:8px;background:#8D6E63CC"></div><div style="height:44px;border-radius:8px;background:#1A237E99"></div><div style="height:44px;border-radius:8px;background:#69004399"></div><div style="height:44px;border-radius:8px;background:#00695C99"></div><div style="height:44px;border-radius:8px;background:#8D6E6399"></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font-size:8px;color:#94a3b8;text-align:center">
+<div>100%</div><div>100%</div><div>100%</div><div>100%</div><div>80%</div><div>80%</div><div>80%</div><div>80%</div><div>60%</div><div>60%</div><div>60%</div><div>60%</div>
+</div>
+
+<h2>② 파일별 하드코딩 상수</h2>
+<table class="dt">
+<tr><th style="width:210px">파일</th><th>상수</th></tr>
+<tr><td><code>SnapshotCharts.tsx</code></td><td><span style="color:#ef4444;font-weight:600">POS #ef4444</span> / <span style="color:#3b82f6;font-weight:600">NEG #3b82f6</span> / 기타 <span style="color:#cbd5e1;font-weight:600">#cbd5e1</span></td></tr>
+<tr><td><code>AllocationCharts.tsx</code></td><td>GREY <code>#e2e8f0</code></td></tr>
+<tr><td><code>CashflowPanel.tsx</code></td><td>INFLOW / OUTFLOW <code>#690043</code> / opening <code>#64748b</code></td></tr>
+<tr><td><code>DrilldownPanel.tsx</code></td><td>급여 <code>#4527A0</code> · 기타 <code>#5A6476</code> · 폴백 <code>#6B8CAE</code> · 선택 <code>#3b82f6</code></td></tr>
+<tr><td><code>IncomeDashboard.tsx</code></td><td>배당 <code>#10b981</code> · 투자금 <code>#64748b</code> · 평가금 <code>#1A237E</code></td></tr>
+</table>
+
+<h2>③ 사용자 지정 72색이 섞여 들어오는 지점</h2>
+<p class="note">계좌·카테고리·멤버에 사용자가 지정한 <code>OPTION_COLORS</code> 값이 그대로 차트 시리즈 색이 된다. 팔레트 색과 나란히 놓이면 채도·명도 리듬이 무너진다.</p>
+<div class="row">
+  <div style="display:flex;gap:0;border-radius:8px;overflow:hidden;height:40px;flex:1">
+    <div style="width:26%;background:#1A237E"></div><div style="width:14%;background:#690043"></div><div style="width:11%;background:#F9A825"></div><div style="width:18%;background:#00695C"></div><div style="width:9%;background:#607D8B"></div><div style="width:12%;background:#D81B60"></div><div style="width:10%;background:#8D6E63"></div>
+  </div>
+</div>
+<p class="note">↑ 팔레트색(#1A237E·#690043·#00695C·#8D6E63)과 사용자색(#F9A825·#607D8B·#D81B60)이 한 스택 바에 공존하는 실제 상황.</p>
+
+<h2>손익 색 3중 정의</h2>
+<div class="row">
+  <div style="text-align:center"><div style="width:80px;height:36px;border-radius:8px;background:#f43f5e"></div><div class="sw-hex">rose-500<br>텍스트</div></div>
+  <div style="text-align:center"><div style="width:80px;height:36px;border-radius:8px;background:#ef4444"></div><div class="sw-hex">#ef4444<br>차트</div></div>
+  <div style="text-align:center"><div style="width:80px;height:36px;border-radius:8px;background:#dc2626"></div><div class="sw-hex">#dc2626<br>배당 화면</div></div>
+  <div style="width:16px"></div>
+  <div style="text-align:center"><div style="width:80px;height:36px;border-radius:8px;background:#3b82f6"></div><div class="sw-hex">blue-500<br>텍스트·차트</div></div>
+  <div style="text-align:center"><div style="width:80px;height:36px;border-radius:8px;background:#2563eb"></div><div class="sw-hex">#2563eb<br>배당 화면</div></div>
+</div>
+
+</div></body></html>

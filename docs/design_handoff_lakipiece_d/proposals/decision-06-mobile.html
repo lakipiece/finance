@@ -1,0 +1,189 @@
+<!-- @dsCard group="D안 결정" viewport="1280x1160" name="D-06 모바일 거래 리스트" subtitle="360px에서 4열을 어떻게 담을까" -->
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>D-06 — 모바일 거래 리스트</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 44px;max-width:1180px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:9999px;background:#eef1fa;color:#1A237E;margin-bottom:10px}
+.lede{font-size:12px;color:#64748b;margin:0 0 20px;line-height:1.7;max-width:840px}
+h2{font-size:13px;font-weight:600;color:#334155;margin:30px 0 12px;padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;line-height:1.6;vertical-align:top}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+a{color:#1A237E}a:hover{color:#131b2e}
+.lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start;justify-items:center}
+.oh{margin-bottom:9px;width:100%}
+.oh b{font-size:12.5px;color:#0d1c2e;display:block}
+.oh span{font-size:10px;color:#94a3b8}
+.phone{width:300px;border-radius:22px;background:#fafafb;padding:12px 10px;box-shadow:0 4px 32px 0 rgba(13,28,46,.08)}
+.pbar{display:flex;justify-content:space-between;align-items:center;padding:0 5px 9px;font-size:10px;color:#8794a8;font-variant-numeric:tabular-nums}
+.card{background:#fff;border-radius:14px;box-shadow:0 4px 32px 0 rgba(13,28,46,.06);padding:11px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:9999px;flex:none}
+.amt{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.pros{font-size:10.5px;line-height:1.7;margin:10px 0 0;padding:0;list-style:none;width:100%}
+.pros li{padding-left:13px;position:relative;color:#475569}
+.pros li::before{position:absolute;left:0;font-weight:700}
+.pros li.y::before{content:"+";color:#00695C}
+.pros li.n::before{content:"−";color:#e11d48}
+.rec{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9px;font-weight:700;padding:3px 8px;border-radius:9999px;background:#131b2e;color:#fff;vertical-align:1px}
+.pill{display:inline-flex;align-items:center;justify-content:center;line-height:1;gap:5px;padding:4px 9px;border-radius:9999px;font-size:10px;font-weight:600;background:#f1f3f7;color:#3d4a5c;white-space:nowrap}
+</style></head><body><div class="wrap">
+<div class="tag">확정 11건 · 결정 D-06</div>
+<h1>D-06 — 모바일 거래 리스트</h1>
+<p class="lede">데스크톱 거래 리스트는 <b>날짜 · 내역 · 분류 · 금액</b> 4열입니다. 360px에서는 4열이 들어가지 않습니다. D안은 밀도를 올린 만큼 이 문제가 더 커졌습니다 — 아래 세 가지 처리 방식입니다. 모두 같은 5건을 담았습니다.</p>
+
+<div class="g3">
+
+  <div>
+    <div class="oh"><b>① 2행 접기</b><span>분류를 내역 아래로 <span class="rec">권장</span></span></div>
+    <div class="phone">
+      <div class="pbar"><span>가계부</span><span>2026.08 ⌄</span></div>
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:0">
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">급여 (8월)</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.15</span><span class="pill" style="background:rgba(0,105,92,.1);color:#00695C">수입</span></div>
+            </div>
+            <div class="amt" style="font-size:13px;font-weight:700;color:#00695C;white-space:nowrap">+6,420,000</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">주택담보대출 원리금</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.14</span><span class="pill"><span class="dot" style="background:#690043"></span>대출상환</span></div>
+            </div>
+            <div class="amt" style="font-size:13px;color:#0d1c2e;white-space:nowrap">−980,000</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">아파트 관리비</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.13</span><span class="pill"><span class="dot" style="background:#1A237E"></span>고정비</span></div>
+            </div>
+            <div class="amt" style="font-size:13px;color:#0d1c2e;white-space:nowrap">−318,000</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #f1f3f7">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이마트 장보기</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.12</span><span class="pill"><span class="dot" style="background:#26A69A"></span>변동비</span></div>
+            </div>
+            <div class="amt" style="font-size:13px;color:#0d1c2e;white-space:nowrap">−142,600</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:8px 0">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">제주 항공권 2매</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><span class="lbl" style="color:#a8b3c4">08.10</span><span class="pill"><span class="dot" style="background:#8D6E63"></span>여행공연비</span></div>
+            </div>
+            <div class="amt" style="font-size:13px;color:#0d1c2e;white-space:nowrap">−286,000</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8794a8;margin-top:8px;padding:0 5px">행 높이 <b>57px</b> · 리스트 영역 560px 기준 <b>약 9행</b></div>
+    </div>
+    <ul class="pros">
+      <li class="y">4개 정보를 전부 유지 — 잘리는 게 없다</li>
+      <li class="y">금액이 우측 한 열로 정렬돼 스캔이 쉽다</li>
+      <li class="y">행 전체가 터치 타깃 48px — 여유 있게 충족</li>
+      <li class="n">데스크톱 표와 <b>구조가 다르다</b> — 컴포넌트 2벌</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="oh"><b>② 분류를 점으로</b><span>열 유지, 라벨만 제거</span></div>
+    <div class="phone">
+      <div class="pbar"><span>가계부</span><span>2026.08 ⌄</span></div>
+      <div class="card">
+        <table style="width:100%;border-collapse:collapse">
+          <tr><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px;width:38px">날짜</th><th class="lbl" style="text-align:left;color:#a8b3c4;font-weight:600;padding:0 0 5px">내역</th><th class="lbl" style="text-align:right;color:#a8b3c4;font-weight:600;padding:0 0 5px">금액</th></tr>
+          <tr style="border-bottom:1px solid #f1f3f7"><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.15</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#00695C"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">급여 (8월)</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;font-weight:700;color:#00695C;text-align:right;white-space:nowrap">+6,420,000</td></tr>
+          <tr style="border-bottom:1px solid #f1f3f7"><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.14</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#690043"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">주택담보대출 원리금</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;color:#0d1c2e;text-align:right;white-space:nowrap">−980,000</td></tr>
+          <tr style="border-bottom:1px solid #f1f3f7"><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.13</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#1A237E"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">아파트 관리비</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;color:#0d1c2e;text-align:right;white-space:nowrap">−318,000</td></tr>
+          <tr style="border-bottom:1px solid #f1f3f7"><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.12</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#26A69A"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이마트 장보기</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;color:#0d1c2e;text-align:right;white-space:nowrap">−142,600</td></tr>
+          <tr style="border-bottom:1px solid #f1f3f7"><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.10</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#8D6E63"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">제주 항공권 2매</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;color:#0d1c2e;text-align:right;white-space:nowrap">−286,000</td></tr>
+          <tr><td style="padding:7px 0;font-size:11px;color:#8794a8;font-variant-numeric:tabular-nums">08.09</td><td style="padding:7px 0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span class="dot" style="background:#26A69A"></span><span style="font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">주유 (셀프)</span></div></td><td class="amt" style="padding:7px 0;font-size:12.5px;color:#0d1c2e;text-align:right;white-space:nowrap">−78,400</td></tr>
+        </table>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;padding-top:8px;border-top:1px solid #f1f3f7">
+          <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#1A237E"></span>고정비</span>
+          <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#690043"></span>대출</span>
+          <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#26A69A"></span>변동비</span>
+          <span class="pill" style="background:none;padding:0"><span class="dot" style="background:#8D6E63"></span>여행</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8794a8;margin-top:8px;padding:0 5px">행 높이 <b>34px</b> · 리스트 영역 560px 기준 <b>약 16행</b></div>
+    </div>
+    <ul class="pros">
+      <li class="y">데스크톱과 <b>같은 표 구조</b> — 컴포넌트 한 벌</li>
+      <li class="y">가장 많은 행이 보인다</li>
+      <li class="n">분류를 <b>색으로만</b> 구분 — 범례를 봐야 하고 색약 사용자는 알 수 없다</li>
+      <li class="n">행 높이 32px로 터치 타깃 미달</li>
+    </ul>
+  </div>
+
+  <div>
+    <div class="oh"><b>③ 날짜별 그룹</b><span>날짜를 헤더로 빼기</span></div>
+    <div class="phone">
+      <div class="pbar"><span>가계부</span><span>2026.08 ⌄</span></div>
+      <div class="card">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:5px">
+          <div class="lbl" style="color:#0d1c2e">08.15 금</div><div class="amt" style="font-size:10px;color:#8794a8">+6,420,000</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid #f1f3f7">
+          <span class="dot" style="background:#00695C"></span>
+          <div style="flex:1;min-width:0;font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">급여 (8월)</div>
+          <div class="amt" style="font-size:12.5px;font-weight:700;color:#00695C;white-space:nowrap">+6,420,000</div>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:9px 0 5px">
+          <div class="lbl" style="color:#0d1c2e">08.14 목</div><div class="amt" style="font-size:10px;color:#8794a8">−980,000</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid #f1f3f7">
+          <span class="dot" style="background:#690043"></span>
+          <div style="flex:1;min-width:0;font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">주택담보대출 원리금</div>
+          <div class="amt" style="font-size:12.5px;color:#0d1c2e;white-space:nowrap">−980,000</div>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:9px 0 5px">
+          <div class="lbl" style="color:#0d1c2e">08.13 수</div><div class="amt" style="font-size:10px;color:#8794a8">−318,000</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid #f1f3f7">
+          <span class="dot" style="background:#1A237E"></span>
+          <div style="flex:1;min-width:0;font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">아파트 관리비</div>
+          <div class="amt" style="font-size:12.5px;color:#0d1c2e;white-space:nowrap">−318,000</div>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:9px 0 5px">
+          <div class="lbl" style="color:#0d1c2e">08.12 화</div><div class="amt" style="font-size:10px;color:#8794a8">−142,600</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-top:1px solid #f1f3f7">
+          <span class="dot" style="background:#26A69A"></span>
+          <div style="flex:1;min-width:0;font-size:12.5px;color:#0d1c2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">이마트 장보기</div>
+          <div class="amt" style="font-size:12.5px;color:#0d1c2e;white-space:nowrap">−142,600</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#8794a8;margin-top:8px;padding:0 5px">행 34px + 그룹 헤더 29px · 하루 1건 기준 <b>약 8행</b></div>
+    </div>
+    <ul class="pros">
+      <li class="y">날짜별 합계가 보여 <b>하루 단위 파악</b>에 좋다</li>
+      <li class="y">날짜 반복이 사라져 내역에 폭이 돌아온다</li>
+      <li class="n">하루 1건일 때 헤더가 행보다 많아 <b>공간 낭비</b>가 크다</li>
+      <li class="n">화면당 행 수가 가장 적다 — D안의 밀도 목표와 반대</li>
+      <li class="n">행 높이 34px로 <b>②와 동일하게 터치 타깃 미달</b></li>
+      <li class="n">분류는 여전히 점으로만 구분</li>
+    </ul>
+  </div>
+</div>
+
+<h2>비교</h2>
+<table class="dt">
+<tr><th style="width:110px">항목</th><th>① 2행 접기</th><th>② 분류를 점으로</th><th>③ 날짜별 그룹</th></tr>
+<tr><td><b>화면당 행</b><br><span style="font-size:10px;color:#a8b3c4">360×640 · 리스트 영역 560px</span></td><td>약 9행 <span style="color:#a8b3c4">(57px)</span></td><td style="color:#00695C">약 16행 <span style="color:#a8b3c4">(34px)</span></td><td style="color:#e11d48">약 8행 <span style="color:#a8b3c4">(34px + 헤더 29px)</span></td></tr>
+<tr><td><b>터치 타깃</b></td><td style="color:#00695C">57px 충족</td><td style="color:#e11d48">34px 미달</td><td style="color:#e11d48">34px 미달</td></tr>
+<tr><td><b>분류 인지</b></td><td style="color:#00695C">라벨 + 점</td><td style="color:#e11d48">점만 — 범례 필요</td><td style="color:#e11d48">점만</td></tr>
+<tr><td><b>접근성</b></td><td style="color:#00695C">색약 무관</td><td style="color:#e11d48">색에만 의존</td><td style="color:#e11d48">색에만 의존</td></tr>
+<tr><td><b>컴포넌트</b></td><td style="color:#b45309">2벌 (표 / 리스트)</td><td style="color:#00695C">1벌</td><td style="color:#b45309">2벌</td></tr>
+<tr><td><b>인라인 입력(D-03)</b></td><td>모달 폴백으로 무관</td><td>모달 폴백으로 무관</td><td>모달 폴백으로 무관</td></tr>
+</table>
+
+<p style="font-size:11px;color:#475569;margin:14px 0 0;line-height:1.8;max-width:860px"><b>①을 권합니다.</b> ②가 행 수는 많지만 <b>D-01에서 정한 원칙과 어긋납니다</b> — 카테고리 배지를 점+잉크 텍스트로 바꾼 이유가 "색만으로 의미를 지게 하지 않는다"였는데, ②는 모바일에서 다시 색에만 의존하게 만듭니다. 터치 타깃도 34px로 미달인데, 이건 D안이 데스크톱에서 이미 해결한 문제를 모바일에서 되살리는 것입니다. ③도 행 높이가 같아 같은 문제를 안습니다 — 44px를 넘기려면 결국 ①처럼 행을 키워야 하고, 그러면 ③의 장점인 밀도가 사라집니다.<br><br>비용은 <b>컴포넌트 2벌</b>인데, 이건 규칙이 두 벌이 되는 것과 다릅니다 — 같은 데이터의 <b>표 표현과 리스트 표현</b>이고 토큰·색·타이포는 완전히 공유합니다.</p>
+<p style="font-size:11px;color:#94a3b8;margin:10px 0 0">문서 — <a href="decision-board.html">결정 현황판</a> · <a href="proposal-d.html">D안 전체</a> · <a href="decision-03-inline-entry.html">D-03</a></p>
+</div></body></html>

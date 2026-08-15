@@ -1,0 +1,97 @@
+<!-- @dsCard group="Components" -->
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>피드백 · 상태 (as-is)</title><style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:#f8f9ff;color:#0d1c2e;-webkit-font-smoothing:antialiased}
+.wrap{padding:28px 32px 40px;max-width:1120px}
+h1{font-size:20px;font-weight:700;color:#1A237E;margin:0 0 4px}
+.lede{font-size:12px;color:#94a3b8;margin:0 0 24px;line-height:1.6}
+h2{font-size:13px;font-weight:600;color:#334155;margin:28px 0 10px;
+  padding-bottom:6px;border-bottom:1px solid #f1f5f9}
+h2:first-of-type{margin-top:0}
+.note{font-size:11px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+.stack{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.spec{display:grid;grid-template-columns:minmax(150px,auto) 1fr;gap:8px 16px;align-items:center;margin-bottom:14px}
+.spec .k{font-size:10px;color:#94a3b8;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+table.dt{width:100%;border-collapse:collapse;font-size:11px}
+table.dt th{text-align:left;padding:6px 10px;color:#94a3b8;font-weight:500;border-bottom:1px solid #f1f5f9}
+table.dt td{padding:7px 10px;color:#475569;border-bottom:1px solid #f8fafc;vertical-align:middle}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;
+  background:#f1f5f9;color:#475569;padding:1px 5px;border-radius:4px}
+.flag{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:9999px;
+  background:rgba(244,63,94,.1);color:#e11d48;margin-left:6px;vertical-align:middle}
+.flag.dead{background:rgba(100,116,139,.12);color:#64748b}
+.flag.ok{background:rgba(16,185,129,.12);color:#047857}
+.swatch{width:100%;height:52px;border-radius:10px;border:1px solid rgba(13,28,46,.06)}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:12px;margin-bottom:14px}
+.sw-name{font-size:10px;font-weight:600;color:#334155;margin-top:6px}
+.sw-hex{font-size:9px;color:#94a3b8;font-family:ui-monospace,monospace}
+.sw-use{font-size:9px;color:#94a3b8;margin-top:1px;line-height:1.4}
+.panel{background:#fff;border-radius:16px;border:1px solid #f1f5f9;box-shadow:0 1px 2px 0 rgb(0 0 0/.05);padding:20px}
+.dark-note{font-size:10px;color:#94a3b8;margin-top:4px}
+</style></head>
+<body><div class="wrap"><h1>피드백 · 상태 (as-is)</h1><p class="lede">툴팁·로딩·빈 상태. 이 영역이 가장 비어 있다 — 토스트가 없고 툴팁이 세 가지 방식으로 구현돼 있다.</p>
+
+<h2>툴팁 — 3가지 구현 <span class="flag">통합 필요</span></h2>
+<div class="row" style="align-items:flex-start;gap:28px">
+  <div style="position:relative;padding-top:34px">
+    <div style="position:absolute;top:0;left:0;padding:4px 8px;background:#1A237E;color:#fff;font-size:10px;border-radius:8px;white-space:nowrap;box-shadow:0 10px 15px -3px rgb(0 0 0/.1)">현재 시장가 기준</div>
+    <span style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.05em">총 평가금액</span>
+    <div class="dark-note">① CSS 호버 툴팁 — <code>group-hover/lbl:opacity-100</code>, 브랜드색 배경</div>
+  </div>
+  <div style="position:relative;padding-top:34px">
+    <div style="position:absolute;top:0;left:0;padding:4px 8px;background:rgba(255,255,255,.2);color:#fff;font-size:10px;border-radius:8px;white-space:nowrap"><span style="color:#334155">투명 배경 변종</span></div>
+    <span style="font-size:10px;color:#94a3b8">KPI 강조 카드 내부</span>
+    <div class="dark-note">② 같은 컴포넌트인데 배경만 <code>bg-white/20</code></div>
+  </div>
+  <div style="padding-top:34px">
+    <span style="font-size:12px;color:#475569;border-bottom:1px dotted #cbd5e1" title="네이티브 툴팁">수정 아이콘</span>
+    <div class="dark-note">③ 네이티브 <code>title=""</code> — 59곳. 스타일 제어 불가, 모바일 미동작</div>
+  </div>
+</div>
+<p class="note">차트 툴팁까지 포함하면 네 번째 체계가 된다(아래 Data Viz 카드 참조).</p>
+
+<h2>로딩 (skeleton.*) <span class="flag">1회만 사용</span></h2>
+<div class="panel" style="max-width:520px">
+  <div style="height:16px;background:#f1f5f9;border-radius:4px;width:40%;margin-bottom:12px"></div>
+  <div style="height:16px;background:#f1f5f9;border-radius:4px;width:75%;margin-bottom:16px"></div>
+  <div style="height:96px;background:#f8fafc;border-radius:12px;margin-bottom:12px"></div>
+  <div style="height:200px;background:#f8fafc;border-radius:12px"></div>
+</div>
+<p class="note"><code>skeleton.line / card / chart</code> 정의됨. 그러나 실제 <code>loading.tsx</code> 3개는 각자 다른 마크업을 쓴다. 스피너 토큰은 없다.</p>
+
+<h2>빈 상태 — 통일 안 됨</h2>
+<div class="row" style="align-items:stretch">
+  <div style="flex:1;background:#fff;border:1px solid #f1f5f9;border-radius:16px;padding:32px;text-align:center">
+    <div style="font-size:44px;margin-bottom:12px">📊</div>
+    <div style="font-size:20px;font-weight:700;color:#334155">데이터가 없습니다</div>
+    <div class="dark-note" style="margin-top:8px">연도비교 — 이모지 + text-xl</div>
+  </div>
+  <div style="flex:1;background:#fff;border:1px solid #f1f5f9;border-radius:16px;padding:32px;text-align:center;display:flex;flex-direction:column;justify-content:center">
+    <div style="font-size:12px;color:#94a3b8">등록된 항목이 없습니다</div>
+    <div class="dark-note" style="margin-top:8px">그 외 대부분 — 회색 한 줄</div>
+  </div>
+</div>
+
+<h2>토스트 — 한 화면에만 존재</h2>
+<div style="position:relative;height:96px;background:#f1f5f9;border-radius:16px;overflow:hidden">
+  <div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;font-size:12px;padding:8px 16px;border-radius:9999px;box-shadow:0 10px 15px -3px rgb(0 0 0/.1)">종목 수정 완료</div>
+</div>
+<p class="note"><code>PortfolioDashboard.tsx</code>에만 로컬 <code>useState</code>로 구현된 2초 토스트. 공통 컴포넌트가 아니라 다른 26개 화면은 쓸 수 없다. (겸사겸사 이 코드는 <code>&&</code> 조건부 렌더링을 써서 프로젝트 컨벤션과도 어긋난다.)</p>
+
+<h2>없는 것들</h2>
+<table class="dt">
+<tr><th style="width:150px">패턴</th><th>현황</th></tr>
+<tr><td>공통 토스트</td><td>위 1개 화면 외 전무 — 성공/실패가 <code>alert()</code> 5곳 <span class="flag">최우선</span></td></tr>
+<tr><td>확인 다이얼로그</td><td>브라우저 <code>confirm()</code> <b>19곳</b></td></tr>
+<tr><td>인라인 폼 에러</td><td>없음</td></tr>
+<tr><td>진행률 표시</td><td>가격 수집·엑셀 임포트에 개별 구현</td></tr>
+<tr><td><code>focus-visible</code></td><td>전 코드에서 <b>0회</b> — 키보드 포커스 스타일 미정의</td></tr>
+<tr><td><code>role="dialog"</code></td><td>모달 9개 파일 전부 <b>미부착</b></td></tr>
+</table>
+
+</div></body></html>

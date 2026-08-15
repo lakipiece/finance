@@ -86,13 +86,13 @@ function SectionHeader({
   const { palette } = useTheme()
   return (
     <button onClick={onToggle} className="flex items-center gap-1.5 group">
-      <span className="text-sm font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">{label}</span>
+      <span className="text-subhead font-medium text-ink-3 group-hover:text-ink transition-colors">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded-full text-white tabular-nums"
+        <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full text-white tabular-nums"
           style={{ backgroundColor: palette.colors[0] }}>{badge}</span>
       )}
       <svg
-        className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all ${open ? '' : '-rotate-90'}`}
+        className={`w-3 h-3 text-ink-4 group-hover:text-ink-2 transition-all ${open ? '' : '-rotate-90'}`}
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
       >
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -320,9 +320,9 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
   if (summary.positions.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8 text-center">
-        <p className="text-slate-400">보유 종목이 없습니다.</p>
+        <p className="text-ink-4">보유 종목이 없습니다.</p>
         <button onClick={handleRefresh} disabled={refreshing}
-          className="mt-4 bg-slate-700 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-800 disabled:opacity-50">
+          className="mt-4 bg-action text-white px-4 py-2 rounded-btn text-subhead hover:bg-action disabled:opacity-50">
           {refreshing ? '가격 수집 중...' : '가격 새로고침'}
         </button>
       </div>
@@ -334,12 +334,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
       {/* 페이지 헤더 + 툴바 */}
       <PageHeader title="포트폴리오" description="전체 보유 현황 및 수익률">
-        {refreshMsg && <span className="text-[10px] text-slate-400">{refreshMsg}</span>}
+        {refreshMsg && <span className="text-micro tracking-normal text-ink-4">{refreshMsg}</span>}
         {lastUpdated && (
-          <span className="text-[10px] text-slate-300 tabular-nums">{lastUpdated}</span>
+          <span className="text-micro tracking-normal text-ink-5 tabular-nums">{lastUpdated}</span>
         )}
         <button onClick={handleRefresh} disabled={refreshing}
-          className="text-slate-300 hover:text-slate-500 disabled:opacity-40 transition-colors"
+          className="text-ink-5 hover:text-ink-3 disabled:opacity-40 transition-colors"
           title={refreshing ? '수집 중...' : '가격 새로고침'}>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
             className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`}>
@@ -367,21 +367,21 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               title={`${summary.positions.length}종목`}
               className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
-                  ? 'bg-slate-50'
-                  : 'bg-white border-slate-100 hover:border-slate-300'
+                  ? 'bg-surface-low'
+                  : 'bg-surface-card border-surface-low'
               }`}
               style={selectedAccountIds.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
-              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-slate-500' : 'text-slate-400'}`}>전체</p>
-              <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-slate-700' : 'text-slate-500'}`}>
+              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-ink-3' : 'text-ink-4'}`}>전체</p>
+              <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-ink' : 'text-ink-3'}`}>
                 {Math.round(summary.total_market_value).toLocaleString()}원
               </p>
-              <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+              <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
                 {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
               </p>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-[10px] text-slate-400 opacity-0">-</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
-                  summary.total_unrealized_pnl >= 0 ? 'bg-rose-50 text-rose-500' : 'bg-blue-50 text-blue-500'
+                <span className="text-micro tracking-normal text-ink-4 opacity-0">-</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
+                  summary.total_unrealized_pnl >= 0 ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'
                 }`}>
                   {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
                 </span>
@@ -398,35 +398,35 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     onClick={() => toggleAccount(id)}
                     title={`${g.count}종목`}
                     className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 relative ${
-                      isSelected ? 'bg-slate-50' : 'bg-white border-slate-100 hover:border-slate-300'
+                      isSelected ? 'bg-surface-low' : 'bg-surface-card border-surface-low'
                     }`}
                     style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
                     {isSelected && (
-                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-slate-400" />
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-surface-low" />
                     )}
                     <div className="flex items-center gap-1.5">
                       {typeColor && (
                         <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} />
                       )}
-                      <p className={`text-xs font-semibold truncate leading-none ${isSelected ? 'text-slate-700' : 'text-slate-700'}`}>
+                      <p className={`text-xs font-medium truncate leading-none ${isSelected ? 'text-ink' : 'text-ink'}`}>
                         {g.name}
                       </p>
                     </div>
-                    <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-slate-200' : 'border-slate-50'}`} />
-                    <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-slate-700' : 'text-slate-500'}`}>
+                    <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-surface-low' : 'border-surface-low'}`} />
+                    <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-ink' : 'text-ink-3'}`}>
                       {Math.round(g.value).toLocaleString()}원
                     </p>
-                    <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-rose-400' : 'text-blue-400'}`}>
+                    <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
                       {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                     </p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-slate-400' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-ink-4' : 'text-ink-4'}`}>
                         {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums ${
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
                         g.pnl >= 0
-                          ? 'bg-rose-50 text-rose-500'
-                          : 'bg-blue-50 text-blue-500'
+                          ? 'bg-gain/10 text-gain'
+                          : 'bg-loss/10 text-loss'
                       }`}>
                         {g.pnl >= 0 ? '+' : ''}{g.invested > 0 ? (g.pnl / g.invested * 100).toFixed(1) : '0.0'}%
                       </span>
@@ -454,8 +454,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               onClick={() => setSelectedSectors(new Set())}
               className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                 selectedSectors.size === 0
-                  ? 'bg-slate-50 text-slate-700 font-medium'
-                  : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                  ? 'bg-surface-low text-ink font-medium'
+                  : 'bg-surface-card border-surface-low text-ink-3'
               }`}
               style={selectedSectors.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
               전체
@@ -468,8 +468,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                   onClick={() => toggleSector(s)}
                   className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
                     isSelected
-                      ? 'bg-slate-50 text-slate-700 font-medium'
-                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                      ? 'bg-surface-low text-ink font-medium'
+                      : 'bg-surface-card border-surface-low text-ink-3'
                   }`}
                   style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
                   {color && (
@@ -500,8 +500,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                 onClick={() => setSelectedTags(new Set())}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   selectedTags.size === 0
-                    ? 'bg-slate-50 text-slate-700 font-medium'
-                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                    ? 'bg-surface-low text-ink font-medium'
+                    : 'bg-surface-card border-surface-low text-ink-3'
                 }`}
                 style={selectedTags.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
                 전체
@@ -513,8 +513,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     onClick={() => toggleTag(t)}
                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                       isSelected
-                        ? 'bg-slate-50 text-slate-700 font-medium'
-                        : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400'
+                        ? 'bg-surface-low text-ink font-medium'
+                        : 'bg-surface-card border-surface-low text-ink-3'
                     }`}
                     style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
                     #{t}
@@ -523,7 +523,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               })}
             </div>
           ) : (
-            <p className="text-xs text-slate-400">등록된 태그가 없습니다.</p>
+            <p className="text-body text-ink-4">등록된 태그가 없습니다.</p>
           )
         )}
       </div>
@@ -556,7 +556,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             badge={searchedPositions.length}
           />
           <div className="relative ml-auto">
-            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 pointer-events-none"
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
             </svg>
@@ -565,12 +565,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); if (e.target.value) setShowPositions(true) }}
               placeholder="종목명/티커 검색"
-              className="text-xs pl-6 pr-6 py-1 rounded-full border border-slate-200 bg-white text-slate-600 placeholder:text-slate-300 focus:outline-none focus:border-slate-400 transition-colors w-44"
+              className="text-body pl-6 pr-6 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-44 border-0 focus:bg-surface-card focus:shadow-focus"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3"
                 title="검색 초기화">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -603,7 +603,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
       )}
 
       {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-slate-800 text-white text-xs px-4 py-2 rounded-full shadow-lg pointer-events-none">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-action text-white text-body px-4 py-2 rounded-full shadow-card pointer-events-none">
           {toastMsg}
         </div>
       )}

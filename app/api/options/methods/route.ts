@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (!name) return NextResponse.json({ error: 'name required' }, { status: 400 })
   const [row] = await sql`
     INSERT INTO payment_methods (name, order_idx, color)
-    VALUES (${name}, (SELECT COALESCE(MAX(order_idx), 0) + 1 FROM payment_methods), ${color ?? '#94a3b8'})
+    VALUES (${name}, (SELECT COALESCE(MAX(order_idx), 0) + 1 FROM payment_methods), ${color ?? '#a8b3c4'})
     ON CONFLICT (name) DO UPDATE SET is_active = true
     RETURNING *`
   return NextResponse.json(row, { status: 201 })

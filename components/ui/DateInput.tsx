@@ -8,6 +8,13 @@ interface Props {
   onChange: (v: string) => void
   className?: string
   placeholder?: string
+  /**
+   * D-05 — 자리에 따라 형태가 갈린다.
+   *  'field'  폼 안: 채움형 필드 (기본)
+   *  'inline' 화면 상단: 배경 없는 텍스트 + 셰브론
+   *  'cell'   인라인 입력 행 안: 흰 배경 · 7px · 더 조인 패딩
+   */
+  variant?: 'field' | 'inline' | 'cell'
 }
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -23,7 +30,7 @@ function toYMD(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export default function DateInput({ value, onChange, className = '', placeholder = '날짜 선택' }: Props) {
+export default function DateInput({ value, onChange, className = '', placeholder = '날짜 선택', variant = 'field' }: Props) {
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(() => {
     const d = parseDate(value)
@@ -97,25 +104,26 @@ export default function DateInput({ value, onChange, className = '', placeholder
     setOpen(false)
   }
 
-  const display = value ? value.replace(/-/g, '. ') : placeholder
+  // 날짜 표기 통일 — 2026.08.12
+  const display = value ? value.replace(/-/g, '.') : placeholder
 
   const calendar = open && (
     <div
       ref={calRef}
-      className="fixed z-[10010] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 select-none"
+      className="fixed z-[10010] bg-surface-card rounded-dialog shadow-dialog p-4 select-none"
       style={{ top: pos.top, left: pos.left, width: 248 }}
     >
       {/* 헤더: 연/월 + 이전/다음 */}
       <div className="flex items-center justify-between mb-3">
         <button onClick={prevMonth}
-          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+          className="w-7 h-7 flex items-center justify-center rounded-btn hover:bg-surface-low text-ink-5 hover:text-ink-2 transition-colors">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <span className="text-xs font-semibold text-slate-600">{viewYear}년 {MONTHS[viewMonth]}</span>
+        <span className="text-meta text-ink-2">{viewYear}년 {MONTHS[viewMonth]}</span>
         <button onClick={nextMonth}
-          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+          className="w-7 h-7 flex items-center justify-center rounded-btn hover:bg-surface-low text-ink-5 hover:text-ink-2 transition-colors">
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
@@ -125,8 +133,8 @@ export default function DateInput({ value, onChange, className = '', placeholder
       {/* 요일 헤더 */}
       <div className="grid grid-cols-7 mb-1">
         {DAYS.map((d, i) => (
-          <div key={d} className={`text-center text-[10px] font-medium pb-1.5 ${
-            i === 0 ? 'text-rose-300' : i === 6 ? 'text-blue-300' : 'text-slate-300'
+          <div key={d} className={`text-center text-micro tracking-normal pb-1.5 ${
+            i === 0 || i === 6 ? 'text-ink-4' : 'text-ink-5'
           }`}>{d}</div>
         ))}
       </div>
@@ -145,36 +153,33 @@ export default function DateInput({ value, onChange, className = '', placeholder
             <button
               key={i}
               onClick={() => selectDay(day)}
-              className={`w-full aspect-square flex items-center justify-center rounded-lg text-[11px] transition-all font-medium
+              className={`w-full aspect-square flex items-center justify-center rounded-btn text-meta tabular-nums transition-colors
                 ${isSelected
-                  ? 'text-white'
+                  ? 'bg-action text-white font-bold'
                   : isToday
-                  ? 'text-[#1A237E] font-bold'
-                  : isSun
-                  ? 'text-rose-400 hover:bg-rose-50'
-                  : isSat
-                  ? 'text-blue-400 hover:bg-blue-50'
-                  : 'text-slate-500 hover:bg-slate-50'
+                  ? 'text-ink font-bold hover:bg-surface-low'
+                  : isSun || isSat
+                  ? 'text-ink-4 hover:bg-surface-low'
+                  : 'text-ink-2 hover:bg-surface-low'
                 }`}
-              style={isSelected ? { backgroundColor: '#1A237E' } : undefined}
             >
-              {isToday && !isSelected && (
+              {isToday && !isSelected ? (
                 <span className="relative">
                   {day}
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#1A237E]" />
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-action" />
                 </span>
-              )}
-              {(!isToday || isSelected) && day}
+              ) : null}
+              {!isToday || isSelected ? day : null}
             </button>
           )
         })}
       </div>
 
       {/* 하단: 오늘 */}
-      <div className="mt-3 pt-2.5 border-t border-slate-50 flex justify-end">
+      <div className="mt-3 pt-2.5 flex justify-end">
         <button
           onClick={() => { onChange(todayYMD); setOpen(false) }}
-          className="text-[10px] font-medium px-2.5 py-1 rounded-lg transition-colors text-slate-400 hover:text-[#1A237E] hover:bg-slate-50"
+          className="text-micro tracking-normal px-2.5 py-1 rounded-btn transition-colors text-ink-4 hover:text-ink hover:bg-surface-low"
         >
           오늘
         </button>
@@ -187,20 +192,33 @@ export default function DateInput({ value, onChange, className = '', placeholder
       <div
         ref={triggerRef}
         onClick={handleOpen}
-        className={`relative inline-flex items-center gap-1.5 pb-1 border-b cursor-pointer group transition-colors ${
-          open ? 'border-[#1A237E]' : 'border-slate-200 hover:border-[#1A237E]'
-        } ${className}`}
+        className={
+          variant === 'inline'
+            // 화면 상단 — 배경 없는 텍스트 + 셰브론
+            ? `inline-flex items-center gap-[5px] px-1 py-1.5 cursor-pointer select-none
+               text-subhead font-bold tabular-nums transition-opacity hover:opacity-70
+               ${value ? 'text-ink' : 'text-ink-5'} ${className}`
+            : variant === 'cell'
+            // 인라인 입력 행 안 — 흰 배경 셀
+            ? `flex items-center justify-between gap-1 rounded-cell bg-surface-card px-2 py-1.5 cursor-pointer select-none
+               text-body tabular-nums transition-shadow ${open ? 'shadow-focus' : ''}
+               ${value ? 'text-ink' : 'text-ink-5'} ${className}`
+            // 폼 안 — 채움형 필드
+            : `flex items-center justify-between gap-2 rounded-field px-3 py-[9px] cursor-pointer select-none
+               text-subhead tabular-nums transition-colors
+               ${open ? 'bg-surface-card shadow-focus' : 'bg-surface-low'}
+               ${value ? 'text-ink' : 'text-ink-5'} ${className}`
+        }
       >
+        <span>{display}</span>
         <svg
-          className={`w-3 h-3 shrink-0 transition-colors ${open ? 'text-[#1A237E]' : 'text-slate-300 group-hover:text-[#1A237E]'}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+          className={`shrink-0 text-ink-5 transition-transform duration-200 ${open ? 'rotate-180' : ''} ${
+            variant === 'field' ? 'w-3 h-3' : 'w-2.5 h-2.5'
+          }`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
         >
-          <rect x="3" y="4" width="18" height="18" rx="2"/>
-          <path d="M16 2v4M8 2v4M3 10h18"/>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
-        <span className={`text-xs tabular-nums transition-colors ${value ? 'text-slate-600' : 'text-slate-300'}`}>
-          {display}
-        </span>
       </div>
       {open && typeof document !== 'undefined' && createPortal(calendar, document.body)}
     </>

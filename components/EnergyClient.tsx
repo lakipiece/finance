@@ -84,8 +84,8 @@ function AmountTooltip({ active, payload, label, activeKinds }: ChartTooltipProp
   const row = payload[0].payload as Record<string, number>
   const total = activeKinds.reduce((s, k) => s + Number(row[`${k.key}_amount`] ?? 0), 0)
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-lg p-3 text-xs min-w-[220px]">
-      <p className="font-semibold text-slate-700 mb-2">{label}</p>
+    <div className="bg-surface-card rounded-field shadow-card p-3 text-body min-w-[220px]">
+      <p className="font-medium text-ink mb-2">{label}</p>
       <div className="grid grid-cols-[auto_1fr_auto] gap-x-3 items-center">
         {activeKinds.map(k => {
           const amt = Number(row[`${k.key}_amount`] ?? 0)
@@ -96,17 +96,17 @@ function AmountTooltip({ active, payload, label, activeKinds }: ChartTooltipProp
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
                 {k.label}
               </span>
-              <span className="text-right text-[10px] text-slate-400 tabular-nums">
+              <span className="text-right text-micro tracking-normal text-ink-4 tabular-nums">
                 {usage.toLocaleString('ko-KR')} {k.unit}
               </span>
-              <span className="text-right font-medium text-slate-700 tabular-nums">
+              <span className="text-right font-medium text-ink tabular-nums">
                 {formatWonFull(amt)}
               </span>
             </Fragment>
           )
         })}
-        <span className="col-span-2 text-slate-500 mt-2 pt-2 border-t border-slate-100">합계</span>
-        <span className="text-right font-semibold text-slate-800 tabular-nums mt-2 pt-2 border-t border-slate-100">{formatWonFull(total)}</span>
+        <span className="col-span-2 text-ink-3 mt-2 pt-2 border-t border-surface-low">합계</span>
+        <span className="text-right font-bold text-ink tabular-nums mt-2 pt-2 border-t border-surface-low">{formatWonFull(total)}</span>
       </div>
     </div>
   )
@@ -175,7 +175,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
     <div className={modal.overlay}>
       <div className={modal.containerLg} onClick={e => e.stopPropagation()}>
         <div className={modal.header}>
-          <h3 className="text-sm font-semibold text-slate-800">
+          <h3 className="text-subhead font-medium text-ink">
             {initial ? '에너지 지출 수정' : '에너지 지출 입력'}
           </h3>
           <div className="flex items-center gap-1">
@@ -203,11 +203,11 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
           </div>
 
           {KINDS.map(k => (
-            <div key={k.key} className="rounded-xl border border-slate-100 p-3 space-y-2">
+            <div key={k.key} className="rounded-field p-3 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: k.color }} />
-                <span className="text-xs font-semibold text-slate-700">{k.label}</span>
-                <span className="text-[10px] text-slate-400">({k.unit})</span>
+                <span className="text-body font-medium text-ink">{k.label}</span>
+                <span className="text-micro tracking-normal text-ink-4">({k.unit})</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
@@ -216,7 +216,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                     value={vals[`${k.key}_amount`] ?? ''}
                     onChange={e => update(`${k.key}_amount`, fmtAmount(e.target.value))}
                     placeholder="0"
-                    className={`${field.input} text-right font-bold text-slate-800`} />
+                    className={`${field.input} text-right font-bold text-ink`} />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className={field.label}>사용량 ({k.unit})</label>
@@ -224,7 +224,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                     value={vals[`${k.key}_usage`] ?? ''}
                     onChange={e => update(`${k.key}_usage`, fmtReading(e.target.value))}
                     placeholder="0"
-                    className={`${field.input} text-right font-bold text-slate-800`} />
+                    className={`${field.input} text-right font-bold text-ink`} />
                 </div>
               </div>
             </div>
@@ -238,13 +238,13 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
               rows={2} />
           </div>
 
-          {err ? <p className="text-xs text-rose-500">{err}</p> : null}
+          {err ? <p className="text-body text-danger">{err}</p> : null}
         </div>
         <div className={modal.footer}>
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors">취소</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-5 py-2 rounded-lg text-xs font-semibold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#1A237E' }}>
+            className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
+            style={{ backgroundColor: '#131b2e' }}>
             {saving ? '저장 중…' : initial ? '수정' : '저장'}
           </button>
         </div>
@@ -372,7 +372,7 @@ export default function EnergyClient() {
       {/* 헤더 */}
       <PageHeader title="에너지 지출관리" description="월별 전기·수도·온수·난방 사용량과 금액을 기록합니다">
         <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}
-          className="bg-slate-100 text-slate-700 text-sm font-semibold rounded-lg px-3 py-1.5 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300 cursor-pointer">
+          className="bg-surface-low text-ink text-subhead font-medium rounded-btn px-3 py-1.5 focus:outline-none cursor-pointer border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors">
           {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => (
             <option key={y} value={y}>{y}년</option>
           ))}
@@ -387,7 +387,7 @@ export default function EnergyClient() {
         <div className="flex gap-1 flex-wrap">
           <button onClick={toggleAllKinds}
             className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-              allKindsOn ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+              allKindsOn ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
             }`}>
             전체
           </button>
@@ -396,7 +396,7 @@ export default function EnergyClient() {
             return (
               <button key={k.key} onClick={() => toggleKind(k.key)}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                  on ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  on ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                 }`}
                 style={on ? { backgroundColor: k.color } : undefined}>
                 {k.label}
@@ -404,16 +404,16 @@ export default function EnergyClient() {
             )
           })}
         </div>
-        <span className="text-slate-200 text-xs">|</span>
+        <span className="text-ink-5 text-body">|</span>
         <div className="flex gap-1 ml-auto">
           {[2, 3, 5].map(n => {
             const isActive = yearsBack === n
             return (
               <button key={n} onClick={() => setYearsBack(n as 2 | 3 | 5)}
                 className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                 }`}
-                style={isActive ? { backgroundColor: '#1A237E' } : undefined}>
+                style={isActive ? { backgroundColor: '#131b2e' } : undefined}>
                 최근 {n}년
               </button>
             )
@@ -423,14 +423,14 @@ export default function EnergyClient() {
 
       {/* 차트 — 월별 금액 (누적바) */}
       <div className={`${card.base} p-4`}>
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">월별 금액</h2>
+        <h2 className="text-subhead font-medium text-ink mb-3">월별 금액</h2>
         <ResponsiveContainer width="100%" height={320}>
           <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-            <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={48} />
+            <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+            <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
             <Tooltip content={<AmountTooltip activeKinds={activeKindList} />} />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#64748b' }}>{value}</span>} />
+            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#5b6a80' }}>{value}</span>} />
             {activeKindList.map(k => (
               <Bar key={k.key} dataKey={`${k.key}_amount`} name={k.label} stackId="amount" fill={k.color} />
             ))}
@@ -441,13 +441,13 @@ export default function EnergyClient() {
       {/* 월별 상세 — 카드 리스트 */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-semibold text-slate-700">월별 상세</h2>
-          <span className="text-[10px] text-slate-400">카드 클릭 시 수정</span>
+          <h2 className="text-subhead font-medium text-ink">월별 상세</h2>
+          <span className="text-micro tracking-normal text-ink-4">카드 클릭 시 수정</span>
         </div>
         {loading ? (
-          <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>불러오는 중…</div>
+          <div className={`${card.base} py-8 text-center text-body text-ink-4`}>불러오는 중…</div>
         ) : records.length === 0 ? (
-          <div className={`${card.base} py-8 text-center text-xs text-slate-400`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
+          <div className={`${card.base} py-8 text-center text-body text-ink-4`}>기록이 없습니다. 우측 상단 입력 버튼으로 추가하세요.</div>
         ) : (
           <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))' }}>
             {records.map((r) => {
@@ -456,16 +456,16 @@ export default function EnergyClient() {
                 <button
                   key={r.id}
                   onClick={() => handleRowClick(r)}
-                  className={`${card.base} w-full text-left p-3 sm:p-4 hover:border-slate-200 hover:shadow-sm transition-all`}>
+                  className={`${card.base} w-full text-left p-3 sm:p-4 hover:shadow-card transition-all`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-700 tabular-nums">
+                    <span className="text-subhead font-bold text-ink tabular-nums">
                       {r.year}.{String(r.month).padStart(2, '0')}
                     </span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-[11px] font-medium text-slate-600 tabular-nums">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-low text-meta font-medium text-ink-2 tabular-nums">
                       합계 {total.toLocaleString('ko-KR')}원
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-0 divide-slate-100">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-0 divide-surface-low">
                     {activeKindList.map((k, idx) => {
                       const amount = Number(r[fieldKey(k.key, 'amount')] as number)
                       const usage = Number(r[fieldKey(k.key, 'usage')] as number)
@@ -477,17 +477,17 @@ export default function EnergyClient() {
                         <div
                           key={k.key}
                           className={`py-2 px-1 min-w-0 flex items-center justify-between gap-2 ${
-                            isBottomRow ? '' : 'border-b border-slate-100'
+                            isBottomRow ? '' : 'border-b border-surface-low'
                           }`}>
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: k.color }} />
-                            <span className="text-xs font-medium truncate" style={{ color: k.color }}>{k.label}</span>
+                            <span className="text-body font-medium truncate" style={{ color: k.color }}>{k.label}</span>
                           </div>
                           <div className="text-right min-w-0">
-                            <div className="text-xs font-bold text-slate-800 tabular-nums">
+                            <div className="text-body font-bold text-ink tabular-nums">
                               {amount.toLocaleString('ko-KR')}원
                             </div>
-                            <div className="text-[11px] text-slate-400 tabular-nums">
+                            <div className="text-meta text-ink-4 tabular-nums">
                               {usage.toLocaleString('ko-KR')} {k.unit}
                             </div>
                           </div>
