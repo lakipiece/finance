@@ -762,9 +762,14 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
       if (!res.ok) throw new Error(data.error ?? '저장 실패')
       onSaved(continueEntry)
       if (continueEntry) {
-        // 금액만 비우고 커서를 되돌린다. 나머지는 다음 건에서도 대개 같은 값이다.
+        // 금액과 비고는 건마다 달라지므로 비운다.
+        // 분류·결제수단·작성자는 연속 입력에서 대개 같은 값이라 남긴다.
         setAmount('')
-        amountRef.current?.focus()
+        setMemo('')
+        // 커서는 첫 필드인 날짜로. 다음 건을 처음부터 다시 훑어 넣게 된다.
+        const dateEl = dateRef.current?.querySelector('input')
+        dateEl?.focus()
+        dateEl?.select()   // 바로 yyyymmdd를 덮어쓸 수 있게
       }
     } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
@@ -897,7 +902,10 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
       onSaved(continueEntry)
       if (continueEntry) {
         setAmount('')
-        amountRef.current?.focus()
+        setMemo('')
+        const dateEl = dateRef.current?.querySelector('input')
+        dateEl?.focus()
+        dateEl?.select()   // 바로 yyyymmdd를 덮어쓸 수 있게
       }
     } catch (e) { setErr(e instanceof Error ? e.message : '오류') }
     finally { setSaving(false) }
