@@ -136,7 +136,10 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<{ top: number; left: number; width: number; flip: boolean } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
-  const LIST_MAX = 220
+  // 목록은 body로 나가 있으므로 바깥 클릭 판정에서 따로 제외해야 한다.
+  // 안 그러면 항목을 누르는 mousedown이 "바깥 클릭"으로 잡혀 click 전에 닫힌다.
+  const listRef = useRef<HTMLDivElement>(null)
+  const LIST_MAX = 232
   const filtered = useMemo(() => {
     const q = value.toLowerCase().trim()
     if (!q) return suggestions.slice(0, 30)
@@ -145,7 +148,9 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
 
   useEffect(() => {
     function onMouseDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (ref.current?.contains(t) || listRef.current?.contains(t)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', onMouseDown)
     return () => document.removeEventListener('mousedown', onMouseDown)
@@ -187,6 +192,7 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
       {open && filtered.length > 0 && pos && typeof document !== 'undefined'
         ? createPortal(
             <div
+              ref={listRef}
               className="fixed z-[10020] bg-surface-card rounded-field shadow-dialog overflow-y-auto py-1"
               style={{
                 top: pos.flip ? undefined : pos.top,
@@ -200,7 +206,7 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
                 <button key={s} type="button"
                   onMouseDown={e => e.preventDefault()}
                   onClick={() => { onChange(s); setOpen(false) }}
-                  className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink truncate">
+                  className="w-full text-left px-3 py-1.5 text-body hover:bg-surface-low text-ink truncate">
                   {s}
                 </button>
               ))}
@@ -229,9 +235,10 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
   // 아래 공간이 모자라면 위로 뒤집는다.
   const [pos, setPos] = useState<{ top: number; left: number; width: number; flip: boolean } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
 
-  const LIST_MAX = 220
+  const LIST_MAX = 232
 
   function measure() {
     const el = ref.current
@@ -268,7 +275,9 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
 
   useEffect(() => {
     function onMouseDown(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (ref.current?.contains(t) || listRef.current?.contains(t)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', onMouseDown)
     return () => document.removeEventListener('mousedown', onMouseDown)
@@ -316,6 +325,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
       {open && suggestions.length > 0 && pos && typeof document !== 'undefined'
         ? createPortal(
             <div
+              ref={listRef}
               className="fixed z-[10020] bg-surface-card rounded-field shadow-dialog overflow-y-auto py-1"
               style={{
                 top: pos.flip ? undefined : pos.top,
@@ -329,7 +339,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
                 <button key={s} type="button"
                   onMouseDown={e => e.preventDefault()}
                   onClick={() => { onChange(s); setOpen(false) }}
-                  className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink">
+                  className="w-full text-left px-3 py-1.5 text-body hover:bg-surface-low text-ink">
                   {s}
                 </button>
               ))}
