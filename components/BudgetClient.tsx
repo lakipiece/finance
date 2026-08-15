@@ -159,8 +159,10 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
         </div>
       </div>
 
-      <div className={`${card.base} p-3 sm:p-5`}>
-      {/* 모바일: 카드 리스트 */}
+      {/* 모바일에서는 바깥 카드를 걷어내고 항목마다 카드를 나눈다.
+          한 장 안에 여러 항목을 담으면 테두리 없이는 경계가 읽히지 않는다. */}
+      <div className="rounded-card sm:bg-surface-card sm:shadow-card sm:p-[13px]">
+      {/* 모바일: 항목별 카드 리스트 — 카드 간 gap 8px */}
       <div className="sm:hidden space-y-2">
         {sortedItems.map((it) => {
           const used = getItemUsed(category, it.detail, usageByDetail)
@@ -169,7 +171,7 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
           const pct = hasPlan ? remain / it.annual_plan : 0
           const overBudget = hasPlan && remain < 0
           return (
-            <div key={it.key} className="rounded-field p-3">
+            <div key={it.key} className="bg-surface-card rounded-card shadow-card p-[13px]">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   {editing ? (
@@ -248,7 +250,7 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
           )
         })}
         {!editing && extraDetails.length > 0 ? (
-          <div className="rounded-field bg-surface-low/40 p-3">
+          <div className="bg-surface-container rounded-card p-[13px]">
             <p className="text-meta text-ink-4 mb-1">(예산 외)</p>
             <p className="text-micro tracking-normal text-ink-4 mb-2">{extraDetails.map(([d]) => d || '(미분류)').join(', ')}</p>
             <div className="flex justify-between items-baseline">

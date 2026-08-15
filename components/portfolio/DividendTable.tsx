@@ -118,7 +118,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           const net = gross - tax
           const color = ownerColor(d.account.owner)
           return (
-            <div key={d.id} className="rounded-field px-4 py-3 bg-surface-card">
+            <div key={d.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
               <div className="flex items-start justify-between gap-2 mb-1.5">
                 <div className="flex-1 min-w-0">
                   <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>

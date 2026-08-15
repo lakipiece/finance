@@ -90,8 +90,9 @@ export default function IncomeTableCard({
             <div className="flex gap-2 mb-3 flex-wrap">
               {(['date', 'category', 'description', 'amount'] as const).map(key => (
                 <button key={key} onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-btn text-body transition-colors ${sortKey !== key ? 'bg-surface-low text-ink-3' : ''}`}
-                  style={sortKey === key ? { background: '#131b2e', color: '#fff' } : undefined}>
+                  className={`px-2 py-1 rounded-btn text-body transition-colors ${
+                    sortKey === key ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3'
+                  }`}>
                   {{ date: '날짜', category: '분류', description: '설명', amount: '금액' }[key]}{sortIcon(key)}
                 </button>
               ))}
@@ -99,7 +100,7 @@ export default function IncomeTableCard({
             {slice.map(item => {
               const color = INCOME_COLORS[item.category] ?? '#5b6a80'
               return (
-                <div key={item.id} className="rounded-field p-3">
+                <div key={item.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="inline-block px-2 py-0.5 rounded-full text-body font-medium text-white" style={{ backgroundColor: color }}>{item.category}</span>

@@ -247,7 +247,7 @@ export default function BulkDividendModal({
                 const sec = securities.find(s => s.id === row.security_id)
                 if (!sec) return null
                 return (
-                  <div key={row.security_id} className="rounded-field p-3">
+                  <div key={row.security_id} className="bg-surface-low rounded-card p-[13px]">
                     <div className="mb-2">
                       <span className="block text-micro tracking-normal font-mono text-ink-3 mb-0.5">{sec.ticker}</span>
                       <span className="text-body text-ink font-medium truncate block">{sec.name}</span>
