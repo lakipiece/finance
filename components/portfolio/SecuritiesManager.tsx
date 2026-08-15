@@ -7,7 +7,6 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { formatDate } from '@/lib/utils'
-import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
 import PageHeader from '@/components/ui/PageHeader'
@@ -412,7 +411,6 @@ function PriceHistoryModal({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function SecuritiesManager({ securities: initSecurities, latestPrices, priceHistory = {}, options: initOptions, holdingsMap = {} }: Props) {
-  const { palette } = useTheme()
   const router = useRouter()
   const [securities, setSecurities] = useState(initSecurities)
   const [options, setOptions] = useState(initOptions)
@@ -556,7 +554,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       )}
 
       {/* 페이지 헤더 */}
-      <PageHeader title="종목 관리" description="보유 종목 등록 및 가격 이력 관리" />
+      <PageHeader title="종목 관리" description="보유 종목 등록 및 가격 이력 관리">
+        <button onClick={handleRefreshAll} disabled={refreshingAll} className={btn.primary}>
+          {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
+        </button>
+      </PageHeader>
 
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">
@@ -601,14 +603,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             필터 초기화
           </button>
         )}
-        <span className="text-micro tracking-normal text-ink-4">{filteredSecurities.length}개</span>
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={handleRefreshAll} disabled={refreshingAll}
-            className={`${btn.primary} ${refreshingAll ? 'opacity-100' : ''}`}
-            style={{ backgroundColor: palette.colors[0] }}>
-            {refreshingAll ? '수집 중...' : '전체 가격 업데이트'}
-          </button>
-        </div>
+        <span className="text-micro tracking-normal text-ink-4 ml-auto">{filteredSecurities.length}개</span>
       </div>
 
       {/* Security cards — 5 columns */}

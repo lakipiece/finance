@@ -224,10 +224,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <SectionHeader href="/portfolio" icon={<IconGrid />} label="포트폴리오" pathname={pathname} inSection={inPortfolio} onClose={onClose} />
         <SubItem href="/portfolio/snapshots"  icon={<IconCamera />}   label="스냅샷"   pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/income"     icon={<IconDollar />}   label="배당"     pathname={pathname} onClose={onClose} />
+        <SubItem href="/portfolio/rebalance"  icon={<IconScale />}    label="리밸런싱" pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/accounts"   icon={<IconAccount />}  label="계좌"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/securities" icon={<IconList />}     label="종목"     pathname={pathname} onClose={onClose} />
         <SubItem href="/portfolio/options"    icon={<IconSliders />}  label="옵션"     pathname={pathname} onClose={onClose} />
-        <SubItem href="/portfolio/rebalance"  icon={<IconScale />}    label="리밸런싱" pathname={pathname} onClose={onClose} />
 
         <div className="mx-3 my-3 border-t border-surface-low" />
 

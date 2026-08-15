@@ -557,8 +557,8 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
 
   return (
     <ModalShell onClose={onClose} title="지출 수정" onDelete={onDelete}>
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-6 items-end">
+      <div className="grid gap-[14px]">
+        <div className="flex flex-wrap gap-[14px] items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
             <DateInput value={date} onChange={setDate} className="w-36" />
@@ -578,43 +578,42 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
           <label className={field.label}>세부유형</label>
           <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
         </div>
-        <div className="flex gap-4 items-start">
-          <div className="flex-1">
-            <label className={field.label}>결제수단</label>
-            <div className="flex flex-wrap gap-1 mt-1">
-              {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
-            </div>
-          </div>
-          <div className="w-36">
-            <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="text" value={amount}
-              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
-              onBlur={resolveExpenseEditAmount}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); resolveExpenseEditAmount() } }}
-              placeholder="0 또는 =수식"
-              className={`${field.input} text-right`} />
-            {isFormula(amount) && expenseEditFormulaResult !== null && (
-              <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
-                = {expenseEditFormulaResult.toLocaleString('ko-KR')}원
-              </span>
-            )}
-            {isFormula(amount) && expenseEditFormulaResult === null && (
-              <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
-            )}
+        <div>
+          <label className={field.label}>결제수단</label>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
           </div>
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
-            className={field.input} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
-        {err && <p className="text-body text-danger">{err}</p>}
+        {/* 금액 — 입력 모달과 같은 자리(마지막)·같은 규격 */}
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
+            <input type="text" inputMode="text" value={amount}
+              onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
+              onBlur={resolveExpenseEditAmount}
+              placeholder="0 또는 =수식"
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
+            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
+          </div>
+          {isFormula(amount) && expenseEditFormulaResult !== null && (
+            <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
+              = {expenseEditFormulaResult.toLocaleString('ko-KR')}원
+            </span>
+          )}
+          {isFormula(amount) && expenseEditFormulaResult === null && (
+            <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
+          )}
+        </div>
+        {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
+          <button onClick={onClose} className="px-[15px] py-2 rounded-btn text-body font-medium text-ink-2 bg-surface-high hover:opacity-90 transition-opacity">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#131b2e' }}>
-            {saving ? '저장 중…' : '수정'}
+            className="px-[17px] py-2 rounded-btn text-body font-bold text-white bg-action disabled:opacity-60 transition-opacity hover:opacity-90">
+            {saving ? '저장 중…' : <>수정 <span className="font-normal opacity-60">⏎</span></>}
           </button>
         </div>
       </div>
@@ -654,8 +653,8 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 
   return (
     <ModalShell onClose={onClose} title="수입 수정" onDelete={onDelete}>
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-6 items-end">
+      <div className="grid gap-[14px]">
+        <div className="flex flex-wrap gap-[14px] items-end">
           <div className="flex flex-col gap-1">
             <label className={field.label}>날짜</label>
             <DateInput value={date} onChange={setDate} className="w-36" />
@@ -673,31 +672,32 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
             ))}
           </div>
         </div>
-        <div className="flex gap-4 items-start">
-          <div className="flex-1">
-            <label className={field.label}>설명</label>
-            <input type="text" value={description} onChange={e => setDescription(e.target.value)}
-              maxLength={50} className={field.input} />
-          </div>
-          <div className="w-36">
-            <label className={field.label}>금액 (원)</label>
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmount(e.target.value))}
-              className={`${field.input} text-right`} />
-          </div>
+        <div>
+          <label className={field.label}>설명</label>
+          <input type="text" value={description} onChange={e => setDescription(e.target.value)}
+            maxLength={50} className={field.input} />
         </div>
         <div>
           <label className={field.label}>비고</label>
-          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모"
-            className={field.input} />
+          <AutoResizeMemo value={memo} onChange={setMemo} placeholder="메모" className={field.input} />
         </div>
-        {err && <p className="text-body text-danger">{err}</p>}
+        {/* 금액 — 입력 모달과 같은 자리(마지막)·같은 규격 */}
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
+            <input type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              placeholder="0"
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
+            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
+          </div>
+        </div>
+        {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex justify-end gap-2 pt-1">
-          <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
+          <button onClick={onClose} className="px-[15px] py-2 rounded-btn text-body font-medium text-ink-2 bg-surface-high hover:opacity-90 transition-opacity">취소</button>
           <button onClick={handleSave} disabled={saving}
-            className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#131b2e' }}>
-            {saving ? '저장 중…' : '수정'}
+            className="px-[17px] py-2 rounded-btn text-body font-bold text-white bg-action disabled:opacity-60 transition-opacity hover:opacity-90">
+            {saving ? '저장 중…' : <>수정 <span className="font-normal opacity-60">⏎</span></>}
           </button>
         </div>
       </div>

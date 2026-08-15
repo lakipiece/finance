@@ -552,17 +552,7 @@ function FinancialSection() {
   const gainSign = gain != null && gain >= 0 ? '+' : ''
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-end">
-        <a href="/portfolio/snapshots"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-surface-low hover:bg-surface-low transition-colors group">
-          <span className="text-meta font-medium text-ink-3 group-hover:text-ink">최신 포트폴리오 스냅샷</span>
-          <span className="text-micro tracking-normal text-ink-4">{sliceDate(snapshot.date)}</span>
-          <svg className="w-3.5 h-3.5 text-ink-4 group-hover:text-ink-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </a>
-      </div>
+    <div className="space-y-2">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <KpiCard label="평가액" value={fmtAmt(snapshot.total_market_value)} sub={sliceDate(snapshot.date)} color={FINANCIAL_COLOR} />
         <KpiCard label="투자원금" value={fmtAmt(snapshot.total_invested)} sub="누적 투자금" color={FINANCIAL_COLOR} />
@@ -677,8 +667,9 @@ export default function AssetsClient() {
 
       {/* 좌 = 요약(KPI + 구성), 우 = 상세.
           차트 옆 빈 공간이 화면 폭의 절반을 놀리고 있어 두 열로 나눈다. */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] gap-2 items-start">
-      <div className="space-y-2 min-w-0">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] gap-4 lg:gap-6 items-start
+        lg:divide-x lg:divide-surface-container">
+      <div className="space-y-2 min-w-0 lg:pr-6">
       {/* 전체 KPI */}
       <div className="grid grid-cols-2 gap-2">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
@@ -726,18 +717,30 @@ export default function AssetsClient() {
       </div>
 
       <div className="space-y-2 min-w-0">
-      {/* 탭 */}
-      <div className="flex gap-0.5 bg-surface-low rounded-field p-1 w-fit">
-        {TABS.map(tab => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`px-3 py-1.5 rounded-btn text-body transition-colors ${
-              activeTab === tab.key
-                ? 'bg-action text-white font-bold'
-                : 'text-ink-3 font-medium hover:text-ink'
-            }`}>
-            {tab.label}
-          </button>
-        ))}
+      {/* 탭 — 탭에 딸린 액션은 같은 행 오른쪽 끝에 둔다 */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex gap-0.5 bg-surface-low rounded-field p-1 w-fit">
+          {TABS.map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`px-3 py-1.5 rounded-btn text-body transition-colors ${
+                activeTab === tab.key
+                  ? 'bg-action text-white font-bold'
+                  : 'text-ink-3 font-medium hover:text-ink'
+              }`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+        {activeTab === 'financial' && portfolioSnapshot ? (
+          <a href="/portfolio/snapshots"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-surface-high text-ink-2 hover:opacity-90 transition-opacity group">
+            <span className="text-meta font-medium">최신 포트폴리오 스냅샷</span>
+            <span className="text-micro tracking-normal text-ink-4 tabular-nums">{sliceDate(portfolioSnapshot.date)}</span>
+            <svg className="w-3 h-3 text-ink-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        ) : null}
       </div>
 
       {/* 탭 콘텐츠 */}
