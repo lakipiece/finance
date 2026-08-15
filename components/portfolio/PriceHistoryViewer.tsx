@@ -94,9 +94,9 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
         <table className="w-full text-body">
           <thead>
             <tr className="bg-surface-low text-ink-4 uppercase tracking-wider">
-              <th className="text-left px-2 py-[5px].5 text-micro uppercase text-ink-5">날짜</th>
-              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">가격</th>
-              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">통화</th>
+              <th className="text-left px-2 py-[5px] text-micro uppercase text-ink-5">날짜</th>
+              <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">가격</th>
+              <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">통화</th>
             </tr>
           </thead>
           <tbody>

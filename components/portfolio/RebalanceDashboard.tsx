@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import type { PortfolioSummary, TargetAllocation, PortfolioPosition } from '@/lib/portfolio/types'
-import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 
@@ -40,9 +39,9 @@ function TargetInput({ value, onChange }: { value: number; onChange: (v: number)
         type="number" min={0} max={100} step={0.1}
         value={(value * 100).toFixed(1)}
         onChange={e => onChange(parseFloat(e.target.value) / 100)}
-        className="w-14 text-right rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5"
+        className="w-16 text-right rounded-cell bg-surface-low px-2 py-1 text-body text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors tabular-nums border-0 placeholder:text-ink-5"
       />
-      <span className="text-body text-ink-4">%</span>
+      <span className="text-micro tracking-normal text-ink-4">%</span>
     </span>
   )
 }
@@ -56,18 +55,18 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
 }) {
   return (
     <div className="bg-surface-card rounded-card shadow-card overflow-hidden">
-      <div className="px-5 py-3.5 border-b border-surface-low">
-        <p className="text-body font-medium text-ink-2">{title}</p>
+      <div className="px-[13px] pt-[13px] pb-2">
+        <p className="text-subhead font-medium text-ink">{title}</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-low">
-              <th className="text-left px-5 py-[5px].5 text-micro uppercase text-ink-5">항목</th>
-              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">현재</th>
-              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">목표</th>
-              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">차이</th>
-              <th className="text-right px-5 py-[5px].5 text-micro uppercase text-ink-5">필요 금액</th>
+              <th className="text-left px-[13px] py-[5px] text-micro uppercase text-ink-5">항목</th>
+              <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">현재</th>
+              <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">목표</th>
+              <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">차이</th>
+              <th className="text-right px-[13px] py-[5px] text-micro uppercase text-ink-5">필요 금액</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-low">
@@ -77,17 +76,17 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
               const needed = (target - actual_pct) * total
               return (
                 <tr key={key} className="hover:bg-surface-low/60 transition-colors">
-                  <td className={`px-5 py-2.5 text-body font-medium text-ink ${mono ? 'font-mono' : ''}`}>{key}</td>
-                  <td className="px-2 py-[5px].5 text-right text-body text-ink-3 tabular-nums">
+                  <td className={`px-[13px] py-[5px] text-body text-ink-2 ${mono ? 'font-mono' : ''}`}>{key}</td>
+                  <td className="px-2 py-[5px] text-right text-body text-ink tabular-nums">
                     {(actual_pct * 100).toFixed(1)}%
                   </td>
-                  <td className="px-2 py-[5px].5 text-right">
+                  <td className="px-2 py-[5px] text-right">
                     <TargetInput value={target} onChange={v => setTarget(level, key, v)} />
                   </td>
-                  <td className={`px-4 py-2.5 text-right text-body font-bold tabular-nums ${diffColor(diff)}`}>
+                  <td className={`px-2 py-[5px] text-right text-body font-bold tabular-nums ${diffColor(diff)}`}>
                     {diff >= 0 ? '+' : ''}{(diff * 100).toFixed(1)}%
                   </td>
-                  <td className={`px-5 py-2.5 text-right text-body tabular-nums ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
+                  <td className={`px-[13px] py-[5px] text-right text-body tabular-nums ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
                     {Math.round(Math.abs(needed) / 10000).toLocaleString()}만원 {needed >= 0 ? '매수' : '매도'}
                   </td>
                 </tr>
@@ -101,7 +100,6 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
 }
 
 export default function RebalanceDashboard({ summary, targets }: Props) {
-  const { palette } = useTheme()
   const [editTargets, setEditTargets] = useState<TargetAllocation[]>(targets)
   const [saved, setSaved] = useState(false)
   const total = summary.total_market_value
@@ -141,7 +139,6 @@ export default function RebalanceDashboard({ summary, targets }: Props) {
         <button
           onClick={saveTargets}
           className={btn.primary}
-          style={{ backgroundColor: palette.colors[0] }}
         >
           {saved ? '저장됨 ✓' : '목표 저장'}
         </button>
