@@ -321,7 +321,7 @@ export default function DrilldownPanel({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCumulative(v => !v)}
-              className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+              className={`px-2 py-0.5 rounded text-meta font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
             >
               {cumulative ? '누적' : '월별'}
             </button>
@@ -527,7 +527,7 @@ export default function DrilldownPanel({
             <button
               key={t}
               onClick={() => setDrilldownType(t)}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1 rounded-btn text-body font-medium transition-colors ${
                 drilldownType === t ? 'text-white' : 'bg-surface-low text-ink-3'
               }`}
               style={drilldownType === t ? { background: '#131b2e' } : undefined}
@@ -594,7 +594,7 @@ export default function DrilldownPanel({
                 return (
                   <div
                     key={d.name}
-                    className={`flex items-center gap-2 rounded-lg px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-surface-low' : 'hover:bg-surface-low'}`}
+                    className={`flex items-center gap-2 rounded-btn px-1 py-0.5 cursor-pointer transition-colors ${isDetailSelected ? 'bg-surface-low' : 'hover:bg-surface-low'}`}
                     onClick={() => setSelectedTrendDetail(isDetailSelected ? null : d.name)}
                   >
                     <span className="text-micro tracking-normal text-ink-5 w-4 shrink-0 text-right">{rank + 1}</span>
@@ -754,7 +754,7 @@ function ExpenseTableCard({
                     {e.detail || e.category}
                   </p>
                   <div className="flex items-center gap-1.5 mt-[3px]">
-                    <span className="text-micro text-ink-5 tabular-nums shrink-0">{e.date}</span>
+                    <span className="text-micro tracking-normal text-ink-5 tabular-nums shrink-0">{e.date}</span>
                     {/* 색만으로 의미를 지게 하지 않는다 — 점과 라벨을 함께 유지 */}
                     <CategoryBadge category={e.category} size="sm" />
                   </div>
@@ -794,7 +794,7 @@ function ExpenseTableCard({
                     </td>
                     <td className="py-[5px] px-2">
                       {e.member ? (
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${
                           e.member === 'L' ? 'bg-surface-low text-ink-2' :
                           e.member === 'P' ? 'bg-surface-low text-ink-2' :
                           'bg-surface-low text-ink-3'
@@ -821,7 +821,7 @@ function ExpenseTableCard({
                 <button
                   key={size}
                   onClick={() => { setPageSize(size); setPage(1) }}
-                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
+                  className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
                   style={pageSize === size ? { background: '#131b2e', color: '#fff' } : undefined}
                 >{size}</button>
               ))}

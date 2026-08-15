@@ -188,7 +188,7 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
               <div className="space-y-0.5">
                 {history.map(v => (
                   <div key={v.id}
-                    className={`flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg transition-colors ${
+                    className={`flex items-center justify-between gap-2 px-2 py-1.5 rounded-btn transition-colors ${
                       editingId === v.id ? 'bg-surface-low' : 'hover:bg-surface-low'
                     }`}>
                     <div className="flex items-center gap-2 min-w-0">

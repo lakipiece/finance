@@ -77,7 +77,7 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
               const needed = (target - actual_pct) * total
               return (
                 <tr key={key} className="hover:bg-surface-low/60 transition-colors">
-                  <td className={`px-5 py-2.5 text-xs font-medium text-ink ${mono ? 'font-mono' : ''}`}>{key}</td>
+                  <td className={`px-5 py-2.5 text-body font-medium text-ink ${mono ? 'font-mono' : ''}`}>{key}</td>
                   <td className="px-2 py-[5px].5 text-right text-body text-ink-3 tabular-nums">
                     {(actual_pct * 100).toFixed(1)}%
                   </td>
@@ -87,7 +87,7 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
                   <td className={`px-4 py-2.5 text-right text-body font-bold tabular-nums ${diffColor(diff)}`}>
                     {diff >= 0 ? '+' : ''}{(diff * 100).toFixed(1)}%
                   </td>
-                  <td className={`px-5 py-2.5 text-right text-xs tabular-nums ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
+                  <td className={`px-5 py-2.5 text-right text-body tabular-nums ${needed >= 0 ? 'text-loss' : 'text-gain'}`}>
                     {Math.round(Math.abs(needed) / 10000).toLocaleString()}만원 {needed >= 0 ? '매수' : '매도'}
                   </td>
                 </tr>

@@ -132,7 +132,9 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
   value: string; onChange: (v: string) => void; suggestions: string[]; placeholder?: string
 }) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<{ top: number; left: number; width: number; flip: boolean } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
+  const LIST_MAX = 220
   const filtered = useMemo(() => {
     const q = value.toLowerCase().trim()
     if (!q) return suggestions.slice(0, 30)
@@ -147,6 +149,30 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
     return () => document.removeEventListener('mousedown', onMouseDown)
   }, [])
 
+  // 모달 안에서 잘리지 않도록 body로 띄우고, 아래 공간이 모자라면 위로 뒤집는다
+  useEffect(() => {
+    if (!open) return
+    function measure() {
+      const el = ref.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const below = window.innerHeight - r.bottom
+      setPos({
+        top: below < LIST_MAX + 12 ? r.top - 4 : r.bottom + 4,
+        left: r.left,
+        width: r.width,
+        flip: below < LIST_MAX + 12,
+      })
+    }
+    measure()
+    window.addEventListener('scroll', measure, true)
+    window.addEventListener('resize', measure)
+    return () => {
+      window.removeEventListener('scroll', measure, true)
+      window.removeEventListener('resize', measure)
+    }
+  }, [open])
+
   return (
     <div className="relative" ref={ref}>
       <input type="text" value={value}
@@ -156,17 +182,30 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
         maxLength={30}
         autoComplete="off"
         className={field.input} />
-      {open && filtered.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-44 overflow-y-auto">
-          {filtered.map(s => (
-            <button key={s} type="button"
-              onClick={() => { onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink truncate">
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
+      {open && filtered.length > 0 && pos && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="fixed z-[10020] bg-surface-card rounded-field shadow-dialog overflow-y-auto py-1"
+              style={{
+                top: pos.flip ? undefined : pos.top,
+                bottom: pos.flip ? window.innerHeight - pos.top : undefined,
+                left: pos.left,
+                width: pos.width,
+                maxHeight: LIST_MAX,
+              }}
+            >
+              {filtered.map(s => (
+                <button key={s} type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { onChange(s); setOpen(false) }}
+                  className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink truncate">
+                  {s}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
@@ -184,8 +223,38 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
 }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [open, setOpen] = useState(false)
+  // 모달 안에서는 overflow에 잘리므로 목록을 body로 띄운다.
+  // 아래 공간이 모자라면 위로 뒤집는다.
+  const [pos, setPos] = useState<{ top: number; left: number; width: number; flip: boolean } | null>(null)
   const ref = useRef<HTMLDivElement>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
+
+  const LIST_MAX = 220
+
+  function measure() {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const below = window.innerHeight - r.bottom
+    setPos({
+      top: below < LIST_MAX + 12 ? r.top - 4 : r.bottom + 4,
+      left: r.left,
+      width: r.width,
+      flip: below < LIST_MAX + 12,
+    })
+  }
+
+  useEffect(() => {
+    if (!open) return
+    measure()
+    const onScroll = () => measure()
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [open])
 
   useEffect(() => {
     if (!multiline) return
@@ -242,18 +311,30 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
           autoComplete="off"
           className={className} />
       )}
-      {open && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-44 overflow-y-auto">
-          {suggestions.map(s => (
-            <button key={s} type="button"
-              onMouseDown={e => e.preventDefault()}
-              onClick={() => { onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink">
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
+      {open && suggestions.length > 0 && pos && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="fixed z-[10020] bg-surface-card rounded-field shadow-dialog overflow-y-auto py-1"
+              style={{
+                top: pos.flip ? undefined : pos.top,
+                bottom: pos.flip ? window.innerHeight - pos.top : undefined,
+                left: pos.left,
+                width: pos.width,
+                maxHeight: LIST_MAX,
+              }}
+            >
+              {suggestions.map(s => (
+                <button key={s} type="button"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { onChange(s); setOpen(false) }}
+                  className="w-full text-left px-3 py-2 text-body hover:bg-surface-low text-ink">
+                  {s}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
@@ -564,8 +645,8 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
   const methodRef = useRef<HTMLDivElement>(null)
   const saveRef = useRef<HTMLButtonElement>(null)
 
-  // 금액은 가계부 입력 시간의 대부분을 차지하므로 열자마자 커서를 둔다
-  useEffect(() => { amountRef.current?.focus() }, [])
+  // 날짜는 오늘이 기본값이라 대개 손대지 않는다. 실제로 매번 채우는 세부유형에 커서를 둔다.
+  useEffect(() => { detailRef.current?.focus() }, [])
 
   function handleDateChange(v: string) { setDate(v); sessionStorage.setItem('exp-date', v) }
   function handleMemberChange(v: string) { setMember(v); sessionStorage.setItem('exp-member', v) }
@@ -615,14 +696,51 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
     onSaveAndContinue: () => handleSave(true),
     onCancel: handleCancel,
     onPickCategory: i => { if (visibleCategories[i]) setCategory(visibleCategories[i]) },
-    tabOrder: [amountRef, categoryRef, detailRef, dateRef, methodRef, saveRef],
+    tabOrder: [dateRef, categoryRef, detailRef, methodRef, amountRef, saveRef],
     disabled: saving,
   })
 
   return (
     <ModalShell onClose={handleCancel} title="지출 입력">
       <div className="grid gap-[14px]">
-        {/* 금액 — 단독 확대. 입력 시간의 대부분이 여기 쓰인다 */}
+        <div className="flex flex-wrap gap-[14px] items-end">
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>날짜</label>
+            <div ref={dateRef} tabIndex={-1} className="outline-none">
+              <DateInput value={date} onChange={handleDateChange} className="w-36" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>작성자</label>
+            <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
+          </div>
+        </div>
+        {/* 분류 — 드롭다운이 아니라 4개 상시 노출. 1–4로도 고른다 */}
+        <div>
+          <label className={field.label}>지출유형</label>
+          <div ref={categoryRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
+            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>세부유형</label>
+          <div ref={detailRef} tabIndex={-1} className="outline-none">
+            <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
+          </div>
+        </div>
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <label className={field.label}>결제수단</label>
+            <div ref={methodRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
+              {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
+            </div>
+          </div>
+        </div>
+        <div>
+          <label className={field.label}>비고</label>
+          <SuggestInput value={memo} onChange={setMemo} fetcher={fetchExpenseMemos} placeholder="메모 (2글자+? 로 검색)" className={field.input} />
+        </div>
+        {/* 금액 — 마지막. 앞 필드가 다 정해진 뒤에 확정한다 */}
         <div>
           <label className={field.label}>금액 (원)</label>
           <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
@@ -641,43 +759,6 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
           {isFormula(amount) && createFormulaResult === null && (
             <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
           )}
-        </div>
-        {/* 분류 — 드롭다운이 아니라 4개 상시 노출. 1–4로도 고른다 */}
-        <div>
-          <label className={field.label}>지출유형</label>
-          <div ref={categoryRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
-            {visibleCategories.map(c => <PillBtn key={c} active={category === c} onClick={() => setCategory(c)} color={catColors[c]} size="sm">{c}</PillBtn>)}
-          </div>
-        </div>
-        <div>
-          <label className={field.label}>세부유형</label>
-          <div ref={detailRef} tabIndex={-1} className="outline-none">
-            <DetailSearchInput value={detail} onChange={setDetail} suggestions={detailsByCategory[category] ?? []} />
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-[14px] items-end">
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>날짜</label>
-            <div ref={dateRef} tabIndex={-1} className="outline-none">
-              <DateInput value={date} onChange={handleDateChange} className="w-36" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={handleMemberChange} size="sm" />
-          </div>
-        </div>
-        <div className="flex gap-4 items-start">
-          <div className="flex-1">
-            <label className={field.label}>결제수단</label>
-            <div ref={methodRef} tabIndex={-1} className="flex flex-wrap gap-1 mt-1 outline-none">
-              {methodOpts.map(m => <PillBtn key={m.name} active={method === m.name} onClick={() => setMethod(m.name)} color={m.color} size="sm">{m.name}</PillBtn>)}
-            </div>
-          </div>
-        </div>
-        <div>
-          <label className={field.label}>비고</label>
-          <SuggestInput value={memo} onChange={setMemo} fetcher={fetchExpenseMemos} placeholder="메모 (2글자+? 로 검색)" className={field.input} />
         </div>
         {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
@@ -714,7 +795,7 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
   const dateRef = useRef<HTMLDivElement>(null)
   const saveRef = useRef<HTMLButtonElement>(null)
 
-  useEffect(() => { amountRef.current?.focus() }, [])
+  useEffect(() => { descRef.current?.focus() }, [])
 
   async function handleSave(continueEntry = keepOpen) {
     const amt = parseAmount(amount)
@@ -748,22 +829,23 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
     onSaveAndContinue: () => handleSave(true),
     onCancel: handleCancel,
     onPickCategory: i => { if (INCOME_CATEGORIES[i]) setCategory(INCOME_CATEGORIES[i]) },
-    tabOrder: [amountRef, categoryRef, descRef, dateRef, saveRef],
+    tabOrder: [dateRef, categoryRef, descRef, amountRef, saveRef],
     disabled: saving,
   })
 
   return (
     <ModalShell onClose={handleCancel} title="수입 입력">
       <div className="grid gap-[14px]">
-        {/* 금액 — 단독 확대 */}
-        <div>
-          <label className={field.label}>금액 (원)</label>
-          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
-            <input ref={amountRef} type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmount(e.target.value))}
-              placeholder="0"
-              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
-            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
+        <div className="flex flex-wrap gap-[14px] items-end">
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>날짜</label>
+            <div ref={dateRef} tabIndex={-1} className="outline-none">
+              <DateInput value={date} onChange={setDate} className="w-36" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className={field.label}>작성자</label>
+            <MemberToggle value={member} onChange={setMember} size="sm" />
           </div>
         </div>
         <div>
@@ -782,23 +864,22 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
               placeholder="수입 내용 (2글자+? 로 검색)" maxLength={50} multiline={false} className={field.input} />
           </div>
         </div>
-        <div className="flex flex-wrap gap-[14px] items-end">
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>날짜</label>
-            <div ref={dateRef} tabIndex={-1} className="outline-none">
-              <DateInput value={date} onChange={setDate} className="w-36" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className={field.label}>작성자</label>
-            <MemberToggle value={member} onChange={setMember} size="sm" />
-          </div>
-        </div>
         <div>
           <label className={field.label}>비고</label>
           <SuggestInput value={memo} onChange={setMemo}
             fetcher={q => fetchIncomeSuggestions('memo', q)}
             placeholder="메모 (2글자+? 로 검색)" className={field.input} />
+        </div>
+        {/* 금액 — 단독 확대 */}
+        <div>
+          <label className={field.label}>금액 (원)</label>
+          <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
+            <input ref={amountRef} type="text" inputMode="numeric" value={amount}
+              onChange={e => setAmount(fmtAmount(e.target.value))}
+              placeholder="0"
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
+            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
+          </div>
         </div>
         {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
@@ -826,8 +907,10 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
 }) {
   const maxPct = items[0]?.pct ?? 1
   return (
-    <div className="mb-4 px-4 py-3 bg-surface-low rounded-field">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="mb-6 px-4 py-3 bg-surface-low rounded-field">
+      {/* 필터 칩이 붙어도 높이가 변하지 않도록 자리를 미리 잡아 둔다 —
+          안 그러면 필터를 걸 때마다 아래 내용이 몇 px씩 밀린다 */}
+      <div className="flex items-center gap-2 mb-3 min-h-[22px]">
         <p className="text-meta font-medium text-ink-3">{category} 항목별 집계</p>
         {activeItem && (
           <button onClick={() => onItemClick(activeItem)}
@@ -844,13 +927,13 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
           const isActive = activeItem === item.name
           return (
             <button key={item.name} onClick={() => onItemClick(item.name)}
-              className={`flex items-center gap-2 min-w-0 w-full text-left rounded-lg px-1.5 py-1 transition-colors ${
-                isActive ? 'bg-surface-low' : 'hover:bg-surface-low/60'
+              className={`flex items-center gap-2 min-w-0 w-full text-left rounded-btn px-1.5 py-1 transition-colors ${
+                isActive ? 'bg-surface-card shadow-card' : 'hover:bg-surface-card/60'
               }`}>
               <span className="text-micro tracking-normal text-ink-5 w-3.5 shrink-0 text-right">{idx + 1}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className={`text-[11px] truncate ${isActive ? 'font-medium' : 'text-ink-2'}`}
+                  <span className={`text-meta truncate ${isActive ? 'font-medium' : 'text-ink-2'}`}
                     style={isActive ? { color } : undefined}>{item.name}</span>
                   <span className="text-micro tracking-normal text-ink-4 shrink-0">{Math.round(item.pct * 100)}%</span>
                 </div>
@@ -859,7 +942,7 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
                     style={{ width: `${(item.pct / maxPct) * 100}%`, backgroundColor: color ?? '#a8b3c4', opacity: isActive ? 1 : 0.45 }} />
                 </div>
               </div>
-              <span className={`text-[11px] font-medium shrink-0 tabular-nums ${isActive ? '' : 'text-ink'}`}
+              <span className={`text-meta font-medium shrink-0 tabular-nums ${isActive ? '' : 'text-ink'}`}
                 style={isActive ? { color } : undefined}>
                 {item.amount.toLocaleString('ko-KR')}원
               </span>
@@ -883,12 +966,7 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
 
   return (
     <button onClick={onClick}
-      className={`text-left w-full bg-white rounded-xl border p-3 hover:shadow-sm transition-all ${
-        isExpense
-          ? 'border-surface-low'
-          : 'border-l-4 border-surface-low'
-      }`}
-      style={!isExpense ? { borderLeftColor: incomeColor } : undefined}>
+      className="text-left w-full bg-surface-card rounded-card p-3 shadow-card transition-transform hover:-translate-y-0.5">
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* 수입/지출 아이콘 */}
@@ -904,7 +982,7 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
             <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
           )}
         </div>
-        <span className={`text-sm font-bold shrink-0 ${isExpense ? 'text-ink' : ''}`}
+        <span className={`text-subhead font-bold shrink-0 ${isExpense ? 'text-ink' : ''}`}
           style={!isExpense ? { color: incomeColor } : undefined}>
           {formatWonFull(record.amount)}
         </span>
@@ -1194,7 +1272,7 @@ export default function InputPage() {
         {/* Header with search */}
         <div className="flex items-center justify-end mb-4 gap-2 flex-wrap">
           <div className="relative flex items-center">
-            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -1203,11 +1281,11 @@ export default function InputPage() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               onKeyDown={e => { if (viewAllPeriod && e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
-              className="pl-5 pr-5 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors w-48 border-0"
+              className="pl-9 pr-9 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors w-48 border-0"
             />
             {searchQuery && (
               <button onClick={clearSearch}
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3 transition-colors">
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -1232,7 +1310,7 @@ export default function InputPage() {
           <div className="flex gap-1">
             {(['all', 'expense', 'income'] as const).map(t => (
               <button key={t} onClick={() => { setTypeFilter(t); setCategoryFilter(null); setDetailFilter(null) }}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${typeFilter === t ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+                className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${typeFilter === t ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
                 {t === 'all' ? '전체' : t === 'expense' ? '지출' : '수입'}
               </button>
             ))}
@@ -1244,7 +1322,7 @@ export default function InputPage() {
               const isActive = memberFilter === m.code
               return (
                 <button key={m.code} onClick={() => setMemberFilter(prev => prev === m.code ? null : m.code)}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+                  className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
                   style={isActive ? { backgroundColor: m.color } : undefined}>
                   {m.display_name}
                 </button>
@@ -1259,7 +1337,7 @@ export default function InputPage() {
               const isActive = categoryFilter === cat
               return (
                 <button key={cat} onClick={() => { setCategoryFilter(prev => prev === cat ? null : cat); setDetailFilter(null) }}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                     isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                   }`}
                   style={isActive && color ? { backgroundColor: color } : undefined}>
@@ -1273,14 +1351,14 @@ export default function InputPage() {
           <div className="flex gap-1 ml-auto">
             <button
               onClick={() => setSortMode(m => m === 'date_desc' ? 'date_asc' : 'date_desc')}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                 sortMode === 'date_desc' || sortMode === 'date_asc' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
               }`}>
               날짜{sortMode === 'date_desc' ? ' ↓' : sortMode === 'date_asc' ? ' ↑' : ' ↕'}
             </button>
             <button
               onClick={() => setSortMode(m => m === 'amount_desc' ? 'amount_asc' : 'amount_desc')}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                 sortMode === 'amount_desc' || sortMode === 'amount_asc' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
               }`}>
               금액{sortMode === 'amount_desc' ? ' ↓' : sortMode === 'amount_asc' ? ' ↑' : ' ↕'}

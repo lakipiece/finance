@@ -365,22 +365,22 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             <button
               onClick={selectAll}
               title={`${summary.positions.length}종목`}
-              className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 ${
+              className={`rounded-field border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 ${
                 selectedAccountIds.size === 0
                   ? 'bg-surface-low'
                   : 'bg-surface-card border-surface-low'
               }`}
               style={selectedAccountIds.size === 0 ? { borderColor: palette.colors[0] } : undefined}>
-              <p className={`text-[10px] font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-ink-3' : 'text-ink-4'}`}>전체</p>
-              <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-ink' : 'text-ink-3'}`}>
+              <p className={`text-micro tracking-normal font-medium mb-1 text-left ${selectedAccountIds.size === 0 ? 'text-ink-3' : 'text-ink-4'}`}>전체</p>
+              <p className={`text-body sm:text-subhead font-bold tabular-nums leading-tight ${selectedAccountIds.size === 0 ? 'text-ink' : 'text-ink-3'}`}>
                 {Math.round(summary.total_market_value).toLocaleString()}원
               </p>
-              <p className={`text-xs tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
+              <p className={`text-body tabular-nums mt-0.5 text-right ${summary.total_unrealized_pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
                 {summary.total_unrealized_pnl >= 0 ? '+' : ''}{Math.round(summary.total_unrealized_pnl).toLocaleString()}원
               </p>
               <div className="flex items-center justify-between mt-1">
                 <span className="text-micro tracking-normal text-ink-4 opacity-0">-</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
+                <span className={`text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
                   summary.total_unrealized_pnl >= 0 ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'
                 }`}>
                   {summary.total_unrealized_pnl >= 0 ? '+' : ''}{(summary.total_unrealized_pct * 100).toFixed(1)}%
@@ -397,7 +397,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                   <button key={id}
                     onClick={() => toggleAccount(id)}
                     title={`${g.count}종목`}
-                    className={`rounded-xl border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 relative ${
+                    className={`rounded-field border px-2 py-2 sm:px-3 sm:py-3 text-right transition-all min-w-0 relative ${
                       isSelected ? 'bg-surface-low' : 'bg-surface-card border-surface-low'
                     }`}
                     style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
@@ -408,22 +408,22 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       {typeColor && (
                         <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} />
                       )}
-                      <p className={`text-xs font-medium truncate leading-none ${isSelected ? 'text-ink' : 'text-ink'}`}>
+                      <p className={`text-body font-medium truncate leading-none ${isSelected ? 'text-ink' : 'text-ink'}`}>
                         {g.name}
                       </p>
                     </div>
                     <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-surface-low' : 'border-surface-low'}`} />
-                    <p className={`text-xs sm:text-sm font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-ink' : 'text-ink-3'}`}>
+                    <p className={`text-body sm:text-subhead font-bold tabular-nums leading-tight text-right ${isSelected ? 'text-ink' : 'text-ink-3'}`}>
                       {Math.round(g.value).toLocaleString()}원
                     </p>
-                    <p className={`text-xs tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
+                    <p className={`text-body tabular-nums mt-0.5 text-right ${g.pnl >= 0 ? 'text-gain' : 'text-loss'}`}>
                       {g.pnl >= 0 ? '+' : ''}{Math.round(g.pnl).toLocaleString()}원
                     </p>
                     <div className="flex items-center justify-between mt-1">
-                      <span className={`text-[10px] tabular-nums ${isSelected ? 'text-ink-4' : 'text-ink-4'}`}>
+                      <span className={`text-micro tracking-normal tabular-nums ${isSelected ? 'text-ink-4' : 'text-ink-4'}`}>
                         {summary.total_market_value > 0 ? (g.value / summary.total_market_value * 100).toFixed(1) : '0.0'}%
                       </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
+                      <span className={`text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
                         g.pnl >= 0
                           ? 'bg-gain/10 text-gain'
                           : 'bg-loss/10 text-loss'
@@ -452,7 +452,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setSelectedSectors(new Set())}
-              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              className={`text-body px-2.5 py-1 rounded-full border transition-colors ${
                 selectedSectors.size === 0
                   ? 'bg-surface-low text-ink font-medium'
                   : 'bg-surface-card border-surface-low text-ink-3'
@@ -466,7 +466,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               return (
                 <button key={s}
                   onClick={() => toggleSector(s)}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                  className={`flex items-center gap-1 text-body px-2.5 py-1 rounded-full border transition-colors ${
                     isSelected
                       ? 'bg-surface-low text-ink font-medium'
                       : 'bg-surface-card border-surface-low text-ink-3'
@@ -498,7 +498,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setSelectedTags(new Set())}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                className={`text-body px-2.5 py-1 rounded-full border transition-colors ${
                   selectedTags.size === 0
                     ? 'bg-surface-low text-ink font-medium'
                     : 'bg-surface-card border-surface-low text-ink-3'
@@ -511,7 +511,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                 return (
                   <button key={t}
                     onClick={() => toggleTag(t)}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                    className={`text-body px-2.5 py-1 rounded-full border transition-colors ${
                       isSelected
                         ? 'bg-surface-low text-ink font-medium'
                         : 'bg-surface-card border-surface-low text-ink-3'
@@ -556,7 +556,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             badge={searchedPositions.length}
           />
           <div className="relative ml-auto">
-            <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
             </svg>
@@ -565,12 +565,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               value={searchQuery}
               onChange={e => { setSearchQuery(e.target.value); if (e.target.value) setShowPositions(true) }}
               placeholder="종목명/티커 검색"
-              className="text-body pl-6 pr-6 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-44 border-0 focus:bg-surface-card focus:shadow-focus"
+              className="text-body pl-8 pr-8 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-44 border-0 focus:bg-surface-card focus:shadow-focus"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3"
                 title="검색 초기화">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

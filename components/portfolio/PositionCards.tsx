@@ -241,7 +241,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
 
               {/* 손익 금액 */}
               <div className="flex justify-end">
-                <span className={`text-xs font-medium tabular-nums ${pnlPos ? 'text-gain' : 'text-loss'}`}>
+                <span className={`text-body font-medium tabular-nums ${pnlPos ? 'text-gain' : 'text-loss'}`}>
                   {pnlPos ? '+' : ''}{fmt(p.unrealized_pnl)}원
                 </span>
               </div>
@@ -249,7 +249,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
               {/* 비중(좌) + 수익률 배지(우) */}
               <div className="flex items-center justify-between gap-1 mt-0.5">
                 <span className="text-micro tracking-normal text-ink-4 tabular-nums">{weight}%</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums shrink-0 ${
+                <span className={`text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium tabular-nums shrink-0 ${
                   pnlPos ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'
                 }`}>
                   {pnlPos ? '+' : ''}{(p.unrealized_pct * 100).toFixed(1)}%

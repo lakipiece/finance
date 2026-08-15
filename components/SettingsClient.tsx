@@ -82,7 +82,7 @@ export default function SettingsClient({ initialYears }: Props) {
                 return (
                   <div
                     key={y.year}
-                    className={`bg-surface-low rounded-xl px-4 py-2.5 text-center min-w-[72px] transition-all ${
+                    className={`bg-surface-low rounded-field px-4 py-2.5 text-center min-w-[72px] transition-all ${
                       isSheets && y.source_url ? 'cursor-pointer hover:bg-surface-low hover:-translate-y-0.5' : ''
                     } ${isSyncing ? 'animate-pulse' : ''}`}
                     onClick={isSheets && y.source_url && !isSyncing ? () => imp.handleYearSync(y) : undefined}

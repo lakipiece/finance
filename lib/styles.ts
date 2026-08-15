@@ -86,7 +86,7 @@ export const field = {
   // 고정 너비 없는 인풋 (호출 측에서 w-* 지정)
   inputFit: FIELD_BASE,
   // 검색 인풋 — 아이콘 자리 확보
-  search: `w-full rounded-field bg-surface-low pl-7 pr-3 py-[9px] text-subhead text-ink border-0
+  search: `w-full rounded-field bg-surface-low pl-9 pr-3 py-[9px] text-subhead text-ink border-0
     placeholder:text-ink-5 focus:outline-none focus:bg-white focus:shadow-focus transition-colors`,
   // 텍스트에어리어
   textarea: `w-full ${FIELD_BASE} resize-none`,
@@ -97,7 +97,7 @@ export const field = {
   // 오류 상태 — 기본/셀에 덧붙인다
   error: 'bg-gain/[.07] text-gain shadow-error focus:bg-gain/[.07] focus:shadow-error',
   // 오류 메시지
-  errorMsg: 'mt-1 text-[10px] font-normal text-gain',
+  errorMsg: 'mt-1 text-micro tracking-normal font-normal text-gain',
   // 폼 라벨
   label: 'block text-meta font-medium text-ink-3 mb-1',
   labelSm: 'block text-meta font-medium text-ink-4 mb-0.5',
@@ -115,21 +115,21 @@ export const badge = {
   // 기본 배지 — 점과 함께 쓴다 (<CategoryBadge> 권장)
   base: 'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-micro uppercase bg-surface-low text-ink-2',
   // 소형 배지
-  sm: 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-2',
+  sm: 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-2',
   // 6px 점
   dot: 'inline-block w-1.5 h-1.5 rounded-full shrink-0',
   // 티커 배지 — 고정폭
-  ticker: 'inline-block px-1.5 py-0.5 rounded-full text-micro font-bold font-mono bg-surface-low text-ink-2',
+  ticker: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-bold font-mono bg-surface-low text-ink-2',
   // 사용자(owner) 배지
-  owner: 'inline-block px-1.5 py-0.5 rounded-full text-micro font-bold bg-surface-low text-ink-2',
+  owner: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-bold bg-surface-low text-ink-2',
   // 최신 배지
-  latest: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
+  latest: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-3',
   // 경고 배지 — 예산 초과 · 임박
-  warning: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-warning/10 text-warning',
+  warning: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-warning/10 text-warning',
   // 성공 · 정보 · 중립 — 전부 중성 표면 + 잉크. 색은 의미가 있을 때만 쓴다
-  success: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-income/10 text-income',
-  info: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
-  neutral: 'inline-block px-1.5 py-0.5 rounded-full text-micro bg-surface-low text-ink-4',
+  success: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-income/10 text-income',
+  info: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-3',
+  neutral: 'inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-4',
 } as const
 
 // ─── 모달 ──────────────────────────────────────────────────────────────────
@@ -272,9 +272,9 @@ export const cta = {
 
 // 상태 배지 — 손익 2색은 포트폴리오 전용, 가계부에서는 warning/income만 쓴다
 export const statusBadge = {
-  success:  'px-2 py-0.5 rounded-full text-micro bg-income/10 text-income',
-  warning:  'px-2 py-0.5 rounded-full text-micro bg-warning/10 text-warning',
-  danger:   'px-2 py-0.5 rounded-full text-micro bg-gain/10 text-gain',
-  info:     'px-2 py-0.5 rounded-full text-micro bg-surface-low text-ink-3',
-  neutral:  'px-2 py-0.5 rounded-full text-micro bg-surface-low text-ink-4',
+  success:  'px-2 py-0.5 rounded-full text-micro tracking-normal bg-income/10 text-income',
+  warning:  'px-2 py-0.5 rounded-full text-micro tracking-normal bg-warning/10 text-warning',
+  danger:   'px-2 py-0.5 rounded-full text-micro tracking-normal bg-gain/10 text-gain',
+  info:     'px-2 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-3',
+  neutral:  'px-2 py-0.5 rounded-full text-micro tracking-normal bg-surface-low text-ink-4',
 } as const

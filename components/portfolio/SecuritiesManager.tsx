@@ -81,9 +81,9 @@ function HoldingCard({
       onMouseLeave={() => setHovered(false)}
     >
       <p className="text-micro text-ink-4 mb-1 uppercase tracking-wider">{label}</p>
-      <p className={`text-sm font-medium tabular-nums leading-tight ${valueColor ?? 'text-ink'}`}>{value}</p>
+      <p className={`text-subhead font-medium tabular-nums leading-tight ${valueColor ?? 'text-ink'}`}>{value}</p>
       {sub && (
-        <p className={`text-[10px] mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
+        <p className={`text-micro tracking-normal mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
           {sub.text}
         </p>
       )}
@@ -233,7 +233,7 @@ function PriceHistoryModal({
             <div className="ml-4 shrink-0">
               <div className="flex items-baseline gap-1.5 justify-end">
                 {latestPrice.change_pct != null && (
-                  <span className={`text-[10px] font-medium ${latestPrice.change_pct > 0 ? 'text-gain' : latestPrice.change_pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                  <span className={`text-micro tracking-normal font-medium ${latestPrice.change_pct > 0 ? 'text-gain' : latestPrice.change_pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                     {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
                   </span>
                 )}
@@ -390,7 +390,7 @@ function PriceHistoryModal({
                       <td className="px-2 py-[5px] text-micro tracking-normal text-right font-sans text-ink-4 tabular-nums">
                         {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                       </td>
-                      <td className={`px-4 py-1.5 text-[10px] text-right font-sans tabular-nums ${pct == null ? 'text-ink-5' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                      <td className={`px-4 py-1.5 text-micro tracking-normal text-right font-sans tabular-nums ${pct == null ? 'text-ink-5' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                         {pct != null ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—'}
                       </td>
                     </tr>
@@ -548,7 +548,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
-        <div className={`px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+        <div className={`px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
         </div>
       )}
@@ -559,14 +559,14 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       {/* Search + filter + sort + actions bar */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-48">
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
             placeholder="티커 또는 종목명 검색"
-            className="w-full pl-7 pr-6 py-[9px] text-subhead rounded-field bg-surface-low focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors placeholder:text-ink-5 border-0" />
+            className="w-full pl-9 pr-9 py-[9px] text-subhead rounded-field bg-surface-low focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors placeholder:text-ink-5 border-0" />
           {secSearch && (
-            <button onClick={() => setSecSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
+            <button onClick={() => setSecSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
           )}
@@ -680,7 +680,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                           {lp.currency === 'KRW' ? `${lp.price.toLocaleString()}원` : `$${lp.price.toFixed(2)}`}
                         </span>
                         {pct != null && (
-                          <div className={`text-[10px] font-sans ${pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                          <div className={`text-micro tracking-normal font-sans ${pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
                           </div>
                         )}

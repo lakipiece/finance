@@ -90,7 +90,7 @@ export default function IncomeTableCard({
             <div className="flex gap-2 mb-3 flex-wrap">
               {(['date', 'category', 'description', 'amount'] as const).map(key => (
                 <button key={key} onClick={() => handleSort(key)}
-                  className={`px-2 py-1 rounded-lg text-xs transition-colors ${sortKey !== key ? 'bg-surface-low text-ink-3' : ''}`}
+                  className={`px-2 py-1 rounded-btn text-body transition-colors ${sortKey !== key ? 'bg-surface-low text-ink-3' : ''}`}
                   style={sortKey === key ? { background: '#131b2e', color: '#fff' } : undefined}>
                   {{ date: '날짜', category: '분류', description: '설명', amount: '금액' }[key]}{sortIcon(key)}
                 </button>
@@ -111,7 +111,7 @@ export default function IncomeTableCard({
                   <div className="flex items-center justify-between text-body text-ink-4">
                     <span>{item.income_date}</span>
                     {item.member && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
+                      <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
                     )}
                   </div>
                 </div>
@@ -149,7 +149,7 @@ export default function IncomeTableCard({
                       </td>
                       <td className="py-[5px] px-2">
                         {item.member
-                          ? <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
+                          ? <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
                           : <span className="text-ink-5 text-body">—</span>}
                       </td>
                       <td className="py-[5px] px-2 text-right font-medium text-ink text-body whitespace-nowrap">{formatWonFull(item.amount)}</td>
@@ -167,7 +167,7 @@ export default function IncomeTableCard({
               <span>페이지당</span>
               {PAGE_SIZES.map(size => (
                 <button key={size} onClick={() => { setPageSize(size); setPage(1) }}
-                  className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
+                  className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
                   style={pageSize === size ? { background: '#131b2e', color: '#fff' } : undefined}>{size}</button>
               ))}
             </div>

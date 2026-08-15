@@ -107,7 +107,7 @@ function KpiCard({ label, value, sub, subColor }: {
     <div className="bg-surface-card rounded-card px-[13px] py-3">
       <p className="text-micro tracking-normal text-ink-4 mb-1">{label}</p>
       <p className="text-heading font-bold text-ink tabular-nums leading-tight">{value}</p>
-      {sub ? <p className={`text-[10px] tabular-nums mt-1 ${subColor ?? 'text-ink-4'}`}>{sub}</p> : null}
+      {sub ? <p className={`text-micro tracking-normal tabular-nums mt-1 ${subColor ?? 'text-ink-4'}`}>{sub}</p> : null}
     </div>
   )
 }
@@ -184,7 +184,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
 
       <div className="flex items-center gap-2 mb-3 flex-wrap">
         <div className="relative">
-          <svg className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
           </svg>
@@ -193,11 +193,11 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="태그 검색"
-            className="text-micro tracking-normal pl-6 pr-6 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-32 border-0 focus:bg-surface-card focus:shadow-focus"
+            className="text-micro tracking-normal pl-8 pr-8 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-32 border-0 focus:bg-surface-card focus:shadow-focus"
           />
           {search ? (
             <button onClick={() => setSearch('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -210,7 +210,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
             return (
               <button key={t}
                 onClick={() => toggle(t)}
-                className={`text-[10px] px-2 py-0.5 rounded-full border transition-colors ${
+                className={`text-micro tracking-normal px-2 py-0.5 rounded-full border transition-colors ${
                   active
                     ? 'text-white border-transparent'
                     : 'border-surface-low text-ink-3'

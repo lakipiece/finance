@@ -205,7 +205,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
           return (
             <div key={snap.id}
               onClick={() => router.push(`/portfolio/snapshots/${snap.id}`)}
-              className={`bg-white rounded-2xl px-6 py-5 cursor-pointer hover:shadow-sm transition-all group relative flex flex-col ${
+              className={`bg-white rounded-card px-6 py-5 cursor-pointer hover:shadow-card transition-all group relative flex flex-col ${
                 snap.id === latestId
                   ? 'border-2 border-[#1A237E] shadow-card'
                   : ''
@@ -240,7 +240,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     <p className="text-micro tracking-normal text-ink-4 tabular-nums" title="평균매수금액">{fmtKrw(inv)}</p>
                   ) : null}
                   {pnl != null ? (
-                    <p className={`text-xs font-medium tabular-nums ${pnl >= 0 ? 'text-gain' : 'text-loss'}`}
+                    <p className={`text-body font-medium tabular-nums ${pnl >= 0 ? 'text-gain' : 'text-loss'}`}
                       title="평가손익 (평가액 − 평균매수금액)">
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
                       {pnlPct != null ? (

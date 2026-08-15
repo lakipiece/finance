@@ -256,7 +256,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {msg && (
-        <div className={`mb-4 px-4 py-2 rounded-lg text-sm ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+        <div className={`mb-4 px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
         </div>
       )}
@@ -335,7 +335,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 const active = modalTab === t.key
                 return (
                   <button key={t.key} onClick={() => setModalTab(t.key)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-btn text-body font-medium transition-colors ${
                       active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                     }`}
                     style={active ? { backgroundColor: palette.colors[0] } : undefined}>

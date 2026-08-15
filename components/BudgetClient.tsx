@@ -186,7 +186,7 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {hasPlan ? (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
+                    <span className={`text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium tabular-nums ${
                       overBudget ? 'bg-warning/10 text-warning' : 'bg-surface-low text-ink-3'
                     }`}>
                       {(pct * 100).toFixed(1)}%
@@ -376,7 +376,7 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
                   </td>
                   <td className="py-[5px] px-2 text-right tabular-nums">
                     {hasPlan ? (
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      <span className={`text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium ${
                         overBudget ? 'bg-warning/10 text-warning' : 'bg-surface-low text-ink-3'
                       }`}>
                         {(pct * 100).toFixed(1)}%
@@ -784,21 +784,21 @@ export default function BudgetClient({ initialYear }: Props) {
         <>
           {/* 전체 요약 — KPI 카드 */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className={`${card.base} p-4`}>
+            <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>연간 계획 총액</p>
               <p className="text-heading font-bold text-ink tabular-nums mt-1">{formatWonFull(totalAnnualPlan)}</p>
             </div>
-            <div className={`${card.base} p-4`}>
+            <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>누적 사용</p>
               <p className="text-heading font-bold text-ink tabular-nums mt-1">{formatWonFull(totalUsedAll)}</p>
             </div>
-            <div className={`${card.base} p-4`}>
+            <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>잔액</p>
-              <p className={`text-lg font-bold tabular-nums mt-1 ${totalRemainAll < 0 ? 'text-warning' : 'text-ink'}`}>
+              <p className={`text-heading font-bold tabular-nums mt-1 ${totalRemainAll < 0 ? 'text-warning' : 'text-ink'}`}>
                 {formatWonFull(totalRemainAll)}
               </p>
             </div>
-            <div className={`${card.base} p-4`}>
+            <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>잔여 / 기간</p>
               <p className="text-heading font-bold tabular-nums mt-1">
                 <span className={totalRemainPctAll < remainPeriodPct ? 'text-warning' : 'text-ink'}>
@@ -872,7 +872,7 @@ export default function BudgetClient({ initialYear }: Props) {
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
                 <p className={text.caption}>연간 변동비 ÷ 52 (참고)</p>
-                <p className="text-[13px] sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(variableWeeklySuggestion)}</p>
+                <p className="text-subhead sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(variableWeeklySuggestion)}</p>
               </div>
               <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
                 <p className={text.caption}>주당 기준금액</p>
@@ -883,10 +883,10 @@ export default function BudgetClient({ initialYear }: Props) {
                     value={weeklyAmount ? fmtAmountInput(String(weeklyAmount)) : ''}
                     onChange={e => setWeeklyAmount(parseAmountInput(e.target.value))}
                     placeholder="0"
-                    className={`${field.inputFit} min-w-0 w-full text-[13px] sm:text-heading font-bold tabular-nums mt-1`}
+                    className={`${field.inputFit} min-w-0 w-full text-subhead sm:text-heading font-bold tabular-nums mt-1`}
                   />
                 ) : (
-                  <p className="text-[13px] sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(weeklyAmount)}</p>
+                  <p className="text-subhead sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(weeklyAmount)}</p>
                 )}
               </div>
             </div>

@@ -139,7 +139,7 @@ function SectionHeader({ href, icon, label, pathname, inSection, onClose }: Sect
     <Link
       href={href}
       onClick={onClose}
-      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-btn text-subhead font-medium transition-colors ${
         active
           ? 'text-ink'
           : inSection
@@ -171,7 +171,7 @@ function SubItem({ href, icon, label, pathname, onClose }: SubItemProps) {
     <Link
       href={href}
       onClick={onClose}
-      className={`relative flex items-center gap-2.5 pl-9 pr-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+      className={`relative flex items-center gap-2.5 pl-9 pr-3 py-2 rounded-btn text-subhead font-medium transition-colors ${
         active
           ? 'text-ink'
           : 'text-ink-4 hover:bg-surface-low hover:text-ink'
@@ -204,8 +204,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>
         <IconLogo />
         <div className="leading-none">
-          <p className="text-[13px] font-bold tracking-widest text-ink uppercase leading-tight">Lakipiece</p>
-          <p className="text-[13px] font-bold tracking-widest uppercase leading-tight" style={{ color: '#0d1c2e' }}>Finance</p>
+          <p className="text-subhead font-bold tracking-widest text-ink uppercase leading-tight">Lakipiece</p>
+          <p className="text-subhead font-bold tracking-widest uppercase leading-tight" style={{ color: '#0d1c2e' }}>Finance</p>
         </div>
       </div>
 

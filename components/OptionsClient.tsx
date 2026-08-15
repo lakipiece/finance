@@ -195,7 +195,7 @@ function OptionRow({ label, color, onDelete, extra, onLabelChange, onColorChange
       ) : (
         <span onClick={onLabelChange ? startEdit : undefined}
           title={onLabelChange ? '클릭하여 편집' : undefined}
-          className={`text-xs font-medium text-ink-2 flex-1 truncate ${onLabelChange ? 'cursor-text hover:text-ink transition-colors' : ''}`}>
+          className={`text-body font-medium text-ink-2 flex-1 truncate ${onLabelChange ? 'cursor-text hover:text-ink transition-colors' : ''}`}>
           {label}
         </span>
       )}

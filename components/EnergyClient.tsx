@@ -386,7 +386,7 @@ export default function EnergyClient() {
       <div className="px-1 flex flex-wrap items-center gap-2">
         <div className="flex gap-1 flex-wrap">
           <button onClick={toggleAllKinds}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
               allKindsOn ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
             }`}>
             전체
@@ -395,7 +395,7 @@ export default function EnergyClient() {
             const on = activeKinds[k.key]
             return (
               <button key={k.key} onClick={() => toggleKind(k.key)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                   on ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                 }`}
                 style={on ? { backgroundColor: k.color } : undefined}>
@@ -410,7 +410,7 @@ export default function EnergyClient() {
             const isActive = yearsBack === n
             return (
               <button key={n} onClick={() => setYearsBack(n as 2 | 3 | 5)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                   isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                 }`}
                 style={isActive ? { backgroundColor: '#131b2e' } : undefined}>

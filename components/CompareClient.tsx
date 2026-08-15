@@ -106,7 +106,7 @@ export default function CompareClient({ availableYears }: Props) {
             const isLoading = loading[y.year]
             return (
               <button key={y.year} onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${isSelected ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isSelected ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
                 style={isSelected ? { background: color } : {}}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
@@ -122,13 +122,13 @@ export default function CompareClient({ availableYears }: Props) {
       {selectedYears.length > 0 && (
         <div className="px-1 flex items-center gap-1.5 flex-wrap">
           <button onClick={() => setCumulative(prev => !prev)}
-            className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+            className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
             {cumulative ? '누적 보기' : '월별 보기'}
           </button>
           <span className="text-ink-5 mx-0.5">|</span>
             <button
               onClick={() => { setSelectedCategory(null); setSelectedDetail(null) }}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === null ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${selectedCategory === null ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               전체 지출
             </button>
             {expenseCategories.map(cat => {
@@ -137,7 +137,7 @@ export default function CompareClient({ availableYears }: Props) {
               return (
                 <button key={cat}
                   onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                     isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                   }`}
                   style={isActive && color ? { backgroundColor: color } : undefined}>
@@ -149,7 +149,7 @@ export default function CompareClient({ availableYears }: Props) {
             {/* 전체 수입 */}
             <button
               onClick={() => { setSelectedCategory(prev => prev === '전체수입' ? null : '전체수입'); setSelectedDetail(null) }}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${selectedCategory === '전체수입' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${selectedCategory === '전체수입' ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               전체 수입
             </button>
             {/* 수입 카테고리 */}

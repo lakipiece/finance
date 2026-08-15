@@ -21,7 +21,7 @@ function YearPickerInner({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
   }, [])
 
   if (years === null) {
-    return <div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />
+    return <div className={`h-8 w-20 rounded-btn ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />
   }
 
   if (years.length === 0) return null
@@ -49,7 +49,7 @@ function YearPickerInner({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
 
 export default function YearPicker({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
   return (
-    <Suspense fallback={<div className={`h-8 w-20 rounded-lg ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />}>
+    <Suspense fallback={<div className={`h-8 w-20 rounded-btn ${variant === 'dark' ? 'bg-white/20' : 'bg-surface-low'} animate-pulse`} />}>
       <YearPickerInner variant={variant} />
     </Suspense>
   )

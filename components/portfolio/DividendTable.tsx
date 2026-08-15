@@ -87,7 +87,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
             </button>
           )}
           <div className="relative">
-            <svg className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -95,7 +95,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               placeholder="검색..."
               value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              className="w-36 pl-5 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors border-0"
+              className="w-36 pl-9 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors border-0"
             />
           </div>
           <button
@@ -251,7 +251,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           <span className="text-ink-5">|</span>
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${sortMode !== mode ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
+              className={`px-2 py-0.5 rounded text-body transition-colors ${sortMode !== mode ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
               style={sortMode === mode ? { background: '#1A237E', color: '#fff' } : undefined}>
               {mode === 'date' ? '날짜순' : '금액순'}
             </button>
@@ -260,7 +260,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           <span>페이지당</span>
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
-              className={`px-2 py-0.5 rounded text-xs transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
+              className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
               style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}>
               {size}
             </button>

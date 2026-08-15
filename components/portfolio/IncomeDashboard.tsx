@@ -382,7 +382,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           const active = ownerFilter === o
           return (
             <button key={o} type="button" onClick={() => selectOwner(o)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
               style={active ? { backgroundColor: ownerColor(o) } : undefined}>
               {o}
             </button>
@@ -394,7 +394,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           const active = accountFilter === String(a.id)
           return (
             <button key={a.id} type="button" onClick={() => selectAccount(String(a.id))}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${active ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
               {a.broker} · {a.name}
             </button>
           )

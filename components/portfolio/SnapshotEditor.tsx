@@ -338,7 +338,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
+          {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
           {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
           {totalValue > 0 && (
             <div className="text-right leading-tight">
@@ -349,7 +349,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
               <p className="text-subhead font-bold text-ink tabular-nums">
                 평가금액 {Math.round(totalValue).toLocaleString()}원
               </p>
-              <p className={`text-[11px] font-medium tabular-nums ${totalMetrics.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
+              <p className={`text-meta font-medium tabular-nums ${totalMetrics.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
                 수익 {totalMetrics.profit >= 0 ? '+' : ''}{Math.round(totalMetrics.profit).toLocaleString()}원
                 {totalMetrics.rate != null ? ` (${totalMetrics.rate >= 0 ? '+' : ''}${(totalMetrics.rate * 100).toFixed(1)}%)` : ''}
               </p>
@@ -406,7 +406,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                           <span className="text-ink-2 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
                         </div>
                         {m != null ? (
-                          <div className={`text-right text-[10px] font-medium tabular-nums ${m.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
+                          <div className={`text-right text-micro tracking-normal font-medium tabular-nums ${m.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
                             {m.hasLedger ? '수익' : '평익'} {m.profit >= 0 ? '+' : ''}{Math.round(m.profit).toLocaleString()}원
                             {m.rate != null ? ` (${m.rate >= 0 ? '+' : ''}${(m.rate * 100).toFixed(1)}%)` : ''}
                           </div>
@@ -469,7 +469,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 })() : null}
               </div>
               <div className="flex items-center gap-2">
-                {msg && <span className={`text-xs ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
+                {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
                 {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
                   className="text-white px-3 py-1.5 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
@@ -508,7 +508,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
                     return (
                       <div key={`${row.account_id}__${row.security_id}`}
-                        className={`group rounded-xl border p-3 transition-all ${
+                        className={`group rounded-field border p-3 transition-all ${
                           currentRow.quantity > 0
                             ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-surface-low bg-surface-card'
                             : 'border-surface-low bg-surface-card opacity-60'
@@ -564,7 +564,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                           </div>
                           <div className="flex items-center justify-between">
                             <p className="text-micro tracking-normal text-ink-4">평가금액</p>
-                            <p className={`text-xs font-medium ${marketValue != null ? 'text-ink-2' : 'text-ink-5'}`}>
+                            <p className={`text-body font-medium ${marketValue != null ? 'text-ink-2' : 'text-ink-5'}`}>
                               {marketValue != null ? `${Math.round(marketValue).toLocaleString()}원` : '—'}
                             </p>
                           </div>
