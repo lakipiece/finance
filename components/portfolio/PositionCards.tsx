@@ -188,7 +188,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
           const isSyncing = syncing === ticker
           const msg = syncMsg[ticker]
           const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? null) : null
-          // 섹터 컬러가 있으면 티커 배지에 적용, 없으면 기본 slate-700
+          // 섹터 컬러가 있으면 티커 배지 점에 적용, 없으면 기본 잉크
           const tickerBgColor = sectorColor ?? undefined
 
           const currentPriceLabel = p.current_price_usd != null

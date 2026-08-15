@@ -10,6 +10,9 @@
 - **인증**: NextAuth v5 (`auth()` from `@/lib/auth`) — write API에 session 체크 필수
 - **캐시 무효화**: `invalidateCache()` from `@/lib/cache`
 - **스타일**: Tailwind CSS + `lib/styles.ts` 상수 (`btn`, `field`, `modal`, `badge`, `tbl`)
+  - 디자인 기준: **[docs/design-system.md](docs/design-system.md)** — 새 컴포넌트 전에 반드시 확인
+  - 토큰은 `tailwind.config.ts`에 정의 (`surface-*`, `ink-*`, `income`/`warning`/`action`/`gain`/`loss`/`danger`)
+  - 테두리 금지 · 크기 7단(`display`~`micro`)만 · 네이티브 `<select>`·`type="date"` 금지
 - **차트**: Recharts (BarChart stacked, LineChart, ComposedChart)
 - **아이콘**: 인라인 SVG (외부 아이콘 라이브러리 미사용)
 - **DnD**: `@dnd-kit/core`, `@dnd-kit/sortable`

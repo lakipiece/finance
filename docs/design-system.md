@@ -1,575 +1,377 @@
-# Ledger Design System
+# Lakipiece Finance — 디자인 시스템 (시안 D)
 
-> 앱 전체의 시각적 일관성과 개발 효율을 위한 디자인 기준 문서.  
-> **새 컴포넌트를 만들 때 이 문서와 `lib/styles.ts`를 먼저 확인할 것.**
-
----
-
-## 철학: The Orchestrated Lens
-
-> *"모든 픽셀은 자리를 얻어야 한다. 선이 명확성을 주지 못하면 제거한다. 타이포그래피와 블루-그레이 표면의 미세한 이동이 사용자의 시선을 안내한다."*
-
-고밀도 엔터프라이즈 환경에서 "템플릿" 외형은 집중의 적이다. 이 디자인 시스템은 **The Orchestrated Lens** 철학을 따른다: 데이터는 단순히 표시되는 것이 아니라, 정교한 레이어링과 색조 깊이를 통해 *큐레이션*된다.
-
-**핵심 원칙: 선 없는(No-Line) 구조**
-- 섹션 분리용 `1px solid border` **금지**
-- 경계는 배경색 이동(Tonal Shift)으로 표현
-- 선이 필요한 곳에는 "Ghost Border" 사용: `outline-variant`(#c6c6cd) 15% 불투명도
+> 앱 전체의 시각적 일관성과 개발 효율을 위한 기준 문서.
+> **새 컴포넌트를 만들기 전에 이 문서와 `lib/styles.ts` / `tailwind.config.ts`를 먼저 볼 것.**
+>
+> 근거 문서: [`docs/design_handoff_lakipiece_d/README.md`](design_handoff_lakipiece_d/README.md)
+> 적용 범위: 27개 화면 전체 · 최초 적용 커밋 `7057225`
 
 ---
 
-## 0. 빠른 참조 — `lib/styles.ts`
+## 철학
 
-컴포넌트 내부에 Tailwind 클래스를 하드코딩하지 말 것.  
-`lib/styles.ts`에서 상수를 import해서 사용한다.
+**B안의 표면 언어 × C안의 정보 밀도.**
 
-```tsx
-import { btn, card, field, badge, modal, text, tbl, skeleton, layout } from '@/lib/styles'
+- 테두리를 걷어내고, **배경 톤 이동 + 넓은 확산 그림자**로만 깊이를 만든다.
+- 행 높이·카드 패딩·레이블 스케일을 조여 같은 면적에 더 많은 데이터를 담는다.
+- **입력 화면은 밀도 압축의 예외 구역이다.** 입력은 스캔이 아니라 조작이므로 여백과 터치 타깃을 유지한다.
 
-// 버튼
-<button className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
-<button className={btn.secondary}>취소</button>
-<button className={btn.icon} title="수정"><EditIcon /></button>
-<button className={btn.danger} title="삭제"><TrashIcon /></button>
-<button className={btn.pill(isActive)} style={isActive ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>전체</button>
+### 절대 규칙 6가지
 
-// 카드
-<div className={`${card.base} p-4 sm:p-6`}>메인 카드</div>
-<div className={`${card.inner} p-4`}>서브 카드</div>
-<div className={`${card.interactive} p-4`} onClick={...}>클릭 카드</div>
-
-// 폼
-<label className={field.label}>계좌명</label>
-<input className={field.input} />
-<select className={field.select}>...</select>
-<textarea className={field.textarea} rows={3} />
-<input className={field.search} placeholder="검색..." />
-
-// 배지
-<span className={`${badge.base} bg-slate-100 text-slate-700`}>{value}</span>
-<span className={badge.owner}>{owner}</span>
-<span className={badge.ticker} style={{ backgroundColor: hex+'20', color: hex }}>{ticker}</span>
-
-// 모달
-<div className={modal.overlay}>
-  <div className={modal.container}>
-    <div className={modal.header}>...</div>
-    <div className={modal.body}>...</div>
-    <div className={modal.footer}>...</div>
-  </div>
-</div>
-
-// 테이블
-<th className={tbl.th}>날짜</th>
-<td className={tbl.td}>{value}</td>
-<tr className={i % 2 === 0 ? tbl.rowEven : tbl.rowOdd}>
-
-// 레이아웃
-<div className={layout.page}>
-```
+1. **테두리를 추가하지 않는다.** 구분이 필요하면 배경 톤을 한 단계 옮기거나 그림자를 쓴다.
+   유일한 예외는 표의 행 구분선 `border-surface-low` — 이건 테두리가 아니라 *행 사이 톤 변화*로 취급한다.
+2. **가계부에 손익 2색(`gain`/`loss`)을 쓰지 않는다.** 한 앱에서 빨강이 "수익"과 "지출"을 동시에 뜻하게 된다.
+3. **카테고리색을 글자색으로 쓰지 않는다.** 6px 점으로만 쓰고 글자는 `ink-2` 고정.
+   (`#26A69A`는 흰 배경 대비 3.0:1로 본문 AA 미달)
+4. **차트 막대에 라운딩을 넣지 않는다.** 값의 끝과 시각적 끝이 일치해야 한다.
+5. **9px 이하 글자를 쓰지 않는다.** 임의 픽셀값도 금지 — 7단 스케일만 쓴다.
+6. **값이 스펙에 없으면 임의로 만들지 말고 확인을 요청한다.** 이 개편의 목적이 "같은 역할에 규칙이 여러 벌"인 상태를 한 벌로 줄이는 것이다.
 
 ---
 
-## 1. 색상
+## 1. 토큰
 
-### Surface 계층 (The Orchestrated Lens 핵심)
+토큰은 `tailwind.config.ts`에 정의되고 `lib/styles.ts`가 조합해 쓴다.
+컴포넌트에 raw hex를 쓰지 않는다. SVG·Recharts처럼 클래스를 못 쓰는 곳은 `lib/styles.ts`의 `color` 상수를 참조한다.
 
-배경색 레이어링으로 깊이를 표현한다. `surface.*` 토큰은 `tailwind.config.ts`에 등록되어 있다.
+### 표면 램프 — 전면 중성 (D-00)
 
-| 토큰 (Tailwind) | Hex | 용도 |
+| 클래스 | 값 | 용도 |
 |---|---|---|
-| `bg-surface` | `#f8f9ff` | Foundation — 앱 최상위 배경 |
-| `bg-surface-low` | `#eff4ff` | Canvas — 사이드바, 보조 패널 |
-| `bg-surface-container` | `#e6eeff` | Container — 구분 존 |
-| `bg-surface-container-high` | `#dce9ff` | Container High — 보조 버튼 배경 |
-| `bg-surface-dim` | `#ccdbf3` | Dim — 비활성 상태 |
-| `bg-surface-card` / `bg-white` | `#ffffff` | High-Focus Card — 주요 카드 "팝업" |
-| `text-[#0d1c2e]` | `#0d1c2e` | On Surface — 기본 텍스트 (pure black 금지) |
-| `bg-[#131b2e]` | `#131b2e` | Primary Container — 주요 CTA 배경 |
+| `bg-surface` | `#fafafb` | 앱 배경 · 화면 바닥 · 모달 푸터 |
+| `bg-surface-low` | `#f1f3f7` | 인풋 채움 · 행 구분선 · 사이드바 · 비활성 존 |
+| `bg-surface-container` | `#e9ecf2` | 구분 존 · 차트 그리드 · 열 구분선 |
+| `bg-surface-high` | `#e0e4ec` | 보조 버튼 배경 — **실제 액션 전용** |
+| `bg-surface-card` | `#ffffff` | 카드 |
 
-```tsx
-import { surface } from '@/lib/styles'
+**폐기됨**: 청색 램프 `#f8f9ff` `#eff4ff` `#e6eeff` `#dce9ff` `#ccdbf3`
 
-// 레이어 스택 (Foundation → Canvas → Card)
-<div className="bg-surface min-h-screen">        {/* 앱 배경 */}
-  <aside className={surface.canvas}>             {/* 사이드바 */}
-  <main>
-    <div className={surface.cardElevated}>        {/* 주요 카드, 그림자로 부상 */}
-    <div className={surface.zone}>               {/* 구분 존, 테두리 없음 */}
-```
+> `surface-high`는 "실제로 무언가를 실행하는 버튼"에만 쓴다.
+> 기간 선택·목록 이동 같은 **탐색**에 배경을 주면 액션과 구분이 사라진다 → 텍스트 + 셰브론을 쓴다.
 
-### Slate Scale (주요 텍스트/배경)
+### 잉크 (텍스트 계층)
 
-| 토큰 | Tailwind | 용도 |
-|------|----------|------|
-| 최상위 텍스트 | `text-slate-800` | 페이지 제목, 금액 강조 |
-| 보조 텍스트 | `text-slate-700` | 섹션 제목 |
-| 3차 텍스트 | `text-slate-600` | 일반 본문 |
-| 약한 텍스트 | `text-slate-400` | 날짜, 메타, 레이블 |
-| 최약 텍스트 | `text-slate-300` | 플레이스홀더, 비활성 아이콘 |
-| 기본 배경 | `bg-white` | 카드 내부 |
-| 밝은 배경 | `bg-slate-50` | 대체행, 선택 상태 |
-| 서브 배경 | `bg-slate-100` | 비활성 배지 배경 |
-| 분리선 | `border-slate-100` | 카드 테두리 |
-| 행 구분 | `border-slate-50` | 테이블 행 사이 |
+| 클래스 | 값 | 용도 |
+|---|---|---|
+| `text-ink` | `#0d1c2e` | 기본 텍스트 · 금액 · 제목 |
+| `text-ink-2` | `#3d4a5c` | 표 내역 · 배지 글자 |
+| `text-ink-3` | `#5b6a80` | 폼 라벨 · 보조 설명 |
+| `text-ink-4` | `#8794a8` | 캡션 · 날짜 · 부가 정보 |
+| `text-ink-5` | `#a8b3c4` | 표 헤더 · 플레이스홀더 · 셰브론 |
 
-### 시맨틱 색상
+**폐기됨**: `slate-*` 전체, `#cbd5e1`(대비 1.5:1 미달) → `ink-5`로 대체
 
-| 의미 | 색상 | 용도 |
-|------|------|------|
-| 수익 (+) | `text-rose-500` | 수익, 평가이익 (한국 관례: 상승=빨강) |
-| 손실 (-) | `text-blue-500` | 손실, 평가손실 |
-| 성공 | `text-green-700` / `bg-green-100` | Google Sheets 태그 |
-| 정보 | `text-blue-700` / `bg-blue-100` | Excel 태그 |
-| 경고 | `text-orange-500` / `bg-orange-100` | 연결 해제, 주의 |
-| 멤버 L | `text-blue-600` / `bg-blue-50` | 멤버 배지 |
-| 멤버 P | `text-pink-600` / `bg-pink-50` | 멤버 배지 |
+### 의미색
 
-### 테마 색상 (ThemeContext)
+| 클래스 | 값 | 용도 | 대비(흰 배경) |
+|---|---|---|---|
+| `income` | `#00695C` | 수입 · 입금 · 수지 흑자 | 6.6:1 |
+| `warning` | `#b45309` | 예산 초과 · 임박 · 이상 거래 | 5.0:1 |
+| `action` | `#131b2e` | 주 버튼 · 선택 상태 · 포커스 링 | — |
+| `gain` | `#e11d48` | 포트폴리오 상승 — **가계부 금지** | 4.5:1 |
+| `loss` | `#2563eb` | 포트폴리오 하락 — **가계부 금지** | — |
+| `danger` | `#e11d48` | 인풋 오류 · 삭제 | 4.5:1 |
 
-앱의 강조색은 `palette.colors[0~3]`에서 가져온다. **hex 값 하드코딩 금지.**
+> **`gain`과 `danger`는 값이 같고 의미가 다르다.** 일부러 이름을 나눴다.
+> 그래야 "가계부에 손익색 금지" 규칙을 코드에서 검증할 수 있다 —
+> `grep text-gain` 결과에 가계부 파일이 있으면 그건 위반이다.
 
-```tsx
-const { palette } = useTheme()
-// palette.colors[0] — 주 강조색 (버튼, 차트 첫 번째 시리즈)
-```
+### 카테고리 팔레트 (`lib/palettes.ts`)
 
-**이동평균선 전용 고정색 (예외)**
-- MA5: `#fb923c` (orange-400)
-- MA20: `#a78bfa` (violet-400)
-- MA60: `#38bdf8` (sky-400)
+| 인덱스 | 값 | 카테고리 |
+|---|---|---|
+| `colors[0]` | `#1A237E` | 고정비 |
+| `colors[1]` | `#690043` | 대출상환 |
+| `colors[2]` | `#26A69A` | 변동비 — *이전 `#00695C`에서 이동 (수입색과 충돌)* |
+| `colors[3]` | `#8D6E63` | 여행공연비 |
 
----
+포트폴리오 계좌 시리즈: `#1A237E` `#00695C` `#690043` `#8D6E63` `#3949AB` `#26A69A`, 예수금 `#a8b3c4`
 
-## 2. 타이포그래피
+### 타이포그래피
 
-### 폰트 패밀리
+**폰트** — Pretendard 자체 호스팅 (`public/fonts/`)
 
-| 역할 | 폰트 | 사용 범위 |
-|------|------|-----------|
-| 헤드라인 · KPI 숫자 | **Manrope** (`font-manrope`) | 24px 이상 숫자, 페이지 제목 |
-| 한글 본문 · UI | **Noto Sans KR** (기본) | 일반 텍스트, 레이블, 데이터 셀 |
+- `400 / 500 / 700` 세 굵기만 로드. **600 폐기.**
+- 한글 `unicode-range` 동적 서브셋 276개 — 페이지에 실제로 쓰인 글자 범위만 내려받는다.
+- `<link rel="stylesheet" href="/fonts/pretendard.css">` (`app/layout.tsx`)
+- **`-webkit-font-smoothing` 사용 금지** — macOS에서만 획을 가늘게 만들어 플랫폼 차이를 되살린다.
+- 금액·비율·날짜는 전부 `tabular-nums`.
 
-```tsx
-import { font } from '@/lib/styles'
+**크기 7단** — 이 7개 외의 크기를 쓰지 않는다.
 
-<p className={font.display}>₩1,234만</p>      {/* 2.75rem, Manrope 700 */}
-<h1 className={font.headline}>포트폴리오</h1>  {/* 1.5rem, Manrope 600 */}
-<p className={font.body}>일반 설명 텍스트</p>  {/* 0.875rem */}
-<span className={font.meta}>메타 정보</span>   {/* 0.6875rem */}
-```
+| 클래스 | 크기/굵기 | 용도 |
+|---|---|---|
+| `text-display` | 22 / 700 / `-.015em` | KPI 값 (모달 금액 필드는 20px 예외) |
+| `text-title` | 20 / 700 | 페이지 제목 |
+| `text-heading` | 15 / 700 | 모달·섹션 제목 · KPI 값 |
+| `text-subhead` | 13 / 500 | 카드 제목 · 인풋 입력값 · 모바일 리스트 내역 |
+| `text-body` | 12 / 400 | 표 본문 · 버튼 · 일반 텍스트 |
+| `text-meta` | 11 / 500 | 폼 라벨 · 캡션 · 필터 칩 |
+| `text-micro` | 10 / 500 / `.08em` / 대문자 | 표 헤더 · 배지 · 차트 축 |
 
-### 텍스트 크기 규칙
+> `text-micro`는 대문자 맥락 전용 자간(.08em)을 포함한다.
+> **국문에 쓸 때는 `tracking-normal`을 함께 붙인다** — 한글에 자간을 벌리면 읽기 어렵다.
 
-| 크기 | Tailwind | 용도 |
-|------|----------|------|
-| 페이지 제목 | `text-xl font-bold` | H1 |
-| 섹션 제목 | `text-sm font-semibold` | 카드 내 H3 |
-| 카드 제목 | `text-xs font-semibold` | 소형 카드 제목 |
-| 레이블 | `text-xs font-medium uppercase tracking-wider` | KPI 레이블 |
-| 본문 | `text-xs` | 테이블 셀, 설명 |
-| 보조 | `text-[10px]` | 배지, 메타 태그 |
+> **굵기 예외**: 표·리스트 본문은 400이 아니라 **500**을 쓴다 (`tbl.td`).
+> Windows는 macOS처럼 획을 두껍게 그리지 않아 데이터가 빽빽한 표에서 400이 얇게 보인다.
+> 라벨·캡션은 그대로 둔다.
 
-> `text-[8px]`, `text-[9px]`, `text-[11px]` **사용 금지**.  
-> `text-xs` (12px) 또는 `text-[10px]`만 허용.
+**숫자 포맷**
 
-### 금액 표시
+| 위치 | 형식 | 함수 |
+|---|---|---|
+| 표 · 리스트 · 입력 | `6,420,000원` | `formatWonFull` |
+| 차트 축 · 좁은 공간 | `642만` | `formatWonCompact` |
+| 날짜 | `2026.08.12` | `formatDate` |
 
-```tsx
-import { formatWonRound, formatWonCompact } from '@/lib/utils'
+### 라운딩
 
-formatWonRound(n)   // "1,234,567원" — 테이블, 정밀 표시
-formatWonCompact(n) // "123만", "1.2억" — KPI 카드, 차트
-```
+| 클래스 | 값 | 용도 |
+|---|---|---|
+| `rounded-full` | `9999px` | 배지 · 점 · 게이지 트랙 · pill |
+| `rounded-dialog` | `18px` | 모달 다이얼로그 · 대시보드 외곽 컨테이너 |
+| `rounded-card` | `16px` | 카드 · KPI 카드 |
+| `rounded-field` | `11px` | 인풋 · 필드 |
+| `rounded-btn` | `10px` | 버튼 · 세그먼트 컨트롤 |
+| `rounded-cell` | `7px` | 인라인 입력 행 내부 필드 |
 
-항상 `tabular-nums` 클래스 추가.
+### 그림자 — 3종 + 오류
 
----
+| 클래스 | 값 | 용도 |
+|---|---|---|
+| `shadow-card` | `0 4px 32px 0 rgba(13,28,46,.06)` | 카드 |
+| `shadow-dialog` | `0 12px 48px -8px rgba(13,28,46,.28)` | 모달 · 드롭다운 목록 |
+| `shadow-focus` | `0 0 0 2px #131b2e` | 인풋 포커스 링 |
+| `shadow-error` | `0 0 0 1.5px rgba(225,29,72,.35)` | 인풋 오류 |
 
-## 3. 간격 (Spacing)
+### 간격
 
-```tsx
-// 페이지 레이아웃
-<div className={layout.page}>  {/* max-w-7xl mx-auto px-4 py-8 space-y-6 */}
-```
-
-| 상황 | 추가 클래스 |
-|------|------------|
-| 기본 카드 | `p-4 sm:p-6` |
-| KPI 카드 | `p-4 sm:p-5` |
-| 컴팩트 서브카드 | `p-3` |
-| 기본 버튼 | `px-4 py-1.5` (btn.primary/secondary에 내장) |
+| 맥락 | 값 |
+|---|---|
+| 폼 필드 간격 | `gap-[14px]` |
+| 카드 간 gap | `gap-2` (8px) |
+| 카드 내부 패딩 | `p-[13px]` (표) / `px-[13px] py-[11px]` (KPI) / `p-[14px]` (폼) |
+| 표 행 패딩 | `py-[5px]` |
+| 모달 헤더/본문/푸터 | `px-[18px] py-[15px]` / `px-[18px] pb-4` / `px-[18px] py-3` |
 
 ---
 
-## 4. 컴포넌트 패턴
+## 2. 컴포넌트 규약 (`lib/styles.ts`)
+
+컴포넌트 안에 Tailwind 클래스를 하드코딩하지 말고 상수를 import한다.
+
+```tsx
+import { btn, card, field, badge, modal, text, tbl, color } from '@/lib/styles'
+```
 
 ### 버튼
 
-```tsx
-import { btn } from '@/lib/styles'
+| 상수 | 형태 | 언제 |
+|---|---|---|
+| `btn.primary` | action 배경 · 흰 글자 700 | 주 액션 (저장·추가·갱신) |
+| `btn.secondary` | `surface-high` · `ink-2` 500 | 보조 액션 (취소·되돌아가기) |
+| `btn.ghost` | 배경 없음 | 약한 보조 |
+| `btn.chevron` | 텍스트 + 셰브론 | **탐색 전용** (기간 선택 등) |
+| `btn.pill(active)` | pill · 선택 시 action | 필터·분류 토글 |
+| `btn.segment(active)` | 세그먼트 한 칸 | 지출/수입/이체 |
 
-<button className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
-<button className={btn.secondary}>취소</button>
-<button className={btn.ghost}>더보기</button>
-<button className={btn.icon} title="수정"><PencilIcon /></button>
-<button className={btn.danger} title="삭제"><TrashIcon /></button>
-<button
-  className={btn.pill(isActive)}
-  style={isActive ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}
->전체</button>
-```
+> `btn.primary`는 배경색을 `style`로 덮지 않는다. 예전에 테마색(`palette.colors[0]`)을 주입하던 코드는 전부 제거했다.
 
-### 카드
+### 폼 (D-02 — 채움형)
 
-```tsx
-import { card } from '@/lib/styles'
+밑줄형은 **전면 폐기**. 모든 인풋은 채움형이다.
 
-<div className={`${card.base} p-4 sm:p-6`}>       {/* 최상위, shadow 있음 */}
-<div className={`${card.inner} p-4`}>              {/* 서브카드, shadow 없음 */}
-<div className={`${card.interactive} p-4`} onClick={...}>  {/* 클릭 가능 */}
-<div className={`${card.sub} p-3`}>               {/* 배경 구분 영역 */}
-```
+| 상태 | 스펙 |
+|---|---|
+| 기본 | `bg-surface-low` · `rounded-field` · `px-3 py-[9px]` · 13/400 `ink` · `border-0` |
+| 포커스 | `bg-white` + `shadow-focus` — 배경이 **흰색으로 올라오고** 잉크 링 |
+| 오류 | `bg-gain/[.07]` + `shadow-error` · 글자 `gain` · 아래 메시지 10/400 |
+| 비활성 | `bg-surface` · 글자 `ink-5` |
+| 플레이스홀더 | `ink-5` |
 
-> `rounded-xl`과 `rounded-2xl` 혼용 금지. **카드는 항상 `rounded-2xl`** (상수에 내장됨).
+- 어두운 배경(로그인 등) 위에서는 **표면 톤을 반대 방향으로** 옮긴다: `bg-white/15` → 포커스 `bg-white/25`.
+  밝은 채움색을 그대로 쓰면 흰 글자가 묻힌다.
+- 표 안 인라인 입력은 `field.cell` (흰 배경 · `rounded-cell` · 더 조인 패딩).
 
-### 폼
+### 배지 (D-01b — 점 + 잉크)
 
-```tsx
-import { field } from '@/lib/styles'
-
-<div>
-  <label className={field.label}>계좌명</label>
-  <input className={field.input} />
-</div>
-
-<select className={field.select}>...</select>
-<textarea className={field.textarea} rows={3} />
-
-{/* 검색 인풋 */}
-<div className="relative">
-  <input className={field.search} placeholder="검색..." />
-  <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300" />
-</div>
-
-{/* 파일 드래그존 */}
-<div className={field.dropzone} onClick={...}>...</div>
-```
-
-### 배지
+카테고리색은 **6px 점**으로만. 글자는 `ink-2` 고정, 배경은 `surface-low`.
 
 ```tsx
-import { badge } from '@/lib/styles'
-
-<span className={`${badge.base} bg-slate-100 text-slate-700`}>{value}</span>
-<span className={`${badge.base} ${CAT_BADGE[cat]}`}>{cat}</span>
-<span className={badge.ticker} style={{ backgroundColor: hex+'20', color: hex }}>SCHD</span>
-<span className={badge.owner}>L</span>
-<span className={badge.latest}>최신</span>
-<span className={badge.success}>Sheets</span>
-<span className={badge.info}>Excel</span>
+import CategoryBadge from '@/components/ui/CategoryBadge'
+<CategoryBadge category="변동비" size="sm" />
 ```
+
+### 표
+
+```tsx
+<th className={tbl.th}>   // micro 대문자 ink-5
+<td className={tbl.td}>   // body/500 ink-2 · py-[5px]
+<tr className={tbl.row}>  // border-b border-surface-low last:border-0
+```
+
+줄무늬(zebra)는 폐기했다. 구분은 행 구분선만.
 
 ### 모달
 
 ```tsx
-import { btn, modal } from '@/lib/styles'
-
-{show && (
-  <div className={modal.overlay} onClick={onClose}>
-    <div className={modal.container} onClick={e => e.stopPropagation()}>
-      <div className={modal.header}>
-        <h2 className="text-sm font-semibold text-slate-700">제목</h2>
-        <button className={modal.close} onClick={onClose}>
-          <XIcon className="w-5 h-5" />
-        </button>
-      </div>
-      <div className={modal.body}>
-        {/* 스크롤 가능 영역 */}
-      </div>
-      <div className={modal.footer}>
-        <button className={btn.secondary} onClick={onClose}>취소</button>
-        <button className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>저장</button>
-      </div>
-    </div>
-  </div>
-)}
+<div className={modal.overlayTop}>
+  <div className={modal.containerLg}>
+    <div className={modal.header}>…</div>
+    <div className={modal.body}>…</div>
+    <div className={modal.footer}>…</div>
 ```
 
-> `createPortal` 사용 시: `modal.overlayTop` (z-[9999]) 사용.  
-> 일반 모달: `modal.overlay` (z-50).
+- 오버레이는 `.modal-scrim` 한 벌 (D-04): `rgba(13,28,46,.3)` + `blur(6px)`,
+  `@supports` 미지원 폴백 `rgba(13,28,46,.42)` — `app/globals.css`.
+  z-index만 호출 측에서 다르게 준다.
+- 높이는 **`dvh` 기준**(`max-h-[calc(100dvh-2rem)]`). `vh`는 모바일 주소창/키보드를 반영하지 못해 화면을 넘친다.
+- `w-full`과 `mx-*`를 **함께 쓰지 않는다.** 둘이 겹치면 뷰포트보다 넓어져 좌우가 잘린다.
+  바깥 스크롤 컨테이너 + 안쪽 중앙정렬 래퍼(`p-4`) 구조를 쓴다.
 
-### 테이블
+### 공용 UI 컴포넌트
 
-```tsx
-import { tbl } from '@/lib/styles'
+| 컴포넌트 | 역할 |
+|---|---|
+| `ui/Select` | 드롭다운. 네이티브 `<select>` **전면 대체** |
+| `ui/DateInput` | 날짜. 네이티브 `type="date"` **전면 대체** |
+| `ui/YearSelect` · `YearPicker` | 연도 선택 |
+| `ui/YearMonthPicker` | 연월 선택 |
+| `ui/CategoryBadge` | 점 + 잉크 배지 |
+| `ui/KeepOpenToggle` | 저장 후 계속 입력 토글 |
 
-<table className="w-full text-sm">
-  <thead>
-    <tr className="border-b border-slate-100">
-      <th className={tbl.th}>날짜</th>
-      <th className={tbl.thRight}>금액</th>
-    </tr>
-  </thead>
-  <tbody>
-    {items.map((item, i) => (
-      <tr key={item.id} className={i % 2 === 0 ? tbl.rowEven : tbl.rowOdd}>
-        <td className={tbl.td}>{item.date}</td>
-        <td className={tbl.tdRight}>{formatWonRound(item.amount)}</td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-```
+> **네이티브 `<select>`와 `<input type="date">`는 앱에 존재하지 않는다.**
+> OS 기본 위젯이 뜨면 앱 안에서 혼자 다른 표면이 된다.
+> 새 코드에서도 쓰지 말 것 — `grep '<select'` / `grep 'type="date"'`로 검증한다.
 
-### 토글 스위치
+**드롭다운 공통 동작** (`Select`, `DateInput`의 검색 목록, 세부유형·비고 자동완성)
 
-```tsx
-<button
-  onClick={() => setActive(!active)}
-  className={`relative w-11 h-6 rounded-full transition-colors ${active ? 'bg-slate-800' : 'bg-slate-200'}`}
->
-  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${active ? 'translate-x-5' : ''}`} />
-</button>
-```
-
-### 빈 상태 (Empty State)
-
-```tsx
-{/* 테이블 행 내 */}
-<tr><td colSpan={n} className="py-10 text-center text-slate-400 text-xs">내역이 없습니다</td></tr>
-
-{/* 카드 내 */}
-<p className="text-center text-slate-400 text-xs py-8">내역이 없습니다</p>
-
-{/* 페이지 전체 */}
-<div className="text-center py-16">
-  <p className="text-4xl mb-4">📭</p>
-  <p className="text-sm font-semibold text-slate-700 mb-1">데이터가 없습니다</p>
-  <p className="text-xs text-slate-400">설명 텍스트</p>
-</div>
-```
-
-### 로딩 상태
-
-```tsx
-import { skeleton } from '@/lib/styles'
-
-<div className={skeleton.line} />   {/* 한 줄 */}
-<div className={skeleton.card} />   {/* 카드 */}
-<div className={skeleton.chart} />  {/* 차트 */}
-
-{/* 버튼 로딩 */}
-<button disabled className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>
-  {loading ? '처리 중...' : '확인'}
-</button>
-```
+- 목록은 `createPortal`로 **body에 띄운다** — 모달 `overflow`에 잘리지 않는다.
+- 아래 공간이 부족하면 **위로 뒤집는다**.
+- `↑`/`↓` 이동, `⏎` 확정, `Esc` 닫기. 목록이 열려 있는 동안 `⏎`는 **폼 저장으로 새지 않는다**(인풋에서 이벤트를 끊는다).
+- 포커스가 인풋과 목록을 모두 벗어나면 닫힌다(Tab 포함).
+- 바깥 클릭 판정은 **컨테이너와 목록 ref 둘 다** 확인해야 한다. 목록만 빠뜨리면 항목 클릭이 "바깥 클릭"으로 잡혀 `click` 전에 닫힌다.
 
 ---
 
-## 5. 반응형 규칙
+## 3. 동작 규약
 
-### 브레이크포인트
+### 키보드 (D-07)
 
-| 구분 | Tailwind | px |
-|------|----------|----|
-| 모바일 | — | < 640px |
-| 태블릿 | `sm:` | 640px+ |
-| 소형 데스크탑 | `md:` | 768px+ |
-| 데스크탑 | `lg:` | 1024px+ |
+| 키 | 동작 | 적용 |
+|---|---|---|
+| `⏎` | 저장 (토글 ON이면 저장하고 계속) | 모달 |
+| `⌘⏎` | 저장하고 계속 (토글과 무관) | 모달 |
+| `Esc` | 취소 — 입력값이 있으면 확인 한 번 | 모달 |
+| `Tab` | 다음 필드 (아래 순서) | 모달 |
+| `↑↓` | 드롭다운 항목 이동 | 드롭다운 |
+| `1`–`4` | 분류 직접 선택 | 텍스트 입력 중이 아닐 때만 |
 
-### 그리드 패턴
+구현: `lib/useEntryFormKeys.ts`
 
-```tsx
-grid-cols-2 md:grid-cols-3 lg:grid-cols-5   // KPI 카드
-grid-cols-2 sm:grid-cols-3 lg:grid-cols-6   // 계좌 카드
-grid-cols-1 sm:grid-cols-2                  // 2컬럼
-grid-cols-1 sm:grid-cols-3                  // 3컬럼
-```
+### 입력 순서
 
-### 테이블 → 카드 분기
+**날짜 → 작성자 → 분류 → 세부유형 → 결제수단 → 비고 → 금액**
 
-데이터 테이블은 모바일 카드 뷰를 반드시 함께 제공한다.
+화면 배치와 Tab 순서가 같다. 금액이 마지막이며, 모달을 열면 커서는 세부유형(수입은 설명)에 놓인다 — 날짜는 오늘이 기본값이라 대개 손대지 않기 때문이다.
 
-```tsx
-{/* 모바일 */}
-<div className="sm:hidden space-y-2">
-  {items.map(item => (
-    <div className="border border-slate-100 rounded-xl px-4 py-3 bg-white">...</div>
-  ))}
-</div>
+> 핸드오프 문서(D-07)는 금액을 처음에 두는 순서였으나, 사용자 요청으로 현재 순서를 채택했다.
 
-{/* 데스크탑 */}
-<div className="hidden sm:block overflow-x-auto">
-  <table ...>
-```
+### 연속 입력 (D-07a)
 
-### 모달 높이
+- "저장 후 계속 입력" 토글은 폼에 상시 노출하고 상태를 **localStorage에 영속** (`lib/useKeepOpen.ts`).
+- ON 상태로 저장하면: 모달 유지 · **금액과 비고를 비움** · 나머지 필드 유지 · 커서를 **날짜로 복귀**(텍스트 선택 상태).
+- 분류·결제수단·작성자는 연속 입력에서 대개 같은 값이라 남긴다.
 
-```
-max-h-[95dvh] sm:max-h-[90vh]  ← modal.container/containerLg에 내장됨
-```
+### 인라인 입력 행 (D-03)
 
----
+계좌 모달 입출금 탭. 표 첫 행이 곧 입력 행이며 `⏎` 저장 후 커서가 금액 칸에 남는다.
+`<640px`에서는 세로 폼으로 폴백한다.
 
-## 6. z-index 레이어 체계
+### 반응형
 
-| 용도 | 값 | 비고 |
-|------|-----|------|
-| 드롭다운 (인풋 위) | `z-40` | 직접 사용 |
-| 일반 모달 | `z-50` | `modal.overlay` |
-| 최상위 모달 (portal) | `z-[9999]` | `modal.overlayTop` |
+| 지점 | 동작 |
+|---|---|
+| `<640px` | 거래 리스트 → 2행 접기 (행 높이 57px) · 인라인 입력 행 → 세로 폼 · KPI 2열 · 리스트 항목마다 카드 분리 |
+| `≥640px` | 표 구조 · 포트폴리오 KPI 상단 고정(sticky) |
+
+- **모바일 리스트는 항목마다 카드를 나눈다.** 흰 카드 한 장에 배경 없는 항목을 쌓으면 테두리 없이는 경계가 사라진다.
+- **터치 타깃**: 입력 화면의 pill은 모바일 최소 36~40px. 11px 글자에 패딩만 주면 19px까지 내려가 손가락으로 맞히기 어렵다.
 
 ---
 
-## 7. 차트 (Recharts)
+## 4. 스펙에서 의도적으로 벗어난 결정
 
-```tsx
-<XAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-<YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-<CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-```
+| # | 핸드오프 스펙 | 실제 구현 | 이유 |
+|---|---|---|---|
+| 1 | 오류색 = `#e11d48` (gain과 동일) | `danger` 토큰으로 분리 | 값은 같지만 의미가 달라야 "가계부 손익색 금지"를 코드에서 검증할 수 있다 |
+| 2 | 캘린더 주말 rose/blue | 잉크 계층(`ink-4`)으로 중성화 | 기존 색이 손익 2색과 정확히 겹쳤다. 스펙에 주말 규칙 없음 |
+| 3 | Tab 순서 = 금액 먼저 | 금액 마지막 | 사용자 요청 |
+| 4 | 표 본문 400 | 표·리스트 본문만 500 | Windows 렌더링에서 400이 얇게 보임. 라벨·캡션은 유지 |
+| 5 | 모달 금액 20px | 모바일 15px / `sm`+ 20px | 390px에서 과대 |
 
-차트 색상은 항상 `palette.colors[i]`에서 가져온다.
-
-### 커스텀 툴팁
-
-```tsx
-import type { ChartTooltipProps } from '@/lib/chartTypes'
-
-function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
-  if (!active || !payload?.length) return null
-  return (
-    <div className="bg-white border border-slate-100 rounded-lg px-3 py-1.5 shadow-sm">
-      <p className="text-[10px] text-slate-400 mb-0.5">{label}</p>
-      <p className="text-xs font-semibold text-slate-800">{...}</p>
-    </div>
-  )
-}
-```
+**미구현 1건** — 모바일 2행 리스트의 "행 전체가 터치 타깃(상세·수정 진입)". 해당 컴포넌트에 상세/수정 경로가 없어 표시 전용 행으로 두었다.
 
 ---
 
-## 8. 접근성
+## 5. 작업 중 발견한 함정
 
-- 아이콘 버튼에 `title` 또는 `aria-label` 필수
-- 폼 인풋과 `label` 연결 (`htmlFor` + `id`)
-- 색상만으로 상태 표시 금지 (텍스트·아이콘 보조)
-- 모바일 터치 타깃 최소 44×44px
+앞으로 같은 실수를 반복하지 않기 위한 기록.
 
----
-
-## 9. 파일/컴포넌트 구조 규칙
-
-### 컴포넌트 크기 한도
-
-| 규모 | 줄 수 | 조치 |
-|------|-------|------|
-| 적정 | ~200 | 유지 |
-| 검토 | ~400 | 분할 고려 |
-| 분할 필요 | 400+ | 서브컴포넌트 추출 |
-
-### 네이밍 컨벤션
-
-- 페이지 전용: `*Client.tsx`
-- 공유 UI: `components/` 루트
-- 포트폴리오 전용: `components/portfolio/`
-- 가계부 전용: `components/` 루트
-
-### 유틸 위치
-
-| 함수/상수 | 위치 |
-|-----------|------|
-| 클래스 상수 | `lib/styles.ts` ← **여기서 import** |
-| 금액 포맷 | `lib/utils.ts` |
-| 차트 타입 | `lib/chartTypes.ts` |
-| 배당 유틸 | `lib/portfolio/dividendUtils.ts` |
-| 포트폴리오 타입 | `lib/portfolio/types.ts` |
-
-> 컴포넌트 내부에 `const inp = '...'` 형태로 클래스를 정의하지 말 것.
+| 함정 | 증상 | 원인 / 대응 |
+|---|---|---|
+| **Tailwind opacity 스케일** | 선택된 KPI 카드의 라벨이 안 보임 | `text-white/72`는 기본 스케일(…65, 70, 75…)에 없어 클래스가 생성되지 않는다. 임의 불투명도는 `/[.72]` 형태로 쓰거나 스케일 값을 쓴다 |
+| **DB numeric → 문자열** | 리밸런싱 합계가 `NaN%` | postgres.js는 `numeric`을 문자열로 준다. `"0.03" + "0.67"`이 이어붙기가 된다. 합산 전에 `Number()` |
+| **제어 인풋 즉시 포맷** | 목표 비율에 두 자리 입력 불가 | 매 타건마다 `toFixed(1)`로 되돌리면 `3` → `3.0`이 되어 둘째 자리를 넣을 수 없다. 편집 중에는 로컬 버퍼를 쓰고 blur에서 정규화 |
+| **미들웨어 matcher** | 로그인 화면 폰트 미로드 | `matcher`가 `css`/`woff2`를 제외하지 않아 자체 호스팅 폰트가 인증에 걸렸다. 정적 자산 확장자를 예외에 추가 |
+| **코드모드 소수점** | 표 셀 패딩 미적용 | `py-2.5` → `py-[5px]`.5 라는 깨진 클래스 생성. 정규식 alternation에서 긴 패턴을 먼저 두거나 `\b` 대신 명시적 경계를 쓸 것 |
+| **동적 클래스 조합** | 반응형 클래스 미생성 | `` sm:${card.base.split(' ').join(' sm:')} `` 같은 조합은 Tailwind가 스캔하지 못한다. **리터럴로 쓴다** |
+| **포털 + 바깥 클릭** | 드롭다운 항목 클릭 무효 | 목록을 포털로 옮기면 컨테이너 `contains`에 걸리지 않는다. 목록 ref도 함께 확인 |
+| **`w-full` + `mx-*`** | 모바일 모달 좌우 잘림 | 합이 뷰포트를 넘긴다. 바깥 패딩 + `w-full` 구조로 |
+| **`vh` 단위** | 모바일 모달이 화면 벗어남 | 주소창·키보드를 반영하지 못한다. `dvh` 사용 |
 
 ---
 
-## 10. 글래스모피즘 & 앰비언트 섀도우
+## 6. 검증 방법
 
-### 글래스모피즘
+```bash
+# 시스템 위반 일괄 점검
+grep -rn "slate-[0-9]"        app components lib   # 폐기된 팔레트
+grep -rn "font-semibold"      app components lib   # 폐기된 굵기 600
+grep -rn "text-xs\|text-sm\|text-lg" app components lib   # 스케일 밖 크기
+grep -rn "<select"            app components       # 네이티브 select
+grep -rn 'type="date"'        app components       # 네이티브 date
+grep -rn "bg-black/"          app components       # 통일 전 오버레이
+grep -rn "radius={\["         app components       # 차트 막대 라운딩
+grep -rn "text-gain\|text-loss" app components | grep -v portfolio   # 가계부 손익색
 
-포커스가 필요한 요소(모달, 플로팅 메뉴)에 사용한다.
-
-```tsx
-import { glass } from '@/lib/styles'
-
-{/* 글래스 패널 */}
-<div className={glass.panel}>
-  {/* surface_variant 70% 불투명도 + backdrop-blur 20px */}
-</div>
-
-{/* 글래스 오버레이 (modal.overlay 대안, 더 고급스러운 느낌) */}
-<div className={glass.overlay}>
-  <div className={glass.panel + ' w-full max-w-md p-6'}>
-    모달 내용
-  </div>
-</div>
+# 빌드 CSS에 클래스가 실제로 생성됐는지 (동적 조합 사고 방지)
+grep -c 'sm\\:bg-surface-card' .next/static/css/*.css
 ```
 
-### 앰비언트 섀도우
-
-표준 drop-shadow 대신 `on_surface`(#0d1c2e) 6% 틴트 섀도우를 사용한다.
-
-```tsx
-// 앰비언트 섀도우 — 드롭다운, 플로팅 요소
-className="shadow-[0_4px_32px_0_rgba(13,28,46,0.06)]"
-
-// Ghost Border — 고밀도 테이블에서 줄 구분이 꼭 필요할 때
-className="border border-[#c6c6cd]/15"   // "느껴지되 보이지 않는" 선
-```
-
-### Intelligence Badge (상태 배지)
-
-Solid 컬러 pill 대신 10% 불투명도 배경으로 가벼운 느낌을 유지한다.
-
-```tsx
-import { statusBadge } from '@/lib/styles'
-
-<span className={statusBadge.success}>연결됨</span>
-<span className={statusBadge.warning}>주의</span>
-<span className={statusBadge.danger}>오류</span>
-<span className={statusBadge.info}>처리 중</span>
-<span className={statusBadge.neutral}>비활성</span>
-```
-
-### 주요 CTA (Machined Metal 그라디언트)
-
-테마색 버튼(`btn.primary`)과 별개로, 다크 네이비 고정 CTA에 사용한다.
-
-```tsx
-import { cta } from '@/lib/styles'
-
-<button className={cta.primary}>데이터 가져오기</button>   {/* 다크 네이비 그라디언트 */}
-<button className={cta.secondary}>취소</button>            {/* surface-container-high 배경 */}
-```
+전체 화면 캡처: `node scripts/screenshot-audit.mjs`
+(최초 1회 브라우저 로그인 → `.auth-state.json`에 세션 저장, 이후 재사용)
 
 ---
 
-## 11. Do's & Don'ts (The Orchestrated Lens)
+## 7. 변경 이력
 
-### Do
-- Y축 우선. 리스트 세로 패딩을 충분히 확보해 고밀도 데이터를 읽기 쉽게 한다.
-- 24px 이상 숫자는 `font-manrope`를 사용해 기술적 정밀감을 강조한다.
-- 비활성 상태에는 `bg-surface-dim`(#ccdbf3)을 사용해 활성 영역과 포커스를 분리한다.
-- 그림자는 `rgba(13,28,46,0.06)` 틴트 앰비언트 섀도우만 사용한다.
+### 기반 (`7057225` — 시안 D 전면 적용)
 
-### Don't
-- 카드 분리에 100% 불투명 border 사용하지 말 것 — 시각 노이즈로 엔터프라이즈 사용자를 피로하게 한다.
-- 텍스트에 pure black(`#000000`) 사용하지 말 것 — `text-[#0d1c2e]` 또는 `text-slate-800`을 사용한다.
-- 카드에 standard drop-shadow 사용하지 말 것 — 배경색 중첩이 90%, 그림자는 10%다.
-- `1px solid border`로 섹션을 나누지 말 것 — 배경색 이동 또는 Ghost Border를 사용한다.
+토큰 교체 · Pretendard 자체 호스팅 · 인풋 채움형 일괄 전환 · 배지 점+잉크 ·
+표 밀도 압축 · 모달 오버레이 통일 · 모바일 2행 접기 · 키보드 + 연속 입력.
 
----
+### 이후 개선
 
-## 12. 알려진 기술 부채
+| 영역 | 내용 |
+|---|---|
+| **가계부** | KPI 카드의 카테고리색 배경·글자색·아웃라인 제거 → 중성 표면 + 점, 선택은 잉크 배경. 요약 카드(전체 수입/지출)는 흰 표면 + 그림자로 한 단계 띄움. 요약 카드 높이 고정 |
+| **입력** | 입력·수정 모달 형태 통일 · 드롭다운 키보드 탐색 · 자동완성 포털 · 연속 입력 흐름(비고 비움 + 날짜 복귀) |
+| **예산관리** | 잔여/기간을 같은 축의 얇은 막대 2개로 비교 · 주단위 섹션에 실제 주당 평균 추가 |
+| **자산** | 2열 배치(좌 요약 / 우 상세) + 열 구분선 · KPI 규격화 · 취득일 `DateInput` |
+| **포트폴리오** | KPI 상단 고정(`sm`+) · 종목 상세 모달 위계 정리 · 스냅샷 카드 테두리 → 그림자 + 배지 |
+| **리밸런싱** | 5열 표 → 3열 카드 · 종목명 표시 · 종목 상세 레이어 · 미설정/0% 구분 · 섹션 합계 |
+| **배당** | 종목 배당 상세 레이어 · KPI 규격 통일 |
+| **전역** | 네이티브 `select` 18곳 · `type="date"` 3곳 제거 · 날짜 표기 `formatDate` 통일 · 표 헤더 micro 통일 · 사이드바 순서 정리 |
 
-| 항목 | 파일 | 우선순위 |
-|------|------|----------|
-| 컴포넌트 내 인라인 클래스 상수 | 다수 파일 | P2 (styles.ts 도입으로 점진 해결 중) |
-| `SecuritiesManager` 분할 고려 | `SecuritiesManager.tsx` (~895줄) | P3 |
+상세 커밋: `git log --oneline aad6cc0..HEAD`
