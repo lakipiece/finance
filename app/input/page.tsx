@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
-import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull } from '@/lib/utils'
+import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull, formatDate } from '@/lib/utils'
+import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useKeepOpen } from '@/lib/useKeepOpen'
 import { useEntryFormKeys } from '@/lib/useEntryFormKeys'
 import KeepOpenToggle from '@/components/ui/KeepOpenToggle'
@@ -139,6 +140,7 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
   // 목록은 body로 나가 있으므로 바깥 클릭 판정에서 따로 제외해야 한다.
   // 안 그러면 항목을 누르는 mousedown이 "바깥 클릭"으로 잡혀 click 전에 닫힌다.
   const listRef = useRef<HTMLDivElement>(null)
+  const [activeIdx, setActiveIdx] = useState(-1)
   const LIST_MAX = 232
   const filtered = useMemo(() => {
     const q = value.toLowerCase().trim()
@@ -180,11 +182,32 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
     }
   }, [open])
 
+  // 목록이 열려 있는 동안 ↑↓로 항목을 옮기고 ⏎로 확정한다.
+  // 이때 ⏎가 폼 저장으로 새지 않도록 이벤트를 여기서 끊는다.
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    const listOpen = open && filtered.length > 0
+    if (!listOpen) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault(); e.stopPropagation()
+      setActiveIdx(i => (i + 1) % filtered.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault(); e.stopPropagation()
+      setActiveIdx(i => (i <= 0 ? filtered.length : i) - 1)
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault(); e.stopPropagation()
+      onChange(filtered[activeIdx]); setOpen(false); setActiveIdx(-1)
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation()
+      setOpen(false); setActiveIdx(-1)
+    }
+  }
+
   return (
     <div className="relative" ref={ref}>
       <input type="text" value={value}
-        onChange={e => { onChange(e.target.value); setOpen(true) }}
+        onChange={e => { onChange(e.target.value); setOpen(true); setActiveIdx(-1) }}
         onFocus={() => setOpen(true)}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder ?? '세부유형 검색…'}
         maxLength={30}
         autoComplete="off"
@@ -202,11 +225,15 @@ function DetailSearchInput({ value, onChange, suggestions, placeholder }: {
                 maxHeight: LIST_MAX,
               }}
             >
-              {filtered.map(s => (
+              {filtered.map((s, i) => (
                 <button key={s} type="button"
+                  ref={i === activeIdx ? el => el?.scrollIntoView({ block: 'nearest' }) : undefined}
                   onMouseDown={e => e.preventDefault()}
-                  onClick={() => { onChange(s); setOpen(false) }}
-                  className="w-full text-left px-3 py-1.5 text-body hover:bg-surface-low text-ink truncate">
+                  onMouseEnter={() => setActiveIdx(i)}
+                  onClick={() => { onChange(s); setOpen(false); setActiveIdx(-1) }}
+                  className={`w-full text-left px-3 py-1.5 text-body text-ink truncate ${
+                    i === activeIdx ? 'bg-surface-low' : ''
+                  }`}>
                   {s}
                 </button>
               ))}
@@ -237,6 +264,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
   const ref = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
+  const [activeIdx, setActiveIdx] = useState(-1)
 
   const LIST_MAX = 232
 
@@ -298,11 +326,31 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
       if (q.trim().length >= 2) {
         onChange(q)
         triggerSearch(q)
+        setActiveIdx(-1)
         return
       }
     }
     onChange(raw)
     setOpen(false)
+    setActiveIdx(-1)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLElement>) {
+    const listOpen = open && suggestions.length > 0
+    if (!listOpen) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault(); e.stopPropagation()
+      setActiveIdx(i => (i + 1) % suggestions.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault(); e.stopPropagation()
+      setActiveIdx(i => (i <= 0 ? suggestions.length : i) - 1)
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault(); e.stopPropagation()
+      onChange(suggestions[activeIdx]); setOpen(false); setActiveIdx(-1)
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation()
+      setOpen(false); setActiveIdx(-1)
+    }
   }
 
   return (
@@ -310,6 +358,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
       {multiline ? (
         <textarea ref={taRef} value={value} rows={1}
           onChange={e => handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}
           className={`${className} resize-none overflow-hidden`}
@@ -317,6 +366,7 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
       ) : (
         <input type="text" value={value}
           onChange={e => handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           maxLength={maxLength}
           autoComplete="off"
@@ -335,11 +385,15 @@ function SuggestInput({ value, onChange, fetcher, placeholder, className, multil
                 maxHeight: LIST_MAX,
               }}
             >
-              {suggestions.map(s => (
+              {suggestions.map((s, i) => (
                 <button key={s} type="button"
+                  ref={i === activeIdx ? el => el?.scrollIntoView({ block: 'nearest' }) : undefined}
                   onMouseDown={e => e.preventDefault()}
-                  onClick={() => { onChange(s); setOpen(false) }}
-                  className="w-full text-left px-3 py-1.5 text-body hover:bg-surface-low text-ink">
+                  onMouseEnter={() => setActiveIdx(i)}
+                  onClick={() => { onChange(s); setOpen(false); setActiveIdx(-1) }}
+                  className={`w-full text-left px-3 py-1.5 text-body text-ink ${
+                    i === activeIdx ? 'bg-surface-low' : ''
+                  }`}>
                   {s}
                 </button>
               ))}
@@ -760,7 +814,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
               onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
               onBlur={resolveCreateAmount}
               placeholder="0 또는 =수식"
-              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5 focus:outline-none" />
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
             <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
           {isFormula(amount) && createFormulaResult !== null && (
@@ -889,7 +943,7 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
             <input ref={amountRef} type="text" inputMode="numeric" value={amount}
               onChange={e => setAmount(fmtAmount(e.target.value))}
               placeholder="0"
-              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
             <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
         </div>
@@ -987,12 +1041,8 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
           }`} style={!isExpense ? { backgroundColor: incomeColor } : undefined}>
             {isExpense ? <ExpenseIcon /> : <IncomeIcon />}
           </span>
-          {isExpense ? (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white"
-              style={{ backgroundColor: catColors[record.category] ?? '#a8b3c4' }}>{record.category}</span>
-          ) : (
-            <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white" style={{ backgroundColor: incomeColor }}>{record.category}</span>
-          )}
+          <CategoryBadge category={record.category} size="sm"
+            color={isExpense ? (catColors[record.category] ?? '#a8b3c4') : incomeColor} />
         </div>
         <span className={`text-subhead font-bold shrink-0 ${isExpense ? 'text-ink' : ''}`}
           style={!isExpense ? { color: incomeColor } : undefined}>
@@ -1004,7 +1054,7 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
         <p className="text-micro tracking-normal text-ink-4 truncate mb-1">{record.memo}</p>
       )}
       <div className="flex items-center justify-between">
-        <span className="text-micro tracking-normal text-ink-4">{record.date}</span>
+        <span className="text-micro tracking-normal text-ink-4 tabular-nums">{formatDate(record.date)}</span>
         <div className="flex items-center gap-1.5">
           {isExpense && record.method && <span className="text-micro tracking-normal text-ink-4">{record.method}</span>}
           {record.member && memberColor && (
@@ -1030,7 +1080,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
       style={{ background: `linear-gradient(to right, ${EXPENSE_COLOR}, ${INCOME_COLOR})` }}>
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
-        className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
+        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
@@ -1045,7 +1095,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
           </svg>
         </div>
         <p className="text-body text-white/60 mb-0.5 text-right">{expenseCount}건</p>
-        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right">
+        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right whitespace-nowrap overflow-hidden text-ellipsis">
           {expenseTotal.toLocaleString('ko-KR')}원
         </p>
       </button>
@@ -1053,7 +1103,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
       <div className="w-px bg-white/20 my-3" />
       {/* 수입 절반 */}
       <button onClick={onAddIncome}
-        className="flex-1 p-3 text-left transition-opacity hover:opacity-90 group"
+        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
@@ -1068,7 +1118,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
           </svg>
         </div>
         <p className="text-body text-white/60 mb-0.5 text-right">{incomeCount}건</p>
-        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right">
+        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right whitespace-nowrap overflow-hidden text-ellipsis">
           {incomeTotal.toLocaleString('ko-KR')}원
         </p>
       </button>

@@ -756,7 +756,7 @@ function ExpenseTableCard({
               >
                 {/* 좌측 블록 — min-w-0이 없으면 ellipsis가 동작하지 않는다 */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-subhead font-normal text-ink whitespace-nowrap overflow-hidden text-ellipsis">
+                  <p className="text-subhead font-medium text-ink whitespace-nowrap overflow-hidden text-ellipsis">
                     {e.detail || e.category}
                   </p>
                   <div className="flex items-center gap-1.5 mt-[3px]">
@@ -765,7 +765,7 @@ function ExpenseTableCard({
                     <CategoryBadge category={e.category} size="sm" />
                   </div>
                 </div>
-                <span className="text-subhead font-normal text-ink tabular-nums whitespace-nowrap shrink-0">
+                <span className="text-subhead font-medium text-ink tabular-nums whitespace-nowrap shrink-0">
                   {formatWonFull(e.amount)}
                 </span>
               </div>
@@ -790,8 +790,8 @@ function ExpenseTableCard({
               <tbody>
                 {slice.map((e, i) => (
                   <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
-                    <td className="py-[5px] px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
-                    <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap tabular-nums">{formatDate(e.date)}</td>
+                    <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap tabular-nums">{formatDate(e.date)}</td>
                     <td className="py-[5px] px-2">
                       <CategoryBadge category={e.category} size="sm" />
                     </td>
@@ -807,10 +807,10 @@ function ExpenseTableCard({
                         }`}>{e.member}</span>
                       ) : <span className="text-ink-5 text-body">-</span>}
                     </td>
-                    <td className="py-[5px] px-2 text-ink-4 text-body max-w-[180px]">
+                    <td className="py-[5px] px-2 text-ink-4 text-body font-medium max-w-[180px]">
                       {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-ink-5">—</span>}
                     </td>
-                    <td className="py-[5px] px-2 text-ink-4 text-body">{e.method || <span className="text-ink-5">—</span>}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-body font-medium">{e.method || <span className="text-ink-5">—</span>}</td>
                     <td className="py-[5px] px-2 text-right font-medium text-ink text-body whitespace-nowrap">{formatWonFull(e.amount)}</td>
                   </tr>
                 ))}

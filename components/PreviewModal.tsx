@@ -62,11 +62,11 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
                 <tbody>
                   {preview.sampleRows.map((row, i) => (
                     <tr key={i} className="border-b border-surface-low">
-                      <td className="py-[5px] px-2 text-ink-4 text-body">{row.expense_date}</td>
+                      <td className="py-[5px] px-2 text-ink-4 text-body font-medium">{row.expense_date}</td>
                       <td className="py-[5px] px-2 text-ink-2">{row.category}</td>
                       <td className="py-[5px] px-2 text-ink max-w-[160px] truncate">{row.detail || '-'}</td>
                       <td className="py-[5px] px-2 text-ink-4">{row.method || '-'}</td>
-                      <td className="py-[5px] px-2 text-ink-4 text-body max-w-[120px] truncate" title={row.memo || undefined}>{row.memo || '-'}</td>
+                      <td className="py-[5px] px-2 text-ink-4 text-body font-medium max-w-[120px] truncate" title={row.memo || undefined}>{row.memo || '-'}</td>
                       <td className="py-[5px] px-2 text-right font-medium text-ink">{formatWonFull(row.amount)}</td>
                     </tr>
                   ))}

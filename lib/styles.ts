@@ -210,8 +210,10 @@ export const text = {
 export const tbl = {
   th:      'text-left py-[5px] px-2 text-micro uppercase text-ink-5',
   thRight: 'text-right py-[5px] px-2 text-micro uppercase text-ink-5',
-  td:      'py-[5px] px-2 text-body text-ink-2',
-  tdRight: 'py-[5px] px-2 text-body text-ink text-right tabular-nums',
+  // Windows는 macOS처럼 획을 두껍게 그리지 않아 400이 얇게 보인다.
+  // 데이터가 빽빽한 표 본문만 500으로 올려 가독성을 맞춘다 (라벨·캡션은 그대로).
+  td:      'py-[5px] px-2 text-body font-medium text-ink-2',
+  tdRight: 'py-[5px] px-2 text-body font-medium text-ink text-right tabular-nums',
   // 행 — 줄무늬 없음. 구분선만
   row:     'border-b border-surface-low last:border-0 hover:bg-surface-low/60 transition-colors',
   // 하위 호환 (줄무늬 폐기 — 둘 다 동일)

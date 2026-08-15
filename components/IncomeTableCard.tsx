@@ -140,13 +140,13 @@ export default function IncomeTableCard({
                   const color = INCOME_COLORS[item.category] ?? '#5b6a80'
                   return (
                     <tr key={item.id} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
-                      <td className="py-[5px] px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
-                      <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap">{item.income_date}</td>
+                      <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
+                      <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap">{item.income_date}</td>
                       <td className="py-[5px] px-2">
                         <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium text-white" style={{ backgroundColor: color }}>{item.category}</span>
                       </td>
-                      <td className="py-[5px] px-2 text-body text-ink-2">{item.description}</td>
-                      <td className="py-[5px] px-2 text-body text-ink-4 max-w-[180px]">
+                      <td className="py-[5px] px-2 text-body font-medium text-ink-2">{item.description}</td>
+                      <td className="py-[5px] px-2 text-body font-medium text-ink-4 max-w-[180px]">
                         {item.memo ? <span className="block truncate" title={item.memo}>{item.memo}</span> : <span className="text-ink-5">—</span>}
                       </td>
                       <td className="py-[5px] px-2">

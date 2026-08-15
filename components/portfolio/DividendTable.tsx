@@ -180,7 +180,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={10} className="py-10 text-center text-ink-4 text-body">내역이 없습니다</td></tr>
+              <tr><td colSpan={10} className="py-10 text-center text-ink-4 text-body font-medium">내역이 없습니다</td></tr>
             )}
             {slice.map((d, i) => {
               const gross = toKrw(d)
@@ -189,8 +189,8 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               const color = ownerColor(d.account.owner)
               return (
                 <tr key={d.id} className={`group ${i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}`}>
-                  <td className="py-[5px] px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
-                  <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap">{fmtDate(d.paid_at)}</td>
+                  <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
+                  <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap">{fmtDate(d.paid_at)}</td>
                   <td className={tbl.td}>
                     <span className="block text-micro tracking-normal font-mono text-ink-3">{d.security.ticker}</span>
                     <span className="text-body font-medium text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
@@ -214,7 +214,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                     {tax > 0 ? formatWonRound(tax) : <span className="text-ink-5">—</span>}
                   </td>
                   <td className={`${tbl.tdRight} font-medium text-ink whitespace-nowrap`}>{formatWonRound(net)}</td>
-                  <td className="py-[5px] px-2 text-ink-4 text-body max-w-[160px]">
+                  <td className="py-[5px] px-2 text-ink-4 text-body font-medium max-w-[160px]">
                     {d.memo
                       ? <span className="block truncate" title={d.memo}>{d.memo}</span>
                       : <span className="text-ink-5">—</span>}

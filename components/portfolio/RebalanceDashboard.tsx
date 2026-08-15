@@ -96,7 +96,7 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
               return (
                 <tr key={key} className="hover:bg-surface-low/60 transition-colors">
                   <td className={`px-[13px] py-[5px] text-body text-ink-2 ${mono ? 'font-mono' : ''}`}>{key}</td>
-                  <td className="px-2 py-[5px] text-right text-body text-ink tabular-nums">
+                  <td className="px-2 py-[5px] text-right text-body font-medium text-ink tabular-nums">
                     {(actual_pct * 100).toFixed(1)}%
                   </td>
                   <td className="px-2 py-[5px] text-right">
