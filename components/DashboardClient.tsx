@@ -124,7 +124,7 @@ export default function DashboardClient({ year }: { year: number }) {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="bg-surface-card rounded-card shadow-card p-[13px] mb-6">
           <div className="animate-pulse space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[1, 2, 3, 4].map(i => <div key={i} className="h-20 bg-surface-low rounded-field" />)}
             </div>
             <div className="h-56 bg-surface-low rounded-field" />

@@ -1,0 +1,35 @@
+{
+  "cookies": [
+    {
+      "name": "__Host-authjs.csrf-token",
+      "value": "f8225cbe05e44a7a2835426c0b26a67f84f22c1028ac6672d2ad73b8c28a2d69%7C39b8e5f93471bd933276d9ee433742a9f204973dc4bcb5c5d27fbcafbc1a7da0",
+      "domain": "fin.lakipiece.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Secure-authjs.callback-url",
+      "value": "https%3A%2F%2Ffin.lakipiece.com%2Flogin",
+      "domain": "fin.lakipiece.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Secure-authjs.session-token",
+      "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwia2lkIjoiSGliSDBsTEl1LVF3QTdXZGktcktWTVFrWERfamdsUmdrYXFWV3BGNHhINGQtVUdfb3cxRDRiODNxRTlaeDM0YVFyeVN6YWpOMTlhR1ZXaEhhQTdFVXcifQ..9-rlIP5taqg31OuwQae_2w.7TPJqn_ckVIEnLzHwFQlTTuS6XSWms8la2-QLNeaqPHLhILi88GeW-7U9LNjeq6SNN0d0peTCQclR4yTMrtcy6TcCSP4CboWlUg_-Ri0PKfV3lZe32miFi4-ZahW_A2cRqrLnGdAdkKvOCqo3BZ2DXgeGRTuwN76OnR6ZWe0FWAGWtyghWuc_H7YSVXe0kLqLMvokOGkLobwVIR19KZGMQ.M_59PCcNakmrw1jFBhlu8sYhok3icsPe2dmU4iFKFm8",
+      "domain": "fin.lakipiece.com",
+      "path": "/",
+      "expires": 1789366358.394754,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

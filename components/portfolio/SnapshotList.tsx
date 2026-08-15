@@ -179,7 +179,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {visibleItems.map(({ snap, hiddenSiblings, ym }) => {
           const label = labelMap[snap.id]
           const [datePart, suffix] = label.includes(' -')

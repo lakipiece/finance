@@ -515,7 +515,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <PageHeader title="옵션 관리" description="사용자, 결제수단, 세부유형 설정" />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
 
         {/* ── 사용자 ── */}
         <OptionCard title="사용자" count={members.length}

@@ -209,7 +209,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
                 <span className="text-body font-medium text-ink">{k.label}</span>
                 <span className="text-micro tracking-normal text-ink-4">({k.unit})</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <label className={field.label}>금액 (원)</label>
                   <input type="text" inputMode="numeric"

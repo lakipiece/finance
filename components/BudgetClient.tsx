@@ -785,7 +785,7 @@ export default function BudgetClient({ initialYear }: Props) {
       ) : (
         <>
           {/* 전체 요약 — KPI 카드 */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className={`${card.base} ${card.padKpi}`}>
               <p className={text.caption}>연간 계획 총액</p>
               <p className="text-heading font-bold text-ink tabular-nums mt-1">{formatWonFull(totalAnnualPlan)}</p>
@@ -871,7 +871,7 @@ export default function BudgetClient({ initialYear }: Props) {
                 <h2 className="text-subhead font-medium text-ink">주단위 기준</h2>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2">
               <div className={`${card.base} p-3 sm:p-4 min-w-0`}>
                 <p className={text.caption}>연간 변동비 ÷ 52 (참고)</p>
                 <p className="text-subhead sm:text-heading font-bold text-ink tabular-nums mt-1 truncate">{formatWonFull(variableWeeklySuggestion)}</p>

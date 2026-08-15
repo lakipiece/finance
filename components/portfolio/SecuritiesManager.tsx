@@ -620,7 +620,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       </div>
 
       {/* Security cards — 5 columns */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         {filteredSecurities.map(s => {
           const { hex } = cardColors(options, s.country, s.asset_class)
           return (

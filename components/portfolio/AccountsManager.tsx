@@ -265,7 +265,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={accounts.map(a => a.id)} strategy={rectSortingStrategy}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {accounts.map(a => (
               <SortableAccountCard
                 key={a.id} id={a.id} account={a}

@@ -52,7 +52,7 @@ export default function PortfolioKpiCards({ summary, ledger = null }: Props) {
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-2">
       {cards.map(c => (
         c.inverted ? (
           <div key={c.label}

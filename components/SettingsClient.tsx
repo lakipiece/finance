@@ -104,7 +104,7 @@ export default function SettingsClient({ initialYears }: Props) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Google Sheets */}
           <div className="bg-surface-card rounded-card p-[13px]">
             <p className="text-body font-medium text-ink-2 mb-3">Google Sheets 연동</p>

@@ -381,7 +381,7 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
           {assigning ? '배정 중...' : '팔레트 색상 자동 배정'}
         </button>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         {types.map(t => (
           <OptionTypeCard
             key={t}

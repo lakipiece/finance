@@ -65,8 +65,8 @@ export default function LoginPage() {
         </div>
 
         {/* 로그인 카드 */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-card border border-white/20 p-7">
-          <h2 className="text-subhead font-bold text-white mb-5">로그인</h2>
+        <div className="bg-white/10 backdrop-blur-sm rounded-dialog p-[18px]">
+          <h2 className="text-heading text-white mb-5">로그인</h2>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
@@ -76,7 +76,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border-b border-white/30 pb-1.5 pt-1 text-subhead text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus"
+                className="w-full rounded-field bg-white/15 border-0 px-3 py-[9px] text-subhead text-white placeholder:text-white/40 focus:outline-none focus:bg-white/25 transition-colors"
                 placeholder="admin@example.com"
               />
             </div>
@@ -87,20 +87,19 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border-b border-white/30 pb-1.5 pt-1 text-subhead text-white placeholder:text-white/30 focus:outline-none focus:border-white/70 transition-colors bg-surface-low rounded-field border-0 focus:bg-surface-card focus:shadow-focus"
+                className="w-full rounded-field bg-white/15 border-0 px-3 py-[9px] text-subhead text-white placeholder:text-white/40 focus:outline-none focus:bg-white/25 transition-colors"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <p className="text-body text-red-300 bg-red-500/10 rounded-btn px-3 py-2 bg-danger/10 text-danger/20">{error}</p>
+              <p className="text-body text-white bg-danger/40 rounded-btn px-3 py-2">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 rounded-field text-subhead font-medium text-ink hover:opacity-90 transition-opacity mt-2"
-              style={{ background: 'linear-gradient(135deg, #ffffff 0%, #e8f0fe 100%)' }}
+              className="w-full py-2.5 rounded-btn bg-white text-ink text-body font-bold hover:opacity-90 disabled:opacity-60 transition-opacity mt-2"
             >
               {loading ? '로그인 중...' : '로그인'}
             </button>

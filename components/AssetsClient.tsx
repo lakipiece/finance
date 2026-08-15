@@ -561,7 +561,7 @@ function FinancialSection() {
           </svg>
         </a>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <KpiCard label="평가액" value={fmtAmt(snapshot.total_market_value)} sub={sliceDate(snapshot.date)} color={FINANCIAL_COLOR} />
         <KpiCard label="투자원금" value={fmtAmt(snapshot.total_invested)} sub="누적 투자금" color={FINANCIAL_COLOR} />
         <KpiCard label="평가손익" value={gain != null ? `${gainSign}${fmtAmt(gain)}` : '-'} sub={gainPct != null ? `${gainSign}${gainPct.toFixed(1)}%` : '-'} color={gainColor} />
@@ -647,7 +647,7 @@ export default function AssetsClient() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-surface-low rounded-field w-48" />
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
             {[1,2,3,4].map(i => <div key={i} className="h-24 bg-surface-low rounded-card" />)}
           </div>
         </div>
@@ -674,7 +674,7 @@ export default function AssetsClient() {
       </PageHeader>
 
       {/* 전체 KPI */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
         <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#1A237E"
@@ -738,7 +738,7 @@ export default function AssetsClient() {
             등록된 유형자산이 없습니다. 자산을 추가해보세요.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {tangibleItems.map(item => (
               <AssetCard key={item.id} item={item}
                 onEdit={i => { setEditItem(i); setShowFormModal(true) }}
@@ -757,7 +757,7 @@ export default function AssetsClient() {
             등록된 연금자산이 없습니다. 연금을 추가해보세요.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {pensionItems.map(item => (
               <PensionCard key={item.id} item={item}
                 onEdit={i => { setEditPensionItem(i); setShowPensionForm(true) }}

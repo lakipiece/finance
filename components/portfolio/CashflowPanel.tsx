@@ -129,7 +129,7 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
     <>
       {/* 요약 */}
       <div className="px-5 py-3 border-b border-surface-low shrink-0">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           <div>
             <p className="text-micro tracking-normal text-ink-4">투자원금 <span className="text-ink-5">누적입금</span></p>
             <p className="text-body font-bold tabular-nums" style={{ color: INFLOW_COLOR }}>{formatWonRound(totals.inflow)}</p>

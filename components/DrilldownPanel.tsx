@@ -196,7 +196,7 @@ export default function DrilldownPanel({
     <div className="bg-surface-card rounded-card shadow-card p-[13px] sm:p-[13px] mb-4 sm:mb-6">
       {/* KPI Cards — 수입 row */}
       <p className="text-micro tracking-normal text-ink-4 font-medium mb-1.5 mt-3">수입</p>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-2">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2">
         {/* 전체 수입 */}
         {(() => {
           const isActive = drilldownType === 'income' && selectedIncomeCard === null
@@ -256,7 +256,7 @@ export default function DrilldownPanel({
 
       {/* KPI Cards — 지출 row */}
       <p className="text-micro tracking-normal text-ink-4 font-medium mb-1.5">지출</p>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
         {/* 전체 지출 */}
         {(() => {
           const isActive = drilldownType === 'expense' && (!selectedCat || selectedCat === '__all__')

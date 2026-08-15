@@ -78,7 +78,7 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
         </div>
 
         {/* 카드 그리드 3열 2행 */}
-        <div className="px-[18px] py-[15px] grid grid-cols-3 gap-2.5">
+        <div className="px-[18px] py-[15px] grid grid-cols-3 gap-2">
           <div className="bg-surface-low rounded-field p-3">
             <p className="text-micro tracking-normal text-ink-4 mb-1">수량</p>
             <p className="text-subhead font-bold text-ink tabular-nums">{p.quantity.toLocaleString()}</p>
@@ -180,7 +180,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {sorted.map(p => {
           const pnlPos = p.unrealized_pnl >= 0
           const weight = totalValue > 0 ? (p.market_value / totalValue * 100).toFixed(1) : '0.0'

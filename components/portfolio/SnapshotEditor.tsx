@@ -488,7 +488,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   연결된 종목이 없습니다 — 계좌 관리에서 종목을 연결해주세요
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {selectedRows.map((row, idx) => {
                     const sec = secMap[row.security_id]
                     if (!sec) return null

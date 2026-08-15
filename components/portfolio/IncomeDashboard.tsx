@@ -411,7 +411,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         const net = gross - tax
         const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : periodLabel
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2">
             <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
               <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 배당금</p>
               <p className="text-title sm:text-display font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>

@@ -281,7 +281,7 @@ export default function DividendFormModal({
           </div>
 
           {/* 금액 + 환율 */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-[14px]">
             <div>
               <p className={field.label}>금액 ({form.currency})</p>
               <input type="text" inputMode="decimal" required

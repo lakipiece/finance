@@ -486,7 +486,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
       )}
 
       {/* KPI 카드 4개 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <KpiCard
           label="현재 평가액"
           value={fmtKrw(currentValue)}
