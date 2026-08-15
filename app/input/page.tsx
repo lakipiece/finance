@@ -1095,11 +1095,13 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
   onAddExpense: () => void; onAddIncome: () => void
 }) {
   return (
-    <div className="rounded-field overflow-hidden flex"
+    // 건수·금액 자릿수에 따라 줄 수가 달라져 카드가 늘었다 줄었다 했다.
+    // 내용과 무관하게 높이를 고정한다.
+    <div className="rounded-field overflow-hidden flex h-[108px]"
       style={{ background: `linear-gradient(to right, ${EXPENSE_COLOR}, ${INCOME_COLOR})` }}>
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
-        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group"
+        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group flex flex-col justify-between"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
@@ -1122,7 +1124,7 @@ function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onA
       <div className="w-px bg-white/20 my-3" />
       {/* 수입 절반 */}
       <button onClick={onAddIncome}
-        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group"
+        className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group flex flex-col justify-between"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
