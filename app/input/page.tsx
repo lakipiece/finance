@@ -89,18 +89,25 @@ function AutoResizeMemo({ value, onChange, placeholder, className }: {
 }
 
 /* ── Small components ── */
+/**
+ * 분류 pill — 드롭다운이 아니라 상시 노출.
+ * 선택 상태는 잉크 배경(#131b2e)으로만 표현하고, 카테고리색은 점에 남긴다.
+ * 색을 배경으로 쓰면 선택 여부와 카테고리 종류가 같은 채널을 두고 다투게 된다.
+ */
 function PillBtn({ active, onClick, children, color, size = 'md' }: {
   active: boolean; onClick: () => void; children: React.ReactNode; color?: string; size?: 'sm' | 'md'
 }) {
-  const { palette } = useTheme()
-  const bg = active ? (color ?? palette.colors[0]) : undefined
-  const sizeClass = size === 'sm' ? 'px-2 py-0.5 rounded-cell text-meta' : 'px-3 py-1 rounded-btn text-body'
+  const sizeClass = size === 'sm'
+    ? 'px-2.5 py-1 text-meta gap-1'
+    : 'px-[11px] py-1.5 text-body gap-[5px]'
   return (
     <button type="button" onClick={onClick}
-      className={`${sizeClass} font-medium border transition-all whitespace-nowrap ${
-        active ? 'text-white border-transparent' : 'border-surface-low text-ink-3 hover:text-ink'
-      }`}
-      style={bg ? { backgroundColor: bg, borderColor: bg } : undefined}>
+      className={`inline-flex items-center justify-center leading-none rounded-full transition-colors whitespace-nowrap ${sizeClass} ${
+        active ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-2 font-medium hover:opacity-80'
+      }`}>
+      {color ? (
+        <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      ) : null}
       {children}
     </button>
   )
@@ -310,10 +317,14 @@ function ModalShell({ onClose, title, onDelete, children }: {
   onClose: () => void; title: string; onDelete?: () => void; children: React.ReactNode
 }) {
   return createPortal(
-    <div className="modal-scrim fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-surface-card rounded-card shadow-dialog w-full max-w-md mx-4 max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-[18px] pt-5 pb-3 border-b border-surface-low">
-          <h3 className="text-subhead font-medium text-ink">{title}</h3>
+    // 바깥이 스크롤 컨테이너, 안쪽 래퍼가 중앙 정렬을 맡는다.
+    // flex 중앙 정렬 위에서 바로 스크롤을 걸면 내용이 뷰포트보다 클 때 위쪽이 잘린다.
+    <div className="modal-scrim fixed inset-0 z-50 overflow-y-auto overscroll-contain">
+      <div className="min-h-full flex items-center justify-center p-4">
+        <div className="bg-surface-card rounded-dialog shadow-dialog w-full max-w-md flex flex-col max-h-[calc(100dvh-2rem)] overflow-hidden">
+        {/* 헤더 — 15px 18px, 구분선 없음 */}
+        <div className="flex items-center justify-between px-[18px] py-[15px] shrink-0">
+          <h3 className="text-heading text-ink">{title}</h3>
           <div className="flex items-center gap-1">
             {onDelete && (
               <button onClick={onDelete} title="삭제" className="p-1.5 rounded-btn text-ink-5 hover:text-danger hover:bg-danger/10 transition-all">
@@ -325,7 +336,9 @@ function ModalShell({ onClose, title, onDelete, children }: {
             </button>
           </div>
         </div>
-        <div className="p-6">{children}</div>
+        {/* 본문 — 0 18px 16px, 여기만 스크롤한다 */}
+        <div className="px-[18px] pb-4 overflow-y-auto flex-1 min-h-0">{children}</div>
+        </div>
       </div>
     </div>,
     document.body
@@ -617,8 +630,8 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
               onChange={e => { const v = e.target.value; setAmount(isFormula(v) ? v : fmtAmount(v)) }}
               onBlur={resolveCreateAmount}
               placeholder="0 또는 =수식"
-              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5 focus:outline-none" />
-            <span className="text-subhead font-bold text-ink-3 shrink-0">원</span>
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5 focus:outline-none" />
+            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
           {isFormula(amount) && createFormulaResult !== null && (
             <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
@@ -749,8 +762,8 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
             <input ref={amountRef} type="text" inputMode="numeric" value={amount}
               onChange={e => setAmount(fmtAmount(e.target.value))}
               placeholder="0"
-              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
-            <span className="text-subhead font-bold text-ink-3 shrink-0">원</span>
+              className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5 focus:outline-none" />
+            <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
         </div>
         <div>

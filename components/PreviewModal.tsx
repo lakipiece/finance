@@ -15,7 +15,7 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
 
   return (
     <div className="modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="bg-surface-card rounded-card shadow-dialog w-full max-w-2xl max-h-[80vh] flex flex-col">
+      <div className="bg-surface-card rounded-dialog shadow-dialog w-full max-w-2xl max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-6 border-b border-surface-low">
           <h2 className="text-heading font-bold text-ink">파싱 결과 미리보기</h2>

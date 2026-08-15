@@ -137,15 +137,15 @@ export const badge = {
 // blur 미지원 시 #0d1c2e/42 폴백 — globals.css의 @supports 규칙이 처리한다.
 export const modal = {
   overlay:
-    'modal-scrim fixed inset-0 z-50 flex items-center justify-center px-4',
+    'modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto overscroll-contain',
   overlayTop:
-    'modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4',
+    'modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto overscroll-contain',
   container:
     'bg-surface-card rounded-dialog shadow-dialog w-full max-w-md flex flex-col ' +
-    'max-h-[95dvh] sm:max-h-[90vh] overflow-hidden',
+    'max-h-[calc(100dvh-2rem)] overflow-hidden',
   containerLg:
     'bg-surface-card rounded-dialog shadow-dialog w-full max-w-lg flex flex-col ' +
-    'max-h-[95dvh] sm:max-h-[90vh] overflow-hidden',
+    'max-h-[calc(100dvh-2rem)] overflow-hidden',
   // 헤더 15px 18px — 구분선 없음
   header:
     'flex items-center justify-between px-[18px] py-[15px] shrink-0',
@@ -248,7 +248,7 @@ export const surface = {
 // 글래스 — 오버레이는 modal.overlay와 같은 값을 쓴다 (D-04)
 export const glass = {
   panel: 'bg-surface-card shadow-card rounded-card',
-  overlay: 'modal-scrim fixed inset-0 z-50 flex items-center justify-center px-4',
+  overlay: 'modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto overscroll-contain',
 } as const
 
 // ─── 폰트 스케일 ────────────────────────────────────────────────────────────
