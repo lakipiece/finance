@@ -97,9 +97,11 @@ function AutoResizeMemo({ value, onChange, placeholder, className }: {
 function PillBtn({ active, onClick, children, color, size = 'md' }: {
   active: boolean; onClick: () => void; children: React.ReactNode; color?: string; size?: 'sm' | 'md'
 }) {
+  // 입력 화면은 밀도 압축의 예외 구역이다. 11px 글자에 padding만 주면
+  // 높이가 19px까지 내려가 손가락으로 맞히기 어렵다 — 최소 터치 높이를 준다.
   const sizeClass = size === 'sm'
-    ? 'px-2.5 py-1 text-meta gap-1'
-    : 'px-[11px] py-1.5 text-body gap-[5px]'
+    ? 'px-3 py-1.5 min-h-[36px] sm:min-h-[28px] text-meta gap-1'
+    : 'px-[11px] py-2 min-h-[40px] sm:min-h-[32px] text-body gap-[5px]'
   return (
     <button type="button" onClick={onClick}
       className={`inline-flex items-center justify-center leading-none rounded-full transition-colors whitespace-nowrap ${sizeClass} ${

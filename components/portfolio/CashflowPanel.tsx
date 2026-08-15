@@ -164,8 +164,8 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
         <div className={`rounded-[9px] p-1.5 ${editId ? 'bg-warning/10' : 'bg-surface-low'}`}>
           {/* ≥640px — 한 줄 인라인 행 */}
           <div className="hidden sm:flex items-center gap-[5px]">
-            <DateInput value={date} onChange={setDate} variant="cell" className="w-[66px] shrink-0" />
-            <div className="relative w-[92px] shrink-0">
+            <DateInput value={date} onChange={setDate} variant="cell" className="w-[104px] shrink-0" />
+            <div className="relative w-[96px] shrink-0">
               <select value={type} onChange={e => setType(e.target.value as CashflowType)}
                 className="w-full appearance-none rounded-cell bg-surface-card border-0 pl-2 pr-5 py-1.5 text-body text-ink focus:outline-none focus:shadow-focus transition-shadow">
                 {TYPE_ORDER.map(t => <option key={t} value={t}>{CASHFLOW_TYPE_LABELS[t]}</option>)}

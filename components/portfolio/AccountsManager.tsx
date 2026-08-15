@@ -12,7 +12,6 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
-import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, badge, modal } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import CashflowPanel from './CashflowPanel'
@@ -92,7 +91,6 @@ function SortableAccountCard({
 }
 
 export default function AccountsManager({ accounts: initAccounts, securities, accountSecurities: initLinks, typeColors = {}, accountTypeOptions = [], sectorColors = {}, countryColors = {}, currencyColors = {}, accountValues = {} }: Props) {
-  const { palette } = useTheme()
   const [accounts, setAccounts] = useState(initAccounts)
   const [links, setLinks] = useState<AccountSecurity[]>(initLinks)
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null)
@@ -299,8 +297,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Link Modal */}
       {modalLinkAccountId && createPortal(
         <div className={modal.overlayTop}>
-          <div className="bg-surface-card rounded-card w-full max-w-3xl flex flex-col shadow-dialog"
-            style={{ maxHeight: '88vh' }}
+          <div className="bg-surface-card rounded-dialog w-full max-w-3xl flex flex-col shadow-dialog overflow-hidden h-[min(calc(100dvh-2rem),720px)]"
             onClick={e => e.stopPropagation()}>
             <div className={modal.header}>
               <div>
@@ -312,8 +309,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   <>
                     {isDirty && <span className="text-micro tracking-normal text-warning bg-warning/10 px-2 py-0.5 rounded-full">미저장</span>}
                     <button onClick={saveLinks} disabled={!isDirty || savingLinks}
-                      className={btn.primary}
-                      style={{ backgroundColor: palette.colors[0] }}>
+                      className={btn.primary}>
                       {savingLinks ? '저장 중...' : '저장하기'}
                     </button>
                   </>
@@ -335,10 +331,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 const active = modalTab === t.key
                 return (
                   <button key={t.key} onClick={() => setModalTab(t.key)}
-                    className={`px-3 py-1.5 rounded-btn text-body font-medium transition-colors ${
-                      active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
-                    }`}
-                    style={active ? { backgroundColor: palette.colors[0] } : undefined}>
+                    className={`px-3 py-1.5 rounded-btn text-body transition-colors ${
+                      active ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3 font-medium hover:bg-surface-high'
+                    }`}>
                     {t.label}
                     {t.badge ? <span className={`ml-1.5 ${active ? 'opacity-70' : 'text-ink-4'}`}>{t.badge}</span> : null}
                   </button>
@@ -416,13 +411,12 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       {/* Dirty Alert */}
       {showDirtyAlert && createPortal(
         <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
-          <div className="bg-surface-card rounded-card p-[13px] shadow-dialog max-w-sm w-full">
+          <div className="bg-surface-card rounded-dialog p-[18px] shadow-dialog max-w-sm w-full">
             <p className="text-subhead font-medium text-ink">저장하지 않은 변경사항</p>
             <p className="text-body text-ink-3 mt-1.5">연결 종목을 수정했지만 저장하지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className={`flex-1 ${btn.primary}`}
-                style={{ backgroundColor: palette.colors[0] }}>
+                className={`flex-1 ${btn.primary}`}>
                 계속 편집
               </button>
               <button onClick={discardAndClose}
@@ -476,7 +470,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   className={field.input} />
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>추가</button>
+                <button onClick={saveAccount} className={btn.primary}>추가</button>
                 <button onClick={() => setShowAddModal(false)} className={btn.secondary}>취소</button>
               </div>
             </div>
@@ -526,7 +520,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   className={field.input} />
               </div>
               <div className="flex gap-2 pt-1">
-                <button onClick={saveAccount} className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>수정</button>
+                <button onClick={saveAccount} className={btn.primary}>수정</button>
                 <button onClick={() => setEditingAccountId(null)} className={btn.secondary}>취소</button>
               </div>
             </div>
