@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { Security, Account } from '@/lib/portfolio/types'
 import { btn, field, modal } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
+import Select from '@/components/ui/Select'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -188,14 +189,8 @@ export default function BulkDividendModal({
           {/* 계좌 선택 */}
           <div>
             <p className={field.label}>계좌</p>
-            <select required value={accountId}
-              onChange={e => setAccountId(e.target.value)}
-              className={field.select}>
-              <option value="">계좌 선택</option>
-              {modalAccounts.map(a => (
-                <option key={a.id} value={a.id}>{a.broker} {a.name}</option>
-              ))}
-            </select>
+            <Select value={accountId} onChange={setAccountId} placeholder="계좌 선택"
+              options={modalAccounts.map(a => ({ value: a.id, label: `${a.broker} ${a.name}` }))} />
             {selectedAccount && (
               <p className="text-micro tracking-normal text-ink-4 mt-0.5">
                 기본 세율: {selectedAccount.dividend_tax_rate ?? 15.4}%

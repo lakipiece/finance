@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
 import PageHeader from '@/components/ui/PageHeader'
+import Select from '@/components/ui/Select'
 
 type HoldingRow = {
   security_id: string
@@ -572,38 +573,28 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             </button>
           )}
         </div>
-        <select value={secFilter.asset_class} onChange={e => setSecFilter(p => ({ ...p, asset_class: e.target.value }))}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="">전체 자산군</option>
-          {assetClasses.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={secFilter.country} onChange={e => setSecFilter(p => ({ ...p, country: e.target.value }))}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="">전체 국가</option>
-          {countries.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={secFilter.style} onChange={e => setSecFilter(p => ({ ...p, style: e.target.value }))}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="">전체 스타일</option>
-          {etfStyles.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={secFilter.sector} onChange={e => setSecFilter(p => ({ ...p, sector: e.target.value }))}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="">전체 섹터</option>
-          {sectors.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={secFilter.currency} onChange={e => setSecFilter(p => ({ ...p, currency: e.target.value }))}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="">전체 통화</option>
-          <option value="KRW">KRW</option>
-          <option value="USD">USD</option>
-        </select>
-        <select value={secSort} onChange={e => setSecSort(e.target.value as 'ticker' | 'name' | 'country_name')}
-          className="rounded-field bg-surface-low px-3 py-[9px] text-subhead text-ink focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors appearance-none border-0 placeholder:text-ink-5">
-          <option value="country_name">국가/이름순</option>
-          <option value="ticker">티커순</option>
-          <option value="name">이름순</option>
-        </select>
+        <Select value={secFilter.asset_class} onChange={v => setSecFilter(p => ({ ...p, asset_class: v }))}
+          className="w-40"
+          options={[{ value: '', label: '전체 자산군' }, ...assetClasses.map(c => ({ value: c, label: c }))]} />
+        <Select value={secFilter.country} onChange={v => setSecFilter(p => ({ ...p, country: v }))}
+          className="w-40"
+          options={[{ value: '', label: '전체 국가' }, ...countries.map(c => ({ value: c, label: c }))]} />
+        <Select value={secFilter.style} onChange={v => setSecFilter(p => ({ ...p, style: v }))}
+          className="w-40"
+          options={[{ value: '', label: '전체 스타일' }, ...etfStyles.map(c => ({ value: c, label: c }))]} />
+        <Select value={secFilter.sector} onChange={v => setSecFilter(p => ({ ...p, sector: v }))}
+          className="w-40"
+          options={[{ value: '', label: '전체 섹터' }, ...sectors.map(c => ({ value: c, label: c }))]} />
+        <Select value={secFilter.currency} onChange={v => setSecFilter(p => ({ ...p, currency: v }))}
+          className="w-32"
+          options={[{ value: '', label: '전체 통화' }, { value: 'KRW', label: 'KRW' }, { value: 'USD', label: 'USD' }]} />
+        <Select value={secSort} onChange={v => setSecSort(v as 'ticker' | 'name' | 'country_name')}
+          className="w-40"
+          options={[
+            { value: 'country_name', label: '국가/이름순' },
+            { value: 'ticker', label: '티커순' },
+            { value: 'name', label: '이름순' },
+          ]} />
         {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) && (
           <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
             className="text-micro tracking-normal text-ink-4 hover:text-ink-2 rounded-btn px-2 py-1.5 hover:bg-surface-low transition-colors whitespace-nowrap">

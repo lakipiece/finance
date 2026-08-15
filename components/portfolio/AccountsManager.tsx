@@ -15,6 +15,7 @@ import type { Account, Security } from '@/lib/portfolio/types'
 import { btn, field, badge, modal } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import CashflowPanel from './CashflowPanel'
+import Select from '@/components/ui/Select'
 
 interface AccountSecurity { account_id: string; security_id: string }
 type OptionItem = { id: string; label: string; value: string; color_hex: string | null }
@@ -446,10 +447,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               ))}
               <div>
                 <label className={field.label}>유형</label>
-                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={field.select}>
-                  <option value="">선택 안함</option>
-                  {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                </select>
+                <Select value={accountForm.type_id} onChange={v => setAccountForm(p => ({ ...p, type_id: v }))}
+                  options={[{ value: '', label: '선택 안함' }, ...liveTypeOptions.map(o => ({ value: o.id, label: o.label }))]} />
               </div>
               <div>
                 <label className="flex items-center gap-2 text-body text-ink-2 cursor-pointer">
@@ -496,10 +495,8 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               ))}
               <div>
                 <label className={field.label}>유형</label>
-                <select value={accountForm.type_id} onChange={e => setAccountForm(p => ({ ...p, type_id: e.target.value }))} className={field.select}>
-                  <option value="">선택 안함</option>
-                  {liveTypeOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-                </select>
+                <Select value={accountForm.type_id} onChange={v => setAccountForm(p => ({ ...p, type_id: v }))}
+                  options={[{ value: '', label: '선택 안함' }, ...liveTypeOptions.map(o => ({ value: o.id, label: o.label }))]} />
               </div>
               <div>
                 <label className="flex items-center gap-2 text-body text-ink-2 cursor-pointer">

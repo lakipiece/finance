@@ -348,7 +348,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
         </button>
       </PageHeader>
 
-      <PortfolioKpiCards summary={filteredKpi} ledger={ledger} />
+      {/* 헤더 + KPI는 sm 이상에서 상단 고정. 종목 목록이 길어 스크롤하는 동안에도
+          전체 평가액을 계속 붙들고 볼 수 있어야 한다.
+          모바일은 세로 공간이 부족하므로 전체 스크롤로 둔다. */}
+      <div className="sm:sticky sm:top-0 sm:z-20 sm:-mx-4 sm:px-4 sm:pt-2 sm:pb-3 sm:bg-surface sm:shadow-[0_8px_16px_-12px_rgba(13,28,46,.18)]">
+        <PortfolioKpiCards summary={filteredKpi} ledger={ledger} />
+      </div>
 
       {/* 계좌 섹션 */}
       <div>

@@ -6,6 +6,7 @@ import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { fmtDate } from '@/lib/portfolio/dividendUtils'
 import { btn, field, modal } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
+import Select from '@/components/ui/Select'
 
 interface AccountSecurity { account_id: string; security_id: string }
 
@@ -206,14 +207,9 @@ export default function DividendFormModal({
           {/* 계좌 선택 */}
           <div>
             <p className={field.label}>계좌</p>
-            <select required value={form.account_id}
-              onChange={e => setForm(p => ({ ...p, account_id: e.target.value, security_id: '' }))}
-              className={field.select}>
-              <option value="">계좌 선택</option>
-              {modalAccounts.map(a => (
-                <option key={a.id} value={a.id}>{a.broker} {a.name}</option>
-              ))}
-            </select>
+            <Select value={form.account_id} placeholder="계좌 선택"
+              onChange={v => setForm(p => ({ ...p, account_id: v, security_id: '' }))}
+              options={modalAccounts.map(a => ({ value: a.id, label: `${a.broker} ${a.name}` }))} />
           </div>
 
           {/* 종목 선택 */}

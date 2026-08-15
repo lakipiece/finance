@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { formatDate } from '@/lib/utils'
+import Select from '@/components/ui/Select'
 
 interface PriceRow { ticker: string; date: string; price: number; currency: string }
 
@@ -40,15 +41,8 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
       {/* Header */}
       <div className="flex items-center gap-3 flex-wrap">
         <h2 className="text-subhead font-medium text-ink">가격 수집 이력</h2>
-        <select
-          value={selectedTicker}
-          onChange={e => setSelectedTicker(e.target.value)}
-          className="rounded-btn px-3 py-1.5 text-body focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
-        >
-          {securities.map(s => (
-            <option key={s.ticker} value={s.ticker}>{s.ticker} — {s.name}</option>
-          ))}
-        </select>
+        <Select value={selectedTicker} onChange={setSelectedTicker} className="w-64"
+          options={securities.map(x => ({ value: x.ticker, label: `${x.ticker} — ${x.name}` }))} />
         <span className="text-body text-ink-4">{rows.length}개 데이터</span>
       </div>
 

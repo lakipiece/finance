@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import type { Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
+import Select from '@/components/ui/Select'
 
 export type OptionItem = {
   id: string
@@ -107,30 +108,20 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
               <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={field.input}
                 placeholder="슈왑 배당 ETF" /></div>
             <div><label className={field.labelSm}>국가</label>
-              <select value={form.country_id} onChange={e => setForm(p => ({ ...p, country_id: e.target.value }))} className={field.input}>
-                <option value="">선택 안함</option>
-                {(options.country ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select></div>
+              <Select value={form.country_id} onChange={v => setForm(p => ({ ...p, country_id: v }))}
+                options={[{ value: '', label: '선택 안함' }, ...(options.country ?? []).map(o => ({ value: o.id, label: o.label }))]} /></div>
             <div><label className={field.labelSm}>통화</label>
-              <select value={form.currency_id} onChange={e => setForm(p => ({ ...p, currency_id: e.target.value }))} className={field.input}>
-                <option value="">선택 안함</option>
-                {(options.currency ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select></div>
+              <Select value={form.currency_id} onChange={v => setForm(p => ({ ...p, currency_id: v }))}
+                options={[{ value: '', label: '선택 안함' }, ...(options.currency ?? []).map(o => ({ value: o.id, label: o.label }))]} /></div>
             <div><label className={field.labelSm}>자산군</label>
-              <select value={form.asset_class_id} onChange={e => setForm(p => ({ ...p, asset_class_id: e.target.value }))} className={field.input}>
-                <option value="">선택 안함</option>
-                {(options.asset_class ?? []).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select></div>
+              <Select value={form.asset_class_id} onChange={v => setForm(p => ({ ...p, asset_class_id: v }))}
+                options={[{ value: '', label: '선택 안함' }, ...(options.asset_class ?? []).map(o => ({ value: o.id, label: o.label }))]} /></div>
             <div><label className={field.labelSm}>운용 스타일</label>
-              <select value={form.style_id} onChange={e => setForm(p => ({ ...p, style_id: e.target.value }))} className={field.input}>
-                <option value="">선택 안함</option>
-                {(options.style ?? []).filter(o => !o.is_hidden).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select></div>
+              <Select value={form.style_id} onChange={v => setForm(p => ({ ...p, style_id: v }))}
+                options={[{ value: '', label: '선택 안함' }, ...(options.style ?? []).filter(o => !o.is_hidden).map(o => ({ value: o.id, label: o.label }))]} /></div>
             <div><label className={field.labelSm}>섹터 (GICS)</label>
-              <select value={form.sector_id} onChange={e => setForm(p => ({ ...p, sector_id: e.target.value }))} className={field.input}>
-                <option value="">선택 안함</option>
-                {(options.sector ?? []).filter(o => !o.is_hidden).map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
-              </select></div>
+              <Select value={form.sector_id} onChange={v => setForm(p => ({ ...p, sector_id: v }))}
+                options={[{ value: '', label: '선택 안함' }, ...(options.sector ?? []).filter(o => !o.is_hidden).map(o => ({ value: o.id, label: o.label }))]} /></div>
             <div className="col-span-2"><label className={field.labelSm}>URL</label>
               <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>
             <div className="col-span-2"><label className={field.labelSm}>메모</label>

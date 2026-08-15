@@ -6,6 +6,7 @@ import { CASHFLOW_INFLOW_TYPES, CASHFLOW_TYPE_LABELS } from '@/lib/portfolio/typ
 import { field, btn, badge, brand, skeleton } from '@/lib/styles'
 import { formatWonRound, formatDate } from '@/lib/utils'
 import DateInput from '@/components/ui/DateInput'
+import Select from '@/components/ui/Select'
 
 const TYPE_ORDER: CashflowType[] = ['deposit', 'withdrawal', 'opening']
 const INFLOW_COLOR = brand.accent    // 입금 계열
@@ -165,16 +166,9 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
           {/* ≥640px — 한 줄 인라인 행 */}
           <div className="hidden sm:flex items-center gap-[5px]">
             <DateInput value={date} onChange={setDate} variant="cell" className="w-[104px] shrink-0" />
-            <div className="relative w-[96px] shrink-0">
-              <select value={type} onChange={e => setType(e.target.value as CashflowType)}
-                className="w-full appearance-none rounded-cell bg-surface-card border-0 pl-2 pr-5 py-1.5 text-body text-ink focus:outline-none focus:shadow-focus transition-shadow">
-                {TYPE_ORDER.map(t => <option key={t} value={t}>{CASHFLOW_TYPE_LABELS[t]}</option>)}
-              </select>
-              <svg className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-ink-5 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <Select value={type} onChange={v => setType(v as CashflowType)} variant="cell"
+              className="w-[96px] shrink-0"
+              options={TYPE_ORDER.map(t => ({ value: t, label: CASHFLOW_TYPE_LABELS[t], color: typeColor(t) }))} />
             <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
               onKeyDown={onRowKeyDown} placeholder="메모 (선택)" maxLength={100}
               className="flex-1 min-w-0 rounded-cell bg-surface-card border-0 px-2 py-1.5 text-body text-ink placeholder:text-ink-5 focus:outline-none focus:shadow-focus transition-shadow" />

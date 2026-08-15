@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { btn, field, modal } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
+import Select from '@/components/ui/Select'
 
 export interface AssetItem {
   id: string
@@ -127,20 +128,8 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
           {/* 유형 */}
           <div>
             <label className={field.label}>유형</label>
-            <div className="relative">
-              <select
-                value={assetType}
-                onChange={e => setAssetType(e.target.value)}
-                className={`${field.select} w-full pr-8`}
-              >
-                <option value="부동산">부동산</option>
-                <option value="자동차">자동차</option>
-              </select>
-              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <Select value={assetType} onChange={setAssetType}
+              options={[{ value: '부동산', label: '부동산' }, { value: '자동차', label: '자동차' }]} />
           </div>
 
           {/* 설명 */}
