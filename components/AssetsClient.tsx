@@ -8,6 +8,7 @@ import {
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, badge, field, modal } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import DateInput from '@/components/ui/DateInput'
 import { formatWonFull } from '@/lib/utils'
 import { createPortal } from 'react-dom'
 import AssetFormModal, { type AssetItem } from '@/components/AssetFormModal'
@@ -74,11 +75,11 @@ function KpiCard({ label, value, sub, color, tooltip }: {
   label: string; value: string; sub: string; color: string; tooltip?: string
 }) {
   return (
-    <div className="bg-surface-card rounded-field shadow-card p-3 hover:-translate-y-0.5 transition-all">
-      <div className="flex items-center gap-1.5 mb-1">
-        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-        <div className="relative group flex items-center gap-1">
-          <p className="text-micro tracking-normal text-ink-4 font-medium">{label}</p>
+    <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
+      <div className="flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+        <div className="relative group flex items-center gap-1 min-w-0">
+          <p className="text-micro text-ink-5 uppercase truncate">{label}</p>
           {tooltip && (
             <>
               <svg className="w-3 h-3 text-ink-5 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -91,8 +92,8 @@ function KpiCard({ label, value, sub, color, tooltip }: {
           )}
         </div>
       </div>
-      <p className="text-heading font-bold mt-0.5 text-ink">{value}</p>
-      <p className="text-micro tracking-normal text-ink-4 mt-0.5">{sub}</p>
+      <p className="text-heading text-ink tabular-nums mt-1 truncate">{value}</p>
+      <p className="text-micro tracking-normal text-ink-5 mt-0.5 truncate">{sub}</p>
     </div>
   )
 }
@@ -101,7 +102,8 @@ function KpiCard({ label, value, sub, color, tooltip }: {
 function TypeBadge({ type }: { type: string }) {
   const color = TYPE_COLORS[type] ?? '#6b7280'
   return (
-    <span className={badge.base} style={{ backgroundColor: `${color}1a`, color }}>
+    <span className={badge.sm}>
+      <span className={badge.dot} style={{ backgroundColor: color }} />
       {type}
     </span>
   )
@@ -272,7 +274,7 @@ function PensionSnapshotModal({ show, pensionId, pensionName, onClose, onSaved, 
         <div className={modal.body}>
           <div>
             <label className={field.label}>기준일</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} className={field.input} />
+            <DateInput value={date} onChange={setDate} />
           </div>
           <div>
             <label className={field.label}>금액 (원)</label>
@@ -661,20 +663,24 @@ export default function AssetsClient() {
       <PageHeader title="자산" description="유형자산, 연금자산, 금융자산 현황">
         {activeTab === 'tangible' && (
           <button onClick={() => { setEditItem(null); setShowFormModal(true) }}
-            className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>
+            className={btn.primary}>
             + 자산 추가
           </button>
         )}
         {activeTab === 'pension' && (
           <button onClick={() => { setEditPensionItem(null); setShowPensionForm(true) }}
-            className={btn.primary} style={{ backgroundColor: palette.colors[0] }}>
+            className={btn.primary}>
             + 연금 추가
           </button>
         )}
       </PageHeader>
 
+      {/* 좌 = 요약(KPI + 구성), 우 = 상세.
+          차트 옆 빈 공간이 화면 폭의 절반을 놀리고 있어 두 열로 나눈다. */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] gap-2 items-start">
+      <div className="space-y-2 min-w-0">
       {/* 전체 KPI */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
         <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#1A237E"
@@ -688,8 +694,8 @@ export default function AssetsClient() {
       {/* 자산 구성 도넛 차트 */}
       {grandTotal > 0 && (
         <div className="bg-surface-card rounded-card shadow-card p-[13px]">
-          <p className="text-body font-medium text-ink-3 mb-3">자산 구성</p>
-          <div className="flex items-center gap-6">
+          <p className="text-micro text-ink-5 uppercase mb-2">자산 구성</p>
+          <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
               <PieChart width={140} height={140}>
                 <Pie data={donutData} cx={65} cy={65} innerRadius={42} outerRadius={65} paddingAngle={2} dataKey="value" stroke="none">
@@ -717,15 +723,18 @@ export default function AssetsClient() {
         </div>
       )}
 
+      </div>
+
+      <div className="space-y-2 min-w-0">
       {/* 탭 */}
       <div className="flex gap-0.5 bg-surface-low rounded-field p-1 w-fit">
         {TABS.map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className="px-3 py-1 rounded-btn text-body font-medium transition-all"
-            style={activeTab === tab.key
-              ? { background: '#fff', color: tab.color, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }
-              : { color: '#a8b3c4' }
-            }>
+            className={`px-3 py-1.5 rounded-btn text-body transition-colors ${
+              activeTab === tab.key
+                ? 'bg-action text-white font-bold'
+                : 'text-ink-3 font-medium hover:text-ink'
+            }`}>
             {tab.label}
           </button>
         ))}
@@ -738,7 +747,7 @@ export default function AssetsClient() {
             등록된 유형자산이 없습니다. 자산을 추가해보세요.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
             {tangibleItems.map(item => (
               <AssetCard key={item.id} item={item}
                 onEdit={i => { setEditItem(i); setShowFormModal(true) }}
@@ -757,7 +766,7 @@ export default function AssetsClient() {
             등록된 연금자산이 없습니다. 연금을 추가해보세요.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
             {pensionItems.map(item => (
               <PensionCard key={item.id} item={item}
                 onEdit={i => { setEditPensionItem(i); setShowPensionForm(true) }}
@@ -775,6 +784,9 @@ export default function AssetsClient() {
       )}
 
       {activeTab === 'financial' && <FinancialSection />}
+
+      </div>
+      </div>
 
       {/* Modals */}
       <AssetFormModal

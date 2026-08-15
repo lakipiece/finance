@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { btn, field, modal } from '@/lib/styles'
+import DateInput from '@/components/ui/DateInput'
 
 export interface AssetItem {
   id: string
@@ -98,7 +99,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
       <div className={modal.container} onClick={e => e.stopPropagation()}>
         {/* 헤더 */}
         <div className={modal.header}>
-          <h2 className="text-subhead font-medium text-ink">
+          <h2 className={modal.title}>
             {editItem ? '자산 수정' : '자산 추가'}
           </h2>
           <button onClick={onClose} className={modal.close} type="button">
@@ -126,14 +127,20 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
           {/* 유형 */}
           <div>
             <label className={field.label}>유형</label>
-            <select
-              value={assetType}
-              onChange={e => setAssetType(e.target.value)}
-              className={`${field.select} w-full`}
-            >
-              <option value="부동산">부동산</option>
-              <option value="자동차">자동차</option>
-            </select>
+            <div className="relative">
+              <select
+                value={assetType}
+                onChange={e => setAssetType(e.target.value)}
+                className={`${field.select} w-full pr-8`}
+              >
+                <option value="부동산">부동산</option>
+                <option value="자동차">자동차</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
 
           {/* 설명 */}
@@ -148,15 +155,10 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
             />
           </div>
 
-          {/* 취득일 */}
+          {/* 취득일 — 앱 전체와 같은 날짜 입력 (yyyymmdd 직접 입력 + 달력) */}
           <div>
             <label className={field.label}>취득일</label>
-            <input
-              type="date"
-              value={acquiredAt}
-              onChange={e => setAcquiredAt(e.target.value)}
-              className={field.input}
-            />
+            <DateInput value={acquiredAt} onChange={setAcquiredAt} placeholder="취득일 선택" />
           </div>
 
           {/* 취득가액 */}
@@ -168,7 +170,7 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
               onChange={e => setAcquisitionPrice(e.target.value)}
               placeholder="0"
               min={0}
-              className={field.input}
+              className={`${field.input} text-right tabular-nums font-medium`}
             />
           </div>
 
@@ -199,7 +201,6 @@ export default function AssetFormModal({ show, onClose, onSaved, palette, editIt
             onClick={() => handleSubmit()}
             disabled={saving}
             className={btn.primary}
-            style={{ backgroundColor: palette.colors[0] }}
           >
             {saving ? '저장 중...' : (editItem ? '수정' : '저장')}
           </button>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import DateInput from '@/components/ui/DateInput'
 import { createPortal } from 'react-dom'
 import { btn, field, modal } from '@/lib/styles'
 import { formatWonFull } from '@/lib/utils'
@@ -150,8 +151,7 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
             <div className="flex items-end gap-2 flex-wrap">
               <div className="flex flex-col gap-0.5">
                 <label className={field.label}>평가일</label>
-                <input type="date" value={valDate} onChange={e => setValDate(e.target.value)}
-                  className={`${field.input} w-32 text-body`} />
+                <DateInput value={valDate} onChange={setValDate} />
               </div>
               <div className="flex flex-col gap-0.5 w-36">
                 <label className={field.label}>시세 (원)</label>
