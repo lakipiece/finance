@@ -16,6 +16,7 @@ import { formatWonFull, formatWonCompact } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import { btn, field, card, badge, text, brand } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import YearSelect from '@/components/ui/YearSelect'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 
 const POSITIVE_BUDGET_COLOR = '#1A237E'
@@ -756,14 +757,12 @@ export default function BudgetClient({ initialYear }: Props) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <PageHeader title="예산관리">
-        <select
+        <YearSelect
           value={year}
-          onChange={(e) => { setYear(parseInt(e.target.value)); setEditing(false) }}
-          className="bg-surface-low text-ink text-subhead font-medium rounded-btn px-3 py-1.5 focus:outline-none cursor-pointer border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
+          years={years}
+          onChange={y => { setYear(y); setEditing(false) }}
           disabled={editing}
-        >
-          {years.map(y => <option key={y} value={y}>{y}년</option>)}
-        </select>
+        />
         {editing ? (
           <>
             <button type="button" onClick={cancelEdit} className={btn.secondary} disabled={saving}>취소</button>

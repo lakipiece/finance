@@ -8,6 +8,7 @@ import {
 } from 'recharts'
 import { btn, card, field, modal, text, brand } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import YearSelect from '@/components/ui/YearSelect'
 import { formatWonFull } from '@/lib/utils'
 import { OPTION_COLORS } from '@/lib/palettes'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
@@ -371,12 +372,11 @@ export default function EnergyClient() {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 헤더 */}
       <PageHeader title="에너지 지출관리" description="월별 전기·수도·온수·난방 사용량과 금액을 기록합니다">
-        <select value={yearTo} onChange={e => setYearTo(parseInt(e.target.value))}
-          className="bg-surface-low text-ink text-subhead font-medium rounded-btn px-3 py-1.5 focus:outline-none cursor-pointer border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors">
-          {Array.from({ length: 10 }, (_, i) => currentYear - i).map(y => (
-            <option key={y} value={y}>{y}년</option>
-          ))}
-        </select>
+        <YearSelect
+          value={yearTo}
+          years={Array.from({ length: 10 }, (_, i) => currentYear - i)}
+          onChange={setYearTo}
+        />
         <button onClick={handleAddClick} className={btn.primary} style={{ backgroundColor: brand.primary }}>
           입력
         </button>
