@@ -464,8 +464,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           const active = view === m
           return (
             <button key={m} onClick={() => setView(m)}
-              className={btn.pill(active)}
-              style={active ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0] } : undefined}>
+              className={btn.pill(active)}>
               {SNAPSHOT_VIEW_LABELS[m]}
             </button>
           )

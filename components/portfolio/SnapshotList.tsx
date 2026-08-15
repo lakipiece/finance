@@ -155,7 +155,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
         <button onClick={handleRefreshValues} disabled={refreshing} className={btn.secondary}>
           {refreshing ? '계산 중…' : '값 갱신'}
         </button>
-        <button onClick={() => router.push(`/portfolio/snapshots/charts?view=${viewMode}`)} className={btn.secondary}>
+        <button onClick={() => router.push(`/portfolio/snapshots/charts?view=${viewMode}`)} className={btn.primary}>
           차트보기
         </button>
       </PageHeader>
@@ -275,7 +275,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
 
               {/* 섹터 비중 — 전체 스크롤 */}
               {sectors.length > 0 ? (
-                <div className="mt-2 overflow-y-auto flex-1 rounded-card bg-surface-low p-2" style={{ maxHeight: '286px' }}>
+                <div className="mt-2 overflow-y-auto flex-1" style={{ maxHeight: '286px' }}>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {sectors.map(([k, v]) => {
                       const color = sectorColors[k] ?? '#a8b3c4'

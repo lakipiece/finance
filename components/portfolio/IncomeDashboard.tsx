@@ -16,6 +16,7 @@ import DividendFormModal from './DividendFormModal'
 import BulkDividendModal from './BulkDividendModal'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import PageHeader from '@/components/ui/PageHeader'
+import { btn } from '@/lib/styles'
 
 interface AccountSecurity { account_id: string; security_id: string }
 interface MemberOpt { code: string; color: string }
@@ -369,7 +370,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           <button
             onClick={handleUpdateTax}
             disabled={taxUpdating}
-            className="px-3 py-1.5 rounded-btn text-body font-medium text-ink-3 hover:text-ink disabled:opacity-50 transition-colors"
+            className={btn.secondary}
           >
             {taxUpdating ? '계산 중…' : '세금 자동계산'}
           </button>
@@ -412,17 +413,17 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         const scopeLabel = selectedMonth ? selectedMonth.replace('-', '.') : periodLabel
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2">
-            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
-              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 총 배당금</p>
-              <p className="text-title sm:text-display font-bold mt-1 tabular-nums" style={{ color: palette.colors[0] }}>{fmt(gross)}원</p>
+            <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
+              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 총 배당금</p>
+              <p className="text-heading text-income tabular-nums mt-1 truncate">{fmt(gross)}원</p>
             </div>
-            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
-              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 추정 세금</p>
-              <p className="text-title sm:text-display font-bold mt-1 tabular-nums text-gain">{fmt(tax)}원</p>
+            <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
+              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 추정 세금</p>
+              <p className="text-heading text-ink-2 tabular-nums mt-1 truncate">{fmt(tax)}원</p>
             </div>
-            <div className="bg-surface-card rounded-card p-[13px] sm:p-[13px] hover:-translate-y-0.5 transition-all">
-              <p className="text-body text-ink-4 font-medium uppercase tracking-wider mb-1">{scopeLabel} 세후 배당금</p>
-              <p className="text-title sm:text-display font-bold mt-1 tabular-nums text-ink">{fmt(net)}원</p>
+            <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
+              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 세후 배당금</p>
+              <p className="text-heading text-ink tabular-nums mt-1 truncate">{fmt(net)}원</p>
             </div>
           </div>
         )
@@ -438,10 +439,9 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           <div className="flex gap-1">
             {(['month', 'account', 'security'] as const).map(k => (
               <button key={k} onClick={() => setTab(k)}
-                className="px-2.5 py-1 rounded text-body transition-colors"
-                style={tab === k
-                  ? { background: palette.colors[0], color: '#fff' }
-                  : { background: '#f1f5f9', color: '#8794a8' }}>
+                className={`px-2.5 py-1 rounded-btn text-meta transition-colors ${
+                  tab === k ? 'bg-action text-white font-bold' : 'bg-surface-low text-ink-3 font-medium'
+                }`}>
                 {k === 'month' ? '월별' : k === 'account' ? '계좌별' : '종목별'}
               </button>
             ))}
@@ -458,7 +458,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} width={52} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
               <Bar dataKey="amount" maxBarSize={32}
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
@@ -472,7 +472,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={120} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
               <Bar dataKey="amount" maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -490,7 +490,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
               <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={130} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f8fafc' }} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
               <Bar dataKey="amount" maxBarSize={14}
                 fill={palette.colors[0]}
                 label={false} />

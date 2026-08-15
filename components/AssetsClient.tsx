@@ -667,9 +667,9 @@ export default function AssetsClient() {
 
       {/* 좌 = 요약(KPI + 구성), 우 = 상세.
           차트 옆 빈 공간이 화면 폭의 절반을 놀리고 있어 두 열로 나눈다. */}
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] gap-4 lg:gap-6 items-start
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] gap-4 lg:gap-10 items-start
         lg:divide-x lg:divide-surface-container">
-      <div className="space-y-2 min-w-0 lg:pr-6">
+      <div className="space-y-2 min-w-0 lg:pr-10">
       {/* 전체 KPI */}
       <div className="grid grid-cols-2 gap-2">
         <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
@@ -733,10 +733,10 @@ export default function AssetsClient() {
         </div>
         {activeTab === 'financial' && portfolioSnapshot ? (
           <a href="/portfolio/snapshots"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-surface-high text-ink-2 hover:opacity-90 transition-opacity group">
+            className="inline-flex items-center gap-1.5 px-1 py-1.5 text-ink-3 hover:text-ink transition-colors">
             <span className="text-meta font-medium">최신 포트폴리오 스냅샷</span>
-            <span className="text-micro tracking-normal text-ink-4 tabular-nums">{sliceDate(portfolioSnapshot.date)}</span>
-            <svg className="w-3 h-3 text-ink-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <span className="text-micro tracking-normal text-ink-5 tabular-nums">{sliceDate(portfolioSnapshot.date)}</span>
+            <svg className="w-2.5 h-2.5 text-ink-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </a>

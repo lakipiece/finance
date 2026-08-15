@@ -83,14 +83,15 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       <PageHeader title="자산 추이" description="스냅샷 기반 평가액·투자원금·수익 추이">
         <Link href="/portfolio/snapshots"
-          className="px-4 py-1.5 rounded-btn text-body font-medium text-ink-2 hover:bg-surface-low transition-colors whitespace-nowrap">
+          className="px-[15px] py-2 rounded-btn text-body font-medium bg-surface-high text-ink-2 hover:opacity-90 transition-opacity whitespace-nowrap">
           ← 스냅샷 목록
         </Link>
       </PageHeader>
       {points.length < 2 ? (
         <div className="bg-surface-card rounded-card px-[13px] py-12 text-center">
           <p className="text-ink-4 text-subhead">차트를 표시하려면 평가액이 입력된 스냅샷이 2개 이상 필요합니다.</p>
-          <Link href="/portfolio/snapshots" className="mt-3 inline-block text-body text-loss underline">
+          <Link href="/portfolio/snapshots"
+            className="mt-3 inline-block px-[15px] py-2 rounded-btn text-body font-medium bg-surface-high text-ink-2 hover:opacity-90 transition-opacity">
             스냅샷 목록으로 돌아가기
           </Link>
         </div>
