@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { Cashflow, CashflowType } from '@/lib/portfolio/types'
 import { CASHFLOW_INFLOW_TYPES, CASHFLOW_TYPE_LABELS } from '@/lib/portfolio/types'
 import { field, btn, badge, brand, skeleton } from '@/lib/styles'
-import { formatWonRound } from '@/lib/utils'
+import { formatWonRound, formatDate } from '@/lib/utils'
 import DateInput from '@/components/ui/DateInput'
 
 const TYPE_ORDER: CashflowType[] = ['deposit', 'withdrawal', 'opening']
@@ -245,7 +245,7 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
           items.map(cf => (
             <div key={cf.id}
               className={`flex items-center gap-3 px-5 py-2.5 border-b border-surface-low hover:bg-surface-low transition-colors group ${editId === cf.id ? 'bg-warning/10' : ''}`}>
-              <span className="text-meta text-ink-4 tabular-nums shrink-0 w-20">{cf.flow_date}</span>
+              <span className="text-meta text-ink-4 tabular-nums shrink-0 w-20">{formatDate(cf.flow_date)}</span>
               <span className={`${badge.sm} shrink-0`}>
                 <span className={badge.dot} style={{ backgroundColor: typeColor(cf.type) }} />
                 {CASHFLOW_TYPE_LABELS[cf.type]}

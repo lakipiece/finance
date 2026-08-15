@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
+import { formatDate } from '@/lib/utils'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
@@ -375,9 +376,9 @@ function PriceHistoryModal({
             <table className="w-full">
               <thead className="sticky top-0 bg-surface-low">
                 <tr className="text-micro text-ink-4 uppercase tracking-wider">
-                  <th className="text-left px-2 py-[5px]">날짜</th>
-                  <th className="text-right px-2 py-[5px]">가격</th>
-                  <th className="text-right px-2 py-[5px]">등락</th>
+                  <th className="text-left px-2 py-[5px] text-micro uppercase text-ink-5">날짜</th>
+                  <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">가격</th>
+                  <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">등락</th>
                 </tr>
               </thead>
               <tbody>
@@ -386,7 +387,7 @@ function PriceHistoryModal({
                   const pct = prev ? ((r.price - prev.price) / prev.price) * 100 : null
                   return (
                     <tr key={r.date} className="border-t border-surface-low hover:bg-surface-low">
-                      <td className="px-2 py-[5px] text-micro tracking-normal font-sans text-ink-3 tabular-nums">{r.date}</td>
+                      <td className="px-2 py-[5px] text-micro tracking-normal font-sans text-ink-3 tabular-nums">{formatDate(r.date)}</td>
                       <td className="px-2 py-[5px] text-micro tracking-normal text-right font-sans text-ink-4 tabular-nums">
                         {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                       </td>

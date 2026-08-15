@@ -309,13 +309,13 @@ function BudgetSection({ category, items, usageByDetail, totalUsed, remainPeriod
           </colgroup>
           <thead>
             <tr className="border-b border-surface-low">
-              <th className="text-left py-[5px] px-2 text-ink-4 font-medium">구분</th>
-              <th className="text-left py-[5px] px-2 text-ink-4 font-medium max-[1200px]:hidden">메모</th>
-              <th className="text-right py-[5px] px-2 text-ink-4 font-medium">연간계획</th>
-              <th className="text-right py-[5px] px-2 text-ink-4 font-medium">누적 사용금액</th>
-              <th className="text-right py-[5px] px-2 text-ink-4 font-medium">잔액</th>
-              <th className="text-right py-[5px] px-2 text-ink-4 font-medium">잔여%</th>
-              {editing ? <th className="w-8" /> : null}
+              <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">구분</th>
+              <th className="text-left py-[5px] px-2 max-[1200px]:hidden text-micro uppercase text-ink-5">메모</th>
+              <th className="text-right py-[5px] px-2 text-micro uppercase text-ink-5">연간계획</th>
+              <th className="text-right py-[5px] px-2 text-micro uppercase text-ink-5">누적 사용금액</th>
+              <th className="text-right py-[5px] px-2 text-micro uppercase text-ink-5">잔액</th>
+              <th className="text-right py-[5px] px-2 text-micro uppercase text-ink-5">잔여%</th>
+              {editing ? <th className="w-8 text-micro uppercase text-ink-5" /> : null}
             </tr>
           </thead>
           <tbody>

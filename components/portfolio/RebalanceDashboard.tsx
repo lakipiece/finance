@@ -63,11 +63,11 @@ function RebalanceSection({ title, rows, total, getTarget, setTarget }: {
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-low">
-              <th className="text-left px-5 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">항목</th>
-              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">현재</th>
-              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">목표</th>
-              <th className="text-right px-2 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">차이</th>
-              <th className="text-right px-5 py-[5px].5 text-micro tracking-normal font-medium text-ink-4">필요 금액</th>
+              <th className="text-left px-5 py-[5px].5 text-micro uppercase text-ink-5">항목</th>
+              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">현재</th>
+              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">목표</th>
+              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">차이</th>
+              <th className="text-right px-5 py-[5px].5 text-micro uppercase text-ink-5">필요 금액</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-low">

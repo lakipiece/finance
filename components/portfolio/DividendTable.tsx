@@ -175,7 +175,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               <th className={tbl.thRight}>추정 세금</th>
               <th className={tbl.thRight}>세후 배당금</th>
               <th className={tbl.th}>메모</th>
-              <th className="py-[5px] px-2"></th>
+              <th className="py-[5px] px-2 text-micro uppercase text-ink-5"></th>
             </tr>
           </thead>
           <tbody>

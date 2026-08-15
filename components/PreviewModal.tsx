@@ -51,12 +51,12 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
               <table className="w-full text-body">
                 <thead>
                   <tr className="border-b border-surface-low">
-                    <th className="text-left py-[5px] px-2 text-body text-ink-4 font-medium">날짜</th>
-                    <th className="text-left py-[5px] px-2 text-body text-ink-4 font-medium">분류</th>
-                    <th className="text-left py-[5px] px-2 text-body text-ink-4 font-medium">내역</th>
-                    <th className="text-left py-[5px] px-2 text-body text-ink-4 font-medium">결제</th>
-                    <th className="text-left py-[5px] px-2 text-body text-ink-4 font-medium">비고</th>
-                    <th className="text-right py-[5px] px-2 text-body text-ink-4 font-medium">금액</th>
+                    <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">날짜</th>
+                    <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">분류</th>
+                    <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">내역</th>
+                    <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">결제</th>
+                    <th className="text-left py-[5px] px-2 text-micro uppercase text-ink-5">비고</th>
+                    <th className="text-right py-[5px] px-2 text-micro uppercase text-ink-5">금액</th>
                   </tr>
                 </thead>
                 <tbody>

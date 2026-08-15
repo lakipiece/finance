@@ -10,6 +10,12 @@ export function formatWon(n: number): string {
   return `${n.toLocaleString()}원`
 }
 
+/** 날짜 표기 통일 — 2026.08.12 (표·리스트·입력 전부 같은 형식) */
+export function formatDate(v: string | null | undefined): string {
+  if (!v) return '—'
+  return v.slice(0, 10).replace(/-/g, '.')
+}
+
 export function formatWonFull(n: number): string {
   return `${n.toLocaleString()}원`
 }

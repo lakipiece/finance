@@ -2,6 +2,7 @@
 import { useState, useMemo } from 'react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
+import { formatDate } from '@/lib/utils'
 
 interface PriceRow { ticker: string; date: string; price: number; currency: string }
 
@@ -93,15 +94,15 @@ export default function PriceHistoryViewer({ securities, history }: Props) {
         <table className="w-full text-body">
           <thead>
             <tr className="bg-surface-low text-ink-4 uppercase tracking-wider">
-              <th className="text-left px-2 py-[5px].5">날짜</th>
-              <th className="text-right px-2 py-[5px].5">가격</th>
-              <th className="text-right px-2 py-[5px].5">통화</th>
+              <th className="text-left px-2 py-[5px].5 text-micro uppercase text-ink-5">날짜</th>
+              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">가격</th>
+              <th className="text-right px-2 py-[5px].5 text-micro uppercase text-ink-5">통화</th>
             </tr>
           </thead>
           <tbody>
             {reversedRows.map(r => (
               <tr key={r.date} className="border-t border-surface-low hover:bg-surface-low">
-                <td className="px-2 py-[5px] text-ink-2">{r.date}</td>
+                <td className="px-2 py-[5px] text-ink-2 tabular-nums">{formatDate(r.date)}</td>
                 <td className="px-2 py-[5px] text-right font-mono text-ink">
                   {r.currency === 'USD' ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                 </td>

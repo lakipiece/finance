@@ -198,7 +198,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const inPortfolio = pathname.startsWith('/portfolio')
 
   return (
-    <div className="flex flex-col h-full w-[220px] border-r border-surface-low bg-surface-card">
+    <div className="flex flex-col h-full w-[220px] bg-surface-low">
       {/* 로고 — 본문 py-8과 상단 라인을 맞춘다 */}
       <div className="flex items-center gap-2.5 px-4 pb-5"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 2rem)' }}>

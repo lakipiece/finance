@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend, LineChart, Line } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import type { CategoryDetailsData } from './DashboardClient'
-import { formatWonFull, CATEGORIES } from '@/lib/utils'
+import { formatWonFull, formatDate, CATEGORIES } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
@@ -54,6 +54,23 @@ interface Props {
 }
 
 const PAGE_SIZES = [20, 50, 100] as const
+
+/**
+ * KPI 선택 카드 — 선택 상태는 잉크 배경으로만 표현한다.
+ * 카테고리색은 6px 점에만 남기고 배경·글자색으로 쓰지 않는다.
+ * (색 틴트를 배경에 깔면 중성 램프가 깨지고, 선택 여부와 카테고리가 같은 채널을 두고 다툰다.)
+ */
+function kpiCardCls(selected: boolean): string {
+  return `text-left rounded-card p-[13px] transition-colors ${
+    selected ? 'bg-action' : 'bg-surface-low hover:bg-surface-container'
+  }`
+}
+const kpiLabelCls = (selected: boolean) =>
+  `text-body font-medium ${selected ? 'text-white/72' : 'text-ink-3'}`
+const kpiValueCls = (selected: boolean) =>
+  `text-heading tabular-nums ${selected ? 'text-white' : 'text-ink'}`
+const kpiSubCls = (selected: boolean) =>
+  `text-micro tracking-normal tabular-nums ${selected ? 'text-white/55' : 'text-ink-4'}`
 
 function generateShades(hex: string, count: number): string[] {
   const r = parseInt(hex.slice(1, 3), 16)
@@ -208,17 +225,13 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-field p-3 transition-all"
-              style={{
-                background: isActive ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.05)',
-                outline: isActive ? '2px solid #3b82f6' : '2px solid transparent',
-              }}
+              className={kpiCardCls(isActive)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#3b82f6' : '#a8b3c4' }} />
-                <span className="text-body font-medium" style={{ color: isActive ? '#3b82f6' : '#5b6a80' }}>전체 수입</span>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#00695C' }} />
+                <span className={kpiLabelCls(isActive)}>전체 수입</span>
               </div>
-              <p className="text-heading font-bold text-ink">{formatWonFull(incomeMonthData.total)}</p>
+              <p className={kpiValueCls(isActive)}>{formatWonFull(incomeMonthData.total)}</p>
             </button>
           )
         })()}
@@ -237,18 +250,14 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-field p-3 transition-all"
-              style={{
-                background: `${color}${isActive ? '20' : '0d'}`,
-                outline: isActive ? `2px solid ${color}` : '2px solid transparent',
-              }}
+              className={kpiCardCls(isActive)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: color }} />
-                <span className="text-body font-medium" style={{ color }}>{cat}</span>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                <span className={kpiLabelCls(isActive)}>{cat}</span>
               </div>
-              <p className="text-heading font-bold text-ink">{formatWonFull(amount)}</p>
-              <p className="text-micro tracking-normal text-ink-4">{pct}%</p>
+              <p className={kpiValueCls(isActive)}>{formatWonFull(amount)}</p>
+              <p className={kpiSubCls(isActive)}>{pct}%</p>
             </button>
           )
         })}
@@ -268,17 +277,13 @@ export default function DrilldownPanel({
                 setSelectedCat(null)
                 setSelectedTrendDetail(null)
               }}
-              className="text-left rounded-field p-3 transition-all"
-              style={{
-                background: isActive ? 'rgba(26,35,126,0.1)' : 'rgba(26,35,126,0.04)',
-                outline: isActive ? '2px solid #131b2e' : '2px solid transparent',
-              }}
+              className={kpiCardCls(isActive)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: isActive ? '#1A237E' : '#a8b3c4' }} />
-                <span className="text-body font-medium" style={{ color: isActive ? '#1A237E' : '#5b6a80' }}>전체 지출</span>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#1A237E' }} />
+                <span className={kpiLabelCls(isActive)}>전체 지출</span>
               </div>
-              <p className="text-heading font-bold text-ink">{formatWonFull(monthData.total)}</p>
+              <p className={kpiValueCls(isActive)}>{formatWonFull(monthData.total)}</p>
             </button>
           )
         })()}
@@ -295,18 +300,14 @@ export default function DrilldownPanel({
                 setDrilldownType('expense')
                 setSelectedCat(isSelected ? null : cat)
               }}
-              className="text-left rounded-field p-3 transition-all"
-              style={{
-                background: `${catColors[cat]}${isSelected ? '28' : '14'}`,
-                outline: isSelected ? `2px solid ${catColors[cat]}` : '2px solid transparent',
-              }}
+              className={kpiCardCls(isSelected)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-2 h-2 rounded-full" style={{ background: catColors[cat] }} />
-                <span className="text-body font-medium" style={{ color: catColors[cat] }}>{cat}</span>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: catColors[cat] }} />
+                <span className={kpiLabelCls(isSelected)}>{cat}</span>
               </div>
-              <p className="text-heading font-bold text-ink">{formatWonFull(amount)}</p>
-              <p className="text-micro tracking-normal text-ink-4">{pct}%</p>
+              <p className={kpiValueCls(isSelected)}>{formatWonFull(amount)}</p>
+              <p className={kpiSubCls(isSelected)}>{pct}%</p>
             </button>
           )
         })}
@@ -716,7 +717,7 @@ function ExpenseTableCard({
           value={searchQuery}
           onChange={e => { setSearchQuery(e.target.value); setPage(1) }}
           placeholder="검색..."
-          className="w-44 rounded-btn px-3 py-1.5 text-body text-ink-2 focus:outline-none bg-surface-card border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
+          className="w-44 rounded-btn px-3 py-1.5 text-body text-ink-2 focus:outline-none bg-surface-low border-0 focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors"
         />
       </div>
 
@@ -754,7 +755,7 @@ function ExpenseTableCard({
                     {e.detail || e.category}
                   </p>
                   <div className="flex items-center gap-1.5 mt-[3px]">
-                    <span className="text-micro tracking-normal text-ink-5 tabular-nums shrink-0">{e.date}</span>
+                    <span className="text-micro tracking-normal text-ink-5 tabular-nums shrink-0">{formatDate(e.date)}</span>
                     {/* 색만으로 의미를 지게 하지 않는다 — 점과 라벨을 함께 유지 */}
                     <CategoryBadge category={e.category} size="sm" />
                   </div>
@@ -785,7 +786,7 @@ function ExpenseTableCard({
                 {slice.map((e, i) => (
                   <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
                     <td className="py-[5px] px-2 text-ink-5 text-body">{(safePage - 1) * pageSize + i + 1}</td>
-                    <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap">{e.date}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-body whitespace-nowrap tabular-nums">{formatDate(e.date)}</td>
                     <td className="py-[5px] px-2">
                       <CategoryBadge category={e.category} size="sm" />
                     </td>

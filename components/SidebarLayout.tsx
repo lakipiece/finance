@@ -29,7 +29,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   if (isLogin) return <>{children}</>
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-surface">
       {/* 데스크탑 사이드바 — fixed */}
       <div className="hidden md:flex fixed inset-y-0 left-0 z-40">
         <Sidebar />
@@ -55,7 +55,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 */}
       <div className="md:pl-[220px] min-h-screen flex flex-col">
         {/* 모바일 햄버거 바 */}
-        <div className="md:hidden sticky top-0 z-30 border-b border-surface-low" style={{ background: '#F8FAFC', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="md:hidden sticky top-0 z-30 border-b border-surface-low" style={{ background: '#fafafb', paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center h-12 px-4">
           <button
             onClick={() => setOpen(true)}
