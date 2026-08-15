@@ -77,12 +77,12 @@ function HoldingCard({
   const [hovered, setHovered] = useState(false)
   return (
     <div
-      className="relative flex flex-col items-center justify-center rounded-field bg-surface-card px-2 py-3 text-center min-w-0 cursor-default"
+      className="relative flex flex-col rounded-card bg-surface-low px-[13px] py-[11px] min-w-0 cursor-default"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <p className="text-micro text-ink-4 mb-1 uppercase tracking-wider">{label}</p>
-      <p className={`text-subhead font-medium tabular-nums leading-tight ${valueColor ?? 'text-ink'}`}>{value}</p>
+      <p className="text-micro text-ink-5 uppercase">{label}</p>
+      <p className={`text-heading tabular-nums leading-tight mt-1 truncate ${valueColor ?? 'text-ink'}`}>{value}</p>
       {sub && (
         <p className={`text-micro tracking-normal mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
           {sub.text}
@@ -210,23 +210,23 @@ function PriceHistoryModal({
               {tickerUrl ? (
                 <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  className="text-body font-bold px-2 py-0.5 rounded font-mono hover:opacity-75 transition-opacity"
-                  style={{ backgroundColor: hex + '20', color: hex }}>
+                  className="inline-flex items-center gap-1.5 text-micro font-bold px-2 py-0.5 rounded-full font-mono bg-surface-low text-ink-2 hover:opacity-75 transition-opacity">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: hex }} />
                   {security.ticker}
                 </a>
               ) : (
-                <span className="text-body font-bold px-2 py-0.5 rounded font-mono"
-                  style={{ backgroundColor: hex + '20', color: hex }}>
+                <span className="inline-flex items-center gap-1.5 text-micro font-bold px-2 py-0.5 rounded-full font-mono bg-surface-low text-ink-2">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: hex }} />
                   {security.ticker}
                 </span>
               )}
-              {security.asset_class && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.asset_class}</span>}
-              {security.country    && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.country}</span>}
-              {security.sector     && <span className="text-micro tracking-normal px-1.5 py-0.5 rounded bg-surface-low text-ink-3">{security.sector}</span>}
+              {security.asset_class && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.asset_class}</span>}
+              {security.country    && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.country}</span>}
+              {security.sector     && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.sector}</span>}
               <span className="text-micro tracking-normal text-ink-5 ml-0.5">{security.currency}</span>
             </div>
             {/* Name */}
-            <p className="text-title font-bold text-ink-3 leading-tight">{security.name}</p>
+            <p className="text-title text-ink leading-tight truncate">{security.name}</p>
           </div>
 
           {/* 증감율(좌) + 가격(우, hover→날짜 툴팁) */}
@@ -239,7 +239,7 @@ function PriceHistoryModal({
                   </span>
                 )}
                 <div className="relative group cursor-default">
-                  <p className="text-heading font-bold text-ink-4 tabular-nums">
+                  <p className="text-display text-ink tabular-nums">
                     {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
                   </p>
                   <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-action text-white text-micro tracking-normal rounded px-2 py-1 whitespace-nowrap z-10 shadow-card">
@@ -253,9 +253,9 @@ function PriceHistoryModal({
 
         {/* ── Holdings — 2행 × 3카드 ── */}
         {holdings.length > 0 && (
-          <div className="mx-5 mb-4 space-y-1.5 shrink-0">
+          <div className="mx-[18px] mb-4 space-y-2 shrink-0">
             {/* 1행: 총수량, 평균매수가, 투자원금 */}
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <HoldingCard
                 label="총 수량"
                 value={totalQty.toLocaleString()}
@@ -276,7 +276,7 @@ function PriceHistoryModal({
               />
             </div>
             {/* 2행: 평가금액, 수익, 수익률 */}
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <HoldingCard
                 label="평가금액"
                 value={marketValueKrw > 0 ? fmtKrw(marketValueKrw) : '—'}
@@ -306,9 +306,9 @@ function PriceHistoryModal({
         )}
 
         {/* ── Chart ── */}
-        <div className="mx-5 mb-3 rounded-field bg-surface-low p-3 shrink-0">
+        <div className="mx-[18px] mb-3 rounded-card bg-surface-low p-[13px] shrink-0">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-micro font-medium text-ink-4 uppercase tracking-wider">
+            <p className="text-micro text-ink-5 uppercase">
               가격 이력 {chartData.length > 0 ? `(${chartData.length}일)` : ''}
             </p>
             {/* MA 범례 */}
@@ -372,10 +372,10 @@ function PriceHistoryModal({
 
         {/* ── Table ── */}
         {tableRows.length > 0 && (
-          <div className="overflow-y-auto mx-5 mb-5 rounded-field shrink-1">
+          <div className="overflow-y-auto mx-[18px] mb-5 shrink-1">
             <table className="w-full">
-              <thead className="sticky top-0 bg-surface-low">
-                <tr className="text-micro text-ink-4 uppercase tracking-wider">
+              <thead className="sticky top-0 bg-surface-card">
+                <tr className="border-b border-surface-low">
                   <th className="text-left px-2 py-[5px] text-micro uppercase text-ink-5">날짜</th>
                   <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">가격</th>
                   <th className="text-right px-2 py-[5px] text-micro uppercase text-ink-5">등락</th>
@@ -386,12 +386,12 @@ function PriceHistoryModal({
                   const prev = tableRows[i + 1]
                   const pct = prev ? ((r.price - prev.price) / prev.price) * 100 : null
                   return (
-                    <tr key={r.date} className="border-t border-surface-low hover:bg-surface-low">
-                      <td className="px-2 py-[5px] text-micro tracking-normal font-sans text-ink-3 tabular-nums">{formatDate(r.date)}</td>
-                      <td className="px-2 py-[5px] text-micro tracking-normal text-right font-sans text-ink-4 tabular-nums">
+                    <tr key={r.date} className="border-b border-surface-low last:border-0 hover:bg-surface-low/60 transition-colors">
+                      <td className="px-2 py-[5px] text-body text-ink-4 tabular-nums">{formatDate(r.date)}</td>
+                      <td className="px-2 py-[5px] text-body font-medium text-right text-ink tabular-nums">
                         {isUSD ? `$${r.price.toFixed(2)}` : r.price.toLocaleString()}
                       </td>
-                      <td className={`px-4 py-1.5 text-micro tracking-normal text-right font-sans tabular-nums ${pct == null ? 'text-ink-5' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                      <td className={`px-2 py-[5px] text-body font-medium text-right tabular-nums ${pct == null ? 'text-ink-5' : pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                         {pct != null ? `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%` : '—'}
                       </td>
                     </tr>
