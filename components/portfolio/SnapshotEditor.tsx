@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
-import { useTheme } from '@/lib/ThemeContext'
 import DateInput from '@/components/ui/DateInput'
 
 interface HoldingRow {
@@ -74,7 +73,6 @@ function NumInput({ value, onChange, placeholder, tabIndex, className }: {
 
 export default function SnapshotEditor({ snapshot, holdings, accounts, securities, accountSecurities, typeColors = {}, sectorColors = {}, cashflowEvents = [] }: Props) {
   const router = useRouter()
-  const { palette } = useTheme()
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const [snapshotDate, setSnapshotDate] = useState(snapshot.date)
@@ -325,23 +323,23 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div className="min-w-0">
           <button onClick={handleBack} className="text-body text-ink-4 hover:text-ink-2 mb-1">← 목록</button>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-heading font-bold" style={{ color: '#1A237E' }}>스냅샷 편집</h2>
-            <span className="text-ink-5 text-subhead">—</span>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-heading text-ink whitespace-nowrap">스냅샷 편집</h2>
             <DateInput
               value={snapshotDate}
               onChange={v => { setSnapshotDate(v); setIsDirty(true) }}
+              className="w-36"
             />
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap sm:justify-end">
           {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
           {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
           {totalValue > 0 && (
-            <div className="text-right leading-tight">
+            <div className="text-left sm:text-right leading-tight min-w-0">
               <p className="text-micro tracking-normal text-ink-4 tabular-nums"
                 title={totalMetrics.hasLedger ? '투자원금 (누적입금, 미기록 계좌는 평균매수금액)' : '평균매수금액 합계'}>
                 투자원금 {Math.round(totalMetrics.basis).toLocaleString()}원
@@ -356,15 +354,14 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             </div>
           )}
           <button onClick={handleSave} disabled={saving}
-            className="text-white px-4 py-2 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: palette.colors[0] }}>
+            className="shrink-0 bg-action text-white px-4 py-2 rounded-btn text-body font-bold hover:opacity-90 disabled:opacity-60 transition-opacity">
             {saving ? '저장 중...' : '저장'}
           </button>
         </div>
       </div>
 
       {/* Account Card Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         {accounts.map(a => {
           const count = accountCounts[a.id] ?? 0
           const total = accountSecurities.filter(as => as.account_id === a.id).length
@@ -372,9 +369,9 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           const typeColor = typeColors[a.type ?? ''] ?? null
           return (
             <div key={a.id}
-              className="flex bg-surface-card rounded-card overflow-hidden hover:shadow-card transition-all min-h-[110px]">
-              {/* 왼쪽 색상 바 */}
-              <div className="w-1.5 shrink-0 rounded-l-2xl"
+              className="flex bg-surface-card rounded-card overflow-hidden shadow-card hover:-translate-y-0.5 transition-transform min-h-[110px]">
+              {/* 왼쪽 색상 바 — 테두리가 아니라 배경 톤 띠 */}
+              <div className="w-1.5 shrink-0"
                 style={{ backgroundColor: typeColor ?? '#e9ecf2' }} />
               {/* 카드 내용 */}
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
@@ -398,12 +395,14 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                     const m = accountMetrics[a.id]
                     return (
                       <>
-                        <div className="flex justify-between text-micro tracking-normal tabular-nums">
-                          <span className="text-ink-4"
-                            title={m?.hasLedger ? '투자원금 (누적입금)' : '평균매수금액 (원장 미기록)'}>
-                            {Math.round(m?.basis ?? 0).toLocaleString()}원
-                          </span>
-                          <span className="text-ink-2 font-medium">평가금액 {Math.round(aVal).toLocaleString()}원</span>
+                        <div className="flex items-baseline justify-between gap-2 text-micro tracking-normal tabular-nums">
+                          <span className="text-ink-5 shrink-0"
+                            title={m?.hasLedger ? '투자원금 (누적입금)' : '평균매수금액 (원장 미기록)'}>투자원금</span>
+                          <span className="text-ink-3 truncate">{Math.round(m?.basis ?? 0).toLocaleString()}원</span>
+                        </div>
+                        <div className="flex items-baseline justify-between gap-2 text-micro tracking-normal tabular-nums">
+                          <span className="text-ink-5 shrink-0">평가금액</span>
+                          <span className="text-ink font-bold truncate">{Math.round(aVal).toLocaleString()}원</span>
                         </div>
                         {m != null ? (
                           <div className={`text-right text-micro tracking-normal font-medium tabular-nums ${m.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
@@ -426,12 +425,11 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       {/* Account Modal */}
       {modalAccountId && createPortal(
         <div className="modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-surface-card rounded-card w-full max-w-5xl flex flex-col shadow-dialog"
-            style={{ maxHeight: '90vh' }}
+          <div className="bg-surface-card rounded-dialog w-full max-w-5xl flex flex-col shadow-dialog overflow-hidden max-h-[calc(100dvh-2rem)]"
             onClick={e => e.stopPropagation()}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-[18px] py-[15px] border-b border-surface-low shrink-0">
-              <div>
+            <div className="flex items-start justify-between gap-3 px-[18px] py-[15px] shrink-0">
+              <div className="min-w-0 flex-1">
                 <p className="font-bold text-ink text-heading leading-tight">{modalAccount?.name}</p>
                 {modalAccount?.broker && (
                   <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-micro tracking-normal text-ink-4 bg-surface-low">{modalAccount.broker}</span>
@@ -451,7 +449,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   const signed = (v: number) => `${v >= 0 ? '+' : ''}${Math.round(v).toLocaleString()}원`
                   const pct = (v: number, base: number) => base > 0 ? ` (${v >= 0 ? '+' : ''}${(v / base * 100).toFixed(1)}%)` : ''
                   return (
-                    <div className="mt-2 space-y-0.5 min-w-[200px]">
+                    <div className="mt-2 space-y-0.5 max-w-sm">
                       {cf
                         ? row('투자원금 (누적입금)', `${Math.round(cf.inflow).toLocaleString()}원`)
                         : row('투자원금 (매수원가 기준)', `${Math.round(cost).toLocaleString()}원`)}
@@ -468,12 +466,11 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                   )
                 })() : null}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
                 {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
-                  className="text-white px-3 py-1.5 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: palette.colors[0] }}>
+                  className="shrink-0 bg-action text-white px-3 py-1.5 rounded-btn text-body font-bold hover:opacity-90 disabled:opacity-60 transition-opacity">
                   {saving ? '저장 중...' : '저장'}
                 </button>
                 <button onClick={handleModalClose}
@@ -485,7 +482,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
               </div>
             </div>
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-5 min-h-0">
+            <div className="flex-1 overflow-y-auto px-[18px] pb-4 min-h-0">
               {selectedRows.length === 0 ? (
                 <div className="text-center py-12 text-subhead text-ink-4">
                   연결된 종목이 없습니다 — 계좌 관리에서 종목을 연결해주세요
@@ -583,17 +580,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       {/* Dirty Alert */}
       {showDirtyAlert && createPortal(
         <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
-          <div className="bg-surface-card rounded-card p-[13px] shadow-dialog max-w-sm w-full">
-            <p className="text-subhead font-medium text-ink">저장하지 않은 변경사항</p>
+          <div className="bg-surface-card rounded-dialog p-[18px] shadow-dialog max-w-sm w-full">
+            <p className="text-heading text-ink">저장하지 않은 변경사항</p>
             <p className="text-body text-ink-3 mt-1.5">수정한 내용이 저장되지 않았습니다.</p>
             <div className="flex gap-2 mt-5">
               <button onClick={() => setShowDirtyAlert(false)}
-                className="flex-1 text-white px-4 py-2 rounded-btn text-body font-medium hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: palette.colors[0] }}>
+                className="flex-1 bg-action text-white px-4 py-2 rounded-btn text-body font-bold hover:opacity-90 transition-opacity">
                 계속 편집
               </button>
               <button onClick={() => { setShowDirtyAlert(false); setModalAccountId(null) }}
-                className="flex-1 text-ink-3 px-4 py-2 rounded-btn text-body hover:bg-surface-low">
+                className="flex-1 bg-surface-high text-ink-2 px-4 py-2 rounded-btn text-body font-medium hover:opacity-90 transition-opacity">
                 저장안함
               </button>
             </div>
