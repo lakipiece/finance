@@ -12,8 +12,8 @@ import { btn } from '@/lib/styles'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 import type { SnapshotViewMode } from './SnapshotList'
 import { SNAPSHOT_VIEW_LABELS } from './SnapshotList'
-import { snapshotMetrics } from '@/lib/portfolio/metrics'
-import type { AccountCashflowEvent, AccountSnapshotEntry } from '@/lib/portfolio/metrics'
+import { snapshotMetrics, periodPerformance } from '@/lib/portfolio/metrics'
+import type { AccountCashflowEvent, AccountSnapshotEntry, PeriodPerformance } from '@/lib/portfolio/metrics'
 
 export interface SnapshotPoint {
   date: string
@@ -210,6 +210,104 @@ function KpiCard({ label, value, sub, subColor }: {
       <p className="text-micro tracking-normal text-ink-4 mb-1">{label}</p>
       <p className="text-heading font-bold text-ink tabular-nums leading-tight">{value}</p>
       {sub ? <p className={`text-micro tracking-normal tabular-nums mt-1 ${subColor ?? 'text-ink-4'}`}>{sub}</p> : null}
+    </div>
+  )
+}
+
+/** 기간 필터 — 연도 + 월초/월말 보기 */
+function YearFilterRow({ years, year, onYear, view, onView, count }: {
+  years: number[]
+  year: number | 'all'
+  onYear: (y: number | 'all') => void
+  view: SnapshotViewMode
+  onView: (v: SnapshotViewMode) => void
+  count: number
+}) {
+  return (
+    <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
+      <div className="flex items-center gap-1.5">
+        <button onClick={() => onYear('all')} className={btn.pill(year === 'all')}>전체</button>
+        {years.map(y => (
+          <button key={y} onClick={() => onYear(y)} className={btn.pill(year === y)}>{y}년</button>
+        ))}
+      </div>
+      <div className="flex items-center gap-1.5">
+        {(Object.keys(SNAPSHOT_VIEW_LABELS) as SnapshotViewMode[]).map(m => (
+          <button key={m} onClick={() => onView(m)} className={btn.pill(view === m)}>
+            {SNAPSHOT_VIEW_LABELS[m]}
+          </button>
+        ))}
+        <span className="text-micro tracking-normal text-ink-5 ml-1">{count}개 시점</span>
+      </div>
+    </div>
+  )
+}
+
+/** 기간 성과 — 선택 구간의 신규 투자금과 수익률(Modified Dietz · TWR) */
+function PerformanceCard({ perf, year, anchoredFromPrevYear }: {
+  perf: PeriodPerformance
+  year: number | 'all'
+  anchoredFromPrevYear: boolean
+}) {
+  const gainColor = perf.gain >= 0 ? 'text-gain' : 'text-loss'
+  const items: { label: string; value: string; sub?: string; color?: string }[] = [
+    {
+      label: '기초 평가액',
+      value: fmtKrw(perf.beginValue),
+      sub: anchoredFromPrevYear ? `${perf.from} 기준` : `${perf.from} 첫 스냅샷`,
+    },
+    {
+      label: '신규 투자금',
+      value: fmtKrw(perf.newInvestment),
+      sub: perf.usesCostFallback
+        ? `입금 ${fmtY(perf.deposits)}${perf.withdrawals > 0 ? ` · 출금 ${fmtY(perf.withdrawals)}` : ''} + 매수원가 증분 ${fmtY(perf.costDelta)}`
+        : `입금 ${fmtY(perf.deposits)}${perf.withdrawals > 0 ? ` · 출금 ${fmtY(perf.withdrawals)}` : ''}`,
+    },
+    {
+      label: '기간 수익금액',
+      value: `${perf.gain >= 0 ? '+' : ''}${fmtKrw(perf.gain)}`,
+      sub: `${perf.to} 평가액 ${fmtY(perf.endValue)}`,
+      color: gainColor,
+    },
+    {
+      label: '수익률',
+      value: perf.dietz != null ? fmtPctSigned(perf.dietz * 100) : '—',
+      sub: '투입 시점 가중 (Modified Dietz)',
+      color: perf.dietz != null && perf.dietz < 0 ? 'text-loss' : 'text-gain',
+    },
+    {
+      label: 'TWR',
+      value: perf.twr != null ? fmtPctSigned(perf.twr * 100) : '—',
+      sub: '입금 타이밍 제외 · 스냅샷 구간 연쇄',
+      color: perf.twr != null && perf.twr < 0 ? 'text-loss' : 'text-gain',
+    },
+  ]
+
+  return (
+    <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
+      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+        <h3 className="text-subhead font-medium text-ink">
+          {year === 'all' ? '전체 기간 성과' : `${year}년 성과`}
+        </h3>
+        {!anchoredFromPrevYear ? (
+          <p className="text-micro tracking-normal text-warning">
+            직전 연도 스냅샷이 없어 {perf.from}부터 집계한 부분 연도입니다
+          </p>
+        ) : null}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-3">
+        {items.map(it => (
+          <div key={it.label}>
+            <p className="text-micro tracking-normal text-ink-4 mb-1">{it.label}</p>
+            <p className={`text-subhead font-bold tabular-nums leading-tight ${it.color ?? 'text-ink'}`}>{it.value}</p>
+            {it.sub ? <p className="text-micro tracking-normal text-ink-5 mt-1">{it.sub}</p> : null}
+          </div>
+        ))}
+      </div>
+      <p className="text-micro tracking-normal text-ink-5 mt-3">
+        수익금액 = 기말 평가액 − 기초 평가액 − 순유입
+        {perf.usesCostFallback ? ' · 입출금 원장이 없는 계좌는 매수원가 증분으로 근사합니다' : ''}
+      </p>
     </div>
   )
 }
@@ -480,8 +578,52 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
   const [view, setView] = useState<SnapshotViewMode>(initialView)
-  const points = useMemo(() => filterByView(allPoints, view), [allPoints, view])
-  if (points.length < 2) return null
+  const [year, setYear] = useState<number | 'all'>('all')
+
+  const years = useMemo(() => {
+    const set = new Set(allPoints.map(p => Number(p.date.slice(0, 4))))
+    return [...set].sort((a, b) => b - a)
+  }, [allPoints])
+
+  const viewPoints = useMemo(() => filterByView(allPoints, view), [allPoints, view])
+
+  /**
+   * 선택 연도 구간. 앞에 앵커(직전 연도 마지막 스냅샷) 한 개를 붙여 기초 잔고를 만든다.
+   * 직전 연도 스냅샷이 없으면 그 해 첫 스냅샷이 앵커가 된다 — 부분 연도.
+   */
+  const { points, anchoredFromPrevYear } = useMemo(() => {
+    if (year === 'all') return { points: viewPoints, anchoredFromPrevYear: true }
+    const start = `${year}-01-01`
+    const end = `${year}-12-31`
+    const inYear = viewPoints.filter(p => p.date >= start && p.date <= end)
+    const before = viewPoints.filter(p => p.date < start)
+    const anchor = before[before.length - 1]
+    return anchor
+      ? { points: [anchor, ...inYear], anchoredFromPrevYear: true }
+      : { points: inYear, anchoredFromPrevYear: false }
+  }, [viewPoints, year])
+
+  const performance = useMemo(() => periodPerformance(
+    points.map(p => ({
+      date: p.date,
+      value: p.total_market_value,
+      breakdown: p.account_breakdown ?? {},
+    })),
+    cashflowEvents,
+  ), [points, cashflowEvents])
+
+  if (points.length < 2) {
+    return (
+      <div className="space-y-4">
+        <YearFilterRow years={years} year={year} onYear={setYear} view={view} onView={setView} count={points.length} />
+        <div className="bg-surface-card rounded-card px-[13px] py-10 text-center">
+          <p className="text-body text-ink-4">
+            {year === 'all' ? '스냅샷이 2개 이상 필요합니다.' : `${year}년 스냅샷이 2개 미만이라 표시할 추이가 없습니다.`}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const hasLedger = cashflowEvents.length > 0
 
@@ -562,19 +704,8 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
   return (
     <div className="space-y-4">
 
-      {/* 보기 필터 — 스냅샷 목록과 동일한 기준 */}
-      <div className="flex items-center gap-1.5">
-        {(Object.keys(SNAPSHOT_VIEW_LABELS) as SnapshotViewMode[]).map(m => {
-          const active = view === m
-          return (
-            <button key={m} onClick={() => setView(m)}
-              className={btn.pill(active)}>
-              {SNAPSHOT_VIEW_LABELS[m]}
-            </button>
-          )
-        })}
-        <span className="text-micro tracking-normal text-ink-5 ml-1">{points.length}개 시점</span>
-      </div>
+      {/* 기간 필터 — 연도 + 월초/월말 (스냅샷 목록과 동일한 기준) */}
+      <YearFilterRow years={years} year={year} onYear={setYear} view={view} onView={setView} count={points.length} />
 
       {needsBackfill && (
         <div className="bg-warning/10 border rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
@@ -593,7 +724,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         <KpiCard
           label="현재 평가액"
           value={fmtKrw(currentValue)}
-          sub={`첫 스냅샷 대비 ${fmtPctSigned(pctFromFirst)} (${fmtY(diffFromFirst)})`}
+          sub={`${first.date} 대비 ${fmtPctSigned(pctFromFirst)} (${fmtY(diffFromFirst)})`}
           subColor={diffFromFirst >= 0 ? 'text-gain' : 'text-loss'}
         />
         {currentProfit != null ? (
@@ -623,7 +754,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           <KpiCard
             label="평균매수금액"
             value={fmtKrw(currentInvested)}
-            sub={`첫 스냅샷 대비 ${fmtY(investedDiffFromFirst)}`}
+            sub={`${first.date} 대비 ${fmtY(investedDiffFromFirst)}`}
           />
         )}
         <KpiCard
@@ -633,6 +764,11 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           subColor={diffFromPrev >= 0 ? 'text-gain' : 'text-loss'}
         />
       </div>
+
+      {/* 기간 성과 — 선택 연도의 신규 투자금·수익률 */}
+      {performance ? (
+        <PerformanceCard perf={performance} year={year} anchoredFromPrevYear={anchoredFromPrevYear} />
+      ) : null}
 
       {/* 원금 + 손익 = 평가액 */}
       <div className="bg-surface-card rounded-card px-[13px] py-[11px]">

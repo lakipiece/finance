@@ -11,8 +11,14 @@
 export interface AccountCashflowEvent {
   account_id: string
   date: string
+  /** 입금 + 기초잔액 */
   inflow: number
   outflow: number
+  /**
+   * inflow 중 기초잔액(opening) 몫. 기간 성과에서 "신규 투자금"과 앵커를 가르는 데 쓴다.
+   * 누적 지표만 쓰는 화면은 넘기지 않아도 된다(0으로 본다).
+   */
+  opening?: number
 }
 
 /** snapshots.account_breakdown 항목: 계좌별 평가액·평균매수금액 (KRW) */
@@ -128,4 +134,174 @@ export function parseAccountBreakdown(raw: unknown): Record<string, AccountSnaps
     out[k] = { value: Number(v?.value ?? 0), cost: Number(v?.cost ?? 0) }
   }
   return out
+}
+
+// ─── 기간 성과 (연간 수익률) ────────────────────────────────────────────────
+// 누적 지표(위)와 계산 축이 다르다. 누적은 "지금까지 넣은 돈 대비 지금 얼마",
+// 기간은 "구간 시작 잔고에서 출발해 그 사이 넣은 돈을 빼고 얼마나 벌었나"다.
+//
+// 계좌 분류는 구간 끝(to) 시점의 누적입금으로 한 번만 정한다.
+// 구간 안에서만 판정하면 그 해 입금이 없던 원장 계좌가 매수원가 폴백으로 튀고,
+// 구간 시작으로 판정하면 그 해 원장이 시작된 계좌의 입금이 통째로 누락된다.
+//   · 원장 계좌  → 실제 입출금 날짜와 금액을 그대로 현금흐름으로 쓴다
+//   · 폴백 계좌  → 스냅샷 사이 매수원가 증분(Δcost)을 구간 중간 시점의 유입으로 근사한다
+
+/** 기간 수익률 계산에 넣는 현금흐름 1건 */
+export interface PeriodFlow {
+  date: string
+  amount: number
+}
+
+/** 기간 성과 계산에 필요한 스냅샷 1개 (앵커 포함, date ASC) */
+export interface PeriodPoint {
+  date: string
+  value: number
+  breakdown: Record<string, AccountSnapshotEntry>
+}
+
+export interface PeriodPerformance {
+  /** 기초 앵커 날짜 — 보통 직전 연도 마지막 스냅샷 */
+  from: string
+  to: string
+  beginValue: number
+  endValue: number
+  /** 신규 투자금액 = 입금 − 출금 (기초잔액 제외) + 미기록 계좌 매수원가 증분 */
+  newInvestment: number
+  deposits: number
+  withdrawals: number
+  costDelta: number
+  /** 수익률 계산에 쓴 순유입 — 기간 안에 찍힌 기초잔액도 유입으로 본다 */
+  netFlow: number
+  gain: number
+  /** Modified Dietz — 투입 시점을 가중한 실질 수익률 */
+  dietz: number | null
+  /** 시간가중수익률 — 스냅샷 구간별 수익률의 연쇄곱. 입금 타이밍 영향 제거 */
+  twr: number | null
+  /** 폴백(원장 미기록) 계좌가 섞였는지 — 근사가 들어갔다는 뜻 */
+  usesCostFallback: boolean
+}
+
+function dayDiff(a: string, b: string): number {
+  return (Date.parse(b) - Date.parse(a)) / 86_400_000
+}
+
+function midDate(a: string, b: string): string {
+  return new Date((Date.parse(a) + Date.parse(b)) / 2).toISOString().slice(0, 10)
+}
+
+/** 해당 시점까지 누적입금이 있는 원장 계좌 id 집합 */
+export function ledgerAccountIds(events: AccountCashflowEvent[], asOf: string): Set<string> {
+  return new Set(Object.keys(cumulativeByAccount(events, asOf)))
+}
+
+/** 두 스냅샷 사이 폴백 계좌들의 매수원가 증분 합 */
+export function fallbackCostDelta(
+  prev: Record<string, AccountSnapshotEntry>,
+  curr: Record<string, AccountSnapshotEntry>,
+  ledgerIds: Set<string>,
+): number {
+  let delta = 0
+  const ids = new Set([...Object.keys(prev), ...Object.keys(curr)])
+  for (const id of ids) {
+    if (ledgerIds.has(id)) continue
+    delta += (curr[id]?.cost ?? 0) - (prev[id]?.cost ?? 0)
+  }
+  return delta
+}
+
+/**
+ * Modified Dietz — gain / (기초잔고 + 시점가중 유입).
+ * 가중치는 유입일 이후 남은 기간 비율이다(구간 초 유입이면 1, 구간 말 유입이면 0).
+ */
+export function modifiedDietz(
+  beginValue: number,
+  endValue: number,
+  flows: PeriodFlow[],
+  from: string,
+  to: string,
+): { gain: number; netFlow: number; rate: number | null } {
+  const span = dayDiff(from, to)
+  let netFlow = 0
+  let weighted = 0
+  for (const f of flows) {
+    netFlow += f.amount
+    const elapsed = span > 0 ? dayDiff(from, f.date) / span : 0
+    const w = Math.min(1, Math.max(0, 1 - elapsed))
+    weighted += f.amount * w
+  }
+  const gain = endValue - beginValue - netFlow
+  const denom = beginValue + weighted
+  return { gain, netFlow, rate: denom > 0 ? gain / denom : null }
+}
+
+/**
+ * 기간 성과. points는 앵커(구간 시작)를 0번으로 포함한 date ASC 배열이어야 한다.
+ * 스냅샷이 2개 미만이면 null.
+ */
+export function periodPerformance(
+  points: PeriodPoint[],
+  events: AccountCashflowEvent[],
+): PeriodPerformance | null {
+  if (points.length < 2) return null
+  const from = points[0].date
+  const to = points[points.length - 1].date
+  const ledgerIds = ledgerAccountIds(events, to)
+
+  // 기초 스냅샷에 이미 잡혀 있던 계좌 — 이 계좌의 기초잔액(opening)은 유입이 아니다.
+  // 기초잔액은 "기록을 시작한 시점의 잔고"라 그 금액이 이미 beginValue에 들어 있다.
+  // 반대로 기간 중 새로 편입된 계좌의 기초잔액은 진짜 유입이므로 그대로 센다.
+  const existingIds = new Set(Object.keys(points[0].breakdown))
+
+  // 원장 계좌 실제 현금흐름 — from 초과 ~ to 이하
+  const flows: PeriodFlow[] = []
+  let deposits = 0
+  let withdrawals = 0
+  for (const e of events) {
+    if (e.date <= from || e.date > to) continue
+    if (!ledgerIds.has(e.account_id)) continue
+    const opening = e.opening ?? 0
+    const anchorOnly = existingIds.has(e.account_id) ? opening : 0
+    deposits += e.inflow - opening
+    withdrawals += e.outflow
+    flows.push({ date: e.date, amount: e.inflow - e.outflow - anchorOnly })
+  }
+
+  // 폴백 계좌 — 스냅샷 구간마다 Δcost를 구간 중간 시점 유입으로
+  let costDelta = 0
+  let usesCostFallback = false
+  for (let i = 1; i < points.length; i++) {
+    const d = fallbackCostDelta(points[i - 1].breakdown, points[i].breakdown, ledgerIds)
+    if (d === 0) continue
+    usesCostFallback = true
+    costDelta += d
+    flows.push({ date: midDate(points[i - 1].date, points[i].date), amount: d })
+  }
+
+  const beginValue = points[0].value
+  const endValue = points[points.length - 1].value
+  const { gain, netFlow, rate } = modifiedDietz(beginValue, endValue, flows, from, to)
+
+  // TWR — 구간마다 Modified Dietz를 내고 연쇄곱한다
+  let factor = 1
+  let linked = false
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]
+    const b = points[i]
+    if (dayDiff(a.date, b.date) <= 0) continue
+    const seg = flows.filter(f => f.date > a.date && f.date <= b.date)
+    const r = modifiedDietz(a.value, b.value, seg, a.date, b.date).rate
+    if (r == null) continue
+    factor *= 1 + r
+    linked = true
+  }
+
+  return {
+    from, to, beginValue, endValue,
+    newInvestment: deposits - withdrawals + costDelta,
+    deposits, withdrawals, costDelta,
+    netFlow, gain,
+    dietz: rate,
+    twr: linked ? factor - 1 : null,
+    usesCostFallback,
+  }
 }

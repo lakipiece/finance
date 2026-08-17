@@ -18,6 +18,14 @@ type SnapshotRow = {
   account_breakdown: unknown
 }
 
+type CashflowRow = {
+  account_id: string
+  flow_date: unknown
+  inflow: number
+  outflow: number
+  opening: number
+}
+
 function parseBreakdown(raw: unknown): Record<string, number> {
   if (raw == null) return {}
   if (typeof raw === 'string') return JSON.parse(raw)
@@ -36,13 +44,14 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
       SELECT type, value, color_hex FROM option_list
       WHERE type IN ('sector','asset_class') AND color_hex IS NOT NULL
     `,
-    sql<{ account_id: string; flow_date: unknown; inflow: number; outflow: number }[]>`
+    sql<CashflowRow[]>`
       SELECT account_id, flow_date,
         COALESCE(SUM(amount) FILTER (WHERE type IN ('deposit','opening')), 0)::float AS inflow,
-        COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow
+        COALESCE(SUM(amount) FILTER (WHERE type = 'withdrawal'), 0)::float AS outflow,
+        COALESCE(SUM(amount) FILTER (WHERE type = 'opening'), 0)::float AS opening
       FROM account_cashflows
       GROUP BY account_id, flow_date ORDER BY flow_date
-    `.catch(() => [] as { account_id: string; flow_date: unknown; inflow: number; outflow: number }[]),
+    `.catch(() => [] as CashflowRow[]),
   ])
 
   const sectorColors: Record<string, string> = {}
@@ -73,6 +82,7 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
       : String(r.flow_date).slice(0, 10),
     inflow: Number(r.inflow),
     outflow: Number(r.outflow),
+    opening: Number(r.opening),
   }))
 
   const viewParam = searchParams.view
