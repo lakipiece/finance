@@ -717,11 +717,30 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
   const pnlData = valueData.map(d => ({ date: d.date, 손익: d.손익 }))
   const pnlLabelIdx = new Set(labelIndices(pnlData.map(d => d.손익), 10))
 
+  // 직전 대비 증감을 "넣은 돈"과 "벌어들인 돈"으로 가른다.
+  // 구간마다 periodPerformance를 돌려 순유입을 구하고, 나머지가 수익이다.
   const momData = points.map((p, i) => {
-    if (i === 0) return { date: p.date, 증감: 0 }
-    return { date: p.date, 증감: p.total_market_value - points[i - 1].total_market_value }
+    if (i === 0) return { date: p.date, 투자원금: 0, 수익: 0, 증감: 0 }
+    const prevPoint = points[i - 1]
+    const seg = periodPerformance(
+      [prevPoint, p].map(q => ({
+        date: q.date,
+        value: q.total_market_value,
+        breakdown: q.account_breakdown ?? {},
+      })),
+      cashflowEvents,
+    )
+    const 증감 = p.total_market_value - prevPoint.total_market_value
+    return {
+      date: p.date,
+      투자원금: seg?.netFlow ?? 0,
+      수익: seg ? seg.gain : 증감,
+      증감,
+    }
   })
-  const momLabelIdx = new Set(labelIndices(momData.map(d => d.증감), 12))
+  // 두 계열이 나란히 서므로 라벨은 더 성기게 — 8개까지만 전부 표시
+  const flowLabelIdx = new Set(labelIndices(momData.map(d => d.투자원금), 8))
+  const gainLabelIdx = new Set(labelIndices(momData.map(d => d.수익), 8))
 
   return (
     <div className="space-y-4">
@@ -856,24 +875,44 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
         </ResponsiveContainer>
       </div>
 
-      {/* MoM 증감 */}
+      {/* MoM 증감 — 투자원금 vs 수익 */}
       <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
-        <h3 className="text-subhead font-medium text-ink mb-3">직전 대비 증감</h3>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={momData} margin={{ left: 0, right: 8, top: 18, bottom: 10 }}>
+        <h3 className="text-subhead font-medium text-ink mb-0.5">직전 대비 증감 — 투자원금 · 수익</h3>
+        <p className="text-micro tracking-normal text-ink-4 mb-3">
+          평가액이 움직인 만큼을 새로 넣은 돈과 벌어들인 돈으로 나눠 나란히 놓았습니다
+        </p>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={momData} margin={{ left: 0, right: 8, top: 18, bottom: 10 }} barGap={2}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide domain={LABEL_HEADROOM} />
             <Tooltip content={<MomTooltip />} cursor={{ fill: '#f8fafc' }} />
             <ReferenceLine y={0} stroke="#a8b3c4" />
-            <Bar dataKey="증감">
+            <Bar dataKey="투자원금" name="투자원금" fill={CHART_SERIES[0]}>
+              <LabelList dataKey="투자원금" content={barTopLabel(flowLabelIdx, '#5b6a80')} />
+            </Bar>
+            <Bar dataKey="수익" name="수익">
               {momData.map((d, i) => (
-                <Cell key={i} fill={d.증감 >= 0 ? POS : NEG} />
+                <Cell key={i} fill={d.수익 >= 0 ? POS : NEG} />
               ))}
-              <LabelList dataKey="증감" content={barTopLabel(momLabelIdx, '#5b6a80')} />
+              <LabelList dataKey="수익" content={barTopLabel(gainLabelIdx, '#5b6a80')} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_SERIES[0] }} />
+            투자원금 (입금 − 출금)
+          </span>
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: POS }} />
+            수익
+          </span>
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: NEG }} />
+            손실
+          </span>
+        </div>
       </div>
 
       {/* 자산군 비중 변화 */}
@@ -955,13 +994,35 @@ function SinglePnlTooltip({ active, payload, label }: ChartTooltipProps) {
 
 function MomTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
-  const v = Number(payload[0].value)
+  const row = payload[0].payload as Record<string, number | string>
+  const flow = Number(row['투자원금'] ?? 0)
+  const gain = Number(row['수익'] ?? 0)
+  const total = Number(row['증감'] ?? 0)
+  if (total === 0 && flow === 0 && gain === 0) {
+    return (
+      <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body">
+        <p className="text-ink-4 mb-0.5">{label}</p>
+        <p className="text-ink-3">시작점</p>
+      </div>
+    )
+  }
   return (
     <div className="bg-surface-card rounded-field px-3 py-2 shadow-card text-body">
-      <p className="text-ink-4 mb-0.5">{label}</p>
-      <p className={`font-medium tabular-nums ${v >= 0 ? 'text-gain' : 'text-loss'}`}>
-        {v === 0 ? '시작점' : `${v >= 0 ? '+' : ''}${fmtKrw(v)}`}
-      </p>
+      <p className="text-ink-4 mb-1.5">{label}</p>
+      <div className="flex justify-between gap-3">
+        <span className="text-ink-3">투자원금</span>
+        <span className="text-ink-2 tabular-nums">{flow >= 0 ? '+' : ''}{fmtKrw(flow)}</span>
+      </div>
+      <div className="flex justify-between gap-3">
+        <span className="text-ink-3">수익</span>
+        <span className={`font-medium tabular-nums ${gain >= 0 ? 'text-gain' : 'text-loss'}`}>
+          {gain >= 0 ? '+' : ''}{fmtKrw(gain)}
+        </span>
+      </div>
+      <div className="flex justify-between gap-3 border-t border-surface-low mt-1.5 pt-1.5">
+        <span className="text-ink-4">평가액 증감</span>
+        <span className="font-bold text-ink tabular-nums">{total >= 0 ? '+' : ''}{fmtKrw(total)}</span>
+      </div>
     </div>
   )
 }
