@@ -207,7 +207,7 @@ function bucketize(breakdown: Record<string, number>, keys: string[]): Record<st
   for (const [k, v] of Object.entries(breakdown)) {
     if (!keys.includes(k)) others += v
   }
-  if (others > 0) keep['기타'] = (keep['기타'] ?? 0) + Math.round(others * 10) / 10
+  if (others > 0) keep['기타'] = (keep['기타'] ?? 0) + Math.round(others * 100) / 100
   return keep
 }
 

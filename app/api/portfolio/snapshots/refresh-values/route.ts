@@ -146,10 +146,12 @@ export async function POST() {
       }
     }
 
+    // 비중은 0.01%까지 저장한다. 0.1%로 끊으면 차트·툴팁이 소수 2자리를
+    // 보여줄 때 항상 0으로 끝나는 가짜 정밀도가 된다.
     const toPct = (agg: Record<string, number>) => {
       const out: Record<string, number> = {}
       for (const [k, v] of Object.entries(agg)) {
-        out[k] = totalMarketValue > 0 ? Math.round((v / totalMarketValue) * 1000) / 10 : 0
+        out[k] = totalMarketValue > 0 ? Math.round((v / totalMarketValue) * 10000) / 100 : 0
       }
       return out
     }
