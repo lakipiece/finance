@@ -7,8 +7,8 @@ import {
   ResponsiveContainer, CartesianGrid, LabelList,
   LineChart, Line, ReferenceLine, Cell,
 } from 'recharts'
-import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
+import { chartSeriesColor, CHART_SERIES } from '@/lib/palettes'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 import type { SnapshotViewMode } from './SnapshotList'
 import { SNAPSHOT_VIEW_LABELS } from './SnapshotList'
@@ -27,8 +27,7 @@ export interface SnapshotPoint {
 
 interface Props {
   points: SnapshotPoint[]
-  sectorColors?: Record<string, string>
-  assetClassColors?: Record<string, string>
+
   cashflowEvents?: AccountCashflowEvent[]
   initialView?: SnapshotViewMode
 }
@@ -50,11 +49,21 @@ function filterByView(points: SnapshotPoint[], view: SnapshotViewMode): Snapshot
 const POS = '#ef4444'  // 한국식 — 상승 빨강
 const NEG = '#3b82f6'  // 한국식 — 하락 파랑
 
+/**
+ * 값 라벨이 축 눈금과 겹치지 않게 위아래로 여백을 준다.
+ * 0을 넘겨 잡으면 막대가 축 밖으로 나가므로 0은 항상 범위 안에 둔다.
+ */
+const LABEL_HEADROOM: [(min: number) => number, (max: number) => number] = [
+  (min: number) => Math.min(0, min * 1.18),
+  (max: number) => Math.max(0, max * 1.12),
+]
+
+/** 차트 위 금액 — 백만원 자리까지 보이도록 단위별로 소수점을 남긴다 */
 function fmtY(v: number) {
   const abs = Math.abs(v)
   const sign = v < 0 ? '-' : ''
-  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(1)}억`
-  if (abs >= 10_000_000) return `${sign}${Math.round(abs / 10_000_000)}천만`
+  if (abs >= 100_000_000) return `${sign}${(abs / 100_000_000).toFixed(2)}억`
+  if (abs >= 10_000_000) return `${sign}${(abs / 10_000_000).toFixed(1)}천만`
   if (abs >= 10_000) return `${sign}${Math.round(abs / 10_000)}만`
   return `${sign}${Math.round(abs)}`
 }
@@ -100,7 +109,7 @@ interface LabelRenderProps {
   index?: number
 }
 
-/** 점(라인) 위 값 라벨 — picked 인덱스만 그린다 */
+/** 점(라인) 값 라벨 — 양수는 점 위, 음수는 점 아래. picked 인덱스만 그린다 */
 function pointLabel(picked: Set<number>, lastIndex: number, fill: string) {
   return function renderPointLabel(props: LabelRenderProps) {
     const { x, y, index, value } = props
@@ -108,8 +117,9 @@ function pointLabel(picked: Set<number>, lastIndex: number, fill: string) {
     const v = Number(value)
     if (!Number.isFinite(v)) return null
     const anchor = index === 0 ? 'start' : index === lastIndex ? 'end' : 'middle'
+    const ty = v < 0 ? Number(y) + 14 : Number(y) - 8
     return (
-      <text x={Number(x)} y={Number(y) - 8} textAnchor={anchor} fontSize={10} fill={fill} fontWeight={500}>
+      <text x={Number(x)} y={ty} textAnchor={anchor} fontSize={10} fill={fill} fontWeight={500}>
         {fmtY(v)}
       </text>
     )
@@ -127,7 +137,11 @@ function textOn(bg: string): string {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? '#0d1c2e' : '#ffffff'
 }
 
-/** 막대 바깥 값 라벨 — 양수는 위, 음수는 아래. picked 인덱스만 그린다 */
+/**
+ * 막대 바깥 값 라벨 — 양수는 막대 위, 음수는 막대 아래.
+ * Recharts는 음수 막대에 음수 height를 주고 y를 아래 끝에 놓는다.
+ * 부호를 가정하지 말고 두 끝을 정렬해서 위/아래를 잡는다.
+ */
 function barTopLabel(picked: Set<number>, fill: string) {
   return function renderBarTopLabel(props: LabelRenderProps) {
     const { x, y, width, height, index, value } = props
@@ -135,7 +149,9 @@ function barTopLabel(picked: Set<number>, fill: string) {
     const raw = Number(value)
     if (!Number.isFinite(raw) || raw === 0) return null
     const w = Number(width)
-    const ty = raw < 0 ? Number(y) + Number(height) + 11 : Number(y) - 6
+    const y0 = Number(y)
+    const y1 = y0 + Number(height)
+    const ty = raw < 0 ? Math.max(y0, y1) + 12 : Math.min(y0, y1) - 6
     return (
       <text x={Number(x) + w / 2} y={ty} textAnchor="middle" fontSize={10} fill={fill} fontWeight={500}>
         {fmtY(raw)}
@@ -154,12 +170,13 @@ function segmentLabel(
   return function renderSegmentLabel(props: LabelRenderProps) {
     const { x, y, width, height, index, value } = props
     if (index == null || !picked.has(index)) return null
-    const h = Number(height)
+    const h = Math.abs(Number(height))
     const w = Number(width)
     const v = Number(value)
     if (!Number.isFinite(v) || v <= 0 || !(h >= minHeight)) return null
+    const top = Math.min(Number(y), Number(y) + Number(height))
     return (
-      <text x={Number(x) + w / 2} y={Number(y) + h / 2} textAnchor="middle" dominantBaseline="central"
+      <text x={Number(x) + w / 2} y={top + h / 2} textAnchor="middle" dominantBaseline="central"
         fontSize={10} fontWeight={700} fill={fill}>
         {fmt(v)}
       </text>
@@ -313,7 +330,6 @@ function PerformanceCard({ perf, year, anchoredFromPrevYear }: {
 }
 
 function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
-  const { palette } = useTheme()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [threshold, setThreshold] = useState(5)
 
@@ -344,9 +360,13 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
     return m
   }, [visibleTags, data])
 
-  const fallback = [palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3]]
-  function colorFor(_k: string, i: number): string {
-    return fallback[i % fallback.length]
+  // 태그 색도 전체 합계 순번 고정 — 칩 선택/임계치를 바꿔도 같은 태그는 같은 색
+  const colorRank = useMemo(
+    () => Object.fromEntries(allTags.map((t, i) => [t, i])),
+    [allTags],
+  )
+  function colorFor(k: string): string {
+    return chartSeriesColor(colorRank[k] ?? 0)
   }
 
   function toggle(t: string) {
@@ -395,7 +415,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
                     ? 'text-white border-transparent'
                     : 'border-surface-low text-ink-3'
                 }`}
-                style={active ? { backgroundColor: palette.colors[0] } : undefined}>
+                style={active ? { backgroundColor: CHART_SERIES[0] } : undefined}>
                 #{t}
               </button>
             )
@@ -417,8 +437,8 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
               <YAxis hide />
               <Tooltip content={<BreakdownTooltip />} />
               {visibleTags.map((k, i) => (
-                <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)}>
-                  <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k, i)))} />
+                <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k)}>
+                  <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k)))} />
                 </Bar>
               ))}
             </BarChart>
@@ -426,7 +446,7 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
           <div className="flex flex-wrap gap-x-2 gap-y-1 mt-3">
             {visibleTags.map((k, i) => (
               <span key={k} className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k) }} />
                 {k}
               </span>
             ))}
@@ -441,7 +461,6 @@ function StackedBreakdownCard({
   title,
   points,
   accessor,
-  colorMap,
   topN,
   threshold,
   enableTopNControl,
@@ -450,13 +469,11 @@ function StackedBreakdownCard({
   title: string
   points: SnapshotPoint[]
   accessor: (p: SnapshotPoint) => Record<string, number>
-  colorMap: Record<string, string>
   topN?: number
   threshold?: number
   enableTopNControl?: boolean
   description?: string
 }) {
-  const { palette } = useTheme()
   const [n, setN] = useState(topN ?? 7)
   const [thr, setThr] = useState(threshold ?? 3)
 
@@ -479,10 +496,16 @@ function StackedBreakdownCard({
     return [...set]
   }, [data])
 
-  const fallback = [palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3]]
-  function colorFor(k: string, i: number): string {
+  // 색은 항목의 고정 순번(전체 기간 합계 내림차순)을 따른다.
+  // Top N·임계치를 움직여도 남은 항목의 색이 바뀌지 않게 하기 위해서다.
+  const colorRank = useMemo(() => {
+    const all = topKeysByMean(points, accessor, Number.MAX_SAFE_INTEGER)
+    return Object.fromEntries(all.map((k, i) => [k, i]))
+  }, [points, accessor])
+
+  function colorFor(k: string): string {
     if (k === '기타') return '#a8b3c4'
-    return colorMap[k] ?? fallback[i % fallback.length]
+    return chartSeriesColor(colorRank[k] ?? 0)
   }
 
   // 계열마다 라벨 인덱스를 따로 고른다 (열이 좁으면 최근 → 최고 → 최저)
@@ -527,8 +550,8 @@ function StackedBreakdownCard({
           <YAxis hide />
           <Tooltip content={<BreakdownTooltip />} />
           {chartKeys.map((k, i) => (
-            <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)}>
-              <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k, i)))} />
+            <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k)}>
+              <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k)))} />
             </Bar>
           ))}
         </BarChart>
@@ -536,7 +559,7 @@ function StackedBreakdownCard({
       <div className="flex flex-wrap gap-x-2 gap-y-1 mt-3">
         {chartKeys.map((k, i) => (
           <span key={k} className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k) }} />
             {k}
           </span>
         ))}
@@ -573,8 +596,7 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
   )
 }
 
-export default function SnapshotCharts({ points: allPoints, sectorColors = {}, assetClassColors = {}, cashflowEvents = [], initialView = 'last' }: Props) {
-  const { palette } = useTheme()
+export default function SnapshotCharts({ points: allPoints, cashflowEvents = [], initialView = 'last' }: Props) {
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
   const [view, setView] = useState<SnapshotViewMode>(initialView)
@@ -784,7 +806,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide />
             <Tooltip content={<ValuesTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <Bar dataKey="원금" name={basisLabel} stackId="v" fill={palette.colors[0]}>
+            <Bar dataKey="원금" name={basisLabel} stackId="v" fill={CHART_SERIES[0]}>
               <LabelList dataKey="원금" content={segmentLabel(valueLabelIdx, fmtY, '#ffffff', 16)} />
             </Bar>
             <Bar dataKey="수익" name="수익" stackId="v" fill={POS}>
@@ -798,7 +820,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         </ResponsiveContainer>
         <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
           <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: palette.colors[0] }} />
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CHART_SERIES[0] }} />
             {basisLabel}
           </span>
           <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
@@ -823,7 +845,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false}
-              tickFormatter={(v) => fmtY(v)} width={50} />
+              tickFormatter={(v) => fmtY(v)} width={54} domain={LABEL_HEADROOM} />
             <Tooltip content={<SinglePnlTooltip />} />
             <ReferenceLine y={0} stroke="#a8b3c4" strokeDasharray="3 3" />
             <Line type="monotone" dataKey="손익" stroke={currentPnl >= 0 ? POS : NEG} strokeWidth={2.5}
@@ -841,7 +863,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           <BarChart data={momData} margin={{ left: 0, right: 8, top: 18, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-            <YAxis hide />
+            <YAxis hide domain={LABEL_HEADROOM} />
             <Tooltip content={<MomTooltip />} cursor={{ fill: '#f8fafc' }} />
             <ReferenceLine y={0} stroke="#a8b3c4" />
             <Bar dataKey="증감">
@@ -860,7 +882,6 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         description="주식·채권·현금·코인·대체자산 등 자산군 단위"
         points={points}
         accessor={p => p.asset_class_breakdown}
-        colorMap={assetClassColors}
         topN={6}
         enableTopNControl={false}
       />
@@ -874,7 +895,6 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         description="개별 주식만 집계 — ETF/채권/현금/코인 제외 (합계가 100% 미만)"
         points={points}
         accessor={p => p.sector_breakdown}
-        colorMap={sectorColors}
         topN={7}
         enableTopNControl={true}
       />

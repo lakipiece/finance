@@ -34,15 +34,11 @@ function parseBreakdown(raw: unknown): Record<string, number> {
 
 export default async function SnapshotChartsPage({ searchParams }: { searchParams: { view?: string } }) {
   const sql = getSql()
-  const [raw, optRows, cashflowRows] = await Promise.all([
+  const [raw, cashflowRows] = await Promise.all([
     sql<SnapshotRow[]>`
       SELECT id, date, total_market_value, total_invested,
              sector_breakdown, asset_class_breakdown, tag_breakdown, account_breakdown
       FROM snapshots ORDER BY date ASC, created_at ASC
-    `,
-    sql<{ type: string; value: string; color_hex: string }[]>`
-      SELECT type, value, color_hex FROM option_list
-      WHERE type IN ('sector','asset_class') AND color_hex IS NOT NULL
     `,
     sql<CashflowRow[]>`
       SELECT account_id, flow_date,
@@ -53,13 +49,6 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
       GROUP BY account_id, flow_date ORDER BY flow_date
     `.catch(() => [] as CashflowRow[]),
   ])
-
-  const sectorColors: Record<string, string> = {}
-  const assetClassColors: Record<string, string> = {}
-  for (const r of optRows) {
-    if (r.type === 'sector') sectorColors[r.value] = r.color_hex
-    else if (r.type === 'asset_class') assetClassColors[r.value] = r.color_hex
-  }
 
   const points = raw
     .filter(s => s.total_market_value != null)
@@ -108,8 +97,6 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
       ) : (
         <SnapshotCharts
           points={points}
-          sectorColors={sectorColors}
-          assetClassColors={assetClassColors}
           cashflowEvents={cashflowEvents}
           initialView={initialView}
         />
