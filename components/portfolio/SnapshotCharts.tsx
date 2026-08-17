@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, LabelList,
-  LineChart, Line, ComposedChart, ReferenceLine, Cell,
+  LineChart, Line, ReferenceLine, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn } from '@/lib/styles'
@@ -64,6 +64,108 @@ function fmtKrw(v: number) {
 function fmtPctSigned(v: number) {
   return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
 }
+function fmtPct(v: number) {
+  return `${Math.round(v)}%`
+}
+
+/**
+ * 차트에 값 라벨을 붙일 인덱스.
+ * 열이 넉넉하면 전부, 좁으면 겹치지 않는 선에서 최근 → 최고 → 최저 순으로 고른다.
+ */
+function labelIndices(values: number[], allUpTo = 10): number[] {
+  const n = values.length
+  if (n === 0) return []
+  if (n <= allUpTo) return values.map((_, i) => i)
+  const gap = Math.ceil(n / allUpTo)
+  let maxI = 0
+  let minI = 0
+  values.forEach((v, i) => {
+    if (v > values[maxI]) maxI = i
+    if (v < values[minI]) minI = i
+  })
+  const picked: number[] = []
+  for (const i of [n - 1, maxI, minI]) {
+    if (picked.some(p => Math.abs(p - i) < gap)) continue
+    picked.push(i)
+  }
+  return picked
+}
+
+interface LabelRenderProps {
+  x?: number | string
+  y?: number | string
+  width?: number | string
+  height?: number | string
+  value?: number | string
+  index?: number
+}
+
+/** 점(라인) 위 값 라벨 — picked 인덱스만 그린다 */
+function pointLabel(picked: Set<number>, lastIndex: number, fill: string) {
+  return function renderPointLabel(props: LabelRenderProps) {
+    const { x, y, index, value } = props
+    if (index == null || !picked.has(index)) return null
+    const v = Number(value)
+    if (!Number.isFinite(v)) return null
+    const anchor = index === 0 ? 'start' : index === lastIndex ? 'end' : 'middle'
+    return (
+      <text x={Number(x)} y={Number(y) - 8} textAnchor={anchor} fontSize={10} fill={fill} fontWeight={500}>
+        {fmtY(v)}
+      </text>
+    )
+  }
+}
+
+/** 배경색 위에 올릴 글자색 — 밝은 조각에는 잉크, 어두운 조각에는 흰색 */
+function textOn(bg: string): string {
+  const hex = bg.replace('#', '')
+  if (hex.length !== 6) return '#ffffff'
+  const r = parseInt(hex.slice(0, 2), 16)
+  const g = parseInt(hex.slice(2, 4), 16)
+  const b = parseInt(hex.slice(4, 6), 16)
+  if ([r, g, b].some(n => Number.isNaN(n))) return '#ffffff'
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? '#0d1c2e' : '#ffffff'
+}
+
+/** 막대 바깥 값 라벨 — 양수는 위, 음수는 아래. picked 인덱스만 그린다 */
+function barTopLabel(picked: Set<number>, fill: string) {
+  return function renderBarTopLabel(props: LabelRenderProps) {
+    const { x, y, width, height, index, value } = props
+    if (index == null || !picked.has(index)) return null
+    const raw = Number(value)
+    if (!Number.isFinite(raw) || raw === 0) return null
+    const w = Number(width)
+    const ty = raw < 0 ? Number(y) + Number(height) + 11 : Number(y) - 6
+    return (
+      <text x={Number(x) + w / 2} y={ty} textAnchor="middle" fontSize={10} fill={fill} fontWeight={500}>
+        {fmtY(raw)}
+      </text>
+    )
+  }
+}
+
+/** 스택 막대 조각 안쪽 값 라벨 — picked 인덱스 + 충분한 높이일 때만 */
+function segmentLabel(
+  picked: Set<number>,
+  fmt: (v: number) => string,
+  fill = '#fff',
+  minHeight = 15,
+) {
+  return function renderSegmentLabel(props: LabelRenderProps) {
+    const { x, y, width, height, index, value } = props
+    if (index == null || !picked.has(index)) return null
+    const h = Number(height)
+    const w = Number(width)
+    const v = Number(value)
+    if (!Number.isFinite(v) || v <= 0 || !(h >= minHeight)) return null
+    return (
+      <text x={Number(x) + w / 2} y={Number(y) + h / 2} textAnchor="middle" dominantBaseline="central"
+        fontSize={10} fontWeight={700} fill={fill}>
+        {fmt(v)}
+      </text>
+    )
+  }
+}
 
 function bucketize(breakdown: Record<string, number>, keys: string[]): Record<string, number> {
   const keep: Record<string, number> = {}
@@ -115,7 +217,6 @@ function KpiCard({ label, value, sub, subColor }: {
 function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
   const { palette } = useTheme()
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [search, setSearch] = useState('')
   const [threshold, setThreshold] = useState(5)
 
   const allTags = useMemo(() => {
@@ -131,17 +232,19 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
     return keysAboveThreshold(points, p => p.tag_breakdown, threshold)
   }, [points, selected, threshold])
 
-  const filteredTagList = useMemo(() => {
-    const q = search.trim().toLowerCase()
-    if (!q) return allTags
-    return allTags.filter(t => t.toLowerCase().includes(q))
-  }, [allTags, search])
-
   const data = useMemo(() => points.map(p => {
     const row: Record<string, number | string> = { date: p.date, total_market_value: p.total_market_value }
     for (const t of visibleTags) row[t] = p.tag_breakdown[t] ?? 0
     return row
   }), [points, visibleTags])
+
+  const labelIdx = useMemo(() => {
+    const m: Record<string, Set<number>> = {}
+    for (const t of visibleTags) {
+      m[t] = new Set(labelIndices(data.map(d => Number(d[t] ?? 0)), 8))
+    }
+    return m
+  }, [visibleTags, data])
 
   const fallback = [palette.colors[0], palette.colors[1], palette.colors[2], palette.colors[3]]
   function colorFor(_k: string, i: number): string {
@@ -183,29 +286,8 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
       </div>
 
       <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none"
-            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="태그 검색"
-            className="text-micro tracking-normal pl-8 pr-8 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-32 border-0 focus:bg-surface-card focus:shadow-focus"
-          />
-          {search ? (
-            <button onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          ) : null}
-        </div>
         <div className="flex flex-wrap gap-1 flex-1 min-w-0">
-          {filteredTagList.slice(0, 50).map(t => {
+          {allTags.slice(0, 50).map(t => {
             const active = selected.has(t)
             return (
               <button key={t}
@@ -220,8 +302,8 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
               </button>
             )
           })}
-          {filteredTagList.length > 50 ? (
-            <span className="text-micro tracking-normal text-ink-5 self-center">+{filteredTagList.length - 50}</span>
+          {allTags.length > 50 ? (
+            <span className="text-micro tracking-normal text-ink-5 self-center">+{allTags.length - 50}</span>
           ) : null}
         </div>
       </div>
@@ -237,7 +319,9 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
               <YAxis hide />
               <Tooltip content={<BreakdownTooltip />} />
               {visibleTags.map((k, i) => (
-                <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)} />
+                <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)}>
+                  <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k, i)))} />
+                </Bar>
               ))}
             </BarChart>
           </ResponsiveContainer>
@@ -303,6 +387,15 @@ function StackedBreakdownCard({
     return colorMap[k] ?? fallback[i % fallback.length]
   }
 
+  // 계열마다 라벨 인덱스를 따로 고른다 (열이 좁으면 최근 → 최고 → 최저)
+  const labelIdx = useMemo(() => {
+    const m: Record<string, Set<number>> = {}
+    for (const k of chartKeys) {
+      m[k] = new Set(labelIndices(data.map(d => Number((d as Record<string, number | string>)[k] ?? 0)), 8))
+    }
+    return m
+  }, [chartKeys, data])
+
   return (
     <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
@@ -336,11 +429,13 @@ function StackedBreakdownCard({
           <YAxis hide />
           <Tooltip content={<BreakdownTooltip />} />
           {chartKeys.map((k, i) => (
-            <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)} />
+            <Bar key={k} dataKey={k} name={k} stackId="a" fill={colorFor(k, i)}>
+              <LabelList dataKey={k} content={segmentLabel(labelIdx[k] ?? new Set(), fmtPct, textOn(colorFor(k, i)))} />
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>
-      <div className="flex flex-wrap gap-1 mt-3">
+      <div className="flex flex-wrap gap-x-2 gap-y-1 mt-3">
         {chartKeys.map((k, i) => (
           <span key={k} className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colorFor(k, i) }} />
@@ -432,28 +527,37 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
   const currentProfit = lastM?.ledgerApplied ? lastM.profit : null
   const currentProfitRate = lastM?.ledgerApplied ? lastM.rate : null
 
-  const composedData = points.map((p, i) => {
+  // 원금(=넣은 돈) 위에 손익을 쌓아 "얼마 넣어서 얼마가 됐는지"를 막대 하나로 읽게 한다.
+  // 손실이면 평가액 위에 손실 조각을 얹어 원금 높이까지 채운다.
+  const valueData = points.map((p, i) => {
     const m = pointMetrics[i]
+    const basis = m?.ledgerApplied ? m.basis : p.total_invested
+    const mv = p.total_market_value
+    const profit = mv - basis
     return {
       date: p.date,
-      평가액: p.total_market_value,
+      원금: Math.min(basis, mv),
+      수익: profit > 0 ? profit : 0,
+      손실: profit < 0 ? -profit : 0,
+      평가액: mv,
       평균매수금액: p.total_invested,
-      ...(m?.ledgerApplied ? { 투자원금: m.basis } : {}),
-      손익: p.total_market_value - p.total_invested,
-      ...(m?.ledgerApplied ? { 수익금액: m.profit } : {}),
+      ...(m?.ledgerApplied ? { 투자원금: basis } : {}),
+      손익: profit,
     }
   })
 
-  const hasProfitSeries = composedData.some(d => '수익금액' in d)
-  const pnlData = composedData.map(d => ({
-    date: d.date,
-    손익: ((d as Record<string, number | string>)['수익금액'] as number | undefined) ?? d.손익,
-  }))
+  const hasProfitSeries = valueData.some(d => '투자원금' in d)
+  const basisLabel = hasProfitSeries ? '투자원금(누적입금)' : '평균매수금액'
+  const valueLabelIdx = new Set(labelIndices(valueData.map(d => d.평가액), 9))
+
+  const pnlData = valueData.map(d => ({ date: d.date, 손익: d.손익 }))
+  const pnlLabelIdx = new Set(labelIndices(pnlData.map(d => d.손익), 10))
 
   const momData = points.map((p, i) => {
     if (i === 0) return { date: p.date, 증감: 0 }
     return { date: p.date, 증감: p.total_market_value - points[i - 1].total_market_value }
   })
+  const momLabelIdx = new Set(labelIndices(momData.map(d => d.증감), 12))
 
   return (
     <div className="space-y-4">
@@ -530,29 +634,47 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         />
       </div>
 
-      {/* 평가액 vs 원금 */}
+      {/* 원금 + 손익 = 평가액 */}
       <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
-        <h3 className="text-subhead font-medium text-ink mb-3">
-          평가액 vs {hasProfitSeries ? '투자원금(누적입금) · 평균매수금액' : '평균매수금액'}
+        <h3 className="text-subhead font-medium text-ink mb-0.5">
+          {basisLabel} + 손익 = 평가액
         </h3>
-        <ResponsiveContainer width="100%" height={240}>
-          <ComposedChart data={composedData} margin={{ left: 0, right: 8, top: 24 }}>
+        <p className="text-micro tracking-normal text-ink-4 mb-3">
+          막대 아래가 넣은 돈, 위에 쌓인 부분이 불어난(줄어든) 금액입니다
+        </p>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={valueData} margin={{ left: 0, right: 8, top: 26 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide />
             <Tooltip content={<ValuesTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <Bar dataKey="평가액" fill={palette.colors[0]}>
-              <LabelList dataKey="평가액" position="top" formatter={(v: number) => fmtY(v)}
-                style={{ fontSize: 10, fill: '#a8b3c4' }} />
+            <Bar dataKey="원금" name={basisLabel} stackId="v" fill={palette.colors[0]}>
+              <LabelList dataKey="원금" content={segmentLabel(valueLabelIdx, fmtY, '#ffffff', 16)} />
             </Bar>
-            <Line type="monotone" dataKey="평균매수금액" stroke="#8794a8" strokeWidth={2}
-              dot={{ r: 3, fill: '#fff', stroke: '#8794a8' }} />
-            {hasProfitSeries ? (
-              <Line type="monotone" dataKey="투자원금" stroke="#00695C" strokeWidth={2}
-                strokeDasharray="5 3" dot={{ r: 3, fill: '#fff', stroke: '#00695C' }} />
-            ) : null}
-          </ComposedChart>
+            <Bar dataKey="수익" name="수익" stackId="v" fill={POS}>
+              <LabelList dataKey="평가액" content={barTopLabel(valueLabelIdx, '#0d1c2e')} />
+              <LabelList dataKey="수익" content={segmentLabel(valueLabelIdx, fmtY, '#ffffff', 16)} />
+            </Bar>
+            <Bar dataKey="손실" name="손실" stackId="v" fill={NEG} fillOpacity={0.35}>
+              <LabelList dataKey="손실" content={segmentLabel(valueLabelIdx, fmtY, '#1e40af', 16)} />
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: palette.colors[0] }} />
+            {basisLabel}
+          </span>
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: POS }} />
+            수익
+          </span>
+          <span className="inline-flex items-center gap-1 text-micro tracking-normal text-ink-3">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: NEG, opacity: 0.35 }} />
+            손실
+          </span>
+          <span className="text-micro tracking-normal text-ink-5">막대 위 숫자 = 평가액</span>
+        </div>
       </div>
 
       {/* 수익 추이 라인 */}
@@ -561,7 +683,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
           {hasProfitSeries ? '수익금액 추이 (평가액＋출금−입금)' : '누적 손익 추이'}
         </h3>
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={pnlData} margin={{ left: 0, right: 8, top: 8 }}>
+          <LineChart data={pnlData} margin={{ left: 0, right: 12, top: 22 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false}
@@ -569,7 +691,9 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
             <Tooltip content={<SinglePnlTooltip />} />
             <ReferenceLine y={0} stroke="#a8b3c4" strokeDasharray="3 3" />
             <Line type="monotone" dataKey="손익" stroke={currentPnl >= 0 ? POS : NEG} strokeWidth={2.5}
-              dot={{ r: 3 }} />
+              dot={{ r: 3 }}>
+              <LabelList dataKey="손익" content={pointLabel(pnlLabelIdx, pnlData.length - 1, '#3d4a5c')} />
+            </Line>
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -577,8 +701,8 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
       {/* MoM 증감 */}
       <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
         <h3 className="text-subhead font-medium text-ink mb-3">직전 대비 증감</h3>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={momData} margin={{ left: 0, right: 8, top: 16 }}>
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={momData} margin={{ left: 0, right: 8, top: 18, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
             <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
             <YAxis hide />
@@ -588,8 +712,7 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
               {momData.map((d, i) => (
                 <Cell key={i} fill={d.증감 >= 0 ? POS : NEG} />
               ))}
-              <LabelList dataKey="증감" position="top" formatter={(v: number) => v === 0 ? '' : fmtY(v)}
-                style={{ fontSize: 10, fill: '#8794a8' }} />
+              <LabelList dataKey="증감" content={barTopLabel(momLabelIdx, '#5b6a80')} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -606,6 +729,9 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         enableTopNControl={false}
       />
 
+      {/* 태그 비중 변화 (다중 선택) */}
+      <TagBreakdownCard points={points} />
+
       {/* GICS 섹터 비중 변화 (개별 주식 한정, 합계 != 100) */}
       <StackedBreakdownCard
         title="GICS 섹터 비중 변화"
@@ -617,9 +743,6 @@ export default function SnapshotCharts({ points: allPoints, sectorColors = {}, a
         enableTopNControl={true}
       />
 
-      {/* 태그 비중 변화 (검색 + 다중 선택) */}
-      <TagBreakdownCard points={points} />
-
     </div>
   )
 }
@@ -630,8 +753,8 @@ function ValuesTooltip({ active, payload, label }: ChartTooltipProps) {
   const mv = Number(row['평가액'] ?? 0)
   const cost = Number(row['평균매수금액'] ?? 0)
   const basis = row['투자원금'] != null ? Number(row['투자원금']) : null
-  // 수익: 원장 하이브리드가 있으면 그 값, 없으면 평가액 − 매수원가
-  const profit = row['수익금액'] != null ? Number(row['수익금액']) : mv - cost
+  // 수익: 원장 하이브리드가 있으면 투자원금 대비, 없으면 평가액 − 매수원가
+  const profit = row['손익'] != null ? Number(row['손익']) : mv - cost
   const base = basis ?? cost
   const ret = base > 0 ? (profit / base) * 100 : 0
   return (

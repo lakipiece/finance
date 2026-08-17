@@ -130,26 +130,26 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
     <>
       {/* 요약 */}
       <div className="px-5 py-3 border-b border-surface-low shrink-0">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2.5">
           <div>
-            <p className="text-micro tracking-normal text-ink-4">투자원금 <span className="text-ink-5">누적입금</span></p>
-            <p className="text-body font-bold tabular-nums" style={{ color: INFLOW_COLOR }}>{formatWonRound(totals.inflow)}</p>
+            <p className="text-micro tracking-normal text-ink-4 whitespace-nowrap">투자원금 <span className="text-ink-5">누적입금</span></p>
+            <p className="text-body font-bold tabular-nums whitespace-nowrap" style={{ color: INFLOW_COLOR }}>{formatWonRound(totals.inflow)}</p>
           </div>
           <div>
-            <p className="text-micro tracking-normal text-ink-4">누적출금</p>
-            <p className="text-body font-bold tabular-nums" style={{ color: OUTFLOW_COLOR }}>{formatWonRound(totals.outflow)}</p>
+            <p className="text-micro tracking-normal text-ink-4 whitespace-nowrap">누적출금</p>
+            <p className="text-body font-bold tabular-nums whitespace-nowrap" style={{ color: OUTFLOW_COLOR }}>{formatWonRound(totals.outflow)}</p>
           </div>
           <div>
-            <p className="text-micro tracking-normal text-ink-4">평가금액</p>
-            <p className="text-body font-bold text-ink tabular-nums">{marketValue != null ? formatWonRound(marketValue) : '—'}</p>
+            <p className="text-micro tracking-normal text-ink-4 whitespace-nowrap">평가금액</p>
+            <p className="text-body font-bold text-ink tabular-nums whitespace-nowrap">{marketValue != null ? formatWonRound(marketValue) : '—'}</p>
           </div>
           <div>
-            <p className="text-micro tracking-normal text-ink-4">수익금액</p>
+            <p className="text-micro tracking-normal text-ink-4 whitespace-nowrap">수익금액</p>
             {totals.profit != null && totals.inflow > 0 ? (
               <p className={`text-body font-bold tabular-nums ${totals.profit >= 0 ? 'text-gain' : 'text-loss'}`}>
-                {totals.profit >= 0 ? '+' : ''}{formatWonRound(totals.profit)}
+                <span className="whitespace-nowrap">{totals.profit >= 0 ? '+' : ''}{formatWonRound(totals.profit)}</span>
                 {totals.rate != null ? (
-                  <span className="text-micro tracking-normal ml-1 opacity-80">({totals.rate >= 0 ? '+' : ''}{(totals.rate * 100).toFixed(1)}%)</span>
+                  <span className="text-micro tracking-normal ml-1 opacity-80 whitespace-nowrap">({totals.rate >= 0 ? '+' : ''}{(totals.rate * 100).toFixed(1)}%)</span>
                 ) : null}
               </p>
             ) : <p className="text-body text-ink-5">—</p>}
@@ -162,7 +162,11 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
           입력 중에도 기존 내역이 보여 중복 입금을 즉시 확인할 수 있다.
           <640px에서는 인라인 행이 들어가지 않으므로 세로 폼으로 폴백한다. */}
       <div className="px-5 py-3 shrink-0">
-        <div className={`rounded-[9px] p-1.5 ${editId ? 'bg-warning/10' : 'bg-surface-low'}`}>
+        <div className={`rounded-[9px] ${
+          editId
+            ? 'bg-warning/10 p-1.5'
+            : 'bg-transparent p-0 sm:bg-surface-low sm:p-1.5'
+        }`}>
           {/* ≥640px — 한 줄 인라인 행 */}
           <div className="hidden sm:flex items-center gap-[5px]">
             <DateInput value={date} onChange={setDate} variant="cell" className="w-[104px] shrink-0" />
@@ -175,7 +179,7 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
             <input ref={amountRef} type="text" inputMode="numeric" value={amount}
               onChange={e => setAmount(fmtAmountInput(e.target.value))}
               onKeyDown={onRowKeyDown} placeholder="0"
-              className="w-24 shrink-0 rounded-cell bg-surface-card border-0 px-2 py-1.5 text-body font-bold text-right tabular-nums text-ink placeholder:text-ink-5 shadow-focus focus:outline-none" />
+              className="w-24 shrink-0 rounded-cell bg-surface-card border-0 px-2 py-1.5 text-body font-bold text-right tabular-nums text-ink placeholder:text-ink-5 focus:outline-none focus:shadow-focus transition-shadow" />
             {editId ? (
               <button onClick={resetForm} className="shrink-0 px-2 py-1.5 rounded-cell text-meta text-ink-3 hover:bg-surface-card transition-colors">취소</button>
             ) : null}
@@ -185,9 +189,20 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
             </button>
           </div>
 
-          {/* <640px — 세로 폼 폴백 */}
-          <div className="sm:hidden grid gap-2 p-1">
-            <DateInput value={date} onChange={setDate} />
+          {/* <640px — 세로 폼 폴백. 카드 위에서 필드가 스스로 보이도록 배경 존을 두지 않는다 */}
+          <div className="sm:hidden grid gap-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className={field.labelSm}>날짜</label>
+                <DateInput value={date} onChange={setDate} />
+              </div>
+              <div>
+                <label className={field.labelSm}>금액</label>
+                <input type="text" inputMode="numeric" value={amount}
+                  onChange={e => setAmount(fmtAmountInput(e.target.value))}
+                  placeholder="0" className={`${field.input} text-right font-bold`} />
+              </div>
+            </div>
             <div className="flex flex-wrap gap-1">
               {TYPE_ORDER.map(t => (
                 <button key={t} type="button" onClick={() => setType(t)} className={btn.pill(type === t)}>
@@ -197,9 +212,6 @@ export default function CashflowPanel({ accountId, marketValue, onChanged }: {
             </div>
             <input type="text" value={memo} onChange={e => setMemo(e.target.value)}
               placeholder="메모 (선택)" maxLength={100} className={field.input} />
-            <input type="text" inputMode="numeric" value={amount}
-              onChange={e => setAmount(fmtAmountInput(e.target.value))}
-              placeholder="0" className={`${field.input} text-right font-bold`} />
             <div className="flex justify-end gap-2">
               {editId ? <button onClick={resetForm} className={btn.secondary}>취소</button> : null}
               <button onClick={() => handleSave()} disabled={saving} className={btn.primary}>
