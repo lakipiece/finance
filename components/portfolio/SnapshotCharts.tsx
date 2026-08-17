@@ -70,11 +70,27 @@ function fmtY(v: number) {
 function fmtKrw(v: number) {
   return `${Math.round(v).toLocaleString('ko-KR')}원`
 }
+/**
+ * 퍼센트 표기 자릿수 — 유효숫자 3자리로 맞춘다.
+ * 정수부가 1자리면 소수 2자리(3.45%), 2자리면 1자리(12.3%), 3자리면 정수(100%).
+ * 비중이 작을수록 소수점이 살아나 0.5%p 차이가 뭉개지지 않는다.
+ */
+function pctDigits(v: number) {
+  const abs = Math.abs(v)
+  return abs >= 100 ? 0 : abs >= 10 ? 1 : 2
+}
+/**
+ * 끝자리 0은 지운다. 비중은 0.1%까지만 저장돼 있어 2자리로 늘리면
+ * 항상 0으로 끝나는 가짜 정밀도가 된다 (3.10% 같은 표기).
+ */
+function trimZeros(s: string) {
+  return s.includes('.') ? s.replace(/0+$/, '').replace(/\.$/, '') : s
+}
 function fmtPctSigned(v: number) {
-  return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`
+  return `${v >= 0 ? '+' : ''}${trimZeros(v.toFixed(pctDigits(v)))}%`
 }
 function fmtPct(v: number) {
-  return `${Math.round(v)}%`
+  return `${trimZeros(v.toFixed(pctDigits(v)))}%`
 }
 
 /**
@@ -583,14 +599,14 @@ function BreakdownTooltip({ active, payload, label }: ChartTooltipProps) {
           <div key={p.dataKey} className="flex items-center gap-1.5 mb-0.5">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.fill }} />
             <span className="text-ink truncate flex-1">{p.name}</span>
-            <span className="tabular-nums text-ink font-medium">{pct.toFixed(1)}%</span>
+            <span className="tabular-nums text-ink font-medium">{fmtPct(pct)}</span>
             {mv > 0 ? <span className="tabular-nums text-ink-4">{fmtY(amt)}</span> : null}
           </div>
         )
       })}
       <div className="border-t border-surface-low mt-1.5 pt-1.5 flex justify-between">
         <span className="text-ink-4">합계</span>
-        <span className="font-medium text-ink">{total.toFixed(1)}%</span>
+        <span className="font-medium text-ink">{fmtPct(total)}</span>
       </div>
     </div>
   )
