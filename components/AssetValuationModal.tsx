@@ -151,18 +151,18 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
             <div className="flex items-end gap-2 flex-wrap">
               <div className="flex flex-col gap-0.5">
                 <label className={field.label}>평가일</label>
-                <DateInput value={valDate} onChange={setValDate} />
+                <DateInput value={valDate} onChange={setValDate} onLow />
               </div>
               <div className="flex flex-col gap-0.5 w-36">
                 <label className={field.label}>시세 (원)</label>
                 <input type="text" inputMode="numeric" value={amount}
                   onChange={e => setAmount(fmtAmount(e.target.value))}
-                  placeholder="0" className={`${field.input} text-right text-body`} />
+                  placeholder="0" className={`${field.inputOnLow} text-right text-body`} />
               </div>
               <div className="flex flex-col gap-0.5 flex-1 min-w-28">
                 <label className={field.label}>메모</label>
                 <input type="text" value={note} onChange={e => setNote(e.target.value)}
-                  placeholder="메모" className={`${field.input} text-body`} />
+                  placeholder="메모" className={`${field.inputOnLow} text-body`} />
               </div>
               <div className="flex gap-1.5 pb-0.5">
                 {editingId && (

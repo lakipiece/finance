@@ -78,9 +78,21 @@ const FIELD_BASE =
   'focus:outline-none focus:bg-white focus:shadow-focus ' +
   'disabled:bg-surface disabled:text-ink-5'
 
+// surface-low 존(회색 입력 박스) 위에 놓이는 필드 — 바닥과 같은 톤이라 묻힌다.
+// 표면 계층을 한 단 올려(흰색) 필드 경계를 배경 대비로만 만든다. 테두리는 쓰지 않는다.
+const FIELD_BASE_ON_LOW =
+  'rounded-field bg-surface-card px-3 py-[9px] text-subhead font-normal text-ink border-0 ' +
+  'placeholder:text-ink-5 transition-shadow ' +
+  'focus:outline-none focus:shadow-focus ' +
+  'disabled:bg-surface disabled:text-ink-5'
+
 export const field = {
   // 텍스트 인풋 — w-full
   input: `w-full ${FIELD_BASE}`,
+  // surface-low 존 안의 텍스트 인풋 — 흰 배경으로 한 톤 올린다
+  inputOnLow: `w-full ${FIELD_BASE_ON_LOW}`,
+  // surface-low 존 안의 셀렉트
+  selectOnLow: `w-full appearance-none ${FIELD_BASE_ON_LOW}`,
   // 셀렉트 — 셰브론은 호출 측에서 겹쳐 놓거나 appearance-none 유지
   select: `w-full appearance-none ${FIELD_BASE}`,
   // 고정 너비 없는 인풋 (호출 측에서 w-* 지정)

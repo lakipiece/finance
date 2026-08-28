@@ -254,7 +254,7 @@ export default function BulkDividendModal({
                           value={row.amount}
                           onChange={e => updateAmount(idx, e.target.value)}
                           placeholder="0"
-                          className={`${field.input} text-right`} />
+                          className={`${field.inputOnLow} text-right`} />
                       </div>
                       <div>
                         <label className="text-micro tracking-normal text-ink-4 block mb-0.5">세금({currency})</label>
@@ -262,14 +262,14 @@ export default function BulkDividendModal({
                           value={row.tax}
                           onChange={e => updateRow(idx, 'tax', fmtNumber(e.target.value.replace(/,/g, '')))}
                           placeholder="0"
-                          className={`${field.input} text-right`} />
+                          className={`${field.inputOnLow} text-right`} />
                       </div>
                       <div>
                         <label className="text-micro tracking-normal text-ink-4 block mb-0.5">메모</label>
                         <input type="text"
                           value={row.memo}
                           onChange={e => updateRow(idx, 'memo', e.target.value)}
-                          className={field.input} />
+                          className={field.inputOnLow} />
                       </div>
                     </div>
                   </div>

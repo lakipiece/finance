@@ -15,6 +15,8 @@ interface Props {
    *  'cell'   인라인 입력 행 안: 흰 배경 · 7px · 더 조인 패딩
    */
   variant?: 'field' | 'inline' | 'cell'
+  /** variant='field'가 surface-low 존(회색 박스) 위에 놓일 때 — 흰 배경으로 한 톤 올려 묻히지 않게 한다 */
+  onLow?: boolean
 }
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -30,7 +32,7 @@ function toYMD(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export default function DateInput({ value, onChange, className = '', placeholder = '날짜 선택', variant = 'field' }: Props) {
+export default function DateInput({ value, onChange, className = '', placeholder = '날짜 선택', variant = 'field', onLow = false }: Props) {
   const [open, setOpen] = useState(false)
   const [viewYear, setViewYear] = useState(() => {
     const d = parseDate(value)
@@ -240,10 +242,11 @@ export default function DateInput({ value, onChange, className = '', placeholder
             ? `flex items-center justify-between gap-1 rounded-cell bg-surface-card px-2 py-1.5
                text-body tabular-nums transition-shadow focus-within:shadow-focus ${open ? 'shadow-focus' : ''}
                ${value ? 'text-ink' : 'text-ink-5'} ${className}`
-            // 폼 안 — 채움형 필드
+            // 폼 안 — 채움형 필드. onLow면 surface-low 존 위라 흰 배경으로 한 톤 올린다
             : `flex items-center justify-between gap-2 rounded-field px-3 py-[9px]
                text-subhead tabular-nums transition-colors focus-within:bg-surface-card focus-within:shadow-focus
-               ${open ? 'bg-surface-card shadow-focus' : 'bg-surface-low'}
+               ${onLow ? 'bg-surface-card' : open ? 'bg-surface-card shadow-focus' : 'bg-surface-low'}
+               ${open && onLow ? 'shadow-focus' : ''}
                ${value ? 'text-ink' : 'text-ink-5'} ${className}`
         }
       >
