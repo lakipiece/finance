@@ -636,7 +636,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 
   async function handleSave() {
     const amt = parseAmount(amount)
-    if (!date || !category || !description || amt <= 0) { setErr('모든 필드를 입력해주세요.'); return }
+    if (!date || !category || !description || amt === 0) { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch(`/api/incomes/${record.id}`, {
@@ -685,7 +685,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
         <div>
           <label className={field.label}>금액 (원)</label>
           <div className="flex items-baseline gap-1.5 rounded-field bg-surface-low px-3 py-[9px] focus-within:bg-surface-card focus-within:shadow-focus transition-colors">
-            <input type="text" inputMode="numeric" value={amount}
+            <input type="text" inputMode="text" value={amount}
               onChange={e => setAmount(fmtAmount(e.target.value))}
               placeholder="0"
               className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-income placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
@@ -750,7 +750,7 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
     resolveCreateAmount()
     const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
-    if (amt < 1) { setErr('금액은 1원 이상이어야 합니다.'); return }
+    if (amt === 0) { setErr('금액을 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
@@ -889,7 +889,7 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
 
   async function handleSave(continueEntry = keepOpen) {
     const amt = parseAmount(amount)
-    if (!date || !category || !description || amt < 1) { setErr('모든 필드를 입력해주세요.'); return }
+    if (!date || !category || !description || amt === 0) { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/incomes', {

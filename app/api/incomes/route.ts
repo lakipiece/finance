@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   try {
     const { income_date, category, description, amount, member, memo } = await req.json()
-    if (!income_date || !category || !amount || amount <= 0) {
+    if (!income_date || !category || !amount) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
     }
     const d = new Date(income_date)
