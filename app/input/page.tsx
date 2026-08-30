@@ -636,7 +636,7 @@ function IncomeEditModal({ record, onClose, onSaved, onDelete }: {
 
   async function handleSave() {
     const amt = parseAmount(amount)
-    if (!date || !category || !description || amt === 0) { setErr('모든 필드를 입력해주세요.'); return }
+    if (!date || !category || !description || amount.trim() === '') { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch(`/api/incomes/${record.id}`, {
@@ -750,7 +750,6 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
     resolveCreateAmount()
     const amt = isFormula(amount) ? (evalFormula(amount) ?? 0) : parseAmount(amount)
     if (!date || !category || amount.trim() === '') { setErr('날짜, 유형, 금액을 확인해주세요.'); return }
-    if (amt === 0) { setErr('금액을 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/expenses/create', {
@@ -889,7 +888,7 @@ function IncomeCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved:
 
   async function handleSave(continueEntry = keepOpen) {
     const amt = parseAmount(amount)
-    if (!date || !category || !description || amt === 0) { setErr('모든 필드를 입력해주세요.'); return }
+    if (!date || !category || !description || amount.trim() === '') { setErr('모든 필드를 입력해주세요.'); return }
     setSaving(true); setErr('')
     try {
       const res = await fetch('/api/incomes', {

@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params
     const { income_date, category, description, amount, member, memo } = await req.json()
-    if (!income_date || !category || !amount) {
+    if (!income_date || !category || amount === undefined || amount === null) {
       return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
     }
     const d = new Date(income_date)
