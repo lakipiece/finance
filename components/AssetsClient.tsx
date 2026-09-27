@@ -2,6 +2,7 @@
 
 import { ASSET_TYPE_COLORS, ASSET_TYPE_FALLBACK, FINANCIAL_ASSET_COLOR } from '@/lib/palettes'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
@@ -526,9 +527,9 @@ function FinancialSection() {
     return (
       <div className="bg-surface-card rounded-card shadow-card p-8 text-center">
         <p className="text-body text-ink-5">포트폴리오 스냅샷 데이터가 없습니다</p>
-        <a href="/portfolio/snapshots" className="text-body text-ink-3 hover:text-ink mt-1 block">
+        <Link href="/portfolio/snapshots" className="text-body text-ink-3 hover:text-ink mt-1 block">
           포트폴리오 스냅샷으로 이동 →
-        </a>
+        </Link>
       </div>
     )
   }
@@ -716,14 +717,14 @@ export default function AssetsClient() {
           ))}
         </div>
         {activeTab === 'financial' && portfolioSnapshot ? (
-          <a href="/portfolio/snapshots"
+          <Link href="/portfolio/snapshots"
             className="inline-flex items-center gap-1.5 px-1 py-1.5 text-ink-3 hover:text-ink transition-colors">
             <span className="text-meta font-medium">최신 포트폴리오 스냅샷</span>
             <span className="text-micro tracking-normal text-ink-5 tabular-nums">{sliceDate(portfolioSnapshot.date)}</span>
             <svg className="w-2.5 h-2.5 text-ink-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
-          </a>
+          </Link>
         ) : null}
       </div>
 
