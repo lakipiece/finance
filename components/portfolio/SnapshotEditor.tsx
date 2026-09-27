@@ -416,13 +416,16 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           return (
             <div key={a.id}
               className="flex bg-surface-card rounded-card overflow-hidden shadow-card hover:-translate-y-0.5 transition-transform min-h-[110px]">
+              {/* 왼쪽 색상 바 — 배지와 같은 색 */}
+              <div className="w-1.5 shrink-0"
+                style={{ backgroundColor: typeColor ?? tone.surfaceContainer }} />
               {/* 카드 내용 */}
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
                 {/* 이름 + 뱃지 */}
                 <div className="flex items-start justify-between gap-1 mb-0.5">
                   <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{a.name}</p>
-                  {a.type && typeColor ? <span className="inline-flex items-center gap-1 text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-surface-low text-ink-2">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: typeColor }} />
+                  {a.type && typeColor ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                      style={tintBadgeStyle(typeColor)}>
                       {a.type}
                     </span> : null}
                 </div>

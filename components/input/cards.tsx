@@ -1,7 +1,7 @@
 'use client'
 
 // 목록 카드 — 카테고리 분해·기록·요약 (app/input/page.tsx에서 분리)
-import { INCOME_CATEGORY_COLORS, EXPENSE_ACCENT, INCOME_ON_NAVY, memberBadgeStyle } from '@/lib/palettes'
+import { INCOME_CATEGORY_COLORS, EXPENSE_ACCENT, INCOME_ACCENT, memberBadgeStyle } from '@/lib/palettes'
 import { useContext } from 'react'
 import { INCOME_COLORS, formatWonFull, formatDate } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
@@ -110,6 +110,7 @@ export function RecordCard({ record, onClick }: { record: AnyRecord; onClick: ()
 
 /* ── Summary Card ── */
 export const EXPENSE_COLOR = EXPENSE_ACCENT
+export const INCOME_COLOR = INCOME_ACCENT
 
 export function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTotal, onAddExpense, onAddIncome }: {
   expenseCount: number; expenseTotal: number; incomeCount: number; incomeTotal: number
@@ -119,7 +120,7 @@ export function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTot
     // 건수·금액 자릿수에 따라 줄 수가 달라져 카드가 늘었다 줄었다 했다.
     // 내용과 무관하게 높이를 고정한다.
     <div className="rounded-field overflow-hidden flex h-[108px]"
-      style={{ backgroundColor: EXPENSE_COLOR }}>
+      style={{ background: `linear-gradient(to right, ${EXPENSE_COLOR}, ${INCOME_COLOR})` }}>
       {/* 지출 절반 */}
       <button onClick={onAddExpense}
         className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group flex flex-col justify-between"
@@ -148,8 +149,7 @@ export function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTot
         className="flex-1 min-w-0 p-3 text-left transition-opacity hover:opacity-90 group flex flex-col justify-between"
         style={{ background: 'transparent' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold"
-            style={{ backgroundColor: INCOME_ON_NAVY, color: EXPENSE_COLOR }}>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-body font-bold bg-white/20 text-white">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 19V5m-7 7l7-7 7 7" />
             </svg>
@@ -161,8 +161,7 @@ export function SummaryCard({ expenseCount, expenseTotal, incomeCount, incomeTot
           </svg>
         </div>
         <p className="text-body text-white/60 mb-0.5 text-right">{incomeCount}건</p>
-        <p className="text-subhead font-bold tabular-nums leading-tight text-right whitespace-nowrap overflow-hidden text-ellipsis"
-          style={{ color: INCOME_ON_NAVY }}>
+        <p className="text-subhead font-bold text-white tabular-nums leading-tight text-right whitespace-nowrap overflow-hidden text-ellipsis">
           {incomeTotal.toLocaleString('ko-KR')}원
         </p>
       </button>

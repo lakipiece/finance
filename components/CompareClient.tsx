@@ -1,7 +1,7 @@
 'use client'
 
-import { color as tone, brand } from '@/lib/styles'
-import { yearColor } from '@/lib/palettes'
+import { color as tone } from '@/lib/styles'
+import { chartSeriesColor, tintBadgeStyle } from '@/lib/palettes'
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
@@ -77,13 +77,11 @@ export default function CompareClient({ availableYears }: Props) {
     })
   }
 
-  // 연도는 순서가 의미 — 네이비 한 계열로, 최근 연도일수록 진하게
+  // 연도 색 — 최근 연도부터 설정 팔레트 순서대로, 한 바퀴를 넘기면 밝은 톤으로 (어두운 톤은 쓰지 않는다)
   const latestYear = Math.max(...availableYears.map(y => y.year))
   const colorMap = Object.fromEntries(
-    availableYears.map(y => [y.year, yearColor(y.year, latestYear)])
+    availableYears.map(y => [y.year, chartSeriesColor(latestYear - y.year)])
   )
-  // 옅은 연도 칩은 흰 글자가 묻혀 네이비 글자로
-  const lightChip = (year: number) => latestYear - year >= 4
 
   if (availableYears.length === 0) {
     return (
@@ -112,10 +110,10 @@ export default function CompareClient({ availableYears }: Props) {
             const isLoading = loading[y.year]
             return (
               <button key={y.year} onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isSelected ? '' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
-                style={isSelected ? { background: color, color: lightChip(y.year) ? brand.navy : tone.white } : {}}>
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isSelected ? '' : 'bg-surface-low text-ink-4 hover:bg-surface-high'}`}
+                style={isSelected ? tintBadgeStyle(color) : {}}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: isSelected ? (lightChip(y.year) ? 'rgba(26,35,126,0.45)' : 'rgba(255,255,255,0.6)') : color }} />
+                  style={{ background: color, opacity: isSelected ? 1 : 0.45 }} />
                 {y.year}
                 {isLoading ? <span className="opacity-70">...</span> : null}
               </button>

@@ -20,6 +20,9 @@ export const F = {
   peach:     '#F4A582',
   aqua:      '#8FBCD4',
   salmon:    '#E2786B',
+  // 보라 — 수입 전용 (의미색 income과 같은 계열). 차트 계열 순서에는 넣지 않는다
+  violet:    '#5B3FA0',
+  plum:      '#390069', // 입력 화면 요약 카드 그라데이션 끝 (지출 네이비 → 수입 플럼)
 } as const
 
 export const DEFAULT_PALETTE: Palette = {
@@ -104,10 +107,9 @@ export const INCOME_CATEGORY_COLORS: Record<string, string> = {
   '급여': F.denim,
   '기타': F.pistachio,
 }
-/** 가계부 입력 — 지출 강조색 (수입은 의미색 income) */
+/** 가계부 입력 — 요약 카드 그라데이션: 지출 네이비 → 수입 플럼 */
 export const EXPENSE_ACCENT = F.navy
-/** 네이비 바탕 위 수입 강조 — 입력 화면 요약 카드. 딥 오션은 네이비 위에서 묻혀 한 단 밝게 */
-export const INCOME_ON_NAVY = '#9FD3DF'
+export const INCOME_ACCENT = F.plum
 /** 입출금 — 출금 계열 */
 export const OUTFLOW_COLOR = F.slate
 /** 사용자 기본색 (members 테이블 로드 전 폴백) */
@@ -122,15 +124,6 @@ export const MA_COLORS = { ma5: F.peach, ma20: F.rose, ma60: F.aqua } as const
 export const BUDGET_BASELINE_COLOR = '#C5CAE9'
 /** 에너지 — 따뜻한 두 항목(온수·난방)만 웜톤 */
 export const ENERGY_COLORS = { electricity: F.navy, water: F.ocean, hot_water: F.peach, heating: F.salmon } as const
-
-/**
- * 연도 색 — 네이비 한 계열, 기준 연도가 가장 진하고 오래될수록 옅어진다.
- * 연도는 순서가 의미라 계열색을 돌려 쓰지 않는다. 8년 전부터는 가장 옅은 색으로 고정.
- */
-export function yearColor(year: number, latestYear: number): string {
-  const t = Math.min(Math.max((latestYear - year) / 8, 0), 1) ** 0.85
-  return mix(F.navy, '#C5CAE9', t)
-}
 
 /**
  * 색 배지 — 항목 색을 연하게 깐 배경 + 같은 색을 잉크 쪽으로 누른 글자.

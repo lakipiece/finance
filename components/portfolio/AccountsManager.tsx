@@ -49,23 +49,18 @@ function SortableAccountCard({
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
       <div className="flex bg-surface-card rounded-card overflow-hidden group hover:shadow-card hover:-translate-y-0.5 transition-all min-h-[110px]">
-        {/* 왼쪽 드래그 핸들 — 색 세로줄 대신 중성 그립 (테두리 금지) */}
+        {/* 왼쪽 색상 바 = 드래그 핸들 (배지와 같은 색) */}
         <div {...attributes} {...listeners}
           onClick={e => e.stopPropagation()}
-          className="w-3 shrink-0 cursor-grab active:cursor-grabbing flex items-center justify-center text-ink-5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg width="6" height="14" viewBox="0 0 6 14" fill="currentColor" aria-hidden="true">
-            <circle cx="1.5" cy="2" r="1" /><circle cx="4.5" cy="2" r="1" />
-            <circle cx="1.5" cy="7" r="1" /><circle cx="4.5" cy="7" r="1" />
-            <circle cx="1.5" cy="12" r="1" /><circle cx="4.5" cy="12" r="1" />
-          </svg>
-        </div>
+          className="w-1.5 shrink-0 cursor-grab active:cursor-grabbing rounded-l-2xl"
+          style={{ backgroundColor: typeColor }} />
         {/* 카드 내용 */}
-        <div onClick={onCardClick} className="flex-1 py-3 pr-3 pl-1 cursor-pointer flex flex-col min-w-0">
+        <div onClick={onCardClick} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
           {/* 이름 + 뱃지 */}
           <div className="flex items-start justify-between gap-1 mb-0.5">
             <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{account.name}</p>
-            {account.type ? <span className="inline-flex items-center gap-1 text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-surface-low text-ink-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: typeColor }} />
+            {account.type ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                style={tintBadgeStyle(typeColor)}>
                 {account.type}
               </span> : null}
           </div>

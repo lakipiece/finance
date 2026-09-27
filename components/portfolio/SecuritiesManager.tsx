@@ -618,6 +618,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           return (
             <div key={s.id}
               className="group flex bg-surface-card rounded-field overflow-hidden hover:shadow-card transition-all">
+              <div className="w-1.5 shrink-0 rounded-l-xl" style={{ backgroundColor: hex }} />
               <div onClick={() => setHistoryModalSecurity(s)}
                 className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-surface-low/30 transition-all min-w-0">
               {/* Row 1: ticker (left, clickable) + currency (right) */}
