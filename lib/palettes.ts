@@ -99,3 +99,27 @@ export const OPTION_COLORS: string[] = [
   // ── Browns / Earth (3) ───────────────────────────────
   '#4E342E','#5D4037','#6D4C41',
 ]
+
+// ─── 데이터 색 — 컴포넌트에 raw hex를 두지 않도록 이름 붙여 모은다 ────────────
+/** 카테고리 색이 지정되지 않았을 때 */
+export const FALLBACK_SERIES_COLOR = '#6B8CAE'
+/** 가계부 수입 카테고리 */
+export const INCOME_CATEGORY_COLORS: Record<string, string> = {
+  '급여': '#4527A0',
+  '기타': '#5A6476',
+}
+/** 가계부 입력 — 지출/수입 강조색 */
+export const EXPENSE_ACCENT = '#1A237E'
+export const INCOME_ACCENT = '#390069'
+/** 입출금 — 출금 계열 */
+export const OUTFLOW_COLOR = '#690043'
+/** 사용자 기본색 (members 테이블 로드 전 폴백) */
+export const DEFAULT_MEMBER_COLORS: Record<string, string> = { L: '#1565C0', P: '#AD1457' }
+/** 자산 탭 — 유형자산 종류 · 금융자산 */
+export const ASSET_TYPE_COLORS: Record<string, string> = { '부동산': '#1A237E', '자동차': '#f59e0b' }
+export const ASSET_TYPE_FALLBACK = '#6b7280'
+export const FINANCIAL_ASSET_COLOR = '#4527A0'
+/** 종목 상세 차트 이동평균선 */
+export const MA_COLORS = { ma5: '#fb923c', ma20: '#a78bfa', ma60: '#38bdf8' } as const
+/** 예산 누적 기준선 */
+export const BUDGET_BASELINE_COLOR = '#c7d2fe'

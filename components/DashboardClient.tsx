@@ -140,7 +140,7 @@ export default function DashboardClient({ year }: { year: number }) {
   if (summaryError) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="bg-surface-card rounded-card shadow-card border p-8 text-center">
+        <div className="bg-surface-card rounded-card shadow-card p-8 text-center">
           <p className="text-danger text-subhead mb-2">데이터를 불러오지 못했습니다</p>
           <p className="text-ink-5 text-body">{summaryError}</p>
         </div>

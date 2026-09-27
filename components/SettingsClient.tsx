@@ -5,7 +5,7 @@ import PreviewModal from './PreviewModal'
 import type { YearSummary } from '@/lib/fetchYears'
 import { useFilter } from '@/lib/FilterContext'
 import { useDataImport } from '@/lib/useDataImport'
-import { field, badge } from '@/lib/styles'
+import { field, badge, color as tone } from '@/lib/styles'
 import { OPTION_COLORS } from '@/lib/palettes'
 
 function RefreshValuesButton() {
@@ -33,7 +33,7 @@ function RefreshValuesButton() {
           onClick={handle}
           disabled={refreshing}
           className="px-3 py-1.5 rounded-btn text-body font-medium text-white hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: '#131b2e' }}
+          style={{ backgroundColor: tone.action }}
         >
           {refreshing ? '업데이트 중...' : '평가액 업데이트'}
         </button>
@@ -63,7 +63,7 @@ export default function SettingsClient({ initialYears }: Props) {
             <button
               onClick={() => setExcludeLoan(!excludeLoan)}
               className={`relative w-10 h-5 rounded-full transition-colors ${excludeLoan ? '' : 'bg-surface-high'}`}
-              style={excludeLoan ? { backgroundColor: '#131b2e' } : undefined}
+              style={excludeLoan ? { backgroundColor: tone.action } : undefined}
             >
               <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${excludeLoan ? 'translate-x-5' : ''}`} />
             </button>
@@ -137,7 +137,7 @@ export default function SettingsClient({ initialYears }: Props) {
                 onClick={() => imp.handleSheetsImport()}
                 disabled={imp.sheetsLoading || !imp.sheetId}
                 className="w-full py-1.5 rounded-btn text-white text-body font-medium hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: '#131b2e' }}
+                style={{ backgroundColor: tone.action }}
               >
                 {imp.sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
               </button>
@@ -207,7 +207,7 @@ export default function SettingsClient({ initialYears }: Props) {
                 type="button"
                 title={`복사: ${c}`}
                 onClick={() => navigator.clipboard.writeText(c).catch(() => {})}
-                className="relative group rounded-cell overflow-hidden border border-white/20 shadow-card hover:scale-110 transition-transform aspect-square flex items-end justify-center pb-0.5"
+                className="relative group rounded-cell overflow-hidden shadow-card hover:scale-110 transition-transform aspect-square flex items-end justify-center pb-0.5"
                 style={{ backgroundColor: c }}
               >
                 <span className="text-micro tracking-normal font-mono leading-none text-white/80 group-hover:text-white drop-shadow">

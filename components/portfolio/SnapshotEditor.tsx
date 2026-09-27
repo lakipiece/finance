@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
@@ -405,7 +406,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
               className="flex bg-surface-card rounded-card overflow-hidden shadow-card hover:-translate-y-0.5 transition-transform min-h-[110px]">
               {/* 왼쪽 색상 바 — 테두리가 아니라 배경 톤 띠 */}
               <div className="w-1.5 shrink-0"
-                style={{ backgroundColor: typeColor ?? '#e9ecf2' }} />
+                style={{ backgroundColor: typeColor ?? tone.surfaceContainer }} />
               {/* 카드 내용 */}
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
                 {/* 이름 + 뱃지 */}

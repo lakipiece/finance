@@ -1,3 +1,4 @@
+import { brand } from '@/lib/styles'
 import { ImageResponse } from 'next/og'
 
 
@@ -11,7 +12,7 @@ export default function Icon() {
         style={{
           width: 32,
           height: 32,
-          background: '#1e1e1e',
+          background: brand.iconBg,
           borderRadius: 7,
           display: 'flex',
           alignItems: 'center',
@@ -20,7 +21,7 @@ export default function Icon() {
       >
         <span
           style={{
-            color: '#FF1F8E',
+            color: brand.iconMark,
             fontSize: 24,
             fontWeight: 700,
             lineHeight: 1,

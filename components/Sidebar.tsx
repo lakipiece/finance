@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone, brand } from '@/lib/styles'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -113,13 +114,13 @@ function IconBuilding() {
 function IconLogo() {
   return (
     <svg className="w-7 h-7" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="7" fill="#1e293b"/>
+      <rect width="32" height="32" rx="7" fill={brand.logoBg}/>
       <rect x="6" y="6" width="3" height="20" rx="1.5" fill="white"/>
       <rect x="6" y="6" width="15" height="3" rx="1.5" fill="white"/>
       <rect x="6" y="13" width="10" height="3" rx="1.5" fill="white"/>
-      <rect x="6" y="22" width="5" height="4" rx="1.5" fill="#00695C"/>
-      <line x1="12" y1="26" x2="25" y2="7" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round"/>
-      <polyline points="19,7 25,7 25,13" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <rect x="6" y="22" width="5" height="4" rx="1.5" fill={tone.income}/>
+      <line x1="12" y1="26" x2="25" y2="7" stroke={brand.logoArrow} strokeWidth="2.5" strokeLinecap="round"/>
+      <polyline points="19,7 25,7 25,13" stroke={brand.logoArrow} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
     </svg>
   )
 }
@@ -149,7 +150,7 @@ function SectionHeader({ href, icon, label, pathname, inSection, onClose }: Sect
       style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
     >
       {active ? (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: '#00695C' }} />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full" style={{ background: tone.income }} />
       ) : null}
       <span className={active ? 'text-ink' : inSection ? 'text-ink-3' : 'text-ink-4'}>{icon}</span>
       {label}
@@ -179,7 +180,7 @@ function SubItem({ href, icon, label, pathname, onClose }: SubItemProps) {
       style={active ? { background: 'rgba(26,35,126,0.07)' } : undefined}
     >
       {active ? (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full" style={{ background: '#00695C' }} />
+        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full" style={{ background: tone.income }} />
       ) : null}
       <span className={active ? 'text-ink' : 'text-ink-5'}>{icon}</span>
       {label}
@@ -205,7 +206,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         <IconLogo />
         <div className="leading-none">
           <p className="text-subhead font-bold tracking-widest text-ink uppercase leading-tight">Lakipiece</p>
-          <p className="text-subhead font-bold tracking-widest uppercase leading-tight" style={{ color: '#0d1c2e' }}>Finance</p>
+          <p className="text-subhead font-bold tracking-widest uppercase leading-tight" style={{ color: tone.ink }}>Finance</p>
         </div>
       </div>
 

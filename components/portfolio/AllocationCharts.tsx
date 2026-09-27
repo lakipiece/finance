@@ -1,10 +1,11 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState } from 'react'
 import type { PortfolioPosition } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 
-const GREY = '#e9ecf2'
+const GREY = tone.surfaceContainer
 
 interface Props {
   allPositions: PortfolioPosition[]

@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState, useEffect } from 'react'
 import Sidebar from './Sidebar'
 import { usePathname, useRouter } from 'next/navigation'
@@ -53,7 +54,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* 메인 콘텐츠 */}
       <div className="md:pl-[220px] min-h-screen flex flex-col">
         {/* 모바일 햄버거 바 */}
-        <div className="md:hidden sticky top-0 z-30 border-b border-surface-low" style={{ background: '#fafafb', paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="md:hidden sticky top-0 z-30 border-b border-surface-low" style={{ background: tone.surface, paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex items-center h-12 px-4">
           <button
             onClick={() => setOpen(true)}

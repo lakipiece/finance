@@ -5,7 +5,7 @@ import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { formatWonRound } from '@/lib/utils'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import { createPortal } from 'react-dom'
-import { btn, tbl, modal } from '@/lib/styles'
+import { btn, tbl, modal, color as tone } from '@/lib/styles'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -133,8 +133,8 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
   }, [])
 
   function ownerColor(code: string | null | undefined): string {
-    if (!code) return '#8794a8'
-    return memberOpts.find(m => m.code === code)?.color ?? '#8794a8'
+    if (!code) return tone.ink4
+    return memberOpts.find(m => m.code === code)?.color ?? tone.ink4
   }
 
   const filtered = useMemo(() => {
@@ -340,7 +340,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           {(['date', 'amount'] as const).map(mode => (
             <button key={mode} onClick={() => { setSortMode(mode); setPage(1) }}
               className={`px-2 py-0.5 rounded text-body transition-colors ${sortMode !== mode ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
-              style={sortMode === mode ? { background: '#1A237E', color: '#fff' } : undefined}>
+              style={sortMode === mode ? { background: tone.action, color: tone.white } : undefined}>
               {mode === 'date' ? '날짜순' : '금액순'}
             </button>
           ))}
@@ -349,7 +349,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           {PAGE_SIZES.map(size => (
             <button key={size} onClick={() => { setPageSize(size as 20 | 50 | 100); setPage(1) }}
               className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
-              style={pageSize === size ? { background: '#1A237E', color: '#fff' } : undefined}>
+              style={pageSize === size ? { background: tone.action, color: tone.white } : undefined}>
               {size}
             </button>
           ))}

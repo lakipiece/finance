@@ -1,5 +1,6 @@
 'use client'
 
+import { brand } from '@/lib/styles'
 import type { PortfolioSummary } from '@/lib/portfolio/types'
 import type { HybridMetrics } from '@/lib/portfolio/metrics'
 import { useTheme } from '@/lib/ThemeContext'
@@ -57,7 +58,7 @@ export default function PortfolioKpiCards({ summary, ledger = null }: Props) {
         c.inverted ? (
           <div key={c.label}
             className="rounded-card shadow-card p-[13px] sm:p-[13px] flex flex-col hover:-translate-y-0.5 transition-all relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #1A237E 0%, #283593 60%, #00695C 100%)' }}>
+            style={{ background: brand.kpiGradient }}>
             <div className="relative group/lbl inline-block self-start mb-1">
               <p className="text-micro text-blue-200 font-medium uppercase tracking-widest cursor-default">{c.label}</p>
               <div className="absolute bottom-full left-0 mb-1.5 px-2 py-1 bg-white/20 text-white text-micro tracking-normal rounded-btn whitespace-nowrap opacity-0 group-hover/lbl:opacity-100 transition-opacity pointer-events-none z-10">

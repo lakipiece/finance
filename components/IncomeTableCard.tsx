@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import { formatWonFull, formatDate, INCOME_COLORS } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
-import { tbl } from '@/lib/styles'
+import { tbl, color as tone } from '@/lib/styles'
 
 export interface IncomeRow {
   id: number
@@ -99,7 +99,7 @@ export default function IncomeTableCard({
               ))}
             </div>
             {slice.map(item => {
-              const color = INCOME_COLORS[item.category] ?? '#5b6a80'
+              const color = INCOME_COLORS[item.category] ?? tone.ink3
               return (
                 <div key={item.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
                   <div className="flex items-center justify-between mb-1.5">
@@ -135,7 +135,7 @@ export default function IncomeTableCard({
               </thead>
               <tbody>
                 {slice.map((item, i) => {
-                  const color = INCOME_COLORS[item.category] ?? '#5b6a80'
+                  const color = INCOME_COLORS[item.category] ?? tone.ink3
                   return (
                     <tr key={item.id} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
                       <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
@@ -168,7 +168,7 @@ export default function IncomeTableCard({
               {PAGE_SIZES.map(size => (
                 <button key={size} onClick={() => { setPageSize(size); setPage(1) }}
                   className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
-                  style={pageSize === size ? { background: '#131b2e', color: '#fff' } : undefined}>{size}</button>
+                  style={pageSize === size ? { background: tone.action, color: tone.white } : undefined}>{size}</button>
               ))}
             </div>
             <div className="flex items-center gap-1">

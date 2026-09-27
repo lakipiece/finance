@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, BarChart,
   Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts'
-import { btn, card, field, modal, text, brand } from '@/lib/styles'
+import { btn, card, field, modal, text, brand, color as tone } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import YearSelect from '@/components/ui/YearSelect'
 import { formatWonFull } from '@/lib/utils'
@@ -245,7 +245,7 @@ function EnergyFormModal({ initial, defaultYear, defaultMonth, onClose, onSaved,
           <button onClick={onClose} className="px-4 py-2 rounded-btn text-body font-medium text-ink-3 bg-surface-low hover:bg-surface-high transition-colors">취소</button>
           <button onClick={handleSave} disabled={saving}
             className="px-[18px] py-2 rounded-btn text-body font-bold text-white disabled:opacity-60 transition-colors"
-            style={{ backgroundColor: '#131b2e' }}>
+            style={{ backgroundColor: tone.action }}>
             {saving ? '저장 중…' : initial ? '수정' : '저장'}
           </button>
         </div>
@@ -413,7 +413,7 @@ export default function EnergyClient() {
                 className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
                   isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
                 }`}
-                style={isActive ? { backgroundColor: '#131b2e' } : undefined}>
+                style={isActive ? { backgroundColor: tone.action } : undefined}>
                 최근 {n}년
               </button>
             )
@@ -426,11 +426,11 @@ export default function EnergyClient() {
         <h2 className="text-subhead font-medium text-ink mb-3">월별 금액</h2>
         <ResponsiveContainer width="100%" height={320}>
           <BarChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="ym" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-            <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+            <XAxis dataKey="ym" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+            <YAxis tickFormatter={(v: number) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} width={48} />
             <Tooltip content={<AmountTooltip activeKinds={activeKindList} />} />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: '#5b6a80' }}>{value}</span>} />
+            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} formatter={(value) => <span style={{ color: tone.ink3 }}>{value}</span>} />
             {activeKindList.map(k => (
               <Bar key={k.key} dataKey={`${k.key}_amount`} name={k.label} stackId="amount" fill={k.color} />
             ))}

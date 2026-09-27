@@ -7,7 +7,7 @@ import {
   ResponsiveContainer, CartesianGrid, LabelList,
   LineChart, Line, ReferenceLine, Cell,
 } from 'recharts'
-import { btn } from '@/lib/styles'
+import { btn, color as tone } from '@/lib/styles'
 import { chartSeriesColor, CHART_SERIES } from '@/lib/palettes'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 import type { SnapshotViewMode } from './SnapshotList'
@@ -46,8 +46,8 @@ function filterByView(points: SnapshotPoint[], view: SnapshotViewMode): Snapshot
   )
 }
 
-const POS = '#ef4444'  // 한국식 — 상승 빨강
-const NEG = '#3b82f6'  // 한국식 — 하락 파랑
+const POS = tone.gain  // 한국식 — 상승 빨강
+const NEG = tone.loss  // 한국식 — 하락 파랑
 
 /**
  * 값 라벨이 축 눈금과 겹치지 않게 위아래로 여백을 준다.
@@ -145,12 +145,12 @@ function pointLabel(picked: Set<number>, lastIndex: number, fill: string) {
 /** 배경색 위에 올릴 글자색 — 밝은 조각에는 잉크, 어두운 조각에는 흰색 */
 function textOn(bg: string): string {
   const hex = bg.replace('#', '')
-  if (hex.length !== 6) return '#ffffff'
+  if (hex.length !== 6) return tone.white
   const r = parseInt(hex.slice(0, 2), 16)
   const g = parseInt(hex.slice(2, 4), 16)
   const b = parseInt(hex.slice(4, 6), 16)
-  if ([r, g, b].some(n => Number.isNaN(n))) return '#ffffff'
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? '#0d1c2e' : '#ffffff'
+  if ([r, g, b].some(n => Number.isNaN(n))) return tone.white
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.62 ? tone.ink : tone.white
 }
 
 /**
@@ -180,7 +180,7 @@ function barTopLabel(picked: Set<number>, fill: string) {
 function segmentLabel(
   picked: Set<number>,
   fmt: (v: number) => string,
-  fill = '#fff',
+  fill: string = tone.white,
   minHeight = 15,
 ) {
   return function renderSegmentLabel(props: LabelRenderProps) {
@@ -448,8 +448,8 @@ function TagBreakdownCard({ points }: { points: SnapshotPoint[] }) {
         <>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data} margin={{ left: 0, right: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} />
               <YAxis hide />
               <Tooltip content={<BreakdownTooltip />} />
               {visibleTags.map((k, i) => (
@@ -520,7 +520,7 @@ function StackedBreakdownCard({
   }, [points, accessor])
 
   function colorFor(k: string): string {
-    if (k === '기타') return '#a8b3c4'
+    if (k === '기타') return tone.ink5
     return chartSeriesColor(colorRank[k] ?? 0)
   }
 
@@ -557,8 +557,8 @@ function StackedBreakdownCard({
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ left: 0, right: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-          <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+          <XAxis dataKey="date" tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} />
           <YAxis hide />
           <Tooltip content={<BreakdownTooltip />} />
           {chartKeys.map((k, i) => (
@@ -760,7 +760,7 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
       {/* 기간 필터 — 연도 + 월초/월말 (스냅샷 목록과 동일한 기준) */}
       <YearFilterRow years={years} year={year} onYear={setYear} view={view} onView={setView} count={points.length} />
 
-      {needsBackfill ? <div className="bg-warning/10 border rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+      {needsBackfill ? <div className="bg-warning/10 rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <p className="text-body text-warning">
             자산군·태그 분해 데이터가 비어 있습니다. 한 번 새로고침이 필요합니다.
           </p>
@@ -831,19 +831,19 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
         </p>
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={valueData} margin={{ left: 0, right: 8, top: 26 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} />
             <YAxis hide />
-            <Tooltip content={<ValuesTooltip />} cursor={{ fill: '#f8fafc' }} />
+            <Tooltip content={<ValuesTooltip />} cursor={{ fill: tone.surface }} />
             <Bar dataKey="원금" name={basisLabel} stackId="v" fill={CHART_SERIES[0]}>
-              <LabelList dataKey="원금" content={segmentLabel(valueLabelIdx, fmtY, '#ffffff', 16)} />
+              <LabelList dataKey="원금" content={segmentLabel(valueLabelIdx, fmtY, tone.white, 16)} />
             </Bar>
             <Bar dataKey="수익" name="수익" stackId="v" fill={POS}>
-              <LabelList dataKey="평가액" content={barTopLabel(valueLabelIdx, '#0d1c2e')} />
-              <LabelList dataKey="수익" content={segmentLabel(valueLabelIdx, fmtY, '#ffffff', 16)} />
+              <LabelList dataKey="평가액" content={barTopLabel(valueLabelIdx, tone.ink)} />
+              <LabelList dataKey="수익" content={segmentLabel(valueLabelIdx, fmtY, tone.white, 16)} />
             </Bar>
             <Bar dataKey="손실" name="손실" stackId="v" fill={NEG} fillOpacity={0.35}>
-              <LabelList dataKey="손실" content={segmentLabel(valueLabelIdx, fmtY, '#1e40af', 16)} />
+              <LabelList dataKey="손실" content={segmentLabel(valueLabelIdx, fmtY, tone.loss, 16)} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -871,15 +871,15 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
         </h3>
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={pnlData} margin={{ left: 0, right: 12, top: 22 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false}
               tickFormatter={(v) => fmtY(v)} width={54} domain={LABEL_HEADROOM} />
             <Tooltip content={<SinglePnlTooltip />} />
-            <ReferenceLine y={0} stroke="#a8b3c4" strokeDasharray="3 3" />
+            <ReferenceLine y={0} stroke={tone.ink5} strokeDasharray="3 3" />
             <Line type="monotone" dataKey="손익" stroke={currentPnl >= 0 ? POS : NEG} strokeWidth={2.5}
               dot={{ r: 3 }}>
-              <LabelList dataKey="손익" content={pointLabel(pnlLabelIdx, pnlData.length - 1, '#3d4a5c')} />
+              <LabelList dataKey="손익" content={pointLabel(pnlLabelIdx, pnlData.length - 1, tone.ink2)} />
             </Line>
           </LineChart>
         </ResponsiveContainer>
@@ -893,19 +893,19 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
         </p>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={momData} margin={{ left: 0, right: 8, top: 18, bottom: 10 }} barGap={2}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+            <XAxis dataKey="date" tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} />
             <YAxis hide domain={LABEL_HEADROOM} />
-            <Tooltip content={<MomTooltip />} cursor={{ fill: '#f8fafc' }} />
-            <ReferenceLine y={0} stroke="#a8b3c4" />
+            <Tooltip content={<MomTooltip />} cursor={{ fill: tone.surface }} />
+            <ReferenceLine y={0} stroke={tone.ink5} />
             <Bar dataKey="투자원금" name="투자원금" fill={CHART_SERIES[0]}>
-              <LabelList dataKey="투자원금" content={barTopLabel(flowLabelIdx, '#5b6a80')} />
+              <LabelList dataKey="투자원금" content={barTopLabel(flowLabelIdx, tone.ink3)} />
             </Bar>
             <Bar dataKey="수익" name="수익">
               {momData.map((d, i) => (
                 <Cell key={i} fill={d.수익 >= 0 ? POS : NEG} />
               ))}
-              <LabelList dataKey="수익" content={barTopLabel(gainLabelIdx, '#5b6a80')} />
+              <LabelList dataKey="수익" content={barTopLabel(gainLabelIdx, tone.ink3)} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

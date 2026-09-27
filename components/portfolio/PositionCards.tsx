@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { MergedPosition } from './PortfolioDashboard'
@@ -26,7 +27,7 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
   const pnlPos = p.unrealized_pnl >= 0
   const pnlColor = pnlPos ? 'text-gain' : 'text-loss'
   const weight = totalValue > 0 ? (p.market_value / totalValue * 100) : 0
-  const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? '#334155') : '#334155'
+  const sectorColor = p.security.sector ? (sectorColors[p.security.sector] ?? tone.ink2) : tone.ink2
 
   return (
     <div className="modal-scrim fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -191,7 +192,7 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <span
                     className="text-white text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
-                    style={{ backgroundColor: tickerBgColor ?? '#334155' }}>
+                    style={{ backgroundColor: tickerBgColor ?? tone.ink2 }}>
                     {ticker}
                   </span>
                   <span className="text-micro tracking-normal text-ink-4 bg-surface-low px-1.5 py-0.5 rounded-full shrink-0">

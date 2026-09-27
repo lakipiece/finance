@@ -16,7 +16,7 @@ import DividendFormModal, { type IncomeTypeOption } from './DividendFormModal'
 import BulkDividendModal from './BulkDividendModal'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import PageHeader from '@/components/ui/PageHeader'
-import { btn } from '@/lib/styles'
+import { btn, color as tone, brand } from '@/lib/styles'
 
 interface AccountSecurity { account_id: string; security_id: string }
 interface MemberOpt { code: string; color: string }
@@ -123,9 +123,9 @@ function DividendTooltip({ active, payload, label, color }: ChartTooltipProps & 
   const yieldPct = invested > 0 ? (amount / invested) * 100 : null
   const title = p.label ?? p.month ?? label ?? ''
   const rows: { k: string; v: number; c: string }[] = [
-    { k: '배당금', v: amount, c: color ?? '#10b981' },
-    { k: '투자금', v: invested, c: '#8794a8' },
-    { k: '평가금', v: marketValue, c: '#1A237E' },
+    { k: '배당금', v: amount, c: color ?? tone.income },
+    { k: '투자금', v: invested, c: tone.ink4 },
+    { k: '평가금', v: marketValue, c: brand.navy },
   ]
   return (
     <div className="bg-surface-card rounded-btn px-3 py-2 shadow-card min-w-[160px]">
@@ -150,7 +150,7 @@ function DividendTooltip({ active, payload, label, color }: ChartTooltipProps & 
         {invested > 0 ? (
           <div className="flex items-center justify-between gap-4">
             <span className="text-micro tracking-normal text-ink-4">평가손익</span>
-            <span className="text-meta font-medium tabular-nums" style={{ color: pnl >= 0 ? '#dc2626' : '#2563eb' }}>
+            <span className="text-meta font-medium tabular-nums" style={{ color: pnl >= 0 ? tone.gain : tone.loss }}>
               {pnl >= 0 ? '+' : ''}{Math.round(pnl).toLocaleString()}원
             </span>
           </div>
@@ -476,10 +476,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 const label = data?.activeLabel as string | undefined
                 if (label) setSelectedMonth(prev => prev === label ? null : label)
               }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} width={52} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: tone.ink5 }} width={52} axisLine={false} tickLine={false} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: tone.surfaceLow }} />
               <Bar dataKey="amount" maxBarSize={32}
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
@@ -488,10 +488,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         {tab === 'account' ? <ResponsiveContainer width="100%" height={220}>
             <BarChart data={accountData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={120} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} horizontal={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: tone.ink4 }} width={120} axisLine={false} tickLine={false} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: tone.surfaceLow }} />
               <Bar dataKey="amount" maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
           </ResponsiveContainer> : null}
@@ -504,10 +504,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 const ticker = data?.activePayload?.[0]?.payload?.ticker as string | undefined
                 if (ticker) setSelectedSecurity(prev => prev === ticker ? null : ticker)
               }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#8794a8' }} width={130} axisLine={false} tickLine={false} />
-              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} horizontal={false} />
+              <XAxis type="number" tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: tone.ink4 }} width={130} axisLine={false} tickLine={false} />
+              <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: tone.surfaceLow }} />
               <Bar dataKey="amount" maxBarSize={14}
                 fill={palette.colors[0]}
                 label={false} />
@@ -522,7 +522,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         const total = entries.reduce((s, [, v]) => s + v, 0)
         const pieData = entries.map(([name, value], i) => ({
           name, value,
-          fill: palette.colors[i % palette.colors.length] ?? '#a8b3c4',
+          fill: palette.colors[i % palette.colors.length] ?? tone.ink5,
         }))
         return (
           <div className="bg-surface-card rounded-card px-[13px] py-[11px]">
@@ -544,7 +544,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 {entries.map(([name, value], i) => (
                   <div key={name} className="flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: palette.colors[i % palette.colors.length] ?? '#a8b3c4' }} />
+                      style={{ backgroundColor: palette.colors[i % palette.colors.length] ?? tone.ink5 }} />
                     <span className="text-micro tracking-normal text-ink-2 flex-1 truncate">{name}</span>
                     <span className="text-micro tracking-normal tabular-nums text-ink-3">
                       {total > 0 ? (value / total * 100).toFixed(1) : 0}%

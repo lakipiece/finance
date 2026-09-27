@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone, brand } from '@/lib/styles'
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -7,13 +8,13 @@ import { useRouter } from 'next/navigation'
 function BrandLogo() {
   return (
     <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="7" fill="#1e293b"/>
+      <rect width="32" height="32" rx="7" fill={brand.logoBg}/>
       <rect x="6" y="6" width="3" height="20" rx="1.5" fill="white"/>
       <rect x="6" y="6" width="15" height="3" rx="1.5" fill="white"/>
       <rect x="6" y="13" width="10" height="3" rx="1.5" fill="white"/>
-      <rect x="6" y="22" width="5" height="4" rx="1.5" fill="#00695C"/>
-      <line x1="12" y1="26" x2="25" y2="7" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round"/>
-      <polyline points="19,7 25,7 25,13" stroke="#C2185B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <rect x="6" y="22" width="5" height="4" rx="1.5" fill={tone.income}/>
+      <line x1="12" y1="26" x2="25" y2="7" stroke={brand.logoArrow} strokeWidth="2.5" strokeLinecap="round"/>
+      <polyline points="19,7 25,7 25,13" stroke={brand.logoArrow} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
     </svg>
   )
 }
@@ -46,7 +47,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0D1B5E 0%, #1A237E 40%, #00695C 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: brand.loginGradient }}>
       {/* 배경 장식 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-10 bg-surface-card" />
@@ -59,7 +60,7 @@ export default function LoginPage() {
           <BrandLogo />
           <div className="mt-3 text-center">
             <p className="text-heading font-bold tracking-widest text-white uppercase leading-tight">Lakipiece</p>
-            <p className="text-heading font-bold tracking-widest uppercase leading-tight" style={{ color: '#80CBC4' }}>Finance</p>
+            <p className="text-heading font-bold tracking-widest uppercase leading-tight" style={{ color: brand.loginWordmark }}>Finance</p>
             <p className="text-micro text-white/40 tracking-widest mt-1 uppercase">The Precision Curator</p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { MA_COLORS } from '@/lib/palettes'
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
@@ -8,7 +9,7 @@ import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
 import { costKrw } from '@/lib/portfolio/valuation'
 import { formatDate } from '@/lib/utils'
-import { btn, field, modal as modalStyles } from '@/lib/styles'
+import { btn, field, modal as modalStyles, color as tone } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
 import PageHeader from '@/components/ui/PageHeader'
 import Select from '@/components/ui/Select'
@@ -45,7 +46,8 @@ function Sparkline({ data }: { data: { price: number }[] }) {
   }).join(' ')
   const last = prices[prices.length - 1]
   const first = prices[0]
-  const color = last >= first ? '#22c55e' : '#ef4444'
+  // 한국식 손익 2색 — 상승 빨강(gain) / 하락 파랑(loss), 앱 전체와 동일
+  const color = last >= first ? tone.gain : tone.loss
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible">
       <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
@@ -54,8 +56,8 @@ function Sparkline({ data }: { data: { price: number }[] }) {
 }
 
 function getColorHex(options: Record<string, OptionItem[]>, type: string, value: string | null): string {
-  if (!value) return '#a8b3c4'
-  return options[type]?.find(o => o.value === value)?.color_hex ?? '#a8b3c4'
+  if (!value) return tone.ink5
+  return options[type]?.find(o => o.value === value)?.color_hex ?? tone.ink5
 }
 
 function cardColors(options: Record<string, OptionItem[]>, country: string | null, assetClass: string | null) {
@@ -317,15 +319,15 @@ function PriceHistoryModal({
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={chartData} margin={{ top: 22, right: 12, left: 0, bottom: 8 }}
                 style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e9ecf2" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} tickLine={false} axisLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: tone.ink5 }} tickLine={false} axisLine={false}
                   interval="preserveStartEnd"
                   tickFormatter={d => String(d).slice(5)}
                   padding={{ left: 12, right: 12 }}
                 />
                 <YAxis
                   domain={yDomain}
-                  tick={{ fontSize: 10, fill: '#a8b3c4' }}
+                  tick={{ fontSize: 10, fill: tone.ink5 }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={fmtChartPrice}
@@ -342,15 +344,15 @@ function PriceHistoryModal({
                 {/* 가격선 */}
                 <Line type="monotone" dataKey="price" stroke={hex} dot={false} strokeWidth={1.5} />
                 {/* 이동평균선 */}
-                <Line type="monotone" dataKey="ma5"  stroke="#fb923c" dot={false} strokeWidth={1} connectNulls={false} />
-                <Line type="monotone" dataKey="ma20" stroke="#a78bfa" dot={false} strokeWidth={1} connectNulls={false} />
-                <Line type="monotone" dataKey="ma60" stroke="#38bdf8" dot={false} strokeWidth={1} connectNulls={false} />
+                <Line type="monotone" dataKey="ma5"  stroke={MA_COLORS.ma5} dot={false} strokeWidth={1} connectNulls={false} />
+                <Line type="monotone" dataKey="ma20" stroke={MA_COLORS.ma20} dot={false} strokeWidth={1} connectNulls={false} />
+                <Line type="monotone" dataKey="ma60" stroke={MA_COLORS.ma60} dot={false} strokeWidth={1} connectNulls={false} />
                 {/* 최저/최고 기준점 */}
                 {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx ? <>
                     <ReferenceDot x={chartData[minIdx].date} y={chartData[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 10, fill: '#8794a8' }} />
+                      label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 10, fill: tone.ink4 }} />
                     <ReferenceDot x={chartData[maxIdx].date} y={chartData[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
-                      label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 10, fill: '#8794a8' }} />
+                      label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 10, fill: tone.ink4 }} />
                   </> : null}
               </LineChart>
             </ResponsiveContainer>
@@ -732,7 +734,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
 
         {/* Add card */}
         <button onClick={() => setShowAddModal(true)}
-          className="bg-surface-card rounded-field border border-dashed border-surface-low flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[80px]">
+          className="bg-surface-low hover:bg-surface-container rounded-field flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[80px]">
           <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>

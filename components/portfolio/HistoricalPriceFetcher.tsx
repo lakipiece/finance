@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState } from 'react'
 import DateInput from '@/components/ui/DateInput'
 
@@ -58,7 +59,7 @@ export default function HistoricalPriceFetcher() {
           onClick={handleFetch}
           disabled={loading || !startDate || !endDate}
           className="text-white px-4 py-1.5 rounded-btn text-body hover:opacity-90 transition-opacity flex items-center gap-1.5"
-          style={{ backgroundColor: '#1A237E' }}
+          style={{ backgroundColor: tone.action }}
         >
           {loading ? <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>

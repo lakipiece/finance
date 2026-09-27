@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
-import { btn, field } from '@/lib/styles'
+import { btn, field, color as tone } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import { OPTION_COLORS } from '@/lib/palettes'
 import { CATEGORIES, CAT_COLORS } from '@/lib/utils'
@@ -79,8 +79,8 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
           <div className="grid grid-cols-8 gap-1.5 mb-2.5" style={{ width: 272 }}>
             {OPTION_COLORS.map(c => (
               <button key={c} onClick={() => handlePresetClick(c)} title={c}
-                className="w-7 h-7 rounded-cell border-2 transition-all hover:scale-110 relative"
-                style={{ backgroundColor: c, borderColor: color === c ? '#1e293b' : 'transparent' }}>
+                className={`w-7 h-7 rounded-cell transition-all hover:scale-110 relative ${color === c ? 'shadow-focus' : ''}`}
+                style={{ backgroundColor: c }}>
                 {copied === c ? <span className="absolute inset-0 flex items-center justify-center">
                     <svg className="w-3 h-3 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -464,7 +464,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
   }
 
   async function applyColorToAll(category: string) {
-    const color = catColors[category] ?? '#a8b3c4'
+    const color = catColors[category] ?? tone.ink5
     const targets = details.filter(d => d.category === category)
     setDetails(prev => prev.map(d => d.category === category ? { ...d, color } : d))
     await Promise.all(targets.map(d =>
@@ -562,7 +562,7 @@ export default function OptionsClient({ initialMembers, initialMethods, initialD
             key={cat}
             category={cat}
             details={details.filter(d => d.category === cat)}
-            accentColor={catColors[cat] ?? (CAT_COLORS as Record<string, string>)[cat] ?? '#a8b3c4'}
+            accentColor={catColors[cat] ?? (CAT_COLORS as Record<string, string>)[cat] ?? tone.ink5}
             onCategoryColorChange={color => updateCategoryColor(cat, color)}
             onAdd={addDetail}
             onUpdate={updateDetail}

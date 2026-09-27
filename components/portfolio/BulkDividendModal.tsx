@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Security, Account } from '@/lib/portfolio/types'
-import { btn, field, modal } from '@/lib/styles'
+import { btn, field, modal, color as tone } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
 import Select from '@/components/ui/Select'
 
@@ -77,7 +77,7 @@ export default function BulkDividendModal({
   }, [show])
 
   function ownerColor(code: string): string {
-    return memberOpts.find(m => m.code === code)?.color ?? '#8794a8'
+    return memberOpts.find(m => m.code === code)?.color ?? tone.ink4
   }
 
   const modalAccounts = useMemo(() =>
@@ -163,8 +163,8 @@ export default function BulkDividendModal({
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
                   onClick={() => { setModalOwner(''); setAccountId('') }}
-                  className="px-2.5 py-1 rounded-full text-body font-medium border transition-colors"
-                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], borderColor: palette.colors[0], color: '#fff' } : { backgroundColor: '#f8fafc', borderColor: '#e9ecf2', color: '#8794a8' }}>
+                  className="px-2.5 py-1 rounded-full text-body font-medium transition-colors"
+                  style={modalOwner === '' ? { backgroundColor: palette.colors[0], color: tone.white } : { backgroundColor: tone.surfaceLow, color: tone.ink4 }}>
                   전체
                 </button>
                 {owners.map(o => {
@@ -173,10 +173,10 @@ export default function BulkDividendModal({
                   return (
                     <button type="button" key={o}
                       onClick={() => { setModalOwner(o); setAccountId('') }}
-                      className="px-2.5 py-1 rounded-full text-body font-medium border transition-colors"
+                      className="px-2.5 py-1 rounded-full text-body font-medium transition-colors"
                       style={isActive
-                        ? { backgroundColor: color, borderColor: color, color: '#fff' }
-                        : { backgroundColor: `${color}18`, borderColor: `${color}40`, color }}>
+                        ? { backgroundColor: color, color: tone.white }
+                        : { backgroundColor: `${color}18`, color }}>
                       {o}
                     </button>
                   )

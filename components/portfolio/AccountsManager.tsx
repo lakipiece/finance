@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
-import { btn, field, badge, modal } from '@/lib/styles'
+import { btn, field, badge, modal, color as tone } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import CashflowPanel from './CashflowPanel'
 import Select from '@/components/ui/Select'
@@ -43,7 +43,7 @@ function SortableAccountCard({
   onCardClick: () => void; onEdit: () => void; onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-  const typeColor = typeColors[account.type ?? ''] ?? '#e9ecf2'
+  const typeColor = typeColors[account.type ?? ''] ?? tone.surfaceContainer
 
   return (
     <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }}>
@@ -282,7 +282,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                 name: '', broker: '', owner: '', type_id: '',
                 dividend_eligible: true, dividend_tax_rate: '',
               }) }}
-              className="bg-surface-card rounded-card border border-dashed border-surface-low flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[110px]">
+              className="bg-surface-low hover:bg-surface-container rounded-card flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[110px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -372,23 +372,23 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         e.target.checked ? next.add(s.id) : next.delete(s.id)
                         return next
                       })}
-                      className="w-3.5 h-3.5 cursor-pointer shrink-0 accent-[#1A237E] bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
+                      className="w-3.5 h-3.5 cursor-pointer shrink-0 accent-action bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
                     <span
                       className={`${badge.ticker} shrink-0`}
                       style={sectorColor
                         ? { backgroundColor: sectorColor + '22', color: sectorColor }
-                        : { backgroundColor: '#f1f5f9', color: '#475569' }}
+                        : { backgroundColor: tone.surfaceContainer, color: tone.ink3 }}
                     >{s.ticker}</span>
                     <span className="text-body text-ink flex-1 min-w-0 truncate">{s.name}</span>
                     {s.country ? <span
                         className={`${badge.sm} shrink-0`}
                         style={countryColor
                           ? { backgroundColor: countryColor + '18', color: countryColor }
-                          : { backgroundColor: '#f1f5f9', color: '#8794a8' }}
+                          : { backgroundColor: tone.surfaceContainer, color: tone.ink4 }}
                       >{s.country}</span> : null}
                     <span
                       className="text-micro tracking-normal shrink-0 font-medium"
-                      style={currencyColor ? { color: currencyColor } : { color: '#a8b3c4' }}
+                      style={currencyColor ? { color: currencyColor } : { color: tone.ink5 }}
                     >{s.currency}</span>
                   </label>
                 )

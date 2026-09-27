@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
@@ -157,7 +158,7 @@ export default function CompareClient({ availableYears }: Props) {
               onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
               className="px-2.5 py-1 rounded-full text-meta font-medium transition-colors"
               style={selectedCategory === cat
-                ? { backgroundColor: INCOME_COLORS[cat], color: '#fff' }
+                ? { backgroundColor: INCOME_COLORS[cat], color: tone.white }
                 : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
               }>
               {cat}

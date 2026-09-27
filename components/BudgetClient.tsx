@@ -1,5 +1,6 @@
 'use client'
 
+import { BUDGET_BASELINE_COLOR } from '@/lib/palettes'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   ComposedChart,
@@ -14,12 +15,12 @@ import {
 } from 'recharts'
 import { formatWonFull, formatWonCompact } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
-import { btn, field, card, badge, text, brand } from '@/lib/styles'
+import { btn, field, card, badge, text, brand, color as tone } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import YearSelect from '@/components/ui/YearSelect'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 
-const POSITIVE_BUDGET_COLOR = '#1A237E'
+const POSITIVE_BUDGET_COLOR = brand.navy
 
 interface BudgetItem {
   id: number | null
@@ -515,7 +516,7 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
         cx={cx}
         cy={cy}
         r={isCurrent ? 5 : 2}
-        fill={isCurrent ? '#fff' : POSITIVE_BUDGET_COLOR}
+        fill={isCurrent ? tone.white : POSITIVE_BUDGET_COLOR}
         stroke={POSITIVE_BUDGET_COLOR}
         strokeWidth={isCurrent ? 2.5 : 0}
       />
@@ -560,12 +561,12 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
       <div className="h-[220px] sm:h-[260px] lg:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+          <XAxis dataKey="week" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
           <YAxis
             yAxisId="left"
             tickFormatter={(v) => formatWonCompact(v)}
-            tick={{ fontSize: 10, fill: '#a8b3c4' }}
+            tick={{ fontSize: 10, fill: tone.ink5 }}
             axisLine={false}
             tickLine={false}
             width={56}
@@ -574,15 +575,15 @@ function WeeklyChart({ weeklyAmount, weeklyUsage, year }: WeeklyChartProps) {
             yAxisId="right"
             orientation="right"
             tickFormatter={(v) => formatWonCompact(v)}
-            tick={{ fontSize: 10, fill: '#a8b3c4' }}
+            tick={{ fontSize: 10, fill: tone.ink5 }}
             axisLine={false}
             tickLine={false}
             width={56}
           />
           <Tooltip content={<WeeklyTooltip />} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-          <Bar yAxisId="right" dataKey="weekly" name="주간 지출" fill="#e9ecf2" />
-          <Line yAxisId="left" type="monotone" dataKey="baselineCumulative" name="누적 기준" stroke="#c7d2fe" strokeWidth={2} dot={false} />
+          <Bar yAxisId="right" dataKey="weekly" name="주간 지출" fill={tone.surfaceContainer} />
+          <Line yAxisId="left" type="monotone" dataKey="baselineCumulative" name="누적 기준" stroke={BUDGET_BASELINE_COLOR} strokeWidth={2} dot={false} />
           <Line yAxisId="left" type="monotone" dataKey="cumulative" name="누적 지출" stroke={POSITIVE_BUDGET_COLOR} strokeWidth={2.5} dot={renderCumulativeDot} activeDot={renderCumulativeDot} />
         </ComposedChart>
       </ResponsiveContainer>

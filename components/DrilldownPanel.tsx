@@ -1,5 +1,6 @@
 'use client'
 
+import { FALLBACK_SERIES_COLOR, INCOME_CATEGORY_COLORS } from '@/lib/palettes'
 import { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid, Legend, LineChart, Line } from 'recharts'
 import type { MonthlyData, ExpenseItem } from '@/lib/types'
@@ -8,13 +9,13 @@ import { formatWonFull, formatDate, CATEGORIES } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
-import { tbl, field } from '@/lib/styles'
+import { tbl, field, color as tone, brand } from '@/lib/styles'
 import IncomeTableCard from './IncomeTableCard'
 import type { IncomeRow } from './IncomeTableCard'
 
 const INCOME_CHART_COLORS: Record<string, string> = {
-  '급여': '#4527A0',
-  '기타': '#5A6476',
+  '급여': INCOME_CATEGORY_COLORS['급여'],
+  '기타': INCOME_CATEGORY_COLORS['기타'],
 }
 
 interface IncomeMonthData {
@@ -169,9 +170,9 @@ export default function DrilldownPanel({
   const chartColors = isCategory
     ? (() => {
         if (selectedTrendDetail) {
-          return { [selectedTrendDetail]: catColors[selectedCat!] ?? '#6B8CAE' }
+          return { [selectedTrendDetail]: catColors[selectedCat!] ?? FALLBACK_SERIES_COLOR }
         }
-        const baseColor = catColors[selectedCat!] ?? '#6B8CAE'
+        const baseColor = catColors[selectedCat!] ?? FALLBACK_SERIES_COLOR
         const shades = generateShades(baseColor, chartKeys.length)
         return Object.fromEntries(chartKeys.map((k, i) => [k, shades[i]]))
       })()
@@ -212,7 +213,7 @@ export default function DrilldownPanel({
       ? (incomeMonthData[cat as '급여' | '기타'] ?? 0)
       : (monthData[cat as keyof MonthlyData] as number)
   const getCatColor = (cat: string) =>
-    drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? '#5b6a80') : catColors[cat]
+    drilldownType === 'income' ? (INCOME_CHART_COLORS[cat] ?? tone.ink3) : catColors[cat]
 
   return (
   <>
@@ -234,7 +235,7 @@ export default function DrilldownPanel({
               className={kpiCardCls(isActive, true)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#ffffff' : '#00695C' }} />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? tone.white : tone.income }} />
                 <span className={kpiLabelCls(isActive)}>전체 수입</span>
               </div>
               <p className={kpiValueCls(isActive)}>{formatWonFull(incomeMonthData.total)}</p>
@@ -286,7 +287,7 @@ export default function DrilldownPanel({
               className={kpiCardCls(isActive, true)}
             >
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? '#ffffff' : '#1A237E' }} />
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? tone.white : brand.navy }} />
                 <span className={kpiLabelCls(isActive)}>전체 지출</span>
               </div>
               <p className={kpiValueCls(isActive)}>{formatWonFull(monthData.total)}</p>
@@ -335,7 +336,7 @@ export default function DrilldownPanel({
             {selectedMonth ? <button
                 onClick={() => onMonthSelect?.(selectedMonth)}
                 className="text-body font-medium"
-                style={{ color: '#0d1c2e' }}
+                style={{ color: tone.ink }}
               >
                 월 필터 해제
               </button> : null}
@@ -384,26 +385,26 @@ export default function DrilldownPanel({
                   ? activeCategories
                   : ['수입']
             const lineColors: Record<string, string> = selectedIncomeCard
-              ? { '누적': INCOME_CHART_COLORS[selectedIncomeCard] ?? '#6B8CAE' }
+              ? { '누적': INCOME_CHART_COLORS[selectedIncomeCard] ?? FALLBACK_SERIES_COLOR }
               : isCategory
                 ? chartColors
                 : drilldownType === 'expense'
-                  ? Object.fromEntries(activeCategories.map(cat => [cat, catColors[cat] ?? '#6B8CAE']))
-                  : { '수입': '#4527A0' }
+                  ? Object.fromEntries(activeCategories.map(cat => [cat, catColors[cat] ?? FALLBACK_SERIES_COLOR]))
+                  : { '수입': INCOME_CATEGORY_COLORS['급여'] }
 
             return (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={cumulData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-                  <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+                  <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} width={40} />
                   <Tooltip
                     formatter={(value: number, name: string) => [formatWonFull(value), name]}
                     contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
                   />
                   {lineKeys.length > 1 ? <Legend wrapperStyle={{ fontSize: 11 }} /> : null}
                   {lineKeys.map(key => (
-                    <Line key={key} type="monotone" dataKey={key} stroke={lineColors[key] ?? '#6B8CAE'}
+                    <Line key={key} type="monotone" dataKey={key} stroke={lineColors[key] ?? FALLBACK_SERIES_COLOR}
                       strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
                   ))}
                 </LineChart>
@@ -413,9 +414,9 @@ export default function DrilldownPanel({
         ) : selectedIncomeCard ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number) => [formatWonFull(value), selectedIncomeCard]}
                 contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
@@ -423,7 +424,7 @@ export default function DrilldownPanel({
               <Bar
                 dataKey={selectedIncomeCard}
                 stackId="a"
-                fill={INCOME_CHART_COLORS[selectedIncomeCard] ?? '#5b6a80'}
+                fill={INCOME_CHART_COLORS[selectedIncomeCard] ?? tone.ink3}
                 cursor="pointer"
                 onClick={(_: unknown, index: number) => onMonthSelect?.(index + 1)}
               >
@@ -436,9 +437,9 @@ export default function DrilldownPanel({
         ) : isCategory ? (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number, name: string) => [formatWonFull(value), name]}
                 contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
@@ -449,7 +450,7 @@ export default function DrilldownPanel({
                   key={key}
                   dataKey={key}
                   stackId="a"
-                  fill={chartColors[key] ?? '#6B8CAE'}
+                  fill={chartColors[key] ?? FALLBACK_SERIES_COLOR}
                   radius={idx === chartKeys.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                   cursor="pointer"
                   onClick={(_: unknown, index: number) => onMonthSelect?.(index + 1)}
@@ -464,9 +465,9 @@ export default function DrilldownPanel({
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={chartData} margin={{ top: 2, right: 8, left: 0, bottom: 2 }} barCategoryGap="20%" barGap={2}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={40} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+              <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+              <YAxis tickFormatter={v => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} width={40} />
               <Tooltip
                 formatter={(value: number, name: string) => [formatWonFull(value), name]}
                 contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
@@ -506,7 +507,7 @@ export default function DrilldownPanel({
                   dataKey={`지출_${cat}`}
                   stackId="expense"
                   name={cat}
-                  fill={catColors[cat] ?? '#6B8CAE'}
+                  fill={catColors[cat] ?? FALLBACK_SERIES_COLOR}
                   radius={idx === activeCategories.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                   cursor="pointer"
                   onClick={(_: unknown, index: number) => { setDrilldownType('expense'); onMonthSelect?.(index + 1) }}
@@ -530,7 +531,7 @@ export default function DrilldownPanel({
               className={`px-3 py-1 rounded-btn text-body font-medium transition-colors ${
                 drilldownType === t ? 'text-white' : 'bg-surface-low text-ink-3'
               }`}
-              style={drilldownType === t ? { background: '#131b2e' } : undefined}
+              style={drilldownType === t ? { background: tone.action } : undefined}
             >
               {t === 'income' ? '수입' : '지출'}
             </button>
@@ -571,7 +572,7 @@ export default function DrilldownPanel({
 
       {/* Detail summary (category selected) */}
       {isCategory ? <div className="mb-5">
-          <h3 className="text-subhead font-medium mb-2" style={{ color: '#0d1c2e' }}>{selectedCat} 항목별 집계</h3>
+          <h3 className="text-subhead font-medium mb-2" style={{ color: tone.ink }}>{selectedCat} 항목별 집계</h3>
           {catDetailsLoading ? (
             <div className="space-y-2">
               {[1,2,3].map(i => <div key={i} className="h-8 bg-surface-low rounded-btn animate-pulse" />)}
@@ -815,7 +816,7 @@ function ExpenseTableCard({
                   key={size}
                   onClick={() => { setPageSize(size); setPage(1) }}
                   className={`px-2 py-0.5 rounded text-body transition-colors ${pageSize !== size ? 'bg-surface-low text-ink-3 hover:bg-surface-high' : 'font-medium'}`}
-                  style={pageSize === size ? { background: '#131b2e', color: '#fff' } : undefined}
+                  style={pageSize === size ? { background: tone.action, color: tone.white } : undefined}
                 >{size}</button>
               ))}
             </div>

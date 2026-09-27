@@ -1,23 +1,23 @@
 'use client'
 
+import { OUTFLOW_COLOR } from '@/lib/palettes'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { Cashflow, CashflowType } from '@/lib/portfolio/types'
 import { CASHFLOW_INFLOW_TYPES, CASHFLOW_TYPE_LABELS } from '@/lib/portfolio/types'
-import { field, btn, badge, brand, skeleton } from '@/lib/styles'
+import { field, btn, badge, brand, skeleton, color as tone } from '@/lib/styles'
 import { formatWonRound, formatDate } from '@/lib/utils'
 import DateInput from '@/components/ui/DateInput'
 import Select from '@/components/ui/Select'
 
 const TYPE_ORDER: CashflowType[] = ['deposit', 'withdrawal', 'opening']
 const INFLOW_COLOR = brand.accent    // 입금 계열
-const OUTFLOW_COLOR = '#690043'      // 출금 계열
 
 export function isInflow(type: CashflowType) {
   return CASHFLOW_INFLOW_TYPES.includes(type)
 }
 
 function typeColor(type: CashflowType) {
-  return type === 'opening' ? '#8794a8' : isInflow(type) ? INFLOW_COLOR : OUTFLOW_COLOR
+  return type === 'opening' ? tone.ink4 : isInflow(type) ? INFLOW_COLOR : OUTFLOW_COLOR
 }
 
 function todayStr() {

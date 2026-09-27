@@ -1,12 +1,13 @@
 'use client'
 
+import { ASSET_TYPE_COLORS, ASSET_TYPE_FALLBACK, FINANCIAL_ASSET_COLOR } from '@/lib/palettes'
 import { useState, useEffect } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from 'recharts'
 import { useTheme } from '@/lib/ThemeContext'
-import { btn, badge, field, modal } from '@/lib/styles'
+import { btn, badge, field, modal, color as tone, brand } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
 import DateInput from '@/components/ui/DateInput'
 import { formatWonFull } from '@/lib/utils'
@@ -49,11 +50,10 @@ interface PortfolioSnapshot {
 
 // ── Constants ────────────────────────────────────────────
 const TYPE_COLORS: Record<string, string> = {
-  '부동산': '#1A237E',
-  '자동차': '#f59e0b',
+  ...ASSET_TYPE_COLORS,
 }
-const PENSION_COLOR = '#00695C'
-const FINANCIAL_COLOR = '#4527A0'
+const PENSION_COLOR = tone.income
+const FINANCIAL_COLOR = FINANCIAL_ASSET_COLOR
 
 // ── Utility ──────────────────────────────────────────────
 function fmtAmt(n: number | null | undefined): string {
@@ -98,7 +98,7 @@ function KpiCard({ label, value, sub, color, tooltip }: {
 
 // ── TypeBadge ────────────────────────────────────────────
 function TypeBadge({ type }: { type: string }) {
-  const color = TYPE_COLORS[type] ?? '#6b7280'
+  const color = TYPE_COLORS[type] ?? ASSET_TYPE_FALLBACK
   return (
     <span className={badge.sm}>
       <span className={badge.dot} style={{ backgroundColor: color }} />
@@ -135,7 +135,7 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
     ? item.current_value - item.acquisition_price : null
   const gainPct = gain != null && item.acquisition_price != null && item.acquisition_price > 0
     ? (gain / item.acquisition_price) * 100 : null
-  const gainColor = gain === null ? '#5b6a80' : gain >= 0 ? '#ef4444' : '#3b82f6'
+  const gainColor = gain === null ? tone.ink3 : gain >= 0 ? tone.gain : tone.loss
 
   const chartData = (valuations ?? [])
     .slice().sort((a, b) => a.val_date.localeCompare(b.val_date))
@@ -194,12 +194,12 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
           ) : (
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
                 <YAxis hide domain={['auto', 'auto']} />
                 <Tooltip
                   formatter={(value: number) => [formatWonFull(value), '시세']}
-                  labelStyle={{ fontSize: 11, color: '#5b6a80' }}
+                  labelStyle={{ fontSize: 11, color: tone.ink3 }}
                   contentStyle={{ fontSize: 11, borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)' }}
                 />
                 <Line type="monotone" dataKey="amount" stroke={palette.colors[0]} strokeWidth={2}
@@ -467,12 +467,12 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
               {chartData.length >= 2 ? <div className="mb-4">
                   <ResponsiveContainer width="100%" height={140}>
                     <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+                      <XAxis dataKey="date" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
                       <YAxis hide domain={['auto', 'auto']} />
                       <Tooltip
                         formatter={(value: number) => [formatWonFull(value), '잔액']}
-                        labelStyle={{ fontSize: 11, color: '#5b6a80' }}
+                        labelStyle={{ fontSize: 11, color: tone.ink3 }}
                         contentStyle={{ fontSize: 11, borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)' }}
                       />
                       <Line type="monotone" dataKey="amount" stroke={PENSION_COLOR} strokeWidth={2}
@@ -537,7 +537,7 @@ function FinancialSection() {
     ? snapshot.total_market_value - snapshot.total_invested : null
   const gainPct = gain != null && snapshot.total_invested && snapshot.total_invested > 0
     ? (gain / snapshot.total_invested) * 100 : null
-  const gainColor = gain === null ? '#5b6a80' : gain >= 0 ? '#ef4444' : '#3b82f6'
+  const gainColor = gain === null ? tone.ink3 : gain >= 0 ? tone.gain : tone.loss
 
   const gainSign = gain != null && gain >= 0 ? '+' : ''
 
@@ -613,13 +613,13 @@ export default function AssetsClient() {
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
   const donutData = [
-    { name: '유형자산', value: tangibleTotal, color: '#0d1c2e' },
+    { name: '유형자산', value: tangibleTotal, color: tone.ink },
     { name: '연금자산', value: pensionTotal, color: PENSION_COLOR },
     { name: '금융자산', value: financialTotal, color: FINANCIAL_COLOR },
   ].filter(d => d.value > 0)
 
   const TABS = [
-    { key: 'tangible' as const, label: '유형자산', color: '#0d1c2e' },
+    { key: 'tangible' as const, label: '유형자산', color: tone.ink },
     { key: 'pension' as const, label: '연금자산', color: PENSION_COLOR },
     { key: 'financial' as const, label: '금융자산', color: FINANCIAL_COLOR },
   ]
@@ -658,9 +658,9 @@ export default function AssetsClient() {
       <div className="space-y-2 min-w-0 lg:pr-10">
       {/* 전체 KPI */}
       <div className="grid grid-cols-2 gap-2">
-        <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color="#1A237E"
+        <KpiCard label="총 자산" value={fmtAmt(grandTotal)} sub="유형+연금+금융 합산" color={brand.navy}
           tooltip="유형자산, 연금자산, 금융자산 평가액 합계" />
-        <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color="#1A237E"
+        <KpiCard label="유형자산" value={fmtAmt(tangibleTotal)} sub="부동산·자동차" color={brand.navy}
           tooltip="부동산, 자동차의 현재 평가액 합계" />
         <KpiCard label="연금자산" value={fmtAmt(pensionTotal)} sub="연금 최신 잔액" color={PENSION_COLOR}
           tooltip="등록된 연금 항목의 최신 스냅샷 금액 합계" />

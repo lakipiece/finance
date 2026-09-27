@@ -177,6 +177,17 @@ export const brand = {
   primary: '#131b2e',   // action — 주 버튼 · 선택 상태 · 포커스 링
   navy: '#1A237E',      // 카테고리/시리즈 1번 색
   accent: '#00695C',    // income — 수입 · 입금
+  // 로고 마크 (사이드바·로그인)
+  logoBg: '#1e293b',
+  logoArrow: '#C2185B',
+  // 로그인 화면 배경·워드마크
+  loginGradient: 'linear-gradient(135deg, #0D1B5E 0%, #1A237E 40%, #00695C 100%)',
+  loginWordmark: '#80CBC4',
+  // 포트폴리오 KPI 대표 카드
+  kpiGradient: 'linear-gradient(135deg, #1A237E 0%, #283593 60%, #00695C 100%)',
+  // 앱 아이콘 (app/icon.tsx)
+  iconBg: '#1e1e1e',
+  iconMark: '#FF1F8E',
 } as const
 
 // 의미색 리터럴 — SVG·Recharts 등 클래스를 못 쓰는 곳에서 참조
@@ -195,6 +206,7 @@ export const color = {
   action: '#131b2e',
   gain: '#e11d48',
   loss: '#2563eb',
+  white: '#ffffff',
 } as const
 
 // ─── 텍스트 계층 ────────────────────────────────────────────────────────────

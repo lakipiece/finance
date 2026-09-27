@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { btn } from '@/lib/styles'
+import { btn, color as tone } from '@/lib/styles'
 import DateInput from '@/components/ui/DateInput'
 import PageHeader from '@/components/ui/PageHeader'
 import { snapshotMetrics } from '@/lib/portfolio/metrics'
@@ -280,7 +280,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                 <div className="mt-2 overflow-y-auto flex-1" style={{ maxHeight: '286px' }}>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {sectors.map(([k, v]) => {
-                      const color = sectorColors[k] ?? '#a8b3c4'
+                      const color = sectorColors[k] ?? tone.ink5
                       return (
                         <div key={k} className="flex items-center gap-1 min-w-0">
                           <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />

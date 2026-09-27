@@ -1,4 +1,5 @@
 'use client'
+import { color as tone } from '@/lib/styles'
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
@@ -51,16 +52,16 @@ export default function PriceHistoryViewer({ securities, selectedTicker, history
         <div className="bg-surface-card rounded-card p-[13px]">
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={chartData} style={{ fontFamily: 'ui-sans-serif, system-ui, sans-serif' }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" stroke={tone.surfaceContainer} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 10, fill: '#a8b3c4' }}
+                tick={{ fontSize: 10, fill: tone.ink5 }}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
               />
               <YAxis
-                tick={{ fontSize: 10, fill: '#a8b3c4' }}
+                tick={{ fontSize: 10, fill: tone.ink5 }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={v => isUSD ? `$${v}` : `${(v / 10000).toFixed(0)}만`}
@@ -68,12 +69,12 @@ export default function PriceHistoryViewer({ securities, selectedTicker, history
               />
               <Tooltip
                 contentStyle={{ fontSize: 11, fontFamily: 'ui-sans-serif, system-ui, sans-serif', border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', borderRadius: 11, padding: '6px 10px' }}
-                itemStyle={{ color: '#334155' }}
-                labelStyle={{ color: '#a8b3c4', marginBottom: 2 }}
+                itemStyle={{ color: tone.ink2 }}
+                labelStyle={{ color: tone.ink5, marginBottom: 2 }}
                 formatter={(v: number) => [isUSD ? `$${v.toFixed(2)}` : `${v.toLocaleString()}원`, '가격']}
                 labelFormatter={l => `${l}`}
               />
-              <Line type="monotone" dataKey="price" stroke="#334155" dot={false} strokeWidth={1.5} />
+              <Line type="monotone" dataKey="price" stroke={tone.ink2} dot={false} strokeWidth={1.5} />
             </LineChart>
           </ResponsiveContainer>
         </div>

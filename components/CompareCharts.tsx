@@ -1,5 +1,6 @@
 'use client'
 
+import { color as tone } from '@/lib/styles'
 import { useState, useEffect, useMemo } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -192,17 +193,17 @@ export default function CompareCharts({
       <div className="bg-surface-card rounded-card shadow-card p-[13px]">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+            <XAxis dataKey="month" tick={{ fontSize: 12, fill: tone.ink5 }} axisLine={false} tickLine={false} />
             <YAxis
               tickFormatter={(v) => `${Math.round(v / 10000)}만`}
-              tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48}
+              tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} width={48}
             />
             <Tooltip
               formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]}
               contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }}
             />
-            <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
+            <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
             {readyYears.map((year) => (
               <Line key={year} type="monotone" dataKey={year} stroke={colorMap[year]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
             ))}
@@ -247,19 +248,19 @@ export default function CompareCharts({
               <BarChart data={subDetailData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}
                 onClick={(e) => { if (e?.activeLabel) onDetailSelect(selectedDetail === e.activeLabel ? null : e.activeLabel) }}
                 style={{ cursor: 'pointer' }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={tone.surfaceContainer} />
+                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="detail"
                   tick={({ x, y, payload }: any) => (
                     <text x={x} y={y} dy={4} textAnchor="end" fontSize={11}
-                      fill={selectedDetail === payload.value ? '#1e293b' : '#5b6a80'}
+                      fill={selectedDetail === payload.value ? tone.ink : tone.ink3}
                       fontWeight={selectedDetail === payload.value ? 700 : 400}>
                       {payload.value.length > 8 ? payload.value.slice(0, 8) + '…' : payload.value}
                     </text>
                   )}
                   axisLine={false} tickLine={false} width={72} />
                 <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
+                <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
                   <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
@@ -270,11 +271,11 @@ export default function CompareCharts({
           <>
             <ResponsiveContainer width="100%" height={Math.max(200, memberData.length * 56)}>
               <BarChart data={memberData} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="member" tick={{ fontSize: 12, fill: '#5b6a80' }} axisLine={false} tickLine={false} width={32} />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={tone.surfaceContainer} />
+                <XAxis type="number" tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="member" tick={{ fontSize: 12, fill: tone.ink3 }} axisLine={false} tickLine={false} width={32} />
                 <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
+                <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
                   <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
@@ -285,11 +286,11 @@ export default function CompareCharts({
           <>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={incomeCategoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+                <XAxis dataKey="category" tick={{ fontSize: 12, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} width={48} />
                 <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
+                <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
                   <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
@@ -300,11 +301,11 @@ export default function CompareCharts({
           <>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={categoryData} margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="category" tick={{ fontSize: 12, fill: '#a8b3c4' }} axisLine={false} tickLine={false} />
-                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: '#a8b3c4' }} axisLine={false} tickLine={false} width={48} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={tone.surfaceContainer} />
+                <XAxis dataKey="category" tick={{ fontSize: 12, fill: tone.ink5 }} axisLine={false} tickLine={false} />
+                <YAxis tickFormatter={(v) => `${Math.round(v / 10000)}만`} tick={{ fontSize: 11, fill: tone.ink5 }} axisLine={false} tickLine={false} width={48} />
                 <Tooltip formatter={(value: number, name: string) => [formatWonFull(value), `${name}년`]} contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 13 }} />
-                <Legend formatter={(value) => <span style={{ color: '#5b6a80', fontSize: 12 }}>{value}년</span>} />
+                <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
                 {readyYears.map((year) => (
                   <Bar key={year} dataKey={year} fill={colorMap[year]} />
                 ))}
