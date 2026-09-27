@@ -87,6 +87,26 @@ async function upsertPriceRows(rows: PriceRow[], withMeta: boolean) {
   }
 }
 
+/** 'fetch failed'는 원인을 cause에 숨긴다 — ECONNRESET 같은 코드를 함께 남긴다 */
+function errorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return String(err)
+  const cause = (err as { cause?: { code?: string; message?: string } }).cause
+  const detail = cause?.code ?? cause?.message
+  return detail ? `${err.message} (${detail})` : err.message
+}
+
+/** 일시적 네트워크 실패 대비 — 실패 시 간격을 늘려가며 재시도 */
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 800): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fn()
+    } catch (err) {
+      if (attempt >= retries) throw err
+      await new Promise(r => setTimeout(r, delayMs * (attempt + 1)))
+    }
+  }
+}
+
 async function fetchYahooPrices(yahooTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
   const saved: PriceRow[] = []
   const errors: Record<string, string> = {}
@@ -105,7 +125,7 @@ async function fetchYahooPrices(yahooTickers: string[], today: string): Promise<
         errors[yahooTicker] = 'price=0'
       }
     } catch (err: unknown) {
-      errors[yahooTicker] = err instanceof Error ? err.message : String(err)
+      errors[yahooTicker] = errorMessage(err)
     }
   }
 
@@ -138,7 +158,7 @@ async function fetchCoinGeckoPrices(coinTickers: string[], today: string): Promi
       }
     }
   } catch (err: unknown) {
-    failed.push(`coingecko: ${err instanceof Error ? err.message : String(err)}`)
+    failed.push(`coingecko: ${errorMessage(err)}`)
   }
 
   return { saved, failed }
@@ -302,11 +322,11 @@ export async function fetchHistoricalPrices(
       batch.map(async (ticker) => {
         try {
           // historical()은 Yahoo가 제거한 API(라이브러리가 chart()로 임시 매핑) → chart() 직접 호출
-          const { quotes } = await yahooFinance.chart(ticker, {
+          const { quotes } = await withRetry<{ quotes: { date: Date | string; close: number | null }[] }>(() => yahooFinance.chart(ticker, {
             period1,
             period2,
             interval: '1d',
-          })
+          }))
           const currency = ticker === 'USDKRW=X' ? 'KRW'
             : ticker.endsWith('.KS') ? 'KRW'
             : 'USD'
@@ -324,7 +344,7 @@ export async function fetchHistoricalPrices(
             }
           }
         } catch (err: unknown) {
-          failed.push(`${ticker}: ${err instanceof Error ? err.message : String(err)}`)
+          failed.push(`${ticker}: ${errorMessage(err)}`)
         }
       })
     )
@@ -348,7 +368,7 @@ export async function fetchHistoricalPrices(
         allRows.push({ ticker, date: dateStr, price, currency: 'KRW', change_pct: null, exchange: null })
       }
     } catch (err: unknown) {
-      failed.push(`${ticker}(coin): ${err instanceof Error ? err.message : String(err)}`)
+      failed.push(`${ticker}(coin): ${errorMessage(err)}`)
     }
   }
 
