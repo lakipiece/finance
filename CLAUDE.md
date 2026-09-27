@@ -1,10 +1,10 @@
 # Finance App — CLAUDE.md
 
-개인 재무 관리 앱 (가계부 + 포트폴리오). Next.js 14 App Router + PostgreSQL 16 셀프호스팅.
+개인 재무 관리 앱 (가계부 + 포트폴리오). Next.js 15 App Router (React 19) + PostgreSQL 16 셀프호스팅.
 
 ## 기술 스택
 
-- **Framework**: Next.js 14 App Router (`force-dynamic`)
+- **Framework**: Next.js 15 App Router (`force-dynamic`) — 동적 `params`·`searchParams`는 Promise (`const { id } = await params`)
 - **DB**: PostgreSQL 16 (Docker), 클라이언트 `postgres.js`
 - **DB 접근**: `getSql()` from `@/lib/db` — template literal SQL
 - **인증**: NextAuth v5 (`auth()` from `@/lib/auth`) — write API에 session 체크 필수
