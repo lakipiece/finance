@@ -81,7 +81,10 @@ npm run build     # 타입 체크 + 린트 포함
 - 단가: `resolvePrice(priceMap, sec, ctx)` — 고정단가 > 시세, ctx가 있으면 미수이자
 - 원가: `costKrw({ avgPrice, quantity, isKrw, fxRate, avgFxRate })` — 매입환율 있으면 고정
 - KRW 판정: `isKrwSecurity`. 가격 조회 키: `priceLookupKeys`
-- 스냅샷 날짜 이전 가격만 쓴다 (미래 가격 fallback 금지)
+- 스냅샷 날짜 이전 가격만 쓴다 (미래 가격 fallback 금지). 과거 가격은 실제 종가(`close`), 조정 종가 금지
+- 스냅샷 분해(`*_breakdown`)는 금액(KRW) 저장, 비중은 `breakdownToPct`로 읽을 때 계산
+- jsonb 컬럼에는 `sql.json(obj)` — `JSON.stringify` 결과를 넘기면 문자열 스칼라로 이중 인코딩된다
+- 종목·계좌는 삭제 대신 보관(`archived_at`) — 선택지·관리 목록에서만 숨기고 이력·평가는 유지
 
 ### React
 - ternary (`? ... : null`) 사용, `&&` 조건부 렌더링 금지

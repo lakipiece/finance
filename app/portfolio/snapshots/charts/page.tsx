@@ -3,7 +3,7 @@ import Link from 'next/link'
 import SnapshotCharts from '@/components/portfolio/SnapshotCharts'
 import PageHeader from '@/components/ui/PageHeader'
 import type { SnapshotViewMode } from '@/components/portfolio/SnapshotList'
-import { parseAccountBreakdown } from '@/lib/portfolio/metrics'
+import { breakdownToPct, parseAccountBreakdown } from '@/lib/portfolio/metrics'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,12 +24,6 @@ type CashflowRow = {
   inflow: number
   outflow: number
   opening: number
-}
-
-function parseBreakdown(raw: unknown): Record<string, number> {
-  if (raw == null) return {}
-  if (typeof raw === 'string') return JSON.parse(raw)
-  return raw as Record<string, number>
 }
 
 export default async function SnapshotChartsPage({ searchParams }: { searchParams: { view?: string } }) {
@@ -58,9 +52,10 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
         : String(s.date).slice(0, 10),
       total_market_value: Number(s.total_market_value),
       total_invested: Number(s.total_invested ?? 0),
-      sector_breakdown: parseBreakdown(s.sector_breakdown),
-      asset_class_breakdown: parseBreakdown(s.asset_class_breakdown),
-      tag_breakdown: parseBreakdown(s.tag_breakdown),
+      // DB는 금액(KRW), 화면은 비중(%)
+      sector_breakdown: breakdownToPct(s.sector_breakdown, Number(s.total_market_value)),
+      asset_class_breakdown: breakdownToPct(s.asset_class_breakdown, Number(s.total_market_value)),
+      tag_breakdown: breakdownToPct(s.tag_breakdown, Number(s.total_market_value)),
       account_breakdown: parseAccountBreakdown(s.account_breakdown),
     }))
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { Security } from '@/lib/portfolio/types'
+import { INVESTMENT_STYLES, type Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import Select from '@/components/ui/Select'
@@ -127,6 +127,14 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
             <div><label className={field.labelSm}>운용 스타일</label>
               <Select value={form.style_id} onChange={v => setForm(p => ({ ...p, style_id: v }))}
                 options={[{ value: '', label: '선택 안함' }, ...(options.style ?? []).filter(o => !o.is_hidden).map(o => ({ value: o.id, label: o.label }))]} /></div>
+            <div><label className={field.labelSm}>투자 성향</label>
+              <Select value={form.style} onChange={v => setForm(p => ({ ...p, style: v }))}
+                options={[
+                  { value: '', label: '선택 안함' },
+                  ...INVESTMENT_STYLES.map(v => ({ value: v, label: v })),
+                  // 목록 밖의 기존 값도 잃지 않게
+                  ...(form.style && !(INVESTMENT_STYLES as readonly string[]).includes(form.style) ? [{ value: form.style, label: form.style }] : []),
+                ]} /></div>
             <div><label className={field.labelSm}>섹터 (GICS)</label>
               <Select value={form.sector_id} onChange={v => setForm(p => ({ ...p, sector_id: v }))}
                 options={[{ value: '', label: '선택 안함' }, ...(options.sector ?? []).filter(o => !o.is_hidden).map(o => ({ value: o.id, label: o.label }))]} /></div>

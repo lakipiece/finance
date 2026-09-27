@@ -402,11 +402,11 @@ POST /api/portfolio/prices/refresh   (cron: 매일 00시·12시, Bearer CRON_SEC
 | 2 | 가격 없으면 avg_price로 조용히 대체 | ✅ 원가로 임시 평가하되 `snapshots.unpriced_tickers`에 기록 → 목록·편집기에 "미평가 N종목" |
 | 3 | 미래 가격 fallback | ✅ 제거 (refresh-values · prices-at · export). 원화 현금은 고정단가 1원으로 대체 |
 | 4·5·6·8 | 환율 상수·KRW 판정·평가 3벌·UTC 날짜 | ✅ 08-14 `valuation.ts` 통합 + 09-27 내보내기(4번째 복사본)까지 통합 |
-| 7 | breakdown을 %로만 저장 | 🔶 `account_breakdown`은 절대금액. 섹터·자산군·태그는 여전히 %(0.01% 정밀도) |
+| 7 | breakdown을 %로만 저장 | ✅ 섹터·자산군·태그도 금액(KRW) 저장, 비중은 읽을 때 `breakdownToPct`. 이중 인코딩(JSON 문자열 스칼라)으로 저장되던 것도 jsonb 객체로 정리 |
 | 9 | snapshot_id NULL holdings | ✅ 0행 (08-14 정리) |
 | 10 | 미사용 테이블 | ✅ DROP 완료 |
 | 11 | target_allocations 0행 | ✅ 현재 5행 사용 중 |
-| 12 | `securities.style` ↔ `style_id` 중복 | ❌ **중복 아님** — `style`(투자 성향: 성장·인컴…)과 `style_id`(ETF 유형: 단일종목·커버드콜…)는 다른 차원. 63행 모두 값이 다름. 단, `style`은 UI에서 편집·표시되지 않음 |
+| 12 | `securities.style` ↔ `style_id` 중복 | ❌ **중복 아님** — `style`(투자 성향: 성장·인컴…)과 `style_id`(ETF 유형: 단일종목·커버드콜…)는 다른 차원. ✅ 폼에 '투자 성향' 선택 추가(입력 칸만 빠져 있었음), 종목 카드 칩·필터로 표시 |
 | 13 | accounts.currency_id 항상 KRW | ⏸ 유지 (27계좌 모두 KRW, 실사용 요구 없음) |
 | 14 | incomes CHECK 4종 vs 실사용 2종 | ✅ `2026-09-27-incomes-check.sql` |
 | 15 | schema.sql 불일치 | ✅ `scripts/dump-schema.sh`로 재생성 (마이그레이션 적용 후 실행) |
@@ -417,14 +417,17 @@ POST /api/portfolio/prices/refresh   (cron: 매일 00시·12시, Bearer CRON_SEC
 | 20 | 인컴 페이지가 포트폴리오 요약 전체 계산 | ⏸ 유지 — 투자금·평가금이 곧 평가 로직이라 별도 쿼리로 떼면 규칙이 다시 두 벌이 된다 |
 | 21 | 존재하지 않는 캐시 키 무효화 | ✅ 08-14 |
 | 22 | 비밀번호 평문 | ✅ 라이브 bcrypt, 평문 분기 제거 |
-| 23 | 읽기 API 라우트 레벨 인증 | 🔶 미들웨어 의존 유지. 데이터 내보내기(export)만 라우트 인증 추가 |
+| 23 | 읽기 API 라우트 레벨 인증 | ✅ GET 28개에 `requireSession()` (lib/auth-guard.ts) |
 | 24 | 개별 가격 새로고침 티커 검증 | ✅ 08-14 |
 | 25 | `new Function` 수식 | ✅ `lib/formula.ts` 파서 + 테스트 |
 | 26 | `sql.unsafe` | ✅ 프래그먼트로 교체 |
 | 8.5 | 죽은 코드 | ✅ 08-14 + 미사용 `sql-helpers.ts`, 리다이렉트 전용 페이지 7개 → `next.config` |
 | 8.6 | `&&` 렌더링 | ✅ ESLint `react/jsx-no-leaked-render`로 강제 (168곳 수정) |
-| 8.6 | 큰 파일 | 🔶 `app/input/page.tsx` 분리 완료. `SnapshotCharts.tsx`(1,044줄)는 차트 세트가 한 덩어리라 유지 |
+| 8.6 | 큰 파일 | ✅ `app/input/page.tsx` → `components/input/*`, `SnapshotCharts.tsx` → `snapshot-charts/{helpers,cards,tooltips}` |
 | 신규 | 컨테이너 TZ(UTC) | ⏸ 유지 — 날짜는 `kstToday`/`kstTradingDate`로 명시 계산 |
+| 신규 | 의존성 취약점 | ✅ `npm audit fix`(@auth/core critical 등), xlsx → SheetJS 공식 0.20.3. ⏸ Next.js 취약점은 15/16 메이저 업그레이드에서만 수정 — 별도 과제. vitest·esbuild·glob은 개발 전용 |
+| 신규 | Node 20 · adjClose | ✅ Node 22, `chart()` 전환, 과거 가격을 실제 종가로 (조정 종가가 과거 스냅샷을 과소평가) |
+| 신규 | 종목·계좌 정리 | ✅ `archived_at` 보관 기능 (RESTRICT 후 삭제 불가 대응) |
 
 ### 8.1 P0 — 수치 정확성 (지금 화면의 숫자가 틀릴 수 있는 것들)
 

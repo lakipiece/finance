@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  cumulativeByAccount, hybridTotals, modifiedDietz, periodPerformance, snapshotMetrics,
+  breakdownToPct, cumulativeByAccount, hybridTotals, modifiedDietz, periodPerformance, snapshotMetrics,
 } from '@/lib/portfolio/metrics'
 
 describe('원장 누적', () => {
@@ -62,5 +62,18 @@ describe('기간 성과', () => {
 
   it('스냅샷이 2개 미만이면 null', () => {
     expect(periodPerformance([], [])).toBeNull()
+  })
+})
+
+describe('분해 금액 → 비중', () => {
+  it('총평가액 대비 0.01% 정밀도', () => {
+    expect(breakdownToPct({ 주식: 637_600, 현금: 308_100, 기타: 54_300 }, 1_000_000))
+      .toEqual({ 주식: 63.76, 현금: 30.81, 기타: 5.43 })
+  })
+
+  it('옛 이중 인코딩 문자열도 읽는다 · 총액 0이면 0 · null이면 빈 객체', () => {
+    expect(breakdownToPct('{"주식":500}', 1000)).toEqual({ 주식: 50 })
+    expect(breakdownToPct({ 주식: 500 }, 0)).toEqual({ 주식: 0 })
+    expect(breakdownToPct(null, 1000)).toEqual({})
   })
 })

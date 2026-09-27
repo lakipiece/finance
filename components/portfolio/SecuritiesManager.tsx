@@ -411,7 +411,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [showAddModal, setShowAddModal] = useState(false)
   const [historyModalSecurity, setHistoryModalSecurity] = useState<Security | null>(null)
   const [secSearch, setSecSearch] = useState('')
-  const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string; style: string }>({ country: '', currency: '', asset_class: '', sector: '', style: '' })
+  const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string; style: string; invest: string }>({ country: '', currency: '', asset_class: '', sector: '', style: '', invest: '' })
   const [secSort, setSecSort] = useState<'ticker' | 'name' | 'country_name'>('country_name')
   const [showArchivedSecurities, setShowArchivedSecurities] = useState(false)
 
@@ -535,6 +535,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
     if (secFilter.asset_class) list = list.filter(s => s.asset_class === secFilter.asset_class)
     if (secFilter.sector) list = list.filter(s => s.sector === secFilter.sector)
     if (secFilter.style) list = list.filter(s => s.etf_style === secFilter.style)
+    if (secFilter.invest) list = list.filter(s => s.style === secFilter.invest)
     list.sort((a, b) => {
       if (secSort === 'ticker') return a.ticker.localeCompare(b.ticker)
       if (secSort === 'name') return a.name.localeCompare(b.name)
@@ -597,7 +598,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             { value: 'ticker', label: '티커순' },
             { value: 'name', label: '이름순' },
           ]} />
-        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) ? <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
+        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style || secFilter.invest) ? <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '', invest: '' }) }}
             className="text-micro tracking-normal text-ink-4 hover:text-ink-2 rounded-btn px-2 py-1.5 hover:bg-surface-low transition-colors whitespace-nowrap">
             필터 초기화
           </button> : null}
@@ -696,6 +697,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                 {s.etf_style ? <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
                     className="text-micro tracking-normal text-ink-3 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.etf_style}
+                  </button> : null}
+                {s.style ? <button onClick={() => setSecFilter(p => ({ ...p, invest: p.invest === s.style ? '' : (s.style ?? '') }))}
+                    title="투자 성향"
+                    className="text-micro tracking-normal text-ink-3 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
+                    {s.style}
                   </button> : null}
                 {s.sector ? <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
                     className="text-micro tracking-normal text-ink-4 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">

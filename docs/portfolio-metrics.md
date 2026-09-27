@@ -155,7 +155,9 @@ KPI 카드 구성 (대시보드, 원장 있을 때):
 | `docs/sql/2026-09-27-krw-cash-fixed-price.sql` | 원화 현금 고정단가 + 현금성 ETF 1원 가격 정리 |
 | `docs/sql/2026-09-27-valuation-accuracy.sql` | 평균 매입환율 · 미평가 종목 기록 |
 | `docs/sql/2026-09-27-incomes-check.sql` | 수입 카테고리 CHECK 2종 |
-| `docs/sql/2026-09-27-expenses-2018-dedup.sql` | ⚠ 수동 — 2018 시트의 2019년분 이중 기록 415건 삭제 |
+| `docs/sql/2026-09-27-expenses-2018-dedup.sql` | 2018 시트의 2019년분 이중 기록 415건 삭제 (CSV 백업 후 적용) |
+| `docs/sql/2026-09-27-archive.sql` | 종목·계좌 보관 |
+| `docs/sql/2026-09-27-breakdown-amounts.sql` | 분해값 금액(KRW) 저장 + 이중 인코딩 해제 |
 
 ### 주요 커밋
 | 커밋 | 내용 |

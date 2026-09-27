@@ -3,7 +3,7 @@ import SnapshotList from '@/components/portfolio/SnapshotList'
 
 export const dynamic = 'force-dynamic'
 
-import { parseAccountBreakdown } from '@/lib/portfolio/metrics'
+import { breakdownToPct, parseAccountBreakdown } from '@/lib/portfolio/metrics'
 
 type SnapshotRow = {
   id: string
@@ -67,8 +67,9 @@ export default async function SnapshotsPage() {
       : String(s.date).slice(0, 10),
     total_market_value: s.total_market_value != null ? Number(s.total_market_value) : null,
     total_invested: s.total_invested != null ? Number(s.total_invested) : null,
+    // DB는 금액(KRW), 화면은 비중(%)
     sector_breakdown: s.sector_breakdown != null
-      ? (typeof s.sector_breakdown === 'string' ? JSON.parse(s.sector_breakdown) : s.sector_breakdown)
+      ? breakdownToPct(s.sector_breakdown, Number(s.total_market_value ?? 0))
       : null,
     account_breakdown: parseAccountBreakdown(s.account_breakdown),
     unpriced_tickers: s.unpriced_tickers ?? [],

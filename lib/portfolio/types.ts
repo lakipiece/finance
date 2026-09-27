@@ -163,3 +163,9 @@ export interface SnapshotWithStats {
   total_market_value: number
   prev_market_value: number | null
 }
+
+/**
+ * 투자 성향 (securities.style) — ETF 유형(style_id: 단일종목·커버드콜…)과는 다른 차원.
+ * 값은 자유 텍스트로 저장돼 있으며, 폼에서는 이 목록에서 고른다.
+ */
+export const INVESTMENT_STYLES = ['성장', '가치', '퀄리티', '인컴', '안전', '코어지수', '테마'] as const

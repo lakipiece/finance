@@ -305,3 +305,18 @@ export function periodPerformance(
     usesCostFallback,
   }
 }
+
+/**
+ * 스냅샷의 섹터·자산군·태그 분해는 금액(KRW)으로 저장한다(2026-09-27~).
+ * 화면은 비중(%)을 쓰므로 읽을 때 0.01% 정밀도로 바꾼다.
+ * 태그는 한 종목에 여러 개가 붙을 수 있어 합이 100%를 넘을 수 있다.
+ */
+export function breakdownToPct(raw: unknown, total: number): Record<string, number> {
+  if (raw == null) return {}
+  const amounts = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Record<string, number>
+  const out: Record<string, number> = {}
+  for (const [k, v] of Object.entries(amounts)) {
+    out[k] = total > 0 ? Math.round((Number(v) / total) * 10000) / 100 : 0
+  }
+  return out
+}

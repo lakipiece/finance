@@ -146,15 +146,9 @@ export async function POST() {
       }
     }
 
-    // 비중은 0.01%까지 저장한다. 0.1%로 끊으면 차트·툴팁이 소수 2자리를
-    // 보여줄 때 항상 0으로 끝나는 가짜 정밀도가 된다.
-    const toPct = (agg: Record<string, number>) => {
-      const out: Record<string, number> = {}
-      for (const [k, v] of Object.entries(agg)) {
-        out[k] = totalMarketValue > 0 ? Math.round((v / totalMarketValue) * 10000) / 100 : 0
-      }
-      return out
-    }
+    // 분해는 금액(KRW, 원 단위)으로 저장하고 비중은 화면에서 계산한다 (breakdownToPct).
+    const toAmounts = (agg: Record<string, number>) =>
+      Object.fromEntries(Object.entries(agg).map(([k, v]) => [k, Math.round(v)]))
 
     const accountBreakdown: Record<string, { value: number; cost: number }> = {}
     for (const [id, v] of Object.entries(accountAgg)) {
@@ -165,10 +159,11 @@ export async function POST() {
       UPDATE snapshots
       SET total_market_value = ${totalMarketValue},
           total_invested = ${totalInvested},
-          sector_breakdown = ${JSON.stringify(toPct(sectorAgg))},
-          asset_class_breakdown = ${JSON.stringify(toPct(assetClassAgg))},
-          tag_breakdown = ${JSON.stringify(toPct(tagAgg))},
-          account_breakdown = ${JSON.stringify(accountBreakdown)},
+          -- sql.json: 객체 그대로 jsonb로 (JSON.stringify를 넘기면 문자열 스칼라로 이중 인코딩된다)
+          sector_breakdown = ${sql.json(toAmounts(sectorAgg))},
+          asset_class_breakdown = ${sql.json(toAmounts(assetClassAgg))},
+          tag_breakdown = ${sql.json(toAmounts(tagAgg))},
+          account_breakdown = ${sql.json(accountBreakdown)},
           unpriced_tickers = ${[...unpriced].sort()},
           value_updated_at = NOW()
       WHERE id = ${snap.id}
