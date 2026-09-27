@@ -15,6 +15,12 @@ export async function POST(req: NextRequest) {
   }
 
   // tickers 미지정 시 전체 종목 수집 (기존 동작)
-  const result = await fetchHistoricalPrices(startDate, endDate, Array.isArray(tickers) ? tickers : undefined)
-  return NextResponse.json(result)
+  try {
+    const result = await fetchHistoricalPrices(startDate, endDate, Array.isArray(tickers) ? tickers : undefined)
+    return NextResponse.json(result)
+  } catch (e) {
+    // 처리 안 된 예외는 빈 본문 500이 되어 클라이언트에서 JSON 파싱 오류로만 보였다
+    console.error('[POST /portfolio/prices/history]', e)
+    return NextResponse.json({ error: `저장 실패: ${e instanceof Error ? e.message : String(e)}` }, { status: 500 })
+  }
 }

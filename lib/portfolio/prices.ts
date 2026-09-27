@@ -54,6 +54,39 @@ export async function getPricesFromHistory(
 
 type PriceRow = { ticker: string; date: string; price: number; currency: string; change_pct: number | null; exchange: string | null }
 
+// 한 INSERT의 바인딩 파라미터는 65,534개가 한도 — 행당 6개라 약 1만 행이면 넘는다.
+// 전 종목 × 수개월 과거 수집이 한 번에 1만 행을 넘기므로 나눠 넣는다.
+const UPSERT_CHUNK = 2000
+
+/**
+ * price_history 업서트. withMeta=true면 등락률·거래소·수집시각도 갱신(일일 수집),
+ * false면 가격·통화만 갱신(과거 수집 — 일봉에는 등락률·거래소가 없다).
+ */
+async function upsertPriceRows(rows: PriceRow[], withMeta: boolean) {
+  const sql = getSql()
+  for (let i = 0; i < rows.length; i += UPSERT_CHUNK) {
+    const chunk = rows.slice(i, i + UPSERT_CHUNK)
+    if (withMeta) {
+      await sql`
+        INSERT INTO price_history ${sql(chunk, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
+        ON CONFLICT (ticker, date) DO UPDATE
+          SET price = EXCLUDED.price,
+              currency = EXCLUDED.currency,
+              change_pct = EXCLUDED.change_pct,
+              exchange = EXCLUDED.exchange,
+              created_at = NOW()
+      `
+    } else {
+      await sql`
+        INSERT INTO price_history ${sql(chunk, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
+        ON CONFLICT (ticker, date) DO UPDATE
+          SET price = EXCLUDED.price,
+              currency = EXCLUDED.currency
+      `
+    }
+  }
+}
+
 async function fetchYahooPrices(yahooTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
   const saved: PriceRow[] = []
   const failed: string[] = []
@@ -171,17 +204,7 @@ export async function refreshAllPrices(): Promise<{
   const results: Record<string, number> = {}
   for (const row of allSaved) results[row.ticker] = row.price
 
-  if (allSaved.length > 0) {
-    await sql`
-      INSERT INTO price_history ${sql(allSaved, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
-      ON CONFLICT (ticker, date) DO UPDATE
-        SET price = EXCLUDED.price,
-            currency = EXCLUDED.currency,
-            change_pct = EXCLUDED.change_pct,
-            exchange = EXCLUDED.exchange,
-            created_at = NOW()
-    `
-  }
+  await upsertPriceRows(allSaved, true)
 
   // 과거 30일 데이터가 없는 종목만 backfill — 신규 종목이 추가되면 자동으로 과거가 채워짐
   const sinceDate = new Date(tradingDate)
@@ -326,14 +349,7 @@ export async function fetchHistoricalPrices(
     Object.fromEntries(allRows.map(r => [`${r.ticker}__${r.date}`, r]))
   )
 
-  if (deduped.length > 0) {
-    await sql`
-      INSERT INTO price_history ${sql(deduped, 'ticker', 'date', 'price', 'currency', 'change_pct', 'exchange')}
-      ON CONFLICT (ticker, date) DO UPDATE
-        SET price = EXCLUDED.price,
-            currency = EXCLUDED.currency
-    `
-  }
+  await upsertPriceRows(deduped, false)
 
   return {
     saved: deduped.length,

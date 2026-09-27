@@ -25,7 +25,8 @@ export default function HistoricalPriceFetcher() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ startDate, endDate }),
       })
-      const json = await res.json()
+      // 타임아웃(Cloudflare 524 등)은 HTML·빈 본문이 온다 — JSON이 아니어도 상태코드로 안내
+      const json = await res.json().catch(() => ({}))
       if (!res.ok) {
         setError(json.error ?? `오류 (${res.status})`)
       } else {
