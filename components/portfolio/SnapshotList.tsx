@@ -18,6 +18,8 @@ type SnapshotItem = {
   account_breakdown?: Record<string, AccountSnapshotEntry>
   /** 값 갱신 시 시세가 없어 원가로 임시 평가한 종목 */
   unpriced_tickers?: string[]
+  /** 첨부 HTML 보고서 (최신순) — 새 탭으로 연다 */
+  reports?: { id: string; title: string }[]
 }
 
 export type SnapshotViewMode = 'last' | 'first' | 'all'
@@ -293,6 +295,22 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                 </div>
               ) : null}
 
+              {snap.reports && snap.reports.length > 0 ? (
+                <div className="mt-2 flex flex-col gap-0.5">
+                  {snap.reports.map(r => (
+                    <a key={r.id} href={`/api/portfolio/snapshots/${snap.id}/reports/${r.id}`}
+                      target="_blank" rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="flex items-center gap-1 min-w-0 text-ink-3 hover:text-ink transition-colors"
+                      title={`보고서 열기: ${r.title}`}>
+                      <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span className="text-micro tracking-normal font-medium truncate">{r.title}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : null}
               {snap.memo ? <p className="text-micro tracking-normal text-ink-5 mt-2 truncate">{snap.memo}</p> : null}
               {snap.unpriced_tickers && snap.unpriced_tickers.length > 0 ? (
                 <p className="text-micro tracking-normal text-warning mt-1 truncate"

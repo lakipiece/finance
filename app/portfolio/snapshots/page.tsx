@@ -19,7 +19,7 @@ type SnapshotRow = {
 
 export default async function SnapshotsPage() {
   const sql = getSql()
-  const [raw, sectorRows, cashflowRows, dividendRows] = await Promise.all([
+  const [raw, sectorRows, cashflowRows, dividendRows, reportRows] = await Promise.all([
     sql<SnapshotRow[]>`
       SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, account_breakdown, value_updated_at,
              unpriced_tickers
@@ -43,6 +43,10 @@ export default async function SnapshotsPage() {
       FROM dividends
       GROUP BY ym
     `.catch(() => [] as { ym: string; total: number }[]),
+    // 첨부 보고서 (원문 제외, 최신순)
+    sql<{ snapshot_id: string; id: string; title: string }[]>`
+      SELECT snapshot_id, id, title FROM snapshot_reports ORDER BY created_at DESC
+    `.catch(() => [] as { snapshot_id: string; id: string; title: string }[]),
   ])
 
   const cashflowEvents = cashflowRows.map(r => ({
@@ -59,6 +63,11 @@ export default async function SnapshotsPage() {
   const sectorColors: Record<string, string> = Object.fromEntries(
     sectorRows.map(r => [r.value, r.color_hex])
   )
+  const reportsBySnapshot = new Map<string, { id: string; title: string }[]>()
+  for (const r of reportRows) {
+    if (!reportsBySnapshot.has(r.snapshot_id)) reportsBySnapshot.set(r.snapshot_id, [])
+    reportsBySnapshot.get(r.snapshot_id)!.push({ id: r.id, title: r.title })
+  }
   const snapshots = raw.map(s => ({
     id: s.id,
     memo: s.memo,
@@ -73,6 +82,7 @@ export default async function SnapshotsPage() {
       : null,
     account_breakdown: parseAccountBreakdown(s.account_breakdown),
     unpriced_tickers: s.unpriced_tickers ?? [],
+    reports: reportsBySnapshot.get(s.id) ?? [],
   }))
 
   return (
