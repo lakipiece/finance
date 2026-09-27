@@ -173,10 +173,10 @@ export default function BulkDividendModal({
                   return (
                     <button type="button" key={o}
                       onClick={() => { setModalOwner(o); setAccountId('') }}
-                      className="px-2.5 py-1 rounded-full text-body font-medium transition-colors"
-                      style={isActive
-                        ? { backgroundColor: color, color: tone.white }
-                        : { backgroundColor: `${color}18`, color }}>
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-body font-medium transition-colors ${
+                        isActive ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
+                      }`}>
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
                       {o}
                     </button>
                   )

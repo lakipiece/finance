@@ -1,4 +1,6 @@
-// lib/palettes.ts — Metric Slate 고정 팔레트 (테마 선택 없음)
+// lib/palettes.ts — F · 오션 & 피치 고정 팔레트 (2026-09 재정비, 테마 선택 없음)
+// 기준색 네이비 + 흰 배경에서 조화를 우선해 고른 10색. 구분성(CVD)보다 톤 통일이 목표다.
+// 밝은 색이 많아 흰 글자를 올리지 않는다 — 글자는 잉크, 색은 점·면에만.
 export interface Palette {
   id: string
   name: string
@@ -6,39 +8,41 @@ export interface Palette {
   headerGradient: string
 }
 
+/** F 팔레트 — 이름으로 참조할 때 */
+export const F = {
+  navy:      '#1A237E', // 기준
+  ocean:     '#3A9AB2',
+  rose:      '#C99BB5',
+  pistachio: '#A9CFA6',
+  denim:     '#6C8EBF',
+  cream:     '#F2C57C',
+  slate:     '#4B6584',
+  peach:     '#F4A582',
+  aqua:      '#8FBCD4',
+  salmon:    '#E2786B',
+} as const
+
 export const DEFAULT_PALETTE: Palette = {
-  id: 'metric-slate',
-  name: 'Metric Slate',
+  id: 'ocean-peach',
+  name: 'Ocean & Peach',
   // 가계부 카테고리 색상: [고정비, 대출상환, 변동비, 여행공연비]
-  // D-01a: 변동비가 수입색(#00695C)과 겹쳐 #26A69A로 이동
-  colors: ['#1A237E', '#690043', '#26A69A', '#8D6E63'],
-  headerGradient: 'linear-gradient(135deg, #1A237E 0%, #00695C 100%)',
+  colors: [F.navy, F.slate, F.ocean, F.rose],
+  headerGradient: F.navy,
 }
 
 export const PALETTES: Palette[] = [DEFAULT_PALETTE]
 
-// 포트폴리오 계좌 시리즈 색 — 마지막은 예수금 전용
-export const SERIES_COLORS: string[] = [
-  '#1A237E', '#00695C', '#690043', '#8D6E63', '#3949AB', '#26A69A',
-]
+// 포트폴리오 계좌 시리즈 색
+export const SERIES_COLORS: string[] = [F.navy, F.ocean, F.rose, F.pistachio, F.denim, F.cream]
 export const CASH_COLOR = '#a8b3c4'
 
 // ─── 차트 시리즈 10색 ───────────────────────────────────────────────────────
-// 누적 막대처럼 여러 계열이 한 화면에 겹치는 차트 전용. 1번은 사이트 기준색.
-// 색맹 시뮬레이션 + 대비 검사를 돌려 인접 쌍이 서로 구분되도록 순서를 잡았다
-// (인접 최악 CVD ΔE 9.2 · 정상시야 ΔE 24.6 · 전 색상 흰 배경 대비 3:1 이상).
-// 1번 네이비만 기준색이라 명도 밴드보다 어둡다 — 의도한 예외.
+// 여러 계열이 한 화면에 겹치는 차트 전용. 1번은 사이트 기준색 네이비,
+// 이어서 오션·로즈가 한 톤으로 묶이고 웜톤(크림·피치·살몬)은 뒤쪽에 둔다.
+// 비슷한 색(오션↔아쿠아, 로즈↔피치)은 서로 떨어뜨렸다.
 export const CHART_SERIES: string[] = [
-  '#1A237E', // 네이비 (기준)
-  '#C2410C', // 번트오렌지
-  '#047857', // 에메랄드
-  '#A21CAF', // 퍼플
-  '#0891B2', // 시안
-  '#9F1239', // 크림슨
-  '#6D28D9', // 바이올렛
-  '#A16207', // 골드
-  '#0369A1', // 스틸블루
-  '#65A30D', // 라임올리브
+  F.navy, F.ocean, F.rose, F.pistachio, F.denim,
+  F.cream, F.slate, F.peach, F.aqua, F.salmon,
 ]
 
 /** 흰색 쪽으로 t(0~1)만큼 섞는다 */
@@ -49,6 +53,27 @@ function lighten(hex: string, t: number): string {
   const g = mix(parseInt(h.slice(2, 4), 16))
   const b = mix(parseInt(h.slice(4, 6), 16))
   return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`
+}
+
+/** a에서 b 쪽으로 t(0~1)만큼 섞는다 */
+function mix(a: string, b: string, t: number): string {
+  const pa = a.replace('#', ''), pb = b.replace('#', '')
+  const ch = (i: number) => {
+    const x = parseInt(pa.slice(i, i + 2), 16), y = parseInt(pb.slice(i, i + 2), 16)
+    return Math.round(x + (y - x) * t).toString(16).padStart(2, '0')
+  }
+  return `#${ch(0)}${ch(2)}${ch(4)}`.toUpperCase()
+}
+
+/** 검정 쪽으로 t(0~1)만큼 섞는다 */
+function deepen(hex: string, t: number): string {
+  return mix(hex, '#000000', t)
+}
+
+/** hex에 알파를 붙인 rgba */
+function alpha(hex: string, a: number): string {
+  const h = hex.replace('#', '')
+  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`
 }
 
 /**
@@ -64,62 +89,55 @@ export function chartSeriesColor(i: number): string {
   return cycle === 0 ? base : lighten(base, Math.min(cycle * 0.18, 0.54))
 }
 
-// 옵션 항목용 72색 팔레트 — 메인 테마 6색 선두, 이후 색상 계열별 정렬
+// 옵션 항목용 30색 — 1행은 F 기본 순서(자동 배정 순서), 2행 진하게, 3행 연하게
 export const OPTION_COLORS: string[] = [
-  // ── 메인 테마 시리즈 (6) — 사이트 기준 컬러 ─────────────
-  '#1A237E','#00695C','#390069','#690043','#396900','#006769',
-  // ── Deep Blues / Navy (6) ─────────────────────────────
-  '#0D1B5E','#283593','#1565C0','#01579B','#0277BD','#0288D1',
-  // ── Purples / Indigo (7) ──────────────────────────────
-  '#311B92','#4527A0','#512DA8','#4A148C','#6A1B9A','#7B1FA2','#6D28D9',
-  // ── Pinks / Magentas (5) ──────────────────────────────
-  '#880E4F','#AD1457','#C2185B','#D81B60','#E91E8C',
-  // ── Crimsons / Reds (5) ───────────────────────────────
-  '#7F1D1D','#B71C1C','#C62828','#D32F2F','#C0392B',
-  // ── Orange-Reds (4) ───────────────────────────────────
-  '#BF360C','#D84315','#E64A19','#E65100',
-  // ── Ambers / Oranges (5) ──────────────────────────────
-  '#FF6D00','#F57C00','#FF8F00','#F9A825','#E67E22',
-  // ── Browns / Warm Earth (4) ──────────────────────────
-  '#5D4037','#6D4C41','#795548','#8D6E63',
-  // ── Yellows / Mustards (4) ────────────────────────────
-  '#693D00','#7C4A00','#92600A','#C8961A',
-  // ── Olives / Yellow-Greens (4) ───────────────────────
-  '#33691E','#558B2F','#7C8B12','#827717',
-  // ── Greens (5) ────────────────────────────────────────
-  '#1B5E20','#2E7D32','#388E3C','#2D6A4F','#43A047',
-  // ── Teals / Cyans (3) ─────────────────────────────────
-  '#004D40','#00796B','#006064',
-  // ── Slates / Blue-Grays (5) ──────────────────────────
-  '#1A2940','#37474F','#455A64','#546E7A','#607D8B',
-  // ── Grays — 다채롭게 (12) ────────────────────────────
-  '#111827','#1F2937','#2D3748','#374151','#3D4558',
-  '#424242','#4A5568','#4B5563','#5A6476','#64748B',
-  '#718096','#8492A6',
-  // ── Browns / Earth (3) ───────────────────────────────
-  '#4E342E','#5D4037','#6D4C41',
+  ...CHART_SERIES,
+  ...CHART_SERIES.map(c => deepen(c, 0.28)),
+  ...CHART_SERIES.map(c => lighten(c, 0.5)),
 ]
 
 // ─── 데이터 색 — 컴포넌트에 raw hex를 두지 않도록 이름 붙여 모은다 ────────────
 /** 카테고리 색이 지정되지 않았을 때 */
-export const FALLBACK_SERIES_COLOR = '#6B8CAE'
+export const FALLBACK_SERIES_COLOR = F.aqua
 /** 가계부 수입 카테고리 */
 export const INCOME_CATEGORY_COLORS: Record<string, string> = {
-  '급여': '#4527A0',
-  '기타': '#5A6476',
+  '급여': F.denim,
+  '기타': F.pistachio,
 }
-/** 가계부 입력 — 지출/수입 강조색 */
-export const EXPENSE_ACCENT = '#1A237E'
-export const INCOME_ACCENT = '#390069'
+/** 가계부 입력 — 지출 강조색 (수입은 의미색 income) */
+export const EXPENSE_ACCENT = F.navy
+/** 네이비 바탕 위 수입 강조 — 입력 화면 요약 카드. 딥 오션은 네이비 위에서 묻혀 한 단 밝게 */
+export const INCOME_ON_NAVY = '#9FD3DF'
 /** 입출금 — 출금 계열 */
-export const OUTFLOW_COLOR = '#690043'
+export const OUTFLOW_COLOR = F.slate
 /** 사용자 기본색 (members 테이블 로드 전 폴백) */
-export const DEFAULT_MEMBER_COLORS: Record<string, string> = { L: '#1565C0', P: '#AD1457' }
+export const DEFAULT_MEMBER_COLORS: Record<string, string> = { L: F.rose, P: F.denim }
 /** 자산 탭 — 유형자산 종류 · 금융자산 */
-export const ASSET_TYPE_COLORS: Record<string, string> = { '부동산': '#1A237E', '자동차': '#f59e0b' }
-export const ASSET_TYPE_FALLBACK = '#6b7280'
-export const FINANCIAL_ASSET_COLOR = '#4527A0'
+export const ASSET_TYPE_COLORS: Record<string, string> = { '부동산': F.navy, '자동차': F.cream }
+export const ASSET_TYPE_FALLBACK = F.slate
+export const FINANCIAL_ASSET_COLOR = F.denim
 /** 종목 상세 차트 이동평균선 */
-export const MA_COLORS = { ma5: '#fb923c', ma20: '#a78bfa', ma60: '#38bdf8' } as const
+export const MA_COLORS = { ma5: F.peach, ma20: F.rose, ma60: F.aqua } as const
 /** 예산 누적 기준선 */
-export const BUDGET_BASELINE_COLOR = '#c7d2fe'
+export const BUDGET_BASELINE_COLOR = '#C5CAE9'
+/** 에너지 — 따뜻한 두 항목(온수·난방)만 웜톤 */
+export const ENERGY_COLORS = { electricity: F.navy, water: F.ocean, hot_water: F.peach, heating: F.salmon } as const
+
+/**
+ * 연도 색 — 네이비 한 계열, 기준 연도가 가장 진하고 오래될수록 옅어진다.
+ * 연도는 순서가 의미라 계열색을 돌려 쓰지 않는다. 8년 전부터는 가장 옅은 색으로 고정.
+ */
+export function yearColor(year: number, latestYear: number): string {
+  const t = Math.min(Math.max((latestYear - year) / 8, 0), 1) ** 0.85
+  return mix(F.navy, '#C5CAE9', t)
+}
+
+/**
+ * 색 배지 — 항목 색을 연하게 깐 배경 + 같은 색을 잉크 쪽으로 누른 글자.
+ * 원색에 흰 글자를 올리면 밝은 톤(로즈 2.4:1)이 묻혀서 이 방식으로 통일한다.
+ * 사용자(L·P), 티커 배지 등.
+ */
+export function tintBadgeStyle(hex: string): { backgroundColor: string; color: string } {
+  return { backgroundColor: alpha(hex, 0.22), color: mix(hex, '#0d1c2e', 0.45) }
+}
+export const memberBadgeStyle = tintBadgeStyle

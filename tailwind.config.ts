@@ -31,15 +31,17 @@ const config: Config = {
           5: '#a8b3c4',         // 표 헤더 · 플레이스홀더 · 셰브론
         },
         // 의미색
-        income: '#00695C',      // 수입 · 입금 · 수지 흑자 (D-01)
+        income: '#237A8C',      // 수입 · 입금 · 수지 흑자 — 딥 오션 (2026-09, 초록 폐기)
         'on-surface': '#0d1c2e',
-        warning: '#b45309',     // 예산 초과 · 임박 · 이상 거래
+        warning: '#C25B4B',     // 예산 초과 · 임박 · 이상 거래 — 딥 살몬 (F 팔레트 톤)
         action: '#131b2e',      // 주 버튼 · 선택 상태 · 포커스 링
-        gain: '#e11d48',        // 포트폴리오 상승 — 가계부에 쓰지 않음
-        loss: '#2563eb',        // 포트폴리오 하락 — 가계부에 쓰지 않음
+        gain: '#C4495E',        // 포트폴리오 상승 — 가계부에 쓰지 않음 (F 톤으로 누른 로즈 레드)
+        'gain-soft': '#E08C98', // 상승 — 차트 면 전용
+        loss: '#3E6BAE',        // 포트폴리오 하락 — 가계부에 쓰지 않음 (F 톤으로 누른 데님)
+        'loss-soft': '#6C8EBF', // 하락 — 차트 면 전용
         // 오류 — gain과 같은 값이지만 의미가 다르다. 인풋 오류·삭제 확인에만 쓴다.
         // (gain은 "수익", danger는 "잘못됨". 같은 빨강이라도 자리를 섞지 않는다.)
-        danger: '#e11d48',
+        danger: '#C4495E',
       },
       fontFamily: {
         sans: [
@@ -69,7 +71,7 @@ const config: Config = {
         card: '0 4px 32px 0 rgba(13,28,46,.06)',
         dialog: '0 12px 48px -8px rgba(13,28,46,.28)',
         focus: '0 0 0 2px #131b2e',
-        error: '0 0 0 1.5px rgba(225,29,72,.35)',
+        error: '0 0 0 1.5px rgba(196,73,94,.35)',
       },
       backdropBlur: {
         overlay: '6px',

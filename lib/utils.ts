@@ -36,10 +36,10 @@ export function formatWonCompact(n: number): string {
 // 카테고리 색 — DEFAULT_PALETTE.colors와 동일한 단일 소스.
 // 이 색은 "점"으로만 쓴다. 글자색으로 쓰지 않는다 (D-01b).
 export const CAT_COLORS: Record<string, string> = {
-  '고정비': '#1A237E',
-  '대출상환': '#690043',
-  '변동비': '#26A69A',
-  '여행공연비': '#8D6E63',
+  '고정비': '#1A237E',   // 네이비
+  '대출상환': '#4B6584', // 슬레이트
+  '변동비': '#3A9AB2',   // 오션
+  '여행공연비': '#C99BB5', // 로즈
 }
 
 /** 카테고리 점 색 — 미등록 카테고리는 중립 잉크 */
@@ -54,8 +54,8 @@ export const INCOME_CATEGORIES = ['급여', '기타'] as const
 export type IncomeCategory = typeof INCOME_CATEGORIES[number]
 
 export const INCOME_COLORS: Record<string, string> = {
-  '급여': '#4527A0',
-  '기타': '#5A6476',
+  '급여': '#6C8EBF', // 데님
+  '기타': '#A9CFA6', // 피스타치오
 }
 
 /**

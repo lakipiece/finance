@@ -10,7 +10,7 @@ import { btn, card, field, modal, text, brand, color as tone } from '@/lib/style
 import PageHeader from '@/components/ui/PageHeader'
 import YearSelect from '@/components/ui/YearSelect'
 import { formatWonFull } from '@/lib/utils'
-import { OPTION_COLORS } from '@/lib/palettes'
+import { ENERGY_COLORS } from '@/lib/palettes'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 
@@ -24,10 +24,10 @@ interface KindMeta {
 }
 
 const KINDS: KindMeta[] = [
-  { key: 'electricity', label: '전기', unit: 'kWh',  color: OPTION_COLORS[0] },
-  { key: 'water',       label: '수도', unit: 'm³',   color: OPTION_COLORS[1] },
-  { key: 'hot_water',   label: '온수', unit: 'm³',   color: OPTION_COLORS[2] },
-  { key: 'heating',     label: '난방', unit: 'Gcal', color: OPTION_COLORS[3] },
+  { key: 'electricity', label: '전기', unit: 'kWh',  color: ENERGY_COLORS.electricity },
+  { key: 'water',       label: '수도', unit: 'm³',   color: ENERGY_COLORS.water },
+  { key: 'hot_water',   label: '온수', unit: 'm³',   color: ENERGY_COLORS.hot_water },
+  { key: 'heating',     label: '난방', unit: 'Gcal', color: ENERGY_COLORS.heating },
 ]
 
 interface EnergyRecord {
@@ -93,7 +93,7 @@ function AmountTooltip({ active, payload, label, activeKinds }: ChartTooltipProp
           const usage = Number(row[`${k.key}_usage`] ?? 0)
           return (
             <Fragment key={k.key}>
-              <span className="flex items-center gap-1.5 py-0.5" style={{ color: k.color }}>
+              <span className="flex items-center gap-1.5 py-0.5 text-ink-2">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
                 {k.label}
               </span>
@@ -395,10 +395,10 @@ export default function EnergyClient() {
             const on = activeKinds[k.key]
             return (
               <button key={k.key} onClick={() => toggleKind(k.key)}
-                className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
-                  on ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
-                }`}
-                style={on ? { backgroundColor: k.color } : undefined}>
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
+                  on ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
+                }`}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: k.color }} />
                 {k.label}
               </button>
             )
@@ -481,7 +481,7 @@ export default function EnergyClient() {
                           }`}>
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: k.color }} />
-                            <span className="text-body font-medium truncate" style={{ color: k.color }}>{k.label}</span>
+                            <span className="text-body font-medium truncate text-ink-2">{k.label}</span>
                           </div>
                           <div className="text-right min-w-0">
                             <div className="text-body font-bold text-ink tabular-nums">

@@ -1,6 +1,7 @@
 'use client'
 
-import { color as tone } from '@/lib/styles'
+import { color as tone, brand } from '@/lib/styles'
+import { yearColor } from '@/lib/palettes'
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import type { DashboardData } from '@/lib/types'
@@ -31,7 +32,7 @@ const ALL_EXPENSE_CATEGORIES = ['고정비', '대출상환', '변동비', '여�
 type ExpenseCategory = typeof ALL_EXPENSE_CATEGORIES[number]
 
 export default function CompareClient({ availableYears }: Props) {
-  const { palette, catColors } = useTheme()
+  const { catColors } = useTheme()
   const { excludeLoan } = useFilter()
   const expenseCategories = useMemo(() =>
     excludeLoan ? ALL_EXPENSE_CATEGORIES.filter(c => c !== '대출상환') : [...ALL_EXPENSE_CATEGORIES],
@@ -76,9 +77,13 @@ export default function CompareClient({ availableYears }: Props) {
     })
   }
 
+  // 연도는 순서가 의미 — 네이비 한 계열로, 최근 연도일수록 진하게
+  const latestYear = Math.max(...availableYears.map(y => y.year))
   const colorMap = Object.fromEntries(
-    availableYears.map((y, i) => [y.year, palette.colors[i % palette.colors.length]])
+    availableYears.map(y => [y.year, yearColor(y.year, latestYear)])
   )
+  // 옅은 연도 칩은 흰 글자가 묻혀 네이비 글자로
+  const lightChip = (year: number) => latestYear - year >= 4
 
   if (availableYears.length === 0) {
     return (
@@ -107,10 +112,10 @@ export default function CompareClient({ availableYears }: Props) {
             const isLoading = loading[y.year]
             return (
               <button key={y.year} onClick={() => toggleYear(y.year)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isSelected ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
-                style={isSelected ? { background: color } : {}}>
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${isSelected ? '' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+                style={isSelected ? { background: color, color: lightChip(y.year) ? brand.navy : tone.white } : {}}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0"
-                  style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
+                  style={{ background: isSelected ? (lightChip(y.year) ? 'rgba(26,35,126,0.45)' : 'rgba(255,255,255,0.6)') : color }} />
                 {y.year}
                 {isLoading ? <span className="opacity-70">...</span> : null}
               </button>
@@ -137,10 +142,10 @@ export default function CompareClient({ availableYears }: Props) {
               return (
                 <button key={cat}
                   onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-                  className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
-                    isActive ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
-                  }`}
-                  style={isActive && color ? { backgroundColor: color } : undefined}>
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
+                    isActive ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
+                  }`}>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: color ?? tone.ink5 }} />
                   {cat}
                 </button>
               )
@@ -156,11 +161,10 @@ export default function CompareClient({ availableYears }: Props) {
           {INCOME_CATEGORIES.map(cat => (
             <button key={cat}
               onClick={() => { setSelectedCategory(prev => prev === cat ? null : cat); setSelectedDetail(null) }}
-              className="px-2.5 py-1 rounded-full text-meta font-medium transition-colors"
-              style={selectedCategory === cat
-                ? { backgroundColor: INCOME_COLORS[cat], color: tone.white }
-                : { backgroundColor: `${INCOME_COLORS[cat]}22`, color: INCOME_COLORS[cat], border: `1px solid ${INCOME_COLORS[cat]}44` }
-              }>
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${
+                selectedCategory === cat ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'
+              }`}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: INCOME_COLORS[cat] }} />
               {cat}
             </button>
           ))}

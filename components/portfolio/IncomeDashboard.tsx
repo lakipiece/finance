@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, LabelList,
 } from 'recharts'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
@@ -409,8 +409,8 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           const active = ownerFilter === o
           return (
             <button key={o} type="button" onClick={() => selectOwner(o)}
-              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
-              style={active ? { backgroundColor: ownerColor(o) } : undefined}>
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: ownerColor(o) }} />
               {o}
             </button>
           )
@@ -475,7 +475,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         </div>
 
         {tab === 'month' && monthData.length > 0 ? <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={monthData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+            <BarChart data={monthData} barCategoryGap="18%" margin={{ top: 18, right: 8, left: 0, bottom: 0 }}
               onClick={(data) => {
                 const label = data?.activeLabel as string | undefined
                 if (label) setSelectedMonth(prev => prev === label ? null : label)
@@ -484,8 +484,11 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <XAxis dataKey="month" tick={{ fontSize: 10, fill: tone.ink5 }} axisLine={false} tickLine={false} />
               <YAxis tickFormatter={v => fmt(v)} tick={{ fontSize: 10, fill: tone.ink5 }} width={52} axisLine={false} tickLine={false} />
               <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: tone.surfaceLow }} />
-              <Bar dataKey="amount" maxBarSize={32}
-                fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
+              <Bar dataKey="amount" maxBarSize={64}
+                fill={palette.colors[0]} style={{ cursor: 'pointer' }}>
+                <LabelList dataKey="amount" position="top" formatter={(v: number) => fmt(v)}
+                  style={{ fontSize: 10, fill: tone.ink3, fontWeight: 500 }} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer> : null}
 

@@ -58,16 +58,14 @@ export default function PortfolioKpiCards({ summary, ledger = null }: Props) {
         c.inverted ? (
           <div key={c.label}
             className="rounded-card shadow-card p-[13px] sm:p-[13px] flex flex-col hover:-translate-y-0.5 transition-all relative overflow-hidden"
-            style={{ background: brand.kpiGradient }}>
+            style={{ backgroundColor: brand.navy }}>
             <div className="relative group/lbl inline-block self-start mb-1">
-              <p className="text-micro text-blue-200 font-medium uppercase tracking-widest cursor-default">{c.label}</p>
+              <p className="text-micro text-white/60 font-medium uppercase tracking-widest cursor-default">{c.label}</p>
               <div className="absolute bottom-full left-0 mb-1.5 px-2 py-1 bg-white/20 text-white text-micro tracking-normal rounded-btn whitespace-nowrap opacity-0 group-hover/lbl:opacity-100 transition-opacity pointer-events-none z-10">
                 {c.sub}
               </div>
             </div>
             <p className="text-title sm:text-display font-bold tabular-nums leading-tight mt-auto text-right text-white">{c.value}</p>
-            {/* 배경 장식 */}
-            <div className="absolute -right-4 -bottom-4 w-20 h-20 rounded-full opacity-10 bg-surface-card" />
           </div>
         ) : (
           <div key={c.label} className="bg-surface-card rounded-card shadow-card p-[13px] sm:p-[13px] flex flex-col hover:-translate-y-0.5 transition-all">

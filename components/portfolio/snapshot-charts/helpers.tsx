@@ -29,8 +29,8 @@ export function filterByView(points: SnapshotPoint[], view: SnapshotViewMode): S
   )
 }
 
-export const POS = tone.gain  // 한국식 — 상승 빨강
-export const NEG = tone.loss  // 한국식 — 하락 파랑
+export const POS = tone.gainSoft  // 한국식 — 상승 (차트 면은 한 톤 누른 색, 글자는 tone.gain)
+export const NEG = tone.lossSoft  // 한국식 — 하락
 
 /**
  * 값 라벨이 축 눈금과 겹치지 않게 위아래로 여백을 준다.

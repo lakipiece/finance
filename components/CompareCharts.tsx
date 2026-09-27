@@ -52,8 +52,12 @@ export default function CompareCharts({
   }, [selectedCategory]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const readyYears = selectedYears.filter(y => yearData[y] && !loading[y])
+  const latestYear = Math.max(...Object.keys(colorMap).map(Number))
 
   // Monthly line chart data
+  const now = new Date()
+  const THIS_YEAR = now.getFullYear()
+  const THIS_MONTH = now.getMonth() + 1
   const monthlyData = MONTH_LABELS.map((month, i) => {
     const entry: Record<string, number | string> = { month }
     for (const year of readyYears) {
@@ -95,6 +99,8 @@ export default function CompareCharts({
             : (m?.total ?? 0) - (excludeLoan ? (m?.대출상환 ?? 0) : 0)
         }
       }
+      // 올해의 아직 오지 않은 달은 비워서 선을 끊는다 (0으로 떨어지지 않게)
+      if (year === THIS_YEAR && i + 1 > THIS_MONTH) delete entry[year]
     }
     return entry
   })
@@ -205,7 +211,7 @@ export default function CompareCharts({
             />
             <Legend formatter={(value) => <span style={{ color: tone.ink3, fontSize: 12 }}>{value}년</span>} />
             {readyYears.map((year) => (
-              <Line key={year} type="monotone" dataKey={year} stroke={colorMap[year]} strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+              <Line key={year} type="monotone" dataKey={year} stroke={colorMap[year]} strokeWidth={year === latestYear ? 3 : 2} dot={false} activeDot={{ r: 4 }} />
             ))}
           </LineChart>
         </ResponsiveContainer>

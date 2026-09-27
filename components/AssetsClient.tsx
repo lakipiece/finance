@@ -1,6 +1,6 @@
 'use client'
 
-import { ASSET_TYPE_COLORS, ASSET_TYPE_FALLBACK, FINANCIAL_ASSET_COLOR } from '@/lib/palettes'
+import { ASSET_TYPE_COLORS, ASSET_TYPE_FALLBACK, FINANCIAL_ASSET_COLOR, F } from '@/lib/palettes'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
@@ -53,7 +53,7 @@ interface PortfolioSnapshot {
 const TYPE_COLORS: Record<string, string> = {
   ...ASSET_TYPE_COLORS,
 }
-const PENSION_COLOR = tone.income
+const PENSION_COLOR = F.ocean  // 수입 의미색과 섞지 않도록 팔레트 색
 const FINANCIAL_COLOR = FINANCIAL_ASSET_COLOR
 
 // ── Utility ──────────────────────────────────────────────
@@ -614,13 +614,13 @@ export default function AssetsClient() {
   const grandTotal = tangibleTotal + pensionTotal + financialTotal
 
   const donutData = [
-    { name: '유형자산', value: tangibleTotal, color: tone.ink },
+    { name: '유형자산', value: tangibleTotal, color: brand.navy },
     { name: '연금자산', value: pensionTotal, color: PENSION_COLOR },
     { name: '금융자산', value: financialTotal, color: FINANCIAL_COLOR },
   ].filter(d => d.value > 0)
 
   const TABS = [
-    { key: 'tangible' as const, label: '유형자산', color: tone.ink },
+    { key: 'tangible' as const, label: '유형자산', color: brand.navy },
     { key: 'pension' as const, label: '연금자산', color: PENSION_COLOR },
     { key: 'financial' as const, label: '금융자산', color: FINANCIAL_COLOR },
   ]

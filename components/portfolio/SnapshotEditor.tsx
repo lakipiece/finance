@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
 import DateInput from '@/components/ui/DateInput'
 import { costKrw, isKrwSecurity } from '@/lib/portfolio/valuation'
+import { tintBadgeStyle } from '@/lib/palettes'
 
 interface HoldingRow {
   id?: string
@@ -415,16 +416,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           return (
             <div key={a.id}
               className="flex bg-surface-card rounded-card overflow-hidden shadow-card hover:-translate-y-0.5 transition-transform min-h-[110px]">
-              {/* 왼쪽 색상 바 — 테두리가 아니라 배경 톤 띠 */}
-              <div className="w-1.5 shrink-0"
-                style={{ backgroundColor: typeColor ?? tone.surfaceContainer }} />
               {/* 카드 내용 */}
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
                 {/* 이름 + 뱃지 */}
                 <div className="flex items-start justify-between gap-1 mb-0.5">
                   <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{a.name}</p>
-                  {a.type && typeColor ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
-                      style={{ backgroundColor: typeColor + '20', color: typeColor }}>
+                  {a.type && typeColor ? <span className="inline-flex items-center gap-1 text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0 bg-surface-low text-ink-2">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: typeColor }} />
                       {a.type}
                     </span> : null}
                 </div>
@@ -559,7 +557,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                               <span
                                 className={`text-micro tracking-normal px-1.5 py-0.5 rounded font-mono ${color ? '' : 'bg-surface-low text-ink-4'}`}
                                 style={color
-                                  ? { backgroundColor: color + '22', color }
+                                  ? tintBadgeStyle(color)
                                   : undefined}>
                                 {sec.ticker}
                               </span>

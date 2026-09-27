@@ -6,6 +6,7 @@ import { formatWonRound } from '@/lib/utils'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import { createPortal } from 'react-dom'
 import { btn, tbl, modal, color as tone } from '@/lib/styles'
+import { memberBadgeStyle } from '@/lib/palettes'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -223,7 +224,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               </div>
               {d.account.owner ? <div className="mt-1">
                   <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: `${color}22`, color }}>{d.account.owner}</span>
+                    style={memberBadgeStyle(color)}>{d.account.owner}</span>
                 </div> : null}
               <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-surface-low text-micro tracking-normal text-ink-4 tabular-nums">
                 <span>배당금 {formatWonRound(gross)}</span>
@@ -292,7 +293,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                   <td className="py-[5px] px-2">
                     {d.account.owner
                       ? <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
-                          style={{ backgroundColor: `${color}22`, color }}>
+                          style={memberBadgeStyle(color)}>
                           {d.account.owner}
                         </span>
                       : <span className="text-ink-5 text-body">-</span>}

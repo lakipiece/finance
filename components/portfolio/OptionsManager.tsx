@@ -12,7 +12,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, color as tone } from '@/lib/styles'
-import { OPTION_COLORS } from '@/lib/palettes'
+import { OPTION_COLORS, chartSeriesColor } from '@/lib/palettes'
 
 type OptionItem = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 type OptionMap = Record<string, OptionItem[]>
@@ -344,7 +344,7 @@ export default function OptionsManager({ initialOptions }: { initialOptions: Opt
     for (const type of Object.keys(options)) {
       const items = options[type] ?? []
       nextOptions[type] = items.map((o, i) => {
-        const color = PRESET_COLORS[i % PRESET_COLORS.length]
+        const color = chartSeriesColor(i)  // 10색 이후는 한 단 밝게 — 차트 계열과 같은 규칙
         updates.push(
           fetch(`/api/portfolio/options/${o.id}`, {
             method: 'PATCH',

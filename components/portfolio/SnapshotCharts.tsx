@@ -255,7 +255,7 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
               <LabelList dataKey="평가액" content={barTopLabel(valueLabelIdx, tone.ink)} />
               <LabelList dataKey="수익" content={segmentLabel(valueLabelIdx, fmtY, tone.white, 16)} />
             </Bar>
-            <Bar dataKey="손실" name="손실" stackId="v" fill={NEG} fillOpacity={0.35}>
+            <Bar dataKey="손실" name="손실" stackId="v" fill={NEG} fillOpacity={0.5}>
               <LabelList dataKey="손실" content={segmentLabel(valueLabelIdx, fmtY, tone.loss, 16)} />
             </Bar>
           </BarChart>

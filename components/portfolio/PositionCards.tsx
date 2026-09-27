@@ -1,6 +1,7 @@
 'use client'
 
 import { color as tone } from '@/lib/styles'
+import { tintBadgeStyle } from '@/lib/palettes'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { MergedPosition } from './PortfolioDashboard'
@@ -37,8 +38,8 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
         <div className="px-[18px] pt-5 pb-4 border-b border-surface-low">
           <div className="flex items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-1.5 flex-1 min-w-0">
-              <span className="text-white text-body font-bold px-2 py-0.5 rounded font-mono leading-none shrink-0"
-                style={{ backgroundColor: sectorColor }}>
+              <span className="text-body font-bold px-2 py-0.5 rounded font-mono leading-none shrink-0"
+                style={sectorColor ? tintBadgeStyle(sectorColor) : { backgroundColor: tone.surfaceLow, color: tone.ink2 }}>
                 {p.security.ticker}
               </span>
               {p.security.sector ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-3">
@@ -191,8 +192,8 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <span
-                    className="text-white text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
-                    style={{ backgroundColor: tickerBgColor ?? tone.ink2 }}>
+                    className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono leading-none shrink-0"
+                    style={tickerBgColor ? tintBadgeStyle(tickerBgColor) : { backgroundColor: tone.surfaceLow, color: tone.ink2 }}>
                     {ticker}
                   </span>
                   <span className="text-micro tracking-normal text-ink-4 bg-surface-low px-1.5 py-0.5 rounded-full shrink-0">

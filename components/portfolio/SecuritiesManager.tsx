@@ -1,6 +1,6 @@
 'use client'
 
-import { MA_COLORS } from '@/lib/palettes'
+import { MA_COLORS, tintBadgeStyle } from '@/lib/palettes'
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createPortal } from 'react-dom'
@@ -618,7 +618,6 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           return (
             <div key={s.id}
               className="group flex bg-surface-card rounded-field overflow-hidden hover:shadow-card transition-all">
-              <div className="w-1.5 shrink-0 rounded-l-xl" style={{ backgroundColor: hex }} />
               <div onClick={() => setHistoryModalSecurity(s)}
                 className="flex-1 flex flex-col gap-1.5 p-2.5 cursor-pointer hover:bg-surface-low/30 transition-all min-w-0">
               {/* Row 1: ticker (left, clickable) + currency (right) */}
@@ -648,12 +647,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                     <a href={tickerUrl} target="_blank" rel="noopener noreferrer"
                       onClick={e => e.stopPropagation()}
                       className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono leading-none hover:opacity-75 transition-opacity"
-                      style={{ backgroundColor: hex + '15', color: hex }}>
+                      style={tintBadgeStyle(hex)}>
                       {s.ticker}
                     </a>
                   ) : (
                     <span className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono leading-none"
-                      style={{ backgroundColor: hex + '15', color: hex }}>{s.ticker}</span>
+                      style={tintBadgeStyle(hex)}>{s.ticker}</span>
                   )
                 })()}
                 <span className="text-micro tracking-normal text-ink-5 ml-auto">{s.currency}</span>
@@ -686,12 +685,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               <div className="flex items-center gap-0.5 flex-wrap" onClick={e => e.stopPropagation()}>
                 {s.asset_class ? <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
                     className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
-                    style={{ backgroundColor: hex + '20', color: hex }}>
+                    style={tintBadgeStyle(hex)}>
                     {s.asset_class}
                   </button> : null}
                 {s.country ? <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
                     className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
-                    style={{ backgroundColor: hex + '20', color: hex }}>
+                    style={tintBadgeStyle(hex)}>
                     {s.country}
                   </button> : null}
                 {s.etf_style ? <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
