@@ -1,6 +1,7 @@
 /**
  * fin.lakipiece.com 전체 페이지 + 모달 스크린샷 자동화
  * 실행: node scripts/screenshot-all.mjs
+ *       BASE_URL=http://localhost:3099 node scripts/screenshot-all.mjs  (다른 서버 대상)
  *
  * 흐름:
  *  1. 브라우저 열기 → 로그인 페이지 이동
@@ -14,7 +15,7 @@ import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 
-const BASE_URL = 'https://fin.lakipiece.com';
+const BASE_URL = process.env.BASE_URL ?? 'https://fin.lakipiece.com';
 const OUT_DIR = path.resolve('screenshots');
 
 // 순회할 페이지 목록 (경로, 레이블)
@@ -22,25 +23,23 @@ const OUT_DIR = path.resolve('screenshots');
 const PAGE_FILTER = process.argv[2] ?? null;
 
 const ALL_PAGES = [
-  { path: '/',                              label: '01_dashboard' },
-  { path: '/monthly',                       label: '02_monthly' },
-  { path: '/compare',                       label: '03_compare' },
-  { path: '/search',                        label: '04_search' },
-  { path: '/expenses',                      label: '05_expenses' },
-  { path: '/portfolio',                     label: '06_portfolio' },
-  { path: '/portfolio/holdings',            label: '07_portfolio_holdings' },
-  { path: '/portfolio/accounts',            label: '08_portfolio_accounts' },
-  { path: '/portfolio/securities',          label: '09_portfolio_securities' },
-  { path: '/portfolio/securities/prices',   label: '10_portfolio_prices' },
-  { path: '/portfolio/snapshots',           label: '11_portfolio_snapshots' },
-  { path: '/portfolio/snapshots/charts',    label: '12_portfolio_snapshot_charts' },
-  { path: '/portfolio/rebalance',           label: '13_portfolio_rebalance' },
-  { path: '/portfolio/import',              label: '14_portfolio_import' },
-  { path: '/portfolio/income',              label: '15_portfolio_income' },
-  { path: '/portfolio/options',             label: '16_portfolio_options' },
-  { path: '/portfolio/settings',            label: '17_portfolio_settings' },
-  { path: '/settings',                      label: '18_settings' },
-  { path: '/admin',                         label: '19_admin' },
+  { path: '/portfolio',                      label: '01_portfolio' },
+  { path: '/portfolio/accounts',             label: '02_portfolio_accounts' },
+  { path: '/portfolio/securities',           label: '03_portfolio_securities' },
+  { path: '/portfolio/securities/prices',    label: '04_portfolio_securities_prices' },
+  { path: '/portfolio/snapshots',            label: '05_portfolio_snapshots' },
+  { path: '/portfolio/snapshots/charts',     label: '06_portfolio_snapshots_charts' },
+  { path: '/portfolio/rebalance',            label: '07_portfolio_rebalance' },
+  { path: '/portfolio/income',               label: '08_portfolio_income' },
+  { path: '/portfolio/options',              label: '09_portfolio_options' },
+  { path: '/expenses',                       label: '10_expenses' },
+  { path: '/compare',                        label: '11_compare' },
+  { path: '/budget',                         label: '12_budget' },
+  { path: '/assets',                         label: '13_assets' },
+  { path: '/energy',                         label: '14_energy' },
+  { path: '/input',                          label: '15_input' },
+  { path: '/options',                        label: '16_options' },
+  { path: '/settings',                       label: '17_settings' },
 ];
 
 const PAGES = PAGE_FILTER
