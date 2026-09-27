@@ -1,5 +1,6 @@
 import { fetchSecurities } from '@/lib/portfolio/fetch'
 import { getSql } from '@/lib/db'
+import { toDateStr } from '@/lib/portfolio/valuation'
 import SecuritiesManager from '@/components/portfolio/SecuritiesManager'
 
 export const dynamic = 'force-dynamic'
@@ -18,10 +19,19 @@ type HoldingRow = {
 
 export default async function SecuritiesPage() {
   const sql = getSql()
-  const [securities, prices, optionRows, latestSnap] = await Promise.all([
+  type PriceRow = { ticker: string; price: number; currency: string; date: unknown; change_pct: number | null; exchange: string | null }
+  const [securities, latestRows, prices, optionRows, latestSnap] = await Promise.all([
     fetchSecurities(),
-    sql<{ ticker: string; price: number; currency: string; date: unknown; change_pct: number | null; exchange: string | null }[]>`
-      SELECT ticker, price, currency, date, change_pct, exchange FROM price_history ORDER BY date ASC
+    // 종목별 최신가 1건 — 오래전에 수집이 멈춘 종목도 포함
+    sql<PriceRow[]>`
+      SELECT DISTINCT ON (ticker) ticker, price, currency, date, change_pct, exchange
+      FROM price_history ORDER BY ticker, date DESC
+    `,
+    // 미니차트·상세 차트(최근 90거래일)용 — 가격 이력 전량 대신 최근 180일만
+    sql<Pick<PriceRow, 'ticker' | 'price' | 'date'>[]>`
+      SELECT ticker, price, date FROM price_history
+      WHERE date >= CURRENT_DATE - 180
+      ORDER BY date ASC
     `,
     sql<OptionRow[]>`SELECT * FROM option_list ORDER BY type, sort_order, label`,
     sql<{ id: string }[]>`SELECT id FROM snapshots ORDER BY date DESC LIMIT 1`,
@@ -37,18 +47,27 @@ export default async function SecuritiesPage() {
   const priceHistory: Record<string, { price: number; date: string }[]> = {}
 
   for (const row of prices) {
-    const rawDate = row.date
-    const dateStr = (rawDate as unknown) instanceof Date
-      ? (rawDate as unknown as Date).toISOString().slice(0, 10)
-      : String(rawDate).slice(0, 10)
-    const p = { price: Number(row.price), date: dateStr }
-    const changePct = row.change_pct != null ? Number(row.change_pct) : null
+    const p = { price: Number(row.price), date: toDateStr(row.date) }
     const keys = [row.ticker]
     if (row.ticker.endsWith('.KS')) keys.push(row.ticker.slice(0, -3))
     for (const key of keys) {
       if (!priceHistory[key]) priceHistory[key] = []
       priceHistory[key].push(p)
-      latestPrices[key] = { price: p.price, currency: row.currency, date: p.date, change_pct: changePct, exchange: row.exchange ?? null }
+    }
+  }
+  for (const row of latestRows) {
+    const date = toDateStr(row.date)
+    const keys = [row.ticker]
+    if (row.ticker.endsWith('.KS')) keys.push(row.ticker.slice(0, -3))
+    for (const key of keys) {
+      const prev = latestPrices[key]
+      // bare·.KS 두 키가 같은 종목을 가리키면 더 최근 것을 쓴다
+      if (prev && prev.date >= date) continue
+      latestPrices[key] = {
+        price: Number(row.price), currency: row.currency, date,
+        change_pct: row.change_pct != null ? Number(row.change_pct) : null,
+        exchange: row.exchange ?? null,
+      }
     }
   }
 

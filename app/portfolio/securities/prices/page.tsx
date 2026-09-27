@@ -1,27 +1,23 @@
 import { fetchSecurities } from '@/lib/portfolio/fetch'
 import { getSql } from '@/lib/db'
+import { priceLookupKeys, toDateStr } from '@/lib/portfolio/valuation'
 import PriceHistoryViewer from '@/components/portfolio/PriceHistoryViewer'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PriceHistoryPage() {
+// 가격 이력 전량을 내려보내던 것을 선택한 종목 1개만 읽도록 (?ticker=)
+export default async function PriceHistoryPage({ searchParams }: { searchParams: { ticker?: string } }) {
   const sql = getSql()
   const securities = await fetchSecurities()
-  const securitiesSet = new Set(securities.map(s => s.ticker))
+  const selected = securities.find(s => s.ticker === searchParams.ticker) ?? securities[0] ?? null
 
-  const rawHistory = await sql<{ ticker: string; date: string; price: number; currency: string }[]>`
-    SELECT ticker, date, price, currency FROM price_history ORDER BY date ASC
-  `
-  const history = rawHistory
-    .map(r => ({
-      ...r,
-      // price_history는 161510.KS로 저장, securities는 161510 → 정규화
-      ticker: r.ticker.endsWith('.KS') || r.ticker.endsWith('.KQ') ? r.ticker.slice(0, -3) : r.ticker,
-      price: Number(r.price),
-      date: (r.date as unknown) instanceof Date ? (r.date as unknown as Date).toISOString().slice(0, 10) : String(r.date).slice(0, 10),
-    }))
-    // securities에 없는 내부 티커(KRW=X 등) 제외
-    .filter(r => securitiesSet.has(r.ticker))
+  const history = selected
+    ? (await sql<{ date: unknown; price: number; currency: string }[]>`
+        SELECT DISTINCT ON (date) date, price, currency FROM price_history
+        WHERE ticker = ANY(${priceLookupKeys(selected.ticker, selected.country)})
+        ORDER BY date ASC, ticker DESC
+      `).map(r => ({ ticker: selected.ticker, date: toDateStr(r.date), price: Number(r.price), currency: r.currency }))
+    : []
 
-  return <PriceHistoryViewer securities={securities} history={history} />
+  return <PriceHistoryViewer securities={securities} selectedTicker={selected?.ticker ?? ''} history={history} />
 }

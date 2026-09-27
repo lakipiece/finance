@@ -1,5 +1,6 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { formatDate } from '@/lib/utils'
@@ -9,16 +10,15 @@ interface PriceRow { ticker: string; date: string; price: number; currency: stri
 
 interface Props {
   securities: Security[]
+  /** 서버가 이 종목의 이력만 읽어 history로 넘긴다 */
+  selectedTicker: string
   history: PriceRow[]
 }
 
-export default function PriceHistoryViewer({ securities, history }: Props) {
-  const [selectedTicker, setSelectedTicker] = useState(securities[0]?.ticker ?? '')
+export default function PriceHistoryViewer({ securities, selectedTicker, history: rows }: Props) {
+  const router = useRouter()
+  const setSelectedTicker = (ticker: string) => router.push(`?ticker=${encodeURIComponent(ticker)}`)
 
-  const rows = useMemo(
-    () => history.filter(h => h.ticker === selectedTicker),
-    [history, selectedTicker]
-  )
   const isUSD = rows[0]?.currency === 'USD'
   const chartData = useMemo(
     () => rows.map(r => ({ date: r.date, price: r.price })),
