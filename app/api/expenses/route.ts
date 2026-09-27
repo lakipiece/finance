@@ -2,8 +2,11 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
+import { requireSession } from '@/lib/auth-guard'
 
 export async function GET(req: NextRequest) {
+  const denied = await requireSession()
+  if (denied) return denied
   const params = req.nextUrl.searchParams
   const yearStr = params.get('year')
   const category = params.get('category')

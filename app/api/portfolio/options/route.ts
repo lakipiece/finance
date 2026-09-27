@@ -3,10 +3,13 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 type OptionRow = { id: string; type: string; label: string; value: string; color_hex: string | null; sort_order: number }
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const rows = await sql<OptionRow[]>`
     SELECT * FROM option_list ORDER BY type, sort_order, label

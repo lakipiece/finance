@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -12,6 +13,8 @@ function formatDate(v: unknown): string | null {
 }
 
 export async function GET(_req: NextRequest, { params }: Params) {
+  const denied = await requireSession()
+  if (denied) return denied
   try {
     const { id } = await params
     const sql = getSql()

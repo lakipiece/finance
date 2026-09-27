@@ -4,8 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
+import { requireSession } from '@/lib/auth-guard'
 
 export async function GET(req: NextRequest) {
+  const denied = await requireSession()
+  if (denied) return denied
   const year = req.nextUrl.searchParams.get('year')
   const monthParam = req.nextUrl.searchParams.get('month')
   const all = req.nextUrl.searchParams.get('all') === '1'

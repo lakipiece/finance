@@ -3,11 +3,14 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 type Params = { params: Promise<{ id: string }> }
 
 // GET: 해당 종목의 태그 목록 조회 (인증 불필요)
 export async function GET(_req: NextRequest, { params }: Params) {
+  const denied = await requireSession()
+  if (denied) return denied
   const { id } = await params
   try {
     const sql = getSql()

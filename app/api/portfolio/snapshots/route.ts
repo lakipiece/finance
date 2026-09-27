@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { kstToday } from '@/lib/portfolio/valuation'
+import { requireSession } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const data = await sql`SELECT * FROM snapshots ORDER BY date DESC`
   return NextResponse.json(data)

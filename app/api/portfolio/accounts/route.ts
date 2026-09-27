@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql, type Sql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { isForeignKeyViolation } from '@/lib/db-errors'
+import { requireSession } from '@/lib/auth-guard'
 
 // SELECT 공통부 — 문자열을 그대로 끼워 넣지 않고 프래그먼트로 합성한다
 const accountWithLabels = (sql: Sql) => sql`
@@ -18,6 +19,8 @@ const accountWithLabels = (sql: Sql) => sql`
 `
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const data = await sql`${accountWithLabels(sql)} ORDER BY a.sort_order ASC, a.created_at ASC`
   return NextResponse.json(data)

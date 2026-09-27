@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
+import { requireSession } from '@/lib/auth-guard'
 
 function formatDate(v: unknown): string | null {
   if (!v) return null
@@ -11,6 +12,8 @@ function formatDate(v: unknown): string | null {
 }
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   try {
     const sql = getSql()
     const rows = await sql`

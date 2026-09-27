@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 interface BudgetItemInput {
   id?: number | null
@@ -14,6 +15,8 @@ interface BudgetItemInput {
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireSession()
+  if (denied) return denied
   const yearStr = req.nextUrl.searchParams.get('year')
   const year = yearStr ? parseInt(yearStr) : null
   if (!year || isNaN(year)) {

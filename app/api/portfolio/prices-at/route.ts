@@ -4,11 +4,14 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate } from '@/lib/portfolio/valuation'
 import { fetchInterestPayments, lastInterestMap } from '@/lib/portfolio/interest'
+import { requireSession } from '@/lib/auth-guard'
 
 // GET /api/portfolio/prices-at?date=YYYY-MM-DD
 // 지정일 이전 최신 가격을 종목별로 반환. 미래 가격으로 과거를 평가하지 않는다 —
 // 가격이 없는 종목은 0으로 두고 unpriced(security_id 목록)로 알린다.
 export async function GET(req: Request) {
+  const denied = await requireSession()
+  if (denied) return denied
   const url = new URL(req.url)
   const date = url.searchParams.get('date')
   if (!date) return NextResponse.json({ error: 'date required' }, { status: 400 })

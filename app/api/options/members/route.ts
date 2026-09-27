@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
+import { requireSession } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const rows = await sql`SELECT code, display_name, color FROM members ORDER BY code`
   return NextResponse.json(rows)

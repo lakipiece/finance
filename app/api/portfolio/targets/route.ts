@@ -4,8 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
+import { requireSession } from '@/lib/auth-guard'
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const data = await sql`SELECT * FROM target_allocations ORDER BY level, key`
   return NextResponse.json(data)

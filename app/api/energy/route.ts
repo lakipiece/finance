@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
+import { requireSession } from '@/lib/auth-guard'
 
 const NUMERIC_FIELDS = [
   'electricity_amount', 'electricity_usage',
@@ -21,6 +22,8 @@ function toNum(v: unknown): number {
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireSession()
+  if (denied) return denied
   const yearFrom = req.nextUrl.searchParams.get('yearFrom')
   const yearTo = req.nextUrl.searchParams.get('yearTo')
   try {

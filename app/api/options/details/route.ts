@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +13,8 @@ const CAT_DEFAULT_COLORS: Record<string, string> = {
 }
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const rows = await sql`SELECT id, name, category, color FROM detail_options WHERE is_active = true ORDER BY category NULLS LAST, order_idx, name`
   return NextResponse.json(rows)

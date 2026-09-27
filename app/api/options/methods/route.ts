@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   const sql = getSql()
   const rows = await sql`SELECT id, name, order_idx, color FROM payment_methods WHERE is_active = true ORDER BY order_idx, id`
   return NextResponse.json(rows)

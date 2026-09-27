@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { requireSession } from '@/lib/auth-guard'
 
 function formatDate(v: unknown): string | null {
   if (!v) return null
@@ -10,6 +11,8 @@ function formatDate(v: unknown): string | null {
 }
 
 export async function GET() {
+  const denied = await requireSession()
+  if (denied) return denied
   try {
     const sql = getSql()
     // 각 자산의 최신 평가액을 LATERAL JOIN으로 함께 조회
