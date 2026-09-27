@@ -15,6 +15,12 @@ export interface SecurityLike {
   country?: string | null
   /** 고정단가 — numeric 컬럼이라 postgres.js가 문자열로 줄 수 있다 */
   fixed_price?: number | string | null
+  /** 연이율 (0.035 = 3.5%) — 미수이자 계산용 */
+  annual_rate?: number | string | null
+  /** 이자 기산일 */
+  accrual_start?: unknown
+  /** 만기일 — 이후로는 이자가 붙지 않는다 */
+  maturity_date?: unknown
 }
 
 /** KRX: 접두어 제거 */
@@ -61,17 +67,66 @@ export function fixedPriceOf(sec: SecurityLike): number | null {
   return Number.isFinite(n) ? n : null
 }
 
+/** 'YYYY-MM-DD' 두 날짜 사이의 일수. 음수면 0. */
+function daysBetween(from: string, to: string): number {
+  if (!from || !to) return 0
+  const ms = Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)
+  if (!Number.isFinite(ms)) return 0
+  return Math.max(0, Math.round(ms / 86400000))
+}
+
+/**
+ * 미수이자 배수 — 평가단가에 곱할 값. 이자 설정이 없으면 1.
+ *
+ *   배수 = 1 + 연이율 × 경과일 / 365            (예금 관례대로 단리)
+ *   경과일 = min(asOf, 만기일) − max(기산일, 마지막 이자 지급일)
+ *
+ * 마지막 이자 지급일을 기산점으로 당기므로, dividends에 이자를 기록하면
+ * 그만큼의 미수이자가 사라져 이중 계상되지 않는다.
+ */
+export function accrualFactor(
+  sec: SecurityLike,
+  asOf: string,
+  lastInterestAt?: string | null,
+): number {
+  const rate = sec.annual_rate == null ? null : Number(sec.annual_rate)
+  if (rate === null || !Number.isFinite(rate) || rate === 0) return 1
+
+  const start = toDateStr(sec.accrual_start)
+  const from = lastInterestAt && lastInterestAt > start ? lastInterestAt : start
+  if (!from) return 1
+
+  const maturity = toDateStr(sec.maturity_date)
+  const to = maturity && maturity < asOf ? maturity : asOf
+
+  return 1 + rate * (daysBetween(from, to) / 365)
+}
+
+/** 미수이자 계산에 필요한 부가 정보 — 없으면 이자를 반영하지 않는다. */
+export interface PriceContext {
+  /** 평가 기준일 'YYYY-MM-DD' */
+  asOf: string
+  /** security_id → 기준일 이전 마지막 이자 지급일 */
+  lastInterestBySecurity?: Record<string, string>
+}
+
 /**
  * 종목 단가 해석 — 고정단가가 있으면 시세를 무시하고 그 값을 쓴다.
  * 티커가 실재하지 않는 종목(원화 RP, 예수금 등)의 단일 진입점.
+ * ctx를 주면 연이율 설정이 있는 종목에 미수이자를 얹는다.
  */
 export function resolvePrice(
   priceMap: Record<string, number>,
-  sec: SecurityLike,
+  sec: SecurityLike & { id?: string },
+  ctx?: PriceContext,
 ): number | null {
   const fixed = fixedPriceOf(sec)
-  if (fixed !== null) return fixed
-  return lookupPrice(priceMap, sec.ticker, sec.country)
+  const base = fixed !== null ? fixed : lookupPrice(priceMap, sec.ticker, sec.country)
+  if (base === null) return null
+  if (!ctx) return base
+
+  const lastInterest = sec.id ? ctx.lastInterestBySecurity?.[sec.id] : null
+  return base * accrualFactor(sec, ctx.asOf, lastInterest)
 }
 
 /**
@@ -96,6 +151,11 @@ export function kstTradingDate(now: Date = new Date()): string {
   const tradingDate = new Date(nowKst)
   if (kstHour < 12) tradingDate.setUTCDate(tradingDate.getUTCDate() - 1)
   return tradingDate.toISOString().slice(0, 10)
+}
+
+/** KST 기준 오늘 날짜 'YYYY-MM-DD' — 미수이자 경과일 계산용 (거래일 보정 없음) */
+export function kstToday(now: Date = new Date()): string {
+  return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
 }
 
 /** Date | string → 'YYYY-MM-DD' */

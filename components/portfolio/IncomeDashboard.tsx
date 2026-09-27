@@ -12,7 +12,7 @@ import { formatWonCompact } from '@/lib/utils'
 import type { ChartTooltipProps } from '@/lib/chartTypes'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import DividendTable from './DividendTable'
-import DividendFormModal from './DividendFormModal'
+import DividendFormModal, { type IncomeTypeOption } from './DividendFormModal'
 import BulkDividendModal from './BulkDividendModal'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import PageHeader from '@/components/ui/PageHeader'
@@ -32,6 +32,7 @@ interface Props {
   securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
   accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>[]
   accountSecurities: AccountSecurity[]
+  incomeTypes: IncomeTypeOption[]
   positions: PositionLite[]
 }
 
@@ -161,7 +162,7 @@ function DividendTooltip({ active, payload, label, color }: ChartTooltipProps & 
 
 // ─── 메인 컴포넌트 ───────────────────────────────────────────────────────────
 
-export default function IncomeDashboard({ dividends, securities, accounts, accountSecurities, positions }: Props) {
+export default function IncomeDashboard({ dividends, securities, accounts, accountSecurities, incomeTypes, positions }: Props) {
   const router = useRouter()
   const { palette } = useTheme()
 
@@ -179,6 +180,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   const [filterAllPeriod, setFilterAllPeriod] = useState(false)
   const [ownerFilter, setOwnerFilter] = useState<string | null>(null)
   const [accountFilter, setAccountFilter] = useState<string | null>(null)
+  const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [memberOpts, setMemberOpts] = useState<MemberOpt[]>([])
 
   useEffect(() => {
@@ -209,9 +211,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     () => dividends.filter(d => {
       if (ownerFilter && (d.account.owner ?? '') !== ownerFilter) return false
       if (accountFilter && String(d.account_id) !== accountFilter) return false
+      if (typeFilter && (d.income_type ?? '배당') !== typeFilter) return false
       return inPeriod(fmtDate(d.paid_at), filterAllPeriod, filterYear, filterMonth)
     }),
-    [dividends, ownerFilter, accountFilter, filterAllPeriod, filterYear, filterMonth]
+    [dividends, ownerFilter, accountFilter, typeFilter, filterAllPeriod, filterYear, filterMonth]
   )
 
   const periodLabel = filterAllPeriod
@@ -319,6 +322,13 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     persistFilter({ year: filterYear, month: filterMonth, allPeriod: filterAllPeriod, owner: ownerFilter, account })
   }
 
+  function selectType(value: string) {
+    const next = typeFilter === value ? null : value
+    setTypeFilter(next)
+    setSelectedMonth(null)
+    setSelectedSecurity(null)
+  }
+
   function handlePeriodChange(y: number, m: number | null, all: boolean) {
     setFilterYear(y)
     setFilterMonth(m)
@@ -361,7 +371,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
-      <PageHeader title="배당 · 분배금" description="기간별 배당·분배금 집계 및 세후 현황">
+      <PageHeader title="인컴" description="배당·이자·분배금 집계 및 세후 현황">
           <YearMonthPicker
             year={filterYear} month={filterMonth} allPeriod={filterAllPeriod}
             align="right"
@@ -378,6 +388,18 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
       {/* 필터: 사용자 · 계좌 */}
       <div className="bg-surface-card rounded-card px-[13px] py-3 flex items-center gap-2 flex-wrap">
+        <span className="text-meta font-medium text-ink-4 shrink-0">종류</span>
+        {incomeTypes.length > 0 ? incomeTypes.map(o => {
+          const active = typeFilter === o.value
+          return (
+            <button key={o.id} type="button" onClick={() => selectType(o.value)}
+              className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+              style={active ? { backgroundColor: o.color_hex ?? palette.colors[0] } : undefined}>
+              {o.label}
+            </button>
+          )
+        }) : <span className="text-meta text-ink-5">없음</span>}
+        <span className="text-ink-5 text-body">|</span>
         <span className="text-meta font-medium text-ink-4 shrink-0">사용자</span>
         {owners.length > 0 ? owners.map(o => {
           const active = ownerFilter === o
@@ -414,7 +436,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         return (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2">
             <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
-              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 총 배당금</p>
+              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 총 인컴</p>
               <p className="text-heading text-income tabular-nums mt-1 truncate">{fmt(gross)}원</p>
             </div>
             <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
@@ -422,7 +444,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <p className="text-heading text-ink-2 tabular-nums mt-1 truncate">{fmt(tax)}원</p>
             </div>
             <div className="bg-surface-card rounded-card shadow-card px-[13px] py-[11px] min-w-0">
-              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 세후 배당금</p>
+              <p className="text-micro text-ink-5 uppercase truncate">{scopeLabel} 세후 인컴</p>
               <p className="text-heading text-ink tabular-nums mt-1 truncate">{fmt(net)}원</p>
             </div>
           </div>
@@ -433,7 +455,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <div className="bg-surface-card rounded-card p-[13px]">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-subhead font-medium text-ink">
-            {periodLabel} 배당·분배금 집계
+            {periodLabel} {typeFilter ?? '인컴'} 집계
             {selectedMonth ? <span className="text-body text-ink-4 font-normal ml-2">· {selectedMonth}</span> : null}
           </h3>
           <div className="flex gap-1">
@@ -563,6 +585,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
         editTarget={editTarget}
         accounts={accounts}
         accountSecurities={accountSecurities}
+        incomeTypes={incomeTypes}
         securities={securities}
         owners={owners}
         palette={palette}

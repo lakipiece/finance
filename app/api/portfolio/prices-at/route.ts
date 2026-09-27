@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate } from '@/lib/portfolio/valuation'
+import { fetchInterestPayments, lastInterestMap } from '@/lib/portfolio/interest'
 
 // GET /api/portfolio/prices-at?date=YYYY-MM-DD
 // 지정일 이전 최신 가격을 종목별로 반환. 없으면 이후 최초 가격 fallback.
@@ -13,8 +14,12 @@ export async function GET(req: Request) {
 
   const sql = getSql()
 
-  const securities = await sql<{ id: string; ticker: string; currency: string; country: string | null; fixed_price: string | null }[]>`
-    SELECT s.id, s.ticker, s.fixed_price,
+  const securities = await sql<{
+    id: string; ticker: string; currency: string; country: string | null
+    fixed_price: string | null; annual_rate: string | null
+    accrual_start: unknown; maturity_date: unknown
+  }[]>`
+    SELECT s.id, s.ticker, s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
            cu.value AS currency,
            co.value AS country
     FROM securities s
@@ -55,10 +60,13 @@ export async function GET(req: Request) {
 
   const { rate: exchangeRate } = resolveExchangeRate(priceMap)
 
+  // 미수이자 기산점 — 지정일 이전 마지막 이자 지급일
+  const ctx = { asOf: date, lastInterestBySecurity: lastInterestMap(await fetchInterestPayments(), date) }
+
   // security_id → KRW 환산 가격
   const secPrices: Record<string, number> = {}
   for (const s of securities) {
-    const rawPrice = resolvePrice(priceMap, s) ?? 0
+    const rawPrice = resolvePrice(priceMap, s, ctx) ?? 0
     secPrices[s.id] = isKrwSecurity(s) ? rawPrice : rawPrice * exchangeRate
   }
 

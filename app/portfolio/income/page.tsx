@@ -9,6 +9,7 @@ type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'cu
 type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>
 type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>
 type AccountSecurity = { account_id: string; security_id: string }
+type IncomeTypeRow = { id: string; label: string; value: string; color_hex: string | null }
 
 export default async function IncomePage() {
   const sql = getSql()
@@ -20,14 +21,20 @@ export default async function IncomePage() {
       return null
     })
 
-    const [dividends, securities, accounts, accountSecurities, summary] = await Promise.all([
+    const [dividends, securities, accounts, accountSecurities, incomeTypes, summary] = await Promise.all([
+      // 계좌 단위 이자는 종목 없이 기록될 수 있다 → LEFT JOIN + 계좌명 대체 표기
       sql`
         SELECT d.*,
-          json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW')) AS security,
+          it.value AS income_type,
+          CASE WHEN s.id IS NULL
+            THEN json_build_object('ticker', '(계좌)', 'name', a.name, 'currency', 'KRW')
+            ELSE json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW'))
+          END AS security,
           json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner) AS account
         FROM dividends d
-        JOIN securities s ON s.id = d.security_id
+        LEFT JOIN securities s ON s.id = d.security_id
         LEFT JOIN option_list ol ON s.currency_id = ol.id
+        LEFT JOIN option_list it ON d.income_type_id = it.id
         JOIN accounts a ON a.id = d.account_id
         ORDER BY d.paid_at DESC
       ` as unknown as Promise<DividendRow[]>,
@@ -40,6 +47,9 @@ export default async function IncomePage() {
       sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate
           FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
+      sql`SELECT id, label, value, color_hex FROM option_list
+          WHERE type = 'income_type' AND COALESCE(is_hidden, false) = false
+          ORDER BY sort_order` as unknown as Promise<IncomeTypeRow[]>,
       summaryPromise,
     ])
 
@@ -58,6 +68,7 @@ export default async function IncomePage() {
         securities={securities}
         accounts={accounts}
         accountSecurities={accountSecurities}
+        incomeTypes={incomeTypes}
         positions={positions}
       />
     )

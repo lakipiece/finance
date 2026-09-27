@@ -12,6 +12,17 @@ type DividendRow = Dividend & {
   account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate'>
 }
 
+/** 배당은 기본값이라 표시하지 않고, 이자·분배금만 뱃지로 구분한다 */
+function incomeBadge(d: DividendRow) {
+  const type = d.income_type
+  if (!type || type === '배당') return null
+  return (
+    <span className="ml-1 align-middle px-1.5 py-0.5 rounded text-micro tracking-normal font-medium bg-surface-low text-ink-3">
+      {type}
+    </span>
+  )
+}
+
 type SortMode = 'date' | 'amount'
 const PAGE_SIZES = [20, 50, 100] as const
 
@@ -204,7 +215,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                 <div className="flex-1 min-w-0">
                   <button type="button" onClick={() => setDetailTicker(d.security.ticker)}
                     className="text-left min-w-0 hover:underline underline-offset-2">
-                    <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}</span>
+                    <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}{incomeBadge(d)}</span>
                     <span className="text-body font-bold text-ink truncate block">{d.security.name}</span>
                   </button>
                 </div>
@@ -278,7 +289,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                   <td className={tbl.td}>
                     <button type="button" onClick={() => setDetailTicker(d.security.ticker)}
                       className="text-left min-w-0 hover:underline underline-offset-2">
-                      <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}</span>
+                      <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}{incomeBadge(d)}</span>
                       <span className="text-body font-bold text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
                     </button>
                   </td>

@@ -9,6 +9,7 @@ import DateInput from '@/components/ui/DateInput'
 import Select from '@/components/ui/Select'
 
 interface AccountSecurity { account_id: string; security_id: string }
+export interface IncomeTypeOption { id: string; label: string; value: string; color_hex: string | null }
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -22,6 +23,7 @@ interface Props {
   accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner'>[]
   accountSecurities: AccountSecurity[]
   securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
+  incomeTypes: IncomeTypeOption[]
   owners: string[]
   palette: { colors: string[] }
 }
@@ -47,14 +49,14 @@ function parseNum(s: string) {
 }
 
 const emptyForm = () => ({
-  account_id: '', security_id: '', paid_at: todayStr(),
+  account_id: '', security_id: '', income_type_id: '', paid_at: todayStr(),
   currency: 'KRW', amount: '', exchange_rate: '', tax: '', memo: '',
 })
 
 // ─── 컴포넌트 ────────────────────────────────────────────────────────────────
 
 export default function DividendFormModal({
-  show, onClose, editTarget, accounts, accountSecurities, securities, owners, palette,
+  show, onClose, editTarget, accounts, accountSecurities, securities, incomeTypes, owners, palette,
 }: Props) {
   const router = useRouter()
   const [form, setForm] = useState(emptyForm())
@@ -63,6 +65,12 @@ export default function DividendFormModal({
   const [secDropOpen, setSecDropOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const secDropRef = useRef<HTMLDivElement>(null)
+
+  // 기본 종류는 배당 (없으면 목록 첫 항목)
+  const defaultIncomeTypeId = useMemo(
+    () => incomeTypes.find(o => o.value === '배당')?.id ?? incomeTypes[0]?.id ?? '',
+    [incomeTypes]
+  )
 
   // editTarget이 바뀔 때 폼 초기화
   useEffect(() => {
@@ -73,7 +81,8 @@ export default function DividendFormModal({
       setSecDropOpen(false)
       setForm({
         account_id: editTarget.account_id,
-        security_id: editTarget.security_id,
+        security_id: editTarget.security_id ?? '',
+        income_type_id: editTarget.income_type_id ?? defaultIncomeTypeId,
         paid_at: fmtDate(editTarget.paid_at),
         currency: editTarget.currency,
         amount: Number(editTarget.amount).toLocaleString(),
@@ -85,9 +94,9 @@ export default function DividendFormModal({
       setModalOwner('')
       setSecSearch('')
       setSecDropOpen(false)
-      setForm(emptyForm())
+      setForm({ ...emptyForm(), income_type_id: defaultIncomeTypeId })
     }
-  }, [show, editTarget])
+  }, [show, editTarget, defaultIncomeTypeId])
 
   // 드롭다운 바깥 클릭 닫기
   useEffect(() => {
@@ -141,7 +150,8 @@ export default function DividendFormModal({
     setSaving(true)
     try {
       const body = {
-        security_id: form.security_id,
+        security_id: form.security_id || null,
+        income_type_id: form.income_type_id || null,
         account_id: form.account_id,
         paid_at: form.paid_at,
         currency: form.currency,
@@ -204,6 +214,26 @@ export default function DividendFormModal({
             </div>
           )}
 
+          {/* 인컴 종류 */}
+          {incomeTypes.length > 0 ? (
+            <div>
+              <p className={field.label}>종류</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {incomeTypes.map(o => {
+                  const active = form.income_type_id === o.id
+                  return (
+                    <button type="button" key={o.id}
+                      onClick={() => setForm(p => ({ ...p, income_type_id: o.id }))}
+                      className={`px-3 py-1.5 rounded-btn text-body font-medium transition-colors ${active ? 'text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}
+                      style={active ? { backgroundColor: o.color_hex ?? palette.colors[0] } : undefined}>
+                      {o.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {/* 계좌 선택 */}
           <div>
             <p className={field.label}>계좌</p>
@@ -212,9 +242,9 @@ export default function DividendFormModal({
               options={modalAccounts.map(a => ({ value: a.id, label: `${a.broker} ${a.name}` }))} />
           </div>
 
-          {/* 종목 선택 */}
+          {/* 종목 선택 — 계좌 단위 이자는 비워둘 수 있다 */}
           <div>
-            <p className={field.label}>종목</p>
+            <p className={field.label}>종목 <span className="text-ink-5 font-normal">(계좌 단위 이자는 비워두기)</span></p>
             {form.security_id ? (
               <div className="flex items-center gap-2 rounded-btn px-3 py-1.5">
                 <span className="text-body font-medium text-ink flex-1 truncate">

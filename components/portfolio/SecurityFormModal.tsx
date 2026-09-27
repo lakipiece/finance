@@ -6,6 +6,7 @@ import type { Security } from '@/lib/portfolio/types'
 import { useTheme } from '@/lib/ThemeContext'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import Select from '@/components/ui/Select'
+import DateInput from '@/components/ui/DateInput'
 
 export type OptionItem = {
   id: string
@@ -37,6 +38,10 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
     url:  security?.url ?? '',
     memo: security?.memo ?? '',
     fixed_price: security?.fixed_price == null ? '' : String(security.fixed_price),
+    // 연이율은 DB에 비율(0.035)로 저장하고 폼에서는 %로 다룬다
+    annual_rate: security?.annual_rate == null ? '' : String(Number(security.annual_rate) * 100),
+    accrual_start: security?.accrual_start ? String(security.accrual_start).slice(0, 10) : '',
+    maturity_date: security?.maturity_date ? String(security.maturity_date).slice(0, 10) : '',
   })
   const [tags, setTags] = useState<string[]>(security?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
@@ -62,6 +67,9 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
           url:  form.url  || null,
           memo: form.memo || null,
           fixed_price: form.fixed_price.trim() === '' ? null : Number(form.fixed_price),
+          annual_rate: form.annual_rate.trim() === '' ? null : Number(form.annual_rate) / 100,
+          accrual_start: form.accrual_start || null,
+          maturity_date: form.maturity_date || null,
         }),
       })
       const data = await res.json()
@@ -130,6 +138,18 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
                 className={field.input} placeholder="비워두면 시세 조회" />
               <p className="text-micro tracking-normal text-ink-4 mt-0.5">
                 티커가 실재하지 않는 종목(원화 RP·예수금 등)에 입력. 시세를 조회하지 않고 항상 이 단가로 평가한다. 단위는 종목 통화 기준.
+              </p></div>
+            <div><label className={field.labelSm}>연이율 (%)</label>
+              <input value={form.annual_rate} inputMode="decimal"
+                onChange={e => setForm(p => ({ ...p, annual_rate: e.target.value.replace(/[^\d.]/g, '') }))}
+                className={field.input} placeholder="예: 3.5" /></div>
+            <div><label className={field.labelSm}>이자 기산일</label>
+              <DateInput value={form.accrual_start} onChange={v => setForm(p => ({ ...p, accrual_start: v }))} /></div>
+            <div className="col-span-2"><label className={field.labelSm}>만기일</label>
+              <DateInput value={form.maturity_date} onChange={v => setForm(p => ({ ...p, maturity_date: v }))} />
+              <p className="text-micro tracking-normal text-ink-4 mt-0.5">
+                연이율을 넣으면 기산일부터 경과일만큼 미수이자가 평가단가에 단리로 붙는다(만기일에 정지).
+                인컴에 &apos;이자&apos;를 기록하면 그 날짜로 기산점이 옮겨가 이중 계상되지 않는다.
               </p></div>
             <div className="col-span-2"><label className={field.labelSm}>URL</label>
               <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>

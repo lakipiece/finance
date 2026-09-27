@@ -9,21 +9,23 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo } = await req.json()
-    if (!security_id || !account_id || !paid_at || !amount) {
+    const { security_id, account_id, paid_at, amount, currency, exchange_rate, tax, memo, income_type_id } = await req.json()
+    // 계좌 단위 이자는 종목 없이 기록할 수 있다
+    if (!account_id || !paid_at || !amount) {
       return NextResponse.json({ error: '필수 항목 누락' }, { status: 400 })
     }
     const sql = getSql()
     const [row] = await sql`
       UPDATE dividends
-      SET security_id = ${security_id},
+      SET security_id = ${security_id || null},
           account_id = ${account_id},
           paid_at = ${paid_at},
           amount = ${Number(amount)},
           currency = ${currency ?? 'KRW'},
           exchange_rate = ${Number(exchange_rate) || 1},
           tax = ${Number(tax) || 0},
-          memo = ${memo ?? null}
+          memo = ${memo ?? null},
+          income_type_id = ${income_type_id ?? null}
       WHERE id = ${params.id}
       RETURNING *
     `

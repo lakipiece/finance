@@ -6,6 +6,7 @@ import { auth } from '@/lib/auth'
 import {
   isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate, toDateStr,
 } from '@/lib/portfolio/valuation'
+import { fetchInterestPayments, lastInterestMap } from '@/lib/portfolio/interest'
 
 // 모든 스냅샷의 총평가액·투자원금·비중(breakdown)을 재계산한다.
 // 가격: 스냅샷 날짜 이전 최신 → 없으면 가장 가까운 미래 가격 → 최후에 avg_price(손익 0 처리).
@@ -21,9 +22,10 @@ export async function POST() {
     sql<{
       id: string; ticker: string; currency: string; country: string | null
       sector: string | null; asset_class: string | null; tags: string[]
-      fixed_price: string | null
+      fixed_price: string | null; annual_rate: string | null
+      accrual_start: unknown; maturity_date: unknown
     }[]>`
-      SELECT s.id, s.ticker, s.fixed_price,
+      SELECT s.id, s.ticker, s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
              cu.value AS currency,
              co.value AS country,
              se.value AS sector,
@@ -42,6 +44,9 @@ export async function POST() {
   ])
 
   const secMap = Object.fromEntries(securities.map(s => [s.id, s]))
+
+  // 이자 지급 내역 — 스냅샷 날짜마다 그 이전 마지막 지급일을 기산점으로 쓴다
+  const interestPayments = await fetchInterestPayments()
 
   const uniqueTickers = [
     ...new Set([
@@ -107,6 +112,7 @@ export async function POST() {
       if (!priceMap[ticker]) priceMap[ticker] = price
     }
     const { rate: exchangeRate } = resolveExchangeRate(priceMap)
+    const priceCtx = { asOf: snapDate, lastInterestBySecurity: lastInterestMap(interestPayments, snapDate) }
 
     let totalMarketValue = 0
     let totalInvested = 0
@@ -121,7 +127,7 @@ export async function POST() {
       if (!sec) continue
       const avgPrice = Number(h.avg_price ?? 0)
       // 가격 미존재 시 avg_price 사용 → 해당 종목 손익 0으로 계산됨 (가격 수집으로 해소)
-      const rawPrice = resolvePrice(priceMap, sec) ?? avgPrice
+      const rawPrice = resolvePrice(priceMap, sec, priceCtx) ?? avgPrice
       const isKrw = isKrwSecurity(sec)
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
       const qty = Number(h.quantity)

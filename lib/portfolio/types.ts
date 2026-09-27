@@ -28,6 +28,12 @@ export interface Security {
   memo: string | null
   /** 고정단가 — 설정 시 시세를 조회하지 않고 항상 이 단가로 평가 (종목 통화 기준) */
   fixed_price: number | null
+  /** 연이율 (0.035 = 3.5%) — 설정 시 경과일만큼 미수이자를 평가단가에 얹는다 */
+  annual_rate: number | null
+  /** 이자 기산일 */
+  accrual_start: string | null
+  /** 만기일 — 이후로는 이자가 붙지 않는다 */
+  maturity_date: string | null
   // resolved via JOIN from option_list
   asset_class: string | null
   country: string | null
@@ -74,7 +80,11 @@ export const CASHFLOW_TYPE_LABELS: Record<CashflowType, string> = {
 
 export interface Dividend {
   id: string
-  security_id: string
+  /** 계좌 단위 이자는 종목 없이 기록될 수 있다 */
+  security_id: string | null
+  income_type_id: string | null
+  /** option_list에서 JOIN — 배당 / 이자 / 분배금 */
+  income_type: string | null
   account_id: string
   paid_at: string
   amount: number
