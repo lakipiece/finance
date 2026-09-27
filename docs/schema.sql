@@ -1,8 +1,5 @@
--- Finance 앱 전체 스키마 (운영 DB pg_dump 기준, 2026-08-14)
--- 신규 구축: 이 파일 실행 후 docs/sql/ 의 2026-08-14 이후 마이그레이션을 순서대로 적용
---   1) 2026-08-14-account-cashflows.sql  (입출금 원장)
---   2) 2026-08-14-perf-indexes.sql       (조회 인덱스)
---   3) 2026-08-14-password-bcrypt.sql    (비밀번호 해시 — 기존 DB만 해당)
+-- Finance 운영 DB 스키마 (pg_dump --schema-only)
+-- 생성: 2026-09-27 17:17 · scripts/dump-schema.sh
 
 --
 -- PostgreSQL database dump
@@ -23,9 +20,40 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: account_cashflows; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account_cashflows (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    account_id uuid NOT NULL,
+    flow_date date NOT NULL,
+    type text NOT NULL,
+    amount numeric NOT NULL,
+    memo text DEFAULT ''::text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT account_cashflows_amount_check CHECK ((amount > (0)::numeric)),
+    CONSTRAINT account_cashflows_type_check CHECK ((type = ANY (ARRAY['deposit'::text, 'withdrawal'::text, 'opening'::text])))
+);
+
 
 --
 -- Name: account_securities; Type: TABLE; Schema: public; Owner: -
@@ -173,7 +201,8 @@ CREATE TABLE public.dividends (
     exchange_rate numeric DEFAULT 1 NOT NULL,
     memo text,
     created_at timestamp with time zone DEFAULT now(),
-    tax numeric
+    tax numeric,
+    income_type_id uuid
 );
 
 
@@ -217,18 +246,6 @@ CREATE SEQUENCE public.energy_records_id_seq
 --
 
 ALTER SEQUENCE public.energy_records_id_seq OWNED BY public.energy_records.id;
-
-
---
--- Name: expense_memos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.expense_memos_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 --
@@ -284,8 +301,16 @@ CREATE TABLE public.holdings (
     snapshot_date date DEFAULT CURRENT_DATE NOT NULL,
     source text DEFAULT 'manual'::text,
     updated_at timestamp with time zone DEFAULT now(),
-    snapshot_id uuid
+    snapshot_id uuid,
+    avg_fx_rate numeric
 );
+
+
+--
+-- Name: COLUMN holdings.avg_fx_rate; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.holdings.avg_fx_rate IS 'USD 종목 평균 매입환율 (KRW/USD) — NULL이면 평가 시점 환율로 원가 환산';
 
 
 --
@@ -303,7 +328,7 @@ CREATE TABLE public.incomes (
     member text,
     created_at timestamp with time zone DEFAULT now(),
     memo text DEFAULT ''::text NOT NULL,
-    CONSTRAINT incomes_category_check CHECK ((category = ANY (ARRAY['급여'::text, '보너스'::text, '기타'::text, '급여 외'::text])))
+    CONSTRAINT incomes_category_check CHECK ((category = ANY (ARRAY['급여'::text, '기타'::text])))
 );
 
 
@@ -444,8 +469,40 @@ CREATE TABLE public.securities (
     country_id uuid,
     sector_id uuid,
     currency_id uuid,
-    style_id uuid
+    style_id uuid,
+    fixed_price numeric,
+    annual_rate numeric,
+    accrual_start date,
+    maturity_date date
 );
+
+
+--
+-- Name: COLUMN securities.fixed_price; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.securities.fixed_price IS '고정단가 — NULL이면 시세 조회, 값이 있으면 시세 조회 없이 이 단가로 평가 (종목 통화 기준)';
+
+
+--
+-- Name: COLUMN securities.annual_rate; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.securities.annual_rate IS '연이율 (0.035 = 3.5%) — NULL이면 미수이자 계산 안 함';
+
+
+--
+-- Name: COLUMN securities.accrual_start; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.securities.accrual_start IS '이자 기산일 — 마지막 이자 지급 기록이 있으면 그쪽이 우선';
+
+
+--
+-- Name: COLUMN securities.maturity_date; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.securities.maturity_date IS '만기일 — 이 날짜 이후로는 이자가 더 붙지 않음';
 
 
 --
@@ -474,8 +531,17 @@ CREATE TABLE public.snapshots (
     sector_breakdown jsonb,
     value_updated_at timestamp with time zone,
     asset_class_breakdown jsonb DEFAULT '{}'::jsonb,
-    tag_breakdown jsonb DEFAULT '{}'::jsonb
+    tag_breakdown jsonb DEFAULT '{}'::jsonb,
+    account_breakdown jsonb DEFAULT '{}'::jsonb NOT NULL,
+    unpriced_tickers text[] DEFAULT '{}'::text[] NOT NULL
 );
+
+
+--
+-- Name: COLUMN snapshots.unpriced_tickers; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.snapshots.unpriced_tickers IS '값 갱신 시 스냅샷 날짜 이전 가격이 없어 평균단가로 임시 평가한 종목 티커';
 
 
 --
@@ -559,6 +625,14 @@ ALTER TABLE ONLY public.incomes ALTER COLUMN id SET DEFAULT nextval('public.inco
 --
 
 ALTER TABLE ONLY public.payment_methods ALTER COLUMN id SET DEFAULT nextval('public.payment_methods_id_seq'::regclass);
+
+
+--
+-- Name: account_cashflows account_cashflows_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_cashflows
+    ADD CONSTRAINT account_cashflows_pkey PRIMARY KEY (id);
 
 
 --
@@ -866,6 +940,20 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: idx_account_cashflows_account_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_account_cashflows_account_date ON public.account_cashflows USING btree (account_id, flow_date);
+
+
+--
+-- Name: idx_account_cashflows_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_account_cashflows_date ON public.account_cashflows USING btree (flow_date);
+
+
+--
 -- Name: idx_budget_items_year; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -873,10 +961,67 @@ CREATE INDEX idx_budget_items_year ON public.budget_items USING btree (year);
 
 
 --
+-- Name: idx_dividends_income_type; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_dividends_income_type ON public.dividends USING btree (income_type_id);
+
+
+--
+-- Name: idx_dividends_paid_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_dividends_paid_at ON public.dividends USING btree (paid_at);
+
+
+--
 -- Name: idx_energy_records_year_month; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_energy_records_year_month ON public.energy_records USING btree (year, month);
+
+
+--
+-- Name: idx_expenses_category; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_expenses_category ON public.expenses USING btree (category);
+
+
+--
+-- Name: idx_expenses_year_month; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_expenses_year_month ON public.expenses USING btree (year, month);
+
+
+--
+-- Name: idx_holdings_snapshot; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_holdings_snapshot ON public.holdings USING btree (snapshot_id);
+
+
+--
+-- Name: idx_incomes_year_month; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_incomes_year_month ON public.incomes USING btree (year, month);
+
+
+--
+-- Name: idx_price_history_ticker_date_desc; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_price_history_ticker_date_desc ON public.price_history USING btree (ticker, date DESC);
+
+
+--
+-- Name: account_cashflows account_cashflows_account_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_cashflows
+    ADD CONSTRAINT account_cashflows_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON DELETE RESTRICT;
 
 
 --
@@ -924,7 +1069,15 @@ ALTER TABLE ONLY public.asset_valuations
 --
 
 ALTER TABLE ONLY public.dividends
-    ADD CONSTRAINT dividends_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT dividends_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON DELETE RESTRICT;
+
+
+--
+-- Name: dividends dividends_income_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.dividends
+    ADD CONSTRAINT dividends_income_type_id_fkey FOREIGN KEY (income_type_id) REFERENCES public.option_list(id);
 
 
 --
@@ -932,7 +1085,7 @@ ALTER TABLE ONLY public.dividends
 --
 
 ALTER TABLE ONLY public.dividends
-    ADD CONSTRAINT dividends_security_id_fkey FOREIGN KEY (security_id) REFERENCES public.securities(id) ON DELETE CASCADE;
+    ADD CONSTRAINT dividends_security_id_fkey FOREIGN KEY (security_id) REFERENCES public.securities(id) ON DELETE RESTRICT;
 
 
 --
@@ -940,7 +1093,7 @@ ALTER TABLE ONLY public.dividends
 --
 
 ALTER TABLE ONLY public.holdings
-    ADD CONSTRAINT holdings_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT holdings_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id) ON DELETE RESTRICT;
 
 
 --
@@ -948,7 +1101,7 @@ ALTER TABLE ONLY public.holdings
 --
 
 ALTER TABLE ONLY public.holdings
-    ADD CONSTRAINT holdings_security_id_fkey FOREIGN KEY (security_id) REFERENCES public.securities(id) ON DELETE CASCADE;
+    ADD CONSTRAINT holdings_security_id_fkey FOREIGN KEY (security_id) REFERENCES public.securities(id) ON DELETE RESTRICT;
 
 
 --
