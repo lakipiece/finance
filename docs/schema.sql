@@ -1,5 +1,5 @@
 -- Finance 운영 DB 스키마 (pg_dump --schema-only)
--- 생성: 2026-09-27 17:17 · scripts/dump-schema.sh
+-- 생성: 2026-09-27 18:28 · scripts/dump-schema.sh
 
 --
 -- PostgreSQL database dump
@@ -81,8 +81,16 @@ CREATE TABLE public.accounts (
     type_id uuid,
     currency_id uuid,
     dividend_eligible boolean DEFAULT true NOT NULL,
-    dividend_tax_rate numeric(5,2)
+    dividend_tax_rate numeric(5,2),
+    archived_at timestamp with time zone
 );
+
+
+--
+-- Name: COLUMN accounts.archived_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.accounts.archived_at IS '보관 시각 — NULL이 아니면 관리 목록·선택지에서 숨김 (이력·평가에는 유지)';
 
 
 --
@@ -473,7 +481,8 @@ CREATE TABLE public.securities (
     fixed_price numeric,
     annual_rate numeric,
     accrual_start date,
-    maturity_date date
+    maturity_date date,
+    archived_at timestamp with time zone
 );
 
 
@@ -503,6 +512,13 @@ COMMENT ON COLUMN public.securities.accrual_start IS '이자 기산일 — 마�
 --
 
 COMMENT ON COLUMN public.securities.maturity_date IS '만기일 — 이 날짜 이후로는 이자가 더 붙지 않음';
+
+
+--
+-- Name: COLUMN securities.archived_at; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.securities.archived_at IS '보관 시각 — NULL이 아니면 관리 목록·선택지에서 숨김 (이력·평가에는 유지)';
 
 
 --
