@@ -1,5 +1,7 @@
 import { getSql } from '@/lib/db'
 import SnapshotEditor from '@/components/portfolio/SnapshotEditor'
+import SnapshotReports from '@/components/portfolio/SnapshotReports'
+import type { ReportMeta } from '@/lib/portfolio/reports'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
 
 export const dynamic = 'force-dynamic'
@@ -81,16 +83,33 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
       : String(raw.date).slice(0, 10),
   }
 
+  // 첨부 보고서 메타 (원문 제외). 마이그레이션 전이면 빈 목록
+  const reportRows = await sql<{ id: string; title: string; filename: string; size: number; created_at: Date }[]>`
+    SELECT id, title, filename, size, created_at
+    FROM snapshot_reports WHERE snapshot_id = ${id}
+    ORDER BY created_at DESC
+  `.catch(() => [])
+  const reports: ReportMeta[] = reportRows.map(r => ({
+    ...r,
+    size: Number(r.size),
+    created_at: new Date(r.created_at).toISOString(),
+  }))
+
   return (
-    <SnapshotEditor
-      snapshot={snapshot}
-      holdings={holdingsRaw}
-      accounts={accounts}
-      securities={securities}
-      accountSecurities={accountSecurities}
-      typeColors={typeColors}
-      sectorColors={sectorColors}
-      cashflowEvents={cashflowEvents}
-    />
+    <>
+      <SnapshotEditor
+        snapshot={snapshot}
+        holdings={holdingsRaw}
+        accounts={accounts}
+        securities={securities}
+        accountSecurities={accountSecurities}
+        typeColors={typeColors}
+        sectorColors={sectorColors}
+        cashflowEvents={cashflowEvents}
+      />
+      <div className="max-w-7xl mx-auto px-4 pb-8">
+        <SnapshotReports snapshotId={snapshot.id} initialReports={reports} />
+      </div>
+    </>
   )
 }
