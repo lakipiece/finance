@@ -296,7 +296,8 @@ export async function fetchHistoricalPrices(
     await Promise.allSettled(
       batch.map(async (ticker) => {
         try {
-          const rows = await yahooFinance.historical(ticker, {
+          // historical()은 Yahoo가 제거한 API(라이브러리가 chart()로 임시 매핑) → chart() 직접 호출
+          const { quotes } = await yahooFinance.chart(ticker, {
             period1,
             period2,
             interval: '1d',
@@ -304,10 +305,12 @@ export async function fetchHistoricalPrices(
           const currency = ticker === 'USDKRW=X' ? 'KRW'
             : ticker.endsWith('.KS') ? 'KRW'
             : 'USD'
-          for (const row of rows ?? []) {
-            const price = (row as any).adjClose ?? (row as any).close ?? 0
+          for (const row of quotes ?? []) {
+            // 실제 종가(close)를 쓴다. 배당 조정 종가(adjclose)는 이후 배당만큼 과거 가격을 깎은 값이라
+            // 과거 스냅샷 평가액을 낮춘다(JEPI −5%, SCHD −2.4%). 일일 수집(regularMarketPrice)과도 기준이 같아진다.
+            const price = row.close ?? 0
             if (!price || price <= 0) continue
-            const dateStr = new Date((row as any).date).toISOString().slice(0, 10)
+            const dateStr = new Date(row.date).toISOString().slice(0, 10)
             allRows.push({ ticker, date: dateStr, price, currency, change_pct: null, exchange: null })
             // USDKRW=X → KRW=X(환율 조회용), USD(현금 종목용) alias
             if (ticker === 'USDKRW=X') {
