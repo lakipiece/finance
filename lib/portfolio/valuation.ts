@@ -13,6 +13,8 @@ export interface SecurityLike {
   ticker: string
   currency?: string | null
   country?: string | null
+  /** 고정단가 — numeric 컬럼이라 postgres.js가 문자열로 줄 수 있다 */
+  fixed_price?: number | string | null
 }
 
 /** KRX: 접두어 제거 */
@@ -50,6 +52,26 @@ export function lookupPrice(
     if (p != null && p > 0) return p
   }
   return null
+}
+
+/** 고정단가를 숫자로 정규화. 미설정이면 null. */
+export function fixedPriceOf(sec: SecurityLike): number | null {
+  if (sec.fixed_price == null) return null
+  const n = Number(sec.fixed_price)
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * 종목 단가 해석 — 고정단가가 있으면 시세를 무시하고 그 값을 쓴다.
+ * 티커가 실재하지 않는 종목(원화 RP, 예수금 등)의 단일 진입점.
+ */
+export function resolvePrice(
+  priceMap: Record<string, number>,
+  sec: SecurityLike,
+): number | null {
+  const fixed = fixedPriceOf(sec)
+  if (fixed !== null) return fixed
+  return lookupPrice(priceMap, sec.ticker, sec.country)
 }
 
 /**

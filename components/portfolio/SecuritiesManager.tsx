@@ -710,7 +710,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   </button>
                 )}
                 <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {s.asset_class !== '현금' ? (
+                  {s.asset_class !== '현금' && s.fixed_price == null ? (
                     <button onClick={() => fetchHistory(s.ticker)} disabled={fetchingHist === s.ticker} title="과거 데이터 수집 (90일)"
                       className="p-0.5 rounded hover:bg-surface-low text-ink-5 hover:text-ink-3 transition-colors disabled:opacity-40">
                       {fetchingHist === s.ticker ? (

@@ -26,6 +26,8 @@ export interface Security {
   style: string | null
   url: string | null
   memo: string | null
+  /** 고정단가 — 설정 시 시세를 조회하지 않고 항상 이 단가로 평가 (종목 통화 기준) */
+  fixed_price: number | null
   // resolved via JOIN from option_list
   asset_class: string | null
   country: string | null

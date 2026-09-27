@@ -4,7 +4,7 @@ const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
 import { getSql } from '@/lib/db'
 import { toYahooTicker } from './ticker-utils'
-import { kstTradingDate } from './valuation'
+import { fixedPriceOf, kstTradingDate } from './valuation'
 export { isKrxTicker, toYahooTicker } from './ticker-utils'
 
 // Yahoo Finance exchange code → Google Finance exchange code
@@ -113,8 +113,8 @@ export async function refreshAllPrices(): Promise<{
   backfillTickers: string[]
 }> {
   const sql = getSql()
-  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
-    SELECT s.ticker,
+  const securities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null; fixed_price: string | null }[]>`
+    SELECT s.ticker, s.fixed_price,
            ac.value AS asset_class,
            co.value AS country,
            cu.value AS currency
@@ -130,10 +130,12 @@ export async function refreshAllPrices(): Promise<{
   const today = kstTradingDate()
   const tradingDate = new Date(today)
 
-  // 자산군별 분류
-  const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
-  const cashSecurities = securities.filter(s => s.asset_class === '현금')
-  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
+  // 자산군별 분류 — 고정단가 종목은 시세 조회 대상에서 완전히 제외
+  const fixedSecurities = securities.filter(s => fixedPriceOf(s) !== null)
+  const quoted = securities.filter(s => fixedPriceOf(s) === null)
+  const coinTickers = quoted.filter(s => s.asset_class === '코인').map(s => s.ticker)
+  const cashSecurities = quoted.filter(s => s.asset_class === '현금')
+  const yahooRaw = quoted.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
   // USDKRW=X: 1 USD = x KRW (≈1480), USD 현금 및 환율 표시에 사용
   const yahooTickers = [...new Set([...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)), 'USDKRW=X'])]
 
@@ -156,7 +158,17 @@ export async function refreshAllPrices(): Promise<{
     .filter(c => c.currency !== 'USD' && c.ticker !== 'USD')
     .map(c => ({ ticker: c.ticker, date: today, price: 1, currency: 'KRW', change_pct: null, exchange: null } as PriceRow))
 
-  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...krwCash, ...fxAliases]
+  // 고정단가 종목: 티커가 실재하지 않으므로 지정 단가를 그대로 오늘자 가격으로 기록
+  const fixedRows = fixedSecurities.map(s => ({
+    ticker: toYahooTicker(s.ticker, s.country),
+    date: today,
+    price: fixedPriceOf(s) as number,
+    currency: s.currency ?? 'KRW',
+    change_pct: null,
+    exchange: null,
+  } as PriceRow))
+
+  const allSaved = [...yahooResult.saved, ...coinResult.saved, ...krwCash, ...fixedRows, ...fxAliases]
   const allFailed = [...yahooResult.failed, ...coinResult.failed]
   const results: Record<string, number> = {}
   for (const row of allSaved) results[row.ticker] = row.price
@@ -190,7 +202,7 @@ export async function refreshAllPrices(): Promise<{
   for (const r of minRows ?? []) minDateByTicker[r.ticker] = r.min_date
 
   // 30일 이전 데이터가 없는 종목(신규 포함)의 raw 티커 추출 (현금 제외)
-  const backfillTickers = securities
+  const backfillTickers = quoted
     .filter(s => s.asset_class !== '현금')
     .filter(s => {
       const stored = s.asset_class === '코인' ? s.ticker : toYahooTicker(s.ticker, s.country)
@@ -225,8 +237,8 @@ export async function fetchHistoricalPrices(
   onlyTickers?: string[],
 ): Promise<{ saved: number; failed: string[]; tickers: string[] }> {
   const sql = getSql()
-  const allSecurities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null }[]>`
-    SELECT s.ticker,
+  const allSecurities = await sql<{ ticker: string; asset_class: string | null; country: string | null; currency: string | null; fixed_price: string | null }[]>`
+    SELECT s.ticker, s.fixed_price,
            ac.value AS asset_class,
            co.value AS country,
            cu.value AS currency
@@ -244,8 +256,10 @@ export async function fetchHistoricalPrices(
   const period1 = new Date(startDate)
   const period2 = new Date(endDate)
 
-  const coinTickers = securities.filter(s => s.asset_class === '코인').map(s => s.ticker)
-  const yahooRaw = securities.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
+  // 고정단가 종목은 조회할 시세가 없다 — 과거 수집에서도 제외
+  const quoted = securities.filter(s => fixedPriceOf(s) === null)
+  const coinTickers = quoted.filter(s => s.asset_class === '코인').map(s => s.ticker)
+  const yahooRaw = quoted.filter(s => s.asset_class !== '코인' && s.asset_class !== '현금')
   const yahooTickers = [...new Set([
     ...yahooRaw.map(s => toYahooTicker(s.ticker, s.country)),
     'USDKRW=X',

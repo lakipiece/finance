@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import {
-  isKrwSecurity, lookupPrice, priceLookupKeys, resolveExchangeRate, toDateStr,
+  isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate, toDateStr,
 } from '@/lib/portfolio/valuation'
 
 // 모든 스냅샷의 총평가액·투자원금·비중(breakdown)을 재계산한다.
@@ -21,8 +21,9 @@ export async function POST() {
     sql<{
       id: string; ticker: string; currency: string; country: string | null
       sector: string | null; asset_class: string | null; tags: string[]
+      fixed_price: string | null
     }[]>`
-      SELECT s.id, s.ticker,
+      SELECT s.id, s.ticker, s.fixed_price,
              cu.value AS currency,
              co.value AS country,
              se.value AS sector,
@@ -120,7 +121,7 @@ export async function POST() {
       if (!sec) continue
       const avgPrice = Number(h.avg_price ?? 0)
       // 가격 미존재 시 avg_price 사용 → 해당 종목 손익 0으로 계산됨 (가격 수집으로 해소)
-      const rawPrice = lookupPrice(priceMap, sec.ticker, sec.country) ?? avgPrice
+      const rawPrice = resolvePrice(priceMap, sec) ?? avgPrice
       const isKrw = isKrwSecurity(sec)
       const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
       const qty = Number(h.quantity)

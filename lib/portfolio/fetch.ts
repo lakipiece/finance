@@ -2,7 +2,7 @@
 import 'server-only'
 import { getSql } from '@/lib/db'
 import { getPrices, toYahooTicker } from './prices'
-import { isKrwSecurity, resolveExchangeRate } from './valuation'
+import { fixedPriceOf, isKrwSecurity, resolveExchangeRate } from './valuation'
 import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation, AccountCashflowSum } from './types'
 
 /** 계좌별 입출금 합계. account_cashflows 테이블이 없으면 빈 배열. */
@@ -39,7 +39,7 @@ export async function fetchAccounts(): Promise<Account[]> {
 export async function fetchSecurities(): Promise<Security[]> {
   const sql = getSql()
   const data = await sql<Security[]>`
-    SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
+    SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at, s.fixed_price,
            s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
            ac.value AS asset_class, co.value AS country,
            se.value AS sector,      st.value AS etf_style, cu.value AS currency
@@ -75,7 +75,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
       LEFT JOIN option_list cu ON a.currency_id = cu.id
     `,
     sql<Security[]>`
-      SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
+      SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at, s.fixed_price,
              s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
              ac.value AS asset_class, co.value AS country,
              se.value AS sector,      st.value AS etf_style, cu.value AS currency,
@@ -148,7 +148,8 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
 
   const positions: PortfolioPosition[] = holdings.map(h => {
     const yahooTicker = toYahooTicker(h.security.ticker)
-    const rawPrice = prices[yahooTicker]?.price ?? 0
+    // 고정단가 종목(티커 미존재)은 시세 대신 지정 단가로 평가
+    const rawPrice = fixedPriceOf(h.security) ?? prices[yahooTicker]?.price ?? 0
 
     // KRW 판정은 valuation.ts 통일 규칙 사용 (country/currency/티커 패턴)
     const isKrw = isKrwSecurity(h.security)

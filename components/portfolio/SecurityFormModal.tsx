@@ -36,6 +36,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
     currency_id:   security?.currency_id    ?? (options.currency?.find(o => o.value === 'USD')?.id ?? ''),
     url:  security?.url ?? '',
     memo: security?.memo ?? '',
+    fixed_price: security?.fixed_price == null ? '' : String(security.fixed_price),
   })
   const [tags, setTags] = useState<string[]>(security?.tags ?? [])
   const [tagInput, setTagInput] = useState('')
@@ -60,6 +61,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
           currency_id:    form.currency_id    || null,
           url:  form.url  || null,
           memo: form.memo || null,
+          fixed_price: form.fixed_price.trim() === '' ? null : Number(form.fixed_price),
         }),
       })
       const data = await res.json()
@@ -122,6 +124,13 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
             <div><label className={field.labelSm}>섹터 (GICS)</label>
               <Select value={form.sector_id} onChange={v => setForm(p => ({ ...p, sector_id: v }))}
                 options={[{ value: '', label: '선택 안함' }, ...(options.sector ?? []).filter(o => !o.is_hidden).map(o => ({ value: o.id, label: o.label }))]} /></div>
+            <div className="col-span-2"><label className={field.labelSm}>고정단가</label>
+              <input value={form.fixed_price} inputMode="decimal"
+                onChange={e => setForm(p => ({ ...p, fixed_price: e.target.value.replace(/[^\d.]/g, '') }))}
+                className={field.input} placeholder="비워두면 시세 조회" />
+              <p className="text-micro tracking-normal text-ink-4 mt-0.5">
+                티커가 실재하지 않는 종목(원화 RP·예수금 등)에 입력. 시세를 조회하지 않고 항상 이 단가로 평가한다. 단위는 종목 통화 기준.
+              </p></div>
             <div className="col-span-2"><label className={field.labelSm}>URL</label>
               <input value={form.url} onChange={e => setForm(p => ({ ...p, url: e.target.value }))} className={field.input} placeholder="https://..." /></div>
             <div className="col-span-2"><label className={field.labelSm}>메모</label>

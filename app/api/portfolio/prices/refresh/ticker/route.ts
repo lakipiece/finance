@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
-import { cleanTicker, kstTradingDate } from '@/lib/portfolio/valuation'
+import { cleanTicker, fixedPriceOf, kstTradingDate } from '@/lib/portfolio/valuation'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const YahooFinance = require('yahoo-finance2').default
 const yahooFinance = new YahooFinance()
@@ -22,8 +22,12 @@ export async function POST(req: Request) {
   // securities에 등록된 종목만 허용 (임의 문자열 저장 방지)
   // 요청 티커는 Yahoo 형식(005930.KS)일 수 있으므로 접미사 제거형도 함께 비교
   const bare = cleanTicker(ticker).replace(/\.(KS|KQ)$/i, '')
-  const [known] = await sql`
-    SELECT 1 FROM securities WHERE ticker = ${ticker} OR ticker = ${bare} LIMIT 1
+  const [known] = await sql<{ ticker: string; fixed_price: string | null; currency: string | null }[]>`
+    SELECT s.ticker, s.fixed_price, cu.value AS currency
+    FROM securities s
+    LEFT JOIN option_list cu ON s.currency_id = cu.id
+    WHERE s.ticker = ${ticker} OR s.ticker = ${bare}
+    LIMIT 1
   `
   if (!known) {
     return NextResponse.json({ error: `등록되지 않은 종목: ${ticker}` }, { status: 400 })
@@ -31,6 +35,18 @@ export async function POST(req: Request) {
 
   // 일괄 수집과 동일한 KST 거래일 기준으로 저장 (날짜 불일치 방지)
   const today = kstTradingDate()
+
+  // 고정단가 종목은 조회할 시세가 없다 — 지정 단가를 그대로 기록
+  const fixed = fixedPriceOf(known)
+  if (fixed !== null) {
+    const fixedCurrency = known.currency ?? 'KRW'
+    await sql`
+      INSERT INTO price_history (ticker, date, price, currency)
+      VALUES (${ticker}, ${today}, ${fixed}, ${fixedCurrency})
+      ON CONFLICT (ticker, date) DO UPDATE SET price = EXCLUDED.price, currency = EXCLUDED.currency
+    `
+    return NextResponse.json({ ticker, price: fixed, currency: fixedCurrency, fixed: true })
+  }
 
   try {
     const quote = await yahooFinance.quote(ticker)

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
-import { isKrwSecurity, lookupPrice, priceLookupKeys, resolveExchangeRate } from '@/lib/portfolio/valuation'
+import { isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate } from '@/lib/portfolio/valuation'
 
 // GET /api/portfolio/prices-at?date=YYYY-MM-DD
 // 지정일 이전 최신 가격을 종목별로 반환. 없으면 이후 최초 가격 fallback.
@@ -13,8 +13,8 @@ export async function GET(req: Request) {
 
   const sql = getSql()
 
-  const securities = await sql<{ id: string; ticker: string; currency: string; country: string | null }[]>`
-    SELECT s.id, s.ticker,
+  const securities = await sql<{ id: string; ticker: string; currency: string; country: string | null; fixed_price: string | null }[]>`
+    SELECT s.id, s.ticker, s.fixed_price,
            cu.value AS currency,
            co.value AS country
     FROM securities s
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
   // security_id → KRW 환산 가격
   const secPrices: Record<string, number> = {}
   for (const s of securities) {
-    const rawPrice = lookupPrice(priceMap, s.ticker, s.country) ?? 0
+    const rawPrice = resolvePrice(priceMap, s) ?? 0
     secPrices[s.id] = isKrwSecurity(s) ? rawPrice : rawPrice * exchangeRate
   }
 

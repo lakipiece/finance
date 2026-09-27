@@ -5,7 +5,7 @@ import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
 const SECURITY_WITH_LABELS = `
-  SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
+  SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at, s.fixed_price,
          s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
          ac.value AS asset_class,
          co.value AS country,
@@ -35,18 +35,19 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id, style_id } = await req.json()
+  const { ticker, name, style, url, memo, fixed_price, asset_class_id, country_id, sector_id, currency_id, style_id } = await req.json()
   const sql = getSql()
 
   const [row] = await sql`
-    INSERT INTO securities (ticker, name, style, url, memo, asset_class_id, country_id, sector_id, currency_id, style_id)
-    VALUES (${ticker}, ${name}, ${style ?? null}, ${url ?? null}, ${memo ?? null},
+    INSERT INTO securities (ticker, name, style, url, memo, fixed_price, asset_class_id, country_id, sector_id, currency_id, style_id)
+    VALUES (${ticker}, ${name}, ${style ?? null}, ${url ?? null}, ${memo ?? null}, ${fixed_price ?? null},
             ${asset_class_id ?? null}, ${country_id ?? null}, ${sector_id ?? null}, ${currency_id ?? null}, ${style_id ?? null})
     ON CONFLICT (ticker) DO UPDATE SET
       name          = EXCLUDED.name,
       style         = EXCLUDED.style,
       url           = EXCLUDED.url,
       memo          = EXCLUDED.memo,
+      fixed_price   = EXCLUDED.fixed_price,
       asset_class_id = EXCLUDED.asset_class_id,
       country_id    = EXCLUDED.country_id,
       sector_id     = EXCLUDED.sector_id,
@@ -66,7 +67,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = await req.json()
   const sql = getSql()
 
-  const allowed = ['name', 'style', 'url', 'memo', 'asset_class_id', 'country_id', 'sector_id', 'currency_id', 'style_id']
+  const allowed = ['name', 'style', 'url', 'memo', 'fixed_price', 'asset_class_id', 'country_id', 'sector_id', 'currency_id', 'style_id']
   const fields = Object.entries(updates)
     .filter(([k]) => allowed.includes(k))
     .map(([k, v]) => sql`${sql(k)} = ${v as string}`)
