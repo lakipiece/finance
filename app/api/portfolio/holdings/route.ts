@@ -23,17 +23,18 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { account_id, security_id, quantity, avg_price, total_invested, snapshot_date, snapshot_id } = await req.json()
+    const { account_id, security_id, quantity, avg_price, avg_fx_rate, total_invested, snapshot_date, snapshot_id } = await req.json()
     if (!account_id || !security_id || !snapshot_id || quantity == null) {
       return NextResponse.json({ error: '필수 항목 누락 (account_id, security_id, snapshot_id, quantity)' }, { status: 400 })
     }
     const sql = getSql()
     const [row] = await sql`
-      INSERT INTO holdings (account_id, security_id, quantity, avg_price, total_invested, snapshot_date, snapshot_id, source, updated_at)
-      VALUES (${account_id}, ${security_id}, ${quantity}, ${avg_price ?? null}, ${total_invested ?? null}, ${snapshot_date}, ${snapshot_id}, 'manual', NOW())
+      INSERT INTO holdings (account_id, security_id, quantity, avg_price, avg_fx_rate, total_invested, snapshot_date, snapshot_id, source, updated_at)
+      VALUES (${account_id}, ${security_id}, ${quantity}, ${avg_price ?? null}, ${avg_fx_rate ?? null}, ${total_invested ?? null}, ${snapshot_date}, ${snapshot_id}, 'manual', NOW())
       ON CONFLICT (account_id, security_id, snapshot_id) DO UPDATE SET
         quantity = EXCLUDED.quantity,
         avg_price = EXCLUDED.avg_price,
+        avg_fx_rate = EXCLUDED.avg_fx_rate,
         total_invested = EXCLUDED.total_invested,
         snapshot_date = EXCLUDED.snapshot_date,
         updated_at = NOW()

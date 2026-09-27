@@ -2,7 +2,7 @@
 import 'server-only'
 import { getSql } from '@/lib/db'
 import { getPrices, toYahooTicker } from './prices'
-import { isKrwSecurity, kstToday, resolvePrice, resolveExchangeRate } from './valuation'
+import { costKrw, isKrwSecurity, kstToday, resolvePrice, resolveExchangeRate } from './valuation'
 import { fetchInterestPayments, lastInterestMap } from './interest'
 import type { Account, Security, Holding, PortfolioSummary, PortfolioPosition, TargetAllocation, AccountCashflowSum } from './types'
 
@@ -165,17 +165,14 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
 
     const quantity = Number(h.quantity)
 
-    // avg_price: USD 종목은 USD로 저장됨 → KRW 환산
-    // avg_price: KRX 종목은 KRW, 해외 종목은 USD → KRW 환산
+    // avg_price·total_invested는 종목 통화 기준(USD 종목은 USD)으로 저장된다.
+    // 원가 환산은 costKrw 단일 규칙 — 평균 매입환율이 있으면 그 환율로 고정.
     const avgPriceRaw = Number(h.avg_price ?? 0)
-    const avgPriceKRW = isUSD ? avgPriceRaw * exchangeRate : avgPriceRaw
-
-    // total_invested: USD 종목은 USD로 저장되어 있으므로 KRW 환산 필요
-    // KRW 종목은 KRW 그대로 사용
-    const totalInvestedRaw = Number(h.total_invested ?? 0)
-    const totalInvested = totalInvestedRaw > 0
-      ? (isUSD ? totalInvestedRaw * exchangeRate : totalInvestedRaw)
-      : avgPriceKRW * quantity
+    const totalInvested = avgPriceRaw > 0
+      ? costKrw({ avgPrice: avgPriceRaw, quantity, isKrw, fxRate: exchangeRate, avgFxRate: h.avg_fx_rate })
+      // 평균단가 없이 총액만 있는 옛 데이터
+      : costKrw({ avgPrice: Number(h.total_invested ?? 0), quantity: 1, isKrw, fxRate: exchangeRate, avgFxRate: h.avg_fx_rate })
+    const avgPriceKRW = quantity > 0 ? totalInvested / quantity : 0
 
     const marketValue = currentPriceKRW * quantity
     const unrealizedPnl = marketValue - totalInvested

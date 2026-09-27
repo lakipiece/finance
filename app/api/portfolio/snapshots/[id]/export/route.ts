@@ -2,12 +2,21 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
-
-const EXCHANGE_RATE_FALLBACK = 1350
+import { auth } from '@/lib/auth'
+import {
+  costKrw, isKrwSecurity, priceLookupKeys, resolvePrice, resolveExchangeRate, toDateStr,
+} from '@/lib/portfolio/valuation'
+import { fetchInterestPayments, lastInterestMap } from '@/lib/portfolio/interest'
 
 type HoldingRow = {
+  security_id: string
   quantity: number
   avg_price: number | null
+  avg_fx_rate: number | null
+  fixed_price: string | null
+  annual_rate: string | null
+  accrual_start: unknown
+  maturity_date: unknown
   owner: string | null
   account_name: string
   broker: string | null
@@ -27,6 +36,9 @@ function csvField(v: string | number | null | undefined): string {
 }
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const sql = getSql()
 
   const snapRows = await sql<{ date: unknown }[]>`
@@ -35,12 +47,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   if (snapRows.length === 0) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  const snapDate = (snapRows[0].date as unknown) instanceof Date
-    ? (snapRows[0].date as unknown as Date).toISOString().slice(0, 10)
-    : String(snapRows[0].date).slice(0, 10)
+  const snapDate = toDateStr(snapRows[0].date)
 
   const holdings = await sql<HoldingRow[]>`
-    SELECT h.quantity, h.avg_price,
+    SELECT h.security_id, h.quantity, h.avg_price, h.avg_fx_rate,
+           s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
            a.owner, a.name AS account_name, a.broker,
            s.ticker, s.name AS security_name,
            cu.value AS currency, co.value AS country,
@@ -61,42 +72,21 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     ORDER BY a.owner NULLS LAST, a.name, s.ticker
   `
 
-  // 가격: 스냅샷 날짜 기준 최신값 (없으면 가장 가까운 미래 가격 fallback) — refresh-values 로직과 동일
-  const tickers: string[] = []
-  for (const h of holdings) {
-    const clean = h.ticker.startsWith('KRX:') ? h.ticker.slice(4) : h.ticker
-    if (clean.includes('.')) { tickers.push(clean); continue }
-    if (h.country === '국내') {
-      tickers.push(`${clean}.KS`)
-      tickers.push(clean)
-    } else {
-      tickers.push(clean)
-    }
-  }
-  tickers.push('USDKRW=X')
-  const uniqueTickers = [...new Set(tickers)]
-
-  const allPrices = uniqueTickers.length > 0
-    ? await sql<{ ticker: string; price: number; date: unknown }[]>`
-        SELECT ticker, price, date FROM price_history
-        WHERE ticker = ANY(${uniqueTickers})
-        ORDER BY ticker, date DESC
-      `
-    : []
-
+  // 가격·환산은 valuation.ts 단일 규칙 — 대시보드·스냅샷 값 갱신과 같은 숫자가 나와야 한다.
+  // 스냅샷 날짜 이전 가격만 쓰고(미래 가격 금지), 없으면 원가로 임시 평가.
+  const uniqueTickers = [...new Set([
+    ...holdings.flatMap(h => priceLookupKeys(h.ticker, h.country)),
+    'USDKRW=X', 'KRW=X',
+  ])]
+  const prices = await sql<{ ticker: string; price: number }[]>`
+    SELECT DISTINCT ON (ticker) ticker, price FROM price_history
+    WHERE ticker = ANY(${uniqueTickers}) AND date <= ${snapDate}
+    ORDER BY ticker, date DESC
+  `
   const priceMap: Record<string, number> = {}
-  const fallbackMap: Record<string, number> = {}
-  for (const p of allPrices) {
-    const pDate = (p.date as unknown) instanceof Date
-      ? (p.date as unknown as Date).toISOString().slice(0, 10)
-      : String(p.date).slice(0, 10)
-    if (pDate <= snapDate && !priceMap[p.ticker]) priceMap[p.ticker] = Number(p.price)
-    if (pDate > snapDate) fallbackMap[p.ticker] = Number(p.price)
-  }
-  for (const [t, fb] of Object.entries(fallbackMap)) {
-    if (!priceMap[t]) priceMap[t] = fb
-  }
-  const exchangeRate = priceMap['USDKRW=X'] ?? EXCHANGE_RATE_FALLBACK
+  for (const p of prices) priceMap[p.ticker] = Number(p.price)
+  const { rate: exchangeRate } = resolveExchangeRate(priceMap)
+  const priceCtx = { asOf: snapDate, lastInterestBySecurity: lastInterestMap(await fetchInterestPayments(), snapDate) }
 
   type Computed = HoldingRow & {
     priceKrw: number
@@ -104,21 +94,14 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     marketValue: number
   }
   const computed: Computed[] = holdings.map(h => {
-    const clean = h.ticker.startsWith('KRX:') ? h.ticker.slice(4) : h.ticker
-    const isKrx = h.country === '국내'
-    const avgPrice = Number(h.avg_price ?? 0)
-    const rawPrice = isKrx
-      ? (priceMap[`${clean}.KS`] ?? priceMap[clean] ?? avgPrice)
-      : (priceMap[clean] ?? avgPrice)
-    const isKrw = isKrx || h.currency === 'KRW'
-    const priceKrw = isKrw ? rawPrice : rawPrice * exchangeRate
     const qty = Number(h.quantity)
-    return {
-      ...h,
-      priceKrw,
-      investedKrw: (isKrw ? avgPrice : avgPrice * exchangeRate) * qty,
-      marketValue: priceKrw * qty,
-    }
+    const isKrw = isKrwSecurity(h)
+    const investedKrw = costKrw({ avgPrice: h.avg_price, quantity: qty, isKrw, fxRate: exchangeRate, avgFxRate: h.avg_fx_rate })
+    const price = resolvePrice(priceMap, { ...h, id: h.security_id }, priceCtx)
+    const priceKrw = price === null
+      ? (qty > 0 ? investedKrw / qty : 0)
+      : isKrw ? price : price * exchangeRate
+    return { ...h, priceKrw, investedKrw, marketValue: priceKrw * qty }
   })
 
   const totalMarketValue = computed.reduce((sum, c) => sum + c.marketValue, 0)

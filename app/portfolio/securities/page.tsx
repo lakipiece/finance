@@ -13,6 +13,7 @@ type HoldingRow = {
   account_broker: string
   quantity: number
   avg_price: number | null
+  avg_fx_rate: number | null
 }
 
 export default async function SecuritiesPage() {
@@ -56,7 +57,7 @@ export default async function SecuritiesPage() {
   if (latestSnap[0]) {
     const rows = await sql<HoldingRow[]>`
       SELECT h.security_id, h.account_id, a.name AS account_name, a.broker AS account_broker,
-             h.quantity, h.avg_price
+             h.quantity, h.avg_price, h.avg_fx_rate
       FROM holdings h
       JOIN accounts a ON h.account_id = a.id
       WHERE h.snapshot_id = ${latestSnap[0].id} AND h.quantity > 0
@@ -68,6 +69,7 @@ export default async function SecuritiesPage() {
         ...r,
         quantity: Number(r.quantity),
         avg_price: r.avg_price != null ? Number(r.avg_price) : null,
+        avg_fx_rate: r.avg_fx_rate != null ? Number(r.avg_fx_rate) : null,
       })
     }
   }

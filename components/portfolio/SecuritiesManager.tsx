@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceDot } from 'recharts'
 import type { Security } from '@/lib/portfolio/types'
 import { toYahooTicker } from '@/lib/portfolio/ticker-utils'
+import { costKrw } from '@/lib/portfolio/valuation'
 import { formatDate } from '@/lib/utils'
 import { btn, field, modal as modalStyles } from '@/lib/styles'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
@@ -19,6 +20,7 @@ type HoldingRow = {
   account_broker: string
   quantity: number
   avg_price: number | null
+  avg_fx_rate: number | null
 }
 
 interface Props {
@@ -167,7 +169,10 @@ function PriceHistoryModal({
 
   // USD → KRW 변환
   const toKrw = (v: number) => isUSD && usdKrwRate ? v * usdKrwRate : v
-  const investedKrw = totalInvested != null ? toKrw(totalInvested) : null
+  // 원가는 평균 매입환율이 있으면 그 환율로 고정 (valuation.costKrw 규칙)
+  const holdingCostKrw = (h: HoldingRow) =>
+    costKrw({ avgPrice: h.avg_price, quantity: h.quantity, isKrw: !isUSD, fxRate: usdKrwRate ?? 0, avgFxRate: h.avg_fx_rate })
+  const investedKrw = totalInvested != null ? holdings.reduce((s, h) => s + holdingCostKrw(h), 0) : null
   const marketValueKrw = toKrw(marketValue)
   const pnlKrw = investedKrw != null ? marketValueKrw - investedKrw : null
   const returnPct = investedKrw && pnlKrw != null && investedKrw > 0
@@ -271,7 +276,7 @@ function PriceHistoryModal({
                 value={investedKrw != null ? fmtKrw(investedKrw) : '—'}
                 hoverLines={holdings.map(h => ({
                   left: h.account_name,
-                  right: h.avg_price != null ? fmtKrw(toKrw(h.avg_price * h.quantity)) : '—',
+                  right: h.avg_price != null ? fmtKrw(holdingCostKrw(h)) : '—',
                 }))}
               />
             </div>
@@ -292,7 +297,7 @@ function PriceHistoryModal({
                 hoverLines={holdings.map(h => ({
                   left: h.account_name,
                   right: h.avg_price != null && currentPrice > 0
-                    ? fmtPnl(toKrw((currentPrice - h.avg_price) * h.quantity))
+                    ? fmtPnl(toKrw(currentPrice * h.quantity) - holdingCostKrw(h))
                     : '—',
                 }))}
               />
@@ -710,7 +715,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                   </button>
                 )}
                 <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {s.asset_class !== '현금' && s.fixed_price == null ? (
+                  {s.ticker !== 'USD' && s.fixed_price == null ? (
                     <button onClick={() => fetchHistory(s.ticker)} disabled={fetchingHist === s.ticker} title="과거 데이터 수집 (90일)"
                       className="p-0.5 rounded hover:bg-surface-low text-ink-5 hover:text-ink-3 transition-colors disabled:opacity-40">
                       {fetchingHist === s.ticker ? (

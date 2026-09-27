@@ -130,6 +130,28 @@ export function resolvePrice(
 }
 
 /**
+ * 평균매수금액(원가) KRW 환산 — 원가 계산의 단일 진입점.
+ *   KRW 종목: 평균단가 × 수량
+ *   USD 종목: 평균단가 × 수량 × (평균 매입환율 ?? 평가 시점 환율)
+ * 평균 매입환율이 없으면 환율 변동에 따라 원가가 흔들린다 — 입력을 권장.
+ */
+export function costKrw(args: {
+  avgPrice: number | string | null | undefined
+  quantity: number | string
+  isKrw: boolean
+  fxRate: number
+  avgFxRate?: number | string | null
+}): number {
+  const avg = Number(args.avgPrice ?? 0)
+  const qty = Number(args.quantity)
+  if (!avg || !qty) return 0
+  if (args.isKrw) return avg * qty
+  const fixed = args.avgFxRate == null ? NaN : Number(args.avgFxRate)
+  const rate = Number.isFinite(fixed) && fixed > 0 ? fixed : args.fxRate
+  return avg * qty * rate
+}
+
+/**
  * 환율 해석 — USDKRW=X(수집 원본)와 KRW=X(alias)를 모두 시도.
  * fallback 사용 여부를 함께 반환하므로 호출부는 경고를 노출할 수 있다.
  */

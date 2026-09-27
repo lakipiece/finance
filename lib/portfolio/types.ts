@@ -49,6 +49,8 @@ export interface Holding {
   security_id: string
   quantity: number
   avg_price: number | null
+  /** USD 종목 평균 매입환율 — 있으면 원가를 이 환율로 고정 */
+  avg_fx_rate: number | null
   total_invested: number | null
   snapshot_date: string
   source: string

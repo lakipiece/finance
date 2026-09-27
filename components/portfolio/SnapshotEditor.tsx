@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
 import DateInput from '@/components/ui/DateInput'
+import { costKrw, isKrwSecurity } from '@/lib/portfolio/valuation'
 
 interface HoldingRow {
   id?: string
@@ -12,6 +13,8 @@ interface HoldingRow {
   security_id: string
   quantity: number
   avg_price: number | null
+  /** USD 종목 평균 매입환율 — 있으면 원가를 이 환율로 고정 */
+  avg_fx_rate: number | null
   orphaned?: boolean
 }
 
@@ -79,6 +82,9 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   const [isDirty, setIsDirty] = useState(false)
   const [secPrices, setSecPrices] = useState<Record<string, number>>({})
   const [exchangeRate, setExchangeRate] = useState<number>(1350)
+  // 스냅샷 날짜 이전 시세가 없는 종목(security_id) — 평가금액 0으로 표시되므로 알린다
+  const [unpriced, setUnpriced] = useState<string[]>([])
+  const [fxFallback, setFxFallback] = useState(false)
 
   const [modalAccountId, setModalAccountId] = useState<string | null>(null)
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
@@ -98,6 +104,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         security_id: as.security_id,
         quantity: existing ? Number(existing.quantity) : 0,
         avg_price: existing?.avg_price != null ? Number(existing.avg_price) : null,
+        avg_fx_rate: existing?.avg_fx_rate != null ? Number(existing.avg_fx_rate) : null,
         id: existing?.id,
         orphaned: false,
       }
@@ -111,6 +118,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         security_id: h.security_id,
         quantity: Number(h.quantity),
         avg_price: h.avg_price != null ? Number(h.avg_price) : null,
+        avg_fx_rate: h.avg_fx_rate != null ? Number(h.avg_fx_rate) : null,
         id: h.id,
         orphaned: true,
       }))
@@ -130,7 +138,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     [rows, modalAccountId, secMap, secPrices]
   )
 
-  const lastTabIndex = selectedRows.length * 2
+  const lastTabIndex = selectedRows.length * 3
   const saveButtonTabIndex = lastTabIndex + 1
 
   const fetchPrices = useCallback(async (date: string) => {
@@ -140,6 +148,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         const data = await res.json()
         setSecPrices(data.secPrices ?? {})
         setExchangeRate(data.exchangeRate ?? 1350)
+        setUnpriced(data.unpriced ?? [])
+        setFxFallback(!!data.fxFallback)
       }
     } catch { /* silent */ }
   }, [])
@@ -154,7 +164,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
 
-  function updateRow(account_id: string, security_id: string, field: 'quantity' | 'avg_price', value: number | null) {
+  function updateRow(account_id: string, security_id: string, field: 'quantity' | 'avg_price' | 'avg_fx_rate', value: number | null) {
     setRows(prev => prev.map(r =>
       r.account_id === account_id && r.security_id === security_id
         ? { ...r, [field]: field === 'quantity' ? (value ?? 0) : value }
@@ -193,19 +203,24 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         })
         if (!dateRes.ok) throw new Error('date update failed')
       }
-      const toSave = rows.filter(r => r.quantity > 0)
-      await Promise.all(toSave.map(row =>
-        fetch('/api/portfolio/holdings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...row,
-            total_invested: row.quantity != null && row.avg_price != null ? row.quantity * row.avg_price : null,
-            snapshot_id: snapshot.id,
-            snapshot_date: snapshotDate,
-          }),
-        })
-      ))
+      // 수량 0으로 바꾼 기존 행도 보내야 DB의 이전 수량이 남지 않는다
+      const toSave = rows.filter(r => r.quantity > 0 || r.id)
+      const res = await fetch('/api/portfolio/holdings/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          snapshot_id: snapshot.id,
+          snapshot_date: snapshotDate,
+          rows: toSave.map(r => ({
+            account_id: r.account_id,
+            security_id: r.security_id,
+            quantity: r.quantity,
+            avg_price: r.avg_price,
+            avg_fx_rate: r.avg_fx_rate,
+          })),
+        }),
+      })
+      if (!res.ok) throw new Error('holdings save failed')
       setMsg('저장 완료')
       setIsDirty(false)
       router.refresh()
@@ -250,14 +265,24 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
   const totalValue = useMemo(() => Object.values(accountValues).reduce((a, b) => a + b, 0), [accountValues])
 
+  // 보유 중인데 스냅샷 날짜 이전 시세가 없는 종목 티커 — 평가금액에서 빠지므로 헤더에 경고
+  const heldUnpricedTickers = useMemo(() => {
+    const miss = new Set(unpriced)
+    const tickers = new Set<string>()
+    for (const r of rows) {
+      if (r.quantity > 0 && miss.has(r.security_id)) tickers.add(secMap[r.security_id]?.ticker ?? r.security_id)
+    }
+    return [...tickers].sort()
+  }, [rows, unpriced, secMap])
+
   const accountInvested = useMemo(() => {
     const vals: Record<string, number> = {}
     for (const r of rows) {
       if (r.quantity > 0 && r.avg_price != null) {
         const sec = secMap[r.security_id]
-        const isKrw = !sec || sec.currency === 'KRW' || sec.country === '국내'
-        const priceKrw = isKrw ? r.avg_price : r.avg_price * exchangeRate
-        vals[r.account_id] = (vals[r.account_id] ?? 0) + r.quantity * priceKrw
+        const isKrw = !sec || isKrwSecurity(sec)
+        vals[r.account_id] = (vals[r.account_id] ?? 0)
+          + costKrw({ avgPrice: r.avg_price, quantity: r.quantity, isKrw, fxRate: exchangeRate, avgFxRate: r.avg_fx_rate })
       }
     }
     return vals
@@ -336,8 +361,18 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           </div>
         </div>
         <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap sm:justify-end">
-          {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
-          {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
+          {msg ? <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span> : null}
+          {isDirty && !msg ? <span className="text-body text-warning">미저장</span> : null}
+          {heldUnpricedTickers.length > 0 ? (
+            <span className="text-body text-warning" title={heldUnpricedTickers.join(', ')}>
+              시세 없음 {heldUnpricedTickers.length}종목 (평가 0원)
+            </span>
+          ) : null}
+          {fxFallback ? (
+            <span className="text-body text-warning" title="이 날짜 이전 환율 기록이 없어 기본값을 사용 중">
+              환율 기본값 {exchangeRate.toLocaleString()}원
+            </span>
+          ) : null}
           {totalValue > 0 && (
             <div className="text-left sm:text-right leading-tight min-w-0">
               <p className="text-micro tracking-normal text-ink-4 tabular-nums"
@@ -493,40 +528,41 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                     const sec = secMap[row.security_id]
                     if (!sec) return null
                     const currency = sec.currency ?? 'KRW'
-                    const isKrw = currency === 'KRW'
+                    const isKrw = isKrwSecurity(sec)
                     const currentRow = getRow(row.account_id, row.security_id)
                     const totalPurchased = currentRow.quantity && currentRow.avg_price != null
                       ? currentRow.quantity * currentRow.avg_price : null
                     const marketPrice = secPrices[row.security_id] ?? 0
                     const marketValue = currentRow.quantity > 0 && marketPrice > 0
                       ? currentRow.quantity * marketPrice : null
-                    const qtyTabIdx = idx * 2 + 1
-                    const avgTabIdx = idx * 2 + 2
+                    const qtyTabIdx = idx * 3 + 1
+                    const avgTabIdx = idx * 3 + 2
+                    const fxTabIdx = idx * 3 + 3
 
                     return (
                       <div key={`${row.account_id}__${row.security_id}`}
-                        className={`group rounded-field border p-3 transition-all ${
+                        className={`group rounded-field p-3 shadow-card transition-all ${
                           currentRow.quantity > 0
-                            ? row.orphaned ? 'border-orange-200 bg-orange-50/30' : 'border-surface-low bg-surface-card'
-                            : 'border-surface-low bg-surface-card opacity-60'
+                            ? row.orphaned ? 'bg-warning/10' : 'bg-surface-card'
+                            : 'bg-surface-card opacity-60'
                         }`}>
                         <div className="flex items-center gap-1.5 mb-2.5">
                           {(() => {
                             const color = sec.sector ? sectorColors[sec.sector] : null
                             return (
                               <span
-                                className="text-micro tracking-normal px-1.5 py-0.5 rounded font-mono"
+                                className={`text-micro tracking-normal px-1.5 py-0.5 rounded font-mono ${color ? '' : 'bg-surface-low text-ink-4'}`}
                                 style={color
                                   ? { backgroundColor: color + '22', color }
-                                  : { backgroundColor: '#f1f5f9', color: '#8794a8' }}>
+                                  : undefined}>
                                 {sec.ticker}
                               </span>
                             )
                           })()}
                           <span className="text-body text-ink-2 truncate font-medium flex-1">{sec.name}</span>
-                          {row.orphaned && (
-                            <span className="text-micro tracking-normal bg-orange-100 text-warning px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
-                          )}
+                          {row.orphaned ? (
+                            <span className="text-micro tracking-normal bg-warning/10 text-warning px-1.5 py-0.5 rounded-full shrink-0">연결해제</span>
+                          ) : null}
                           <button
                             onClick={() => deleteHolding(row.account_id, row.security_id)}
                             className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-gain/10 text-ink-5 hover:text-gain transition-all shrink-0"
@@ -549,8 +585,19 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                               onChange={v => updateRow(row.account_id, row.security_id, 'avg_price', v)}
                               placeholder="0" tabIndex={avgTabIdx} className={inputCls} />
                           </div>
+                          {!isKrw ? (
+                            <div className="col-span-2">
+                              <p className="text-micro tracking-normal text-ink-4 mb-0.5"
+                                title="입력하면 평균매수금액을 이 환율로 고정합니다. 비우면 스냅샷 날짜 환율로 환산">
+                                평균 매입환율(KRW/{currency}) · 비우면 {Math.round(exchangeRate).toLocaleString()}원 적용
+                              </p>
+                              <NumInput value={currentRow.avg_fx_rate}
+                                onChange={v => updateRow(row.account_id, row.security_id, 'avg_fx_rate', v)}
+                                placeholder={String(Math.round(exchangeRate))} tabIndex={fxTabIdx} className={inputCls} />
+                            </div>
+                          ) : null}
                         </div>
-                        <div className="pt-2 border-t border-surface-low space-y-1">
+                        <div className="pt-2 space-y-1">
                           <div className="flex items-center justify-between">
                             <p className="text-micro tracking-normal text-ink-4">총 매수금액</p>
                             <p className="text-body font-medium text-ink-3">

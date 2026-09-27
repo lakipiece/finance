@@ -14,13 +14,15 @@ type SnapshotRow = {
   sector_breakdown: Record<string, number> | null
   account_breakdown: unknown
   value_updated_at: unknown
+  unpriced_tickers: string[] | null
 }
 
 export default async function SnapshotsPage() {
   const sql = getSql()
   const [raw, sectorRows, cashflowRows, dividendRows] = await Promise.all([
     sql<SnapshotRow[]>`
-      SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, account_breakdown, value_updated_at
+      SELECT id, date, memo, total_market_value, total_invested, sector_breakdown, account_breakdown, value_updated_at,
+             unpriced_tickers
       FROM snapshots ORDER BY date DESC, created_at DESC
     `,
     sql<{ value: string; color_hex: string }[]>`
@@ -69,6 +71,7 @@ export default async function SnapshotsPage() {
       ? (typeof s.sector_breakdown === 'string' ? JSON.parse(s.sector_breakdown) : s.sector_breakdown)
       : null,
     account_breakdown: parseAccountBreakdown(s.account_breakdown),
+    unpriced_tickers: s.unpriced_tickers ?? [],
   }))
 
   return (

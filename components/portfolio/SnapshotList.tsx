@@ -16,6 +16,8 @@ type SnapshotItem = {
   total_invested: number | null
   sector_breakdown: Record<string, number> | null
   account_breakdown?: Record<string, AccountSnapshotEntry>
+  /** 값 갱신 시 시세가 없어 원가로 임시 평가한 종목 */
+  unpriced_tickers?: string[]
 }
 
 export type SnapshotViewMode = 'last' | 'first' | 'all'
@@ -292,6 +294,12 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
               ) : null}
 
               {snap.memo ? <p className="text-micro tracking-normal text-ink-5 mt-2 truncate">{snap.memo}</p> : null}
+              {snap.unpriced_tickers && snap.unpriced_tickers.length > 0 ? (
+                <p className="text-micro tracking-normal text-warning mt-1 truncate"
+                  title={`시세가 없어 평균단가로 평가: ${snap.unpriced_tickers.join(', ')}`}>
+                  미평가 {snap.unpriced_tickers.length}종목 (원가로 계산)
+                </p>
+              ) : null}
 
               {/* CSV 내보내기(좌) + 편집/복제/삭제(우) — hover 시만 표시 */}
               <div className="flex justify-between items-center mt-2 pt-2 border-t border-surface-low opacity-0 group-hover:opacity-100 transition-opacity">

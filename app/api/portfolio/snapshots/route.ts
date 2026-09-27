@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { kstToday } from '@/lib/portfolio/valuation'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,32 +18,30 @@ export async function POST(req: Request) {
   const { date, memo, clone_from } = await req.json()
   const sql = getSql()
 
-  const [snapshot] = await sql`
-    INSERT INTO snapshots (date, memo)
-    VALUES (${date ?? new Date().toISOString().slice(0, 10)}, ${memo ?? null})
-    RETURNING *
-  `
-
-  if (clone_from) {
-    const sourceHoldings = await sql`
-      SELECT account_id, security_id, quantity, avg_price, total_invested, source
-      FROM holdings
-      WHERE snapshot_id = ${clone_from} AND quantity > 0
-    `
-    if (sourceHoldings.length > 0) {
-      const cloned = sourceHoldings.map((h: any) => ({
-        ...h,
-        snapshot_id: snapshot.id,
-        snapshot_date: snapshot.date,
-        updated_at: new Date().toISOString(),
-      }))
-      try {
-        await sql`INSERT INTO holdings ${sql(cloned)}`
-      } catch {
-        await sql`DELETE FROM snapshots WHERE id = ${snapshot.id}`
-        return NextResponse.json({ error: 'clone failed' }, { status: 500 })
+  // 스냅샷 생성 + 이전 스냅샷 보유내역 복제를 한 트랜잭션으로 (실패 시 빈 스냅샷이 남지 않게)
+  let snapshot
+  try {
+    snapshot = await sql.begin(async tx => {
+      const [created] = await tx`
+        INSERT INTO snapshots (date, memo)
+        VALUES (${date ?? kstToday()}, ${memo ?? null})
+        RETURNING *
+      `
+      if (clone_from) {
+        await tx`
+          INSERT INTO holdings (account_id, security_id, quantity, avg_price, avg_fx_rate, total_invested, source,
+                                snapshot_id, snapshot_date, updated_at)
+          SELECT account_id, security_id, quantity, avg_price, avg_fx_rate, total_invested, source,
+                 ${created.id}, ${created.date}, NOW()
+          FROM holdings
+          WHERE snapshot_id = ${clone_from} AND quantity > 0
+        `
       }
-    }
+      return created
+    })
+  } catch (e) {
+    console.error('[POST /portfolio/snapshots]', e)
+    return NextResponse.json({ error: clone_from ? 'clone failed' : '생성 실패' }, { status: 500 })
   }
 
   return NextResponse.json(snapshot, { status: 201 })

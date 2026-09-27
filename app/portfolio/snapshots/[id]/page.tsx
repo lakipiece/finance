@@ -10,6 +10,7 @@ type HoldingRow = {
   security_id: string
   quantity: number
   avg_price: number | null
+  avg_fx_rate: number | null
   total_invested: number | null
 }
 type AccountSecurity = { account_id: string; security_id: string }
