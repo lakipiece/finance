@@ -83,14 +83,14 @@ export function RecordCard({ record, onClick }: { record: AnyRecord; onClick: ()
           {/* 수입/지출 아이콘 */}
           <span className={`flex items-center justify-center w-5 h-5 rounded-full ${
             isExpense ? 'bg-surface-low text-ink-4' : 'text-white'
-          }`} style={!isExpense ? { backgroundColor: incomeColor } : undefined}>
+          }`} style={!isExpense ? { backgroundColor: tone.income } : undefined}>
             {isExpense ? <ExpenseIcon /> : <IncomeIcon />}
           </span>
           <CategoryBadge category={record.category} size="sm"
             color={isExpense ? (catColors[record.category] ?? tone.ink5) : incomeColor} />
         </div>
         <span className={`text-subhead font-bold shrink-0 ${isExpense ? 'text-ink' : ''}`}
-          style={!isExpense ? { color: incomeColor } : undefined}>
+          style={!isExpense ? { color: tone.income } : undefined}>
           {formatWonFull(record.amount)}
         </span>
       </div>
