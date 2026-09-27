@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { formatWonFull, formatDate, INCOME_COLORS } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
+import MemberBadge from '@/components/ui/MemberBadge'
 import { tbl, color as tone } from '@/lib/styles'
 
 export interface IncomeRow {
@@ -112,7 +113,7 @@ export default function IncomeTableCard({
                   {item.memo ? <p className="text-micro tracking-normal text-ink-4 mb-1 break-words">{item.memo}</p> : null}
                   <div className="flex items-center justify-between text-body text-ink-4">
                     <span className="tabular-nums">{formatDate(item.income_date)}</span>
-                    {item.member ? <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span> : null}
+                    {item.member ? <MemberBadge member={item.member} /> : null}
                   </div>
                 </div>
               )
@@ -149,7 +150,7 @@ export default function IncomeTableCard({
                       </td>
                       <td className="py-[5px] px-2">
                         {item.member
-                          ? <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
+                          ? <MemberBadge member={item.member} />
                           : <span className="text-ink-5 text-body">—</span>}
                       </td>
                       <td className="py-[5px] px-2 text-right font-medium text-ink text-body whitespace-nowrap">{formatWonFull(item.amount)}</td>

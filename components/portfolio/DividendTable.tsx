@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 import { formatWonRound } from '@/lib/utils'
 import { toKrw, taxKrw, fmtDate } from '@/lib/portfolio/dividendUtils'
 import { createPortal } from 'react-dom'
 import { btn, tbl, modal, color as tone } from '@/lib/styles'
-import { memberBadgeStyle } from '@/lib/palettes'
+import { DIVIDEND_COLOR } from '@/lib/palettes'
+import MemberBadge from '@/components/ui/MemberBadge'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
@@ -26,8 +27,6 @@ function incomeBadge(d: DividendRow) {
 
 type SortMode = 'date' | 'amount'
 const PAGE_SIZES = [20, 50, 100] as const
-
-interface MemberOpt { code: string; color: string }
 
 interface Props {
   dividends: DividendRow[]
@@ -124,19 +123,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
   const [sortMode, setSortMode] = useState<SortMode>('date')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState<20 | 50 | 100>(20)
-  const [memberOpts, setMemberOpts] = useState<MemberOpt[]>([])
   const [detailTicker, setDetailTicker] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch('/api/options/members').then(r => r.json()).then(data => {
-      if (Array.isArray(data) && data.length) setMemberOpts(data)
-    }).catch(() => {})
-  }, [])
-
-  function ownerColor(code: string | null | undefined): string {
-    if (!code) return tone.ink4
-    return memberOpts.find(m => m.code === code)?.color ?? tone.ink4
-  }
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -203,7 +190,6 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
           const gross = toKrw(d)
           const tax = taxKrw(d)
           const net = gross - tax
-          const color = ownerColor(d.account.owner)
           return (
             <div key={d.id} className="bg-surface-card rounded-card shadow-card p-[13px]">
               <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -222,10 +208,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                 <span className="tabular-nums">{fmtDate(d.paid_at)}</span>
                 <span className="text-ink-3">{d.account.broker} · {d.account.name}</span>
               </div>
-              {d.account.owner ? <div className="mt-1">
-                  <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
-                    style={memberBadgeStyle(color)}>{d.account.owner}</span>
-                </div> : null}
+              {d.account.owner ? <div className="mt-1"><MemberBadge member={d.account.owner} /></div> : null}
               <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-surface-low text-micro tracking-normal text-ink-4 tabular-nums">
                 <span>배당금 {formatWonRound(gross)}</span>
                 {tax > 0 ? <span>추정 세금 {formatWonRound(tax)}</span> : null}
@@ -263,7 +246,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               <th className={tbl.thRight}>추정 세금</th>
               <th className={tbl.thRight}>세후 배당금</th>
               <th className={tbl.th}>메모</th>
-              <th className="py-[5px] px-2 text-micro uppercase text-ink-5"></th>
+              <th className="w-px" />
             </tr>
           </thead>
           <tbody>
@@ -272,53 +255,44 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               const gross = toKrw(d)
               const tax = taxKrw(d)
               const net = gross - tax
-              const color = ownerColor(d.account.owner)
               return (
-                <tr key={d.id} className={`group ${i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}`}>
-                  <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
-                  <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap">{fmtDate(d.paid_at)}</td>
-                  <td className={tbl.td}>
+                <tr key={d.id} className={`group ${tbl.row}`}>
+                  <td className="py-[5px] px-2 text-ink-5 text-meta tabular-nums">{(safePage - 1) * pageSize + i + 1}</td>
+                  <td className="py-[5px] px-2 text-ink-4 text-meta whitespace-nowrap tabular-nums">{fmtDate(d.paid_at)}</td>
+                  <td className="py-[5px] px-2">
                     <button type="button" onClick={() => setDetailTicker(d.security.ticker)}
-                      className="text-left min-w-0 hover:underline underline-offset-2">
-                      <span className="block text-micro tracking-normal font-mono text-ink-4">{d.security.ticker}{incomeBadge(d)}</span>
-                      <span className="text-body font-bold text-ink max-w-[130px] truncate block" title={d.security.name}>{d.security.name}</span>
+                      className="text-left hover:underline underline-offset-2 whitespace-nowrap">
+                      <span className="text-body font-bold text-ink">{d.security.name}</span>
+                      <span className="ml-1.5 text-micro tracking-normal font-mono text-ink-5">{d.security.ticker}</span>
+                      {incomeBadge(d)}
                     </button>
                   </td>
-                  <td className={tbl.td}>
-                    <span className="inline-block px-2 py-0.5 rounded-full text-body font-medium bg-surface-low text-ink-2">
+                  <td className="py-[5px] px-2 whitespace-nowrap">
+                    <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-low text-ink-2">
                       {d.account.broker}
                     </span>
-                    <p className="text-micro tracking-normal text-ink-4 mt-0.5">{d.account.name}</p>
+                    <span className="ml-1.5 text-micro tracking-normal text-ink-4">{d.account.name}</span>
                   </td>
-                  <td className="py-[5px] px-2">
-                    {d.account.owner
-                      ? <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
-                          style={memberBadgeStyle(color)}>
-                          {d.account.owner}
-                        </span>
-                      : <span className="text-ink-5 text-body">-</span>}
-                  </td>
-                  <td className={`${tbl.tdRight} font-medium text-ink whitespace-nowrap`}>{formatWonRound(gross)}</td>
+                  <td className="py-[5px] px-2"><MemberBadge member={d.account.owner} /></td>
+                  <td className={`${tbl.tdRight} font-bold whitespace-nowrap`} style={{ color: DIVIDEND_COLOR }}>{formatWonRound(gross)}</td>
                   <td className={`${tbl.tdRight} text-ink-4 whitespace-nowrap`}>
-                    {tax > 0 ? formatWonRound(tax) : <span className="text-ink-5">—</span>}
+                    {tax > 0 ? formatWonRound(tax) : null}
                   </td>
-                  <td className={`${tbl.tdRight} font-medium text-ink whitespace-nowrap`}>{formatWonRound(net)}</td>
+                  <td className={`${tbl.tdRight} font-bold text-ink whitespace-nowrap`}>{formatWonRound(net)}</td>
                   <td className="py-[5px] px-2 text-ink-4 text-body font-medium max-w-[160px]">
-                    {d.memo
-                      ? <span className="block truncate" title={d.memo}>{d.memo}</span>
-                      : <span className="text-ink-5">—</span>}
+                    {d.memo ? <span className="block truncate" title={d.memo}>{d.memo}</span> : null}
                   </td>
-                  <td className="py-[5px] px-2">
-                    <div className="flex items-center gap-1.5 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                  <td className="py-[5px] pl-1 pr-0 w-px">
+                    <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => onEdit(d)}
-                        className="p-1 rounded text-ink-5 hover:text-loss hover:bg-loss/10 transition-colors" title="수정">
+                        className="p-0.5 rounded text-ink-5 hover:text-ink-2 hover:bg-surface-low transition-colors" title="수정">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
                       <button onClick={() => onDelete(d.id)}
-                        className="p-1 rounded text-ink-5 hover:text-gain hover:bg-gain/10 transition-colors" title="삭제">
+                        className="p-0.5 rounded text-ink-5 hover:text-danger hover:bg-danger/10 transition-colors" title="삭제">
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

@@ -7,6 +7,7 @@ import type { MonthlyData, ExpenseItem } from '@/lib/types'
 import type { CategoryDetailsData } from './DashboardClient'
 import { formatWonFull, formatDate, CATEGORIES } from '@/lib/utils'
 import CategoryBadge from '@/components/ui/CategoryBadge'
+import MemberBadge from '@/components/ui/MemberBadge'
 import { useTheme } from '@/lib/ThemeContext'
 import { useFilter } from '@/lib/FilterContext'
 import { tbl, field, color as tone, brand } from '@/lib/styles'
@@ -778,8 +779,8 @@ function ExpenseTableCard({
               <tbody>
                 {slice.map((e, i) => (
                   <tr key={`${e.date}-${e.detail}-${e.amount}-${i}`} className={i % 2 === 1 ? tbl.rowOdd : tbl.rowEven}>
-                    <td className="py-[5px] px-2 text-ink-5 text-body font-medium">{(safePage - 1) * pageSize + i + 1}</td>
-                    <td className="py-[5px] px-2 text-ink-4 text-body font-medium whitespace-nowrap tabular-nums">{formatDate(e.date)}</td>
+                    <td className="py-[5px] px-2 text-ink-5 text-meta tabular-nums">{(safePage - 1) * pageSize + i + 1}</td>
+                    <td className="py-[5px] px-2 text-ink-4 text-meta whitespace-nowrap tabular-nums">{formatDate(e.date)}</td>
                     <td className="py-[5px] px-2">
                       <CategoryBadge category={e.category} size="sm" />
                     </td>
@@ -787,13 +788,7 @@ function ExpenseTableCard({
                       {e.detail ? <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-low text-ink">{e.detail}</span> : <span className="text-ink-5">—</span>}
                     </td>
                     <td className="py-[5px] px-2">
-                      {e.member ? (
-                        <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${
-                          e.member === 'L' ? 'bg-surface-low text-ink-2' :
-                          e.member === 'P' ? 'bg-surface-low text-ink-2' :
-                          'bg-surface-low text-ink-3'
-                        }`}>{e.member}</span>
-                      ) : <span className="text-ink-5 text-body">-</span>}
+                      <MemberBadge member={e.member} />
                     </td>
                     <td className="py-[5px] px-2 text-ink-4 text-body font-medium max-w-[180px]">
                       {e.memo ? <span className="block truncate" title={e.memo}>{e.memo}</span> : <span className="text-ink-5">—</span>}
