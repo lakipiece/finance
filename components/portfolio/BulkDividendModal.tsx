@@ -19,9 +19,9 @@ interface RowInput {
 interface Props {
   show: boolean
   onClose: () => void
-  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>[]
+  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at'>[]
   accountSecurities: AccountSecurity[]
-  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
+  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>[]
   owners: string[]
   palette: { colors: string[] }
 }

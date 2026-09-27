@@ -8,7 +8,7 @@ import { isForeignKeyViolation } from '@/lib/db-errors'
 // SELECT 공통부 — 문자열을 그대로 끼워 넣지 않고 프래그먼트로 합성한다
 const securityWithLabels = (sql: Sql) => sql`
   SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
-         s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
+         s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date, s.archived_at,
          s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
          ac.value AS asset_class,
          co.value AS country,
@@ -77,7 +77,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = await req.json()
   const sql = getSql()
 
-  const allowed = ['name', 'style', 'url', 'memo', 'fixed_price', 'annual_rate', 'accrual_start', 'maturity_date', 'asset_class_id', 'country_id', 'sector_id', 'currency_id', 'style_id']
+  const allowed = ['name', 'style', 'url', 'memo', 'fixed_price', 'annual_rate', 'accrual_start', 'maturity_date', 'archived_at', 'asset_class_id', 'country_id', 'sector_id', 'currency_id', 'style_id']
   const fields = Object.entries(updates)
     .filter(([k]) => allowed.includes(k))
     .map(([k, v]) => sql`${sql(k)} = ${v as string}`)
@@ -103,7 +103,7 @@ export async function DELETE(req: NextRequest) {
     // 스냅샷 보유내역·배당·입출금 이력이 있으면 FK RESTRICT로 거부된다 (이력 보호)
     if (isForeignKeyViolation(e)) {
       return NextResponse.json(
-        { error: '스냅샷·배당·입출금 기록이 있는 종목은 삭제할 수 없습니다. 기록을 먼저 정리하세요.' },
+        { error: '스냅샷·배당 기록이 있는 종목은 삭제할 수 없습니다. 대신 “보관”하면 목록에서 숨겨집니다.' },
         { status: 409 },
       )
     }

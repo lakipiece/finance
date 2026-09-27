@@ -413,6 +413,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const [secSearch, setSecSearch] = useState('')
   const [secFilter, setSecFilter] = useState<{ country: string; currency: string; asset_class: string; sector: string; style: string }>({ country: '', currency: '', asset_class: '', sector: '', style: '' })
   const [secSort, setSecSort] = useState<'ticker' | 'name' | 'country_name'>('country_name')
+  const [showArchivedSecurities, setShowArchivedSecurities] = useState(false)
 
   const [syncing, setSyncing] = useState<string | null>(null)
   const [syncMsg, setSyncMsg] = useState<Record<string, string>>({})
@@ -444,6 +445,16 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
     const json = await res.json()
     if (!res.ok) throw new Error(json.error ?? '오류')
     return json
+  }
+
+  async function setSecurityArchived(id: string, archived: boolean) {
+    try {
+      const updated = await apiFetch('/api/portfolio/securities', 'PATCH', {
+        id, archived_at: archived ? new Date().toISOString() : null,
+      })
+      setSecurities(prev => prev.map(s => s.id === id ? { ...s, ...updated, tags: s.tags } : s))
+      notify(archived ? '종목 보관 — 목록에서 숨겼습니다' : '종목 복원 완료')
+    } catch (e: unknown) { notify(e instanceof Error ? e.message : '오류', false) }
   }
 
   async function deleteSecurity(id: string) {
@@ -511,8 +522,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   const sectors = [...new Set(securities.map(s => s.sector).filter(Boolean))] as string[]
   const etfStyles = [...new Set(securities.map(s => s.etf_style).filter(Boolean))] as string[]
 
+  const archivedCount = useMemo(() => securities.filter(s => s.archived_at).length, [securities])
   const filteredSecurities = useMemo(() => {
-    let list = [...securities]
+    // 보관된 종목은 기본으로 숨긴다 — "보관됨" 토글로 보관 종목만 볼 수 있다
+    let list = securities.filter(s => showArchivedSecurities ? !!s.archived_at : !s.archived_at)
     if (secSearch.trim()) {
       const q = secSearch.toLowerCase()
       list = list.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
@@ -534,11 +547,11 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       return 0
     })
     return list
-  }, [securities, secSearch, secFilter, secSort])
+  }, [securities, secSearch, secFilter, secSort, showArchivedSecurities])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {msg ? <div className={`px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+      {msg ? <div className={`px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 text-income' : 'bg-gain/10 text-gain'}`}>
           {msg.text}
         </div> : null}
 
@@ -588,6 +601,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             className="text-micro tracking-normal text-ink-4 hover:text-ink-2 rounded-btn px-2 py-1.5 hover:bg-surface-low transition-colors whitespace-nowrap">
             필터 초기화
           </button> : null}
+        {archivedCount > 0 ? (
+          <button type="button" onClick={() => setShowArchivedSecurities(v => !v)}
+            className={`text-micro tracking-normal rounded-btn px-2 py-1.5 transition-colors whitespace-nowrap ${showArchivedSecurities ? 'bg-action text-white' : 'text-ink-4 hover:text-ink-2 hover:bg-surface-low'}`}>
+            보관됨 {archivedCount}
+          </button>
+        ) : null}
         <span className="text-micro tracking-normal text-ink-4 ml-auto">{filteredSecurities.length}개</span>
       </div>
 
@@ -712,6 +731,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
                     )}
+                  </button>
+                  <button onClick={() => setSecurityArchived(s.id, !s.archived_at)} className={btn.icon}
+                    title={s.archived_at ? '복원 — 목록에 다시 표시' : '보관 — 목록에서 숨김 (이력은 유지)'}>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.archived_at ? 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9' : 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'} />
+                    </svg>
                   </button>
                   <button onClick={() => setEditModalSecurity(s)}
                     className={btn.icon}>

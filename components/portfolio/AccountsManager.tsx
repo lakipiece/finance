@@ -37,10 +37,10 @@ type ModalTab = 'securities' | 'cashflows'
 
 
 function SortableAccountCard({
-  id, account, linkedCount, typeColors, onCardClick, onEdit, onDelete,
+  id, account, linkedCount, typeColors, onCardClick, onEdit, onArchive, onDelete,
 }: {
   id: string; account: Account; linkedCount: number; typeColors: Record<string, string>
-  onCardClick: () => void; onEdit: () => void; onDelete: () => void
+  onCardClick: () => void; onEdit: () => void; onArchive: () => void; onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
   const typeColor = typeColors[account.type ?? ''] ?? tone.surfaceContainer
@@ -74,6 +74,11 @@ function SortableAccountCard({
               <button onClick={onEdit} className={btn.icon}>
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+              <button onClick={onArchive} className={btn.icon} title="보관 — 목록에서 숨김 (이력은 유지)">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                 </svg>
               </button>
               <button onClick={onDelete} className={btn.danger}>
@@ -235,8 +240,23 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     } catch (e: unknown) { notify(e instanceof Error ? e.message : '오류', false) }
   }
 
+  async function setAccountArchived(id: string, archived: boolean) {
+    try {
+      const updated = await apiFetch('/api/portfolio/accounts', 'PATCH', {
+        id, archived_at: archived ? new Date().toISOString() : null,
+      })
+      setAccounts(prev => prev.map(a => a.id === id ? updated : a))
+      notify(archived ? '계좌 보관 — 목록에서 숨겼습니다' : '계좌 복원 완료')
+    } catch (e: unknown) { notify(e instanceof Error ? e.message : '오류', false) }
+  }
+
+  const activeAccounts = useMemo(() => accounts.filter(a => !a.archived_at), [accounts])
+  const archivedAccounts = useMemo(() => accounts.filter(a => a.archived_at), [accounts])
+  const [showArchived, setShowArchived] = useState(false)
+
   const filteredLinkSecurities = useMemo(() => {
-    let list = [...securities]
+    // 보관된 종목은 새로 연결할 대상이 아니다 — 이미 연결된 것만 해제할 수 있게 남긴다
+    let list = securities.filter(s => !s.archived_at || pendingIds.has(s.id))
     if (linkSearch.trim()) {
       const q = linkSearch.toLowerCase()
       list = list.filter(s => s.ticker.toLowerCase().includes(q) || s.name.toLowerCase().includes(q))
@@ -253,16 +273,16 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {msg ? <div className={`mb-4 px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+      {msg ? <div className={`mb-4 px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 text-income' : 'bg-gain/10 text-gain'}`}>
           {msg.text}
         </div> : null}
 
       <PageHeader title="계좌 관리" description="연결 계좌 및 종목 배분 관리" />
 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={accounts.map(a => a.id)} strategy={rectSortingStrategy}>
+        <SortableContext items={activeAccounts.map(a => a.id)} strategy={rectSortingStrategy}>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-            {accounts.map(a => (
+            {activeAccounts.map(a => (
               <SortableAccountCard
                 key={a.id} id={a.id} account={a}
                 linkedCount={links.filter(l => l.account_id === a.id).length}
@@ -273,6 +293,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   dividend_eligible: a.dividend_eligible ?? true,
                   dividend_tax_rate: a.dividend_tax_rate != null ? String(a.dividend_tax_rate) : '',
                 }) }}
+                onArchive={() => setAccountArchived(a.id, true)}
                 onDelete={() => deleteAccount(a.id)}
               />
             ))}
@@ -291,6 +312,30 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
           </div>
         </SortableContext>
       </DndContext>
+
+      {/* 보관된 계좌 — 이력은 스냅샷·배당·입출금에 그대로 남는다 */}
+      {archivedAccounts.length > 0 ? (
+        <div>
+          <button type="button" onClick={() => setShowArchived(v => !v)}
+            className="text-meta font-medium text-ink-4 hover:text-ink-2 transition-colors">
+            보관된 계좌 {archivedAccounts.length}개 {showArchived ? '숨기기' : '보기'}
+          </button>
+          {showArchived ? (
+            <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {archivedAccounts.map(a => (
+                <div key={a.id} className="bg-surface-low rounded-card p-3 flex flex-col gap-1 min-w-0">
+                  <p className="text-subhead font-medium text-ink-3 truncate">{a.name}</p>
+                  <p className="text-body text-ink-4 truncate">{a.broker}</p>
+                  <button type="button" onClick={() => setAccountArchived(a.id, false)}
+                    className="self-start mt-1 text-meta font-medium text-action hover:underline underline-offset-2">
+                    복원
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Link Modal */}
       {modalLinkAccountId ? createPortal(

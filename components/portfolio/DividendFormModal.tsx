@@ -20,9 +20,9 @@ interface Props {
   show: boolean
   onClose: () => void
   editTarget: DividendRow | null
-  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner'>[]
+  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'archived_at'>[]
   accountSecurities: AccountSecurity[]
-  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
+  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>[]
   incomeTypes: IncomeTypeOption[]
   owners: string[]
   palette: { colors: string[] }
@@ -110,17 +110,27 @@ export default function DividendFormModal({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [secDropOpen])
 
+  // 보관된 계좌·종목은 선택지에서 뺀다 — 수정 중인 기록이 이미 가리키는 것은 남긴다
+  const usableAccounts = useMemo(
+    () => accounts.filter(a => !a.archived_at || a.id === editTarget?.account_id),
+    [accounts, editTarget]
+  )
+  const usableSecurities = useMemo(
+    () => securities.filter(s => !s.archived_at || s.id === editTarget?.security_id),
+    [securities, editTarget]
+  )
+
   const modalAccounts = useMemo(
-    () => modalOwner ? accounts.filter(a => a.owner === modalOwner) : accounts,
-    [accounts, modalOwner]
+    () => modalOwner ? usableAccounts.filter(a => a.owner === modalOwner) : usableAccounts,
+    [usableAccounts, modalOwner]
   )
 
   const modalSecurities = useMemo(() => {
-    if (!form.account_id) return securities
+    if (!form.account_id) return usableSecurities
     const ids = new Set(accountSecurities.filter(l => l.account_id === form.account_id).map(l => l.security_id))
-    const filtered = securities.filter(s => ids.has(s.id))
-    return filtered.length > 0 ? filtered : securities
-  }, [form.account_id, securities, accountSecurities])
+    const filtered = usableSecurities.filter(s => ids.has(s.id))
+    return filtered.length > 0 ? filtered : usableSecurities
+  }, [form.account_id, usableSecurities, accountSecurities])
 
   const filteredModalSecurities = useMemo(() =>
     !secSearch

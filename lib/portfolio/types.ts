@@ -9,6 +9,8 @@ export interface Account {
   currency_id: string | null
   dividend_eligible: boolean
   dividend_tax_rate: number | null
+  /** 보관 시각 — 있으면 관리 목록·선택지에서 숨김 (이력·평가에는 유지) */
+  archived_at?: string | null
   // resolved via JOIN from option_list
   type: string | null
   currency: string
@@ -34,6 +36,8 @@ export interface Security {
   accrual_start: string | null
   /** 만기일 — 이후로는 이자가 붙지 않는다 */
   maturity_date: string | null
+  /** 보관 시각 — 있으면 관리 목록·선택지에서 숨김 (이력·평가에는 유지) */
+  archived_at?: string | null
   // resolved via JOIN from option_list
   asset_class: string | null
   country: string | null

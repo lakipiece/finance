@@ -9,7 +9,7 @@ import { isForeignKeyViolation } from '@/lib/db-errors'
 const accountWithLabels = (sql: Sql) => sql`
   SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
          a.type_id, a.currency_id,
-         a.dividend_eligible, a.dividend_tax_rate,
+         a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
          t.value  AS type,
          cu.value AS currency
   FROM accounts a
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = await req.json()
   const sql = getSql()
 
-  const allowed = ['name', 'broker', 'owner', 'type_id', 'currency_id', 'dividend_eligible', 'dividend_tax_rate']
+  const allowed = ['name', 'broker', 'owner', 'type_id', 'currency_id', 'dividend_eligible', 'dividend_tax_rate', 'archived_at']
   const fields = Object.entries(updates)
     .filter(([k]) => allowed.includes(k))
     .map(([k, v]) => sql`${sql(k)} = ${v as string}`)
@@ -77,7 +77,7 @@ export async function DELETE(req: NextRequest) {
     // 스냅샷 보유내역·배당·입출금 이력이 있으면 FK RESTRICT로 거부된다 (이력 보호)
     if (isForeignKeyViolation(e)) {
       return NextResponse.json(
-        { error: '스냅샷·배당·입출금 기록이 있는 계좌은 삭제할 수 없습니다. 기록을 먼저 정리하세요.' },
+        { error: '스냅샷·배당·입출금 기록이 있는 계좌는 삭제할 수 없습니다. 대신 “보관”하면 목록에서 숨겨집니다.' },
         { status: 409 },
       )
     }

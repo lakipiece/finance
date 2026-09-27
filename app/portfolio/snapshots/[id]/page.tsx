@@ -23,7 +23,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
     sql`SELECT * FROM holdings WHERE snapshot_id = ${id}` as unknown as Promise<HoldingRow[]>,
     sql`
       SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
-             a.type_id, a.currency_id,
+             a.type_id, a.currency_id, a.archived_at,
              t.value AS type, cu.value AS currency
       FROM accounts a
       LEFT JOIN option_list t  ON a.type_id    = t.id
@@ -31,7 +31,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
       ORDER BY a.sort_order ASC, a.created_at ASC
     ` as unknown as Promise<Account[]>,
     sql`
-      SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
+      SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at, s.archived_at,
              s.asset_class_id, s.country_id, s.sector_id, s.currency_id,
              ac.value AS asset_class, co.value AS country,
              se.value AS sector,      cu.value AS currency

@@ -91,14 +91,25 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
   const [showDirtyAlert, setShowDirtyAlert] = useState(false)
 
   const secMap = useMemo(() => Object.fromEntries(securities.map(s => [s.id, s])), [securities])
+  // 보관된 계좌는 이 스냅샷에 보유 기록이 있을 때만 카드로 보인다 (과거 스냅샷 편집은 그대로 가능)
+  const heldAccountIds = useMemo(() => new Set(holdings.filter(h => Number(h.quantity) > 0).map(h => h.account_id)), [holdings])
+  const visibleAccounts = useMemo(
+    () => accounts.filter(a => !a.archived_at || heldAccountIds.has(a.id)),
+    [accounts, heldAccountIds]
+  )
   const accMap = useMemo(() => Object.fromEntries(accounts.map(a => [a.id, a])), [accounts])
 
   const [rows, setRows] = useState<HoldingRow[]>(() => {
     const holdingMap = new Map(holdings.map(h => [`${h.account_id}__${h.security_id}`, h]))
     const asKeys = new Set(accountSecurities.map(as => `${as.account_id}__${as.security_id}`))
 
-    // 현재 account_securities 기반 rows
-    const fromLinks = accountSecurities.map(as => {
+    // 현재 account_securities 기반 rows — 보관된 종목·계좌는 이 스냅샷에 보유 기록이 있을 때만
+    const archivedSec = new Set(securities.filter(s => s.archived_at).map(s => s.id))
+    const archivedAcc = new Set(accounts.filter(a => a.archived_at).map(a => a.id))
+    const fromLinks = accountSecurities
+      .filter(as => !(archivedSec.has(as.security_id) || archivedAcc.has(as.account_id))
+        || holdingMap.has(`${as.account_id}__${as.security_id}`))
+      .map(as => {
       const existing = holdingMap.get(`${as.account_id}__${as.security_id}`)
       return {
         account_id: as.account_id,
@@ -396,7 +407,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
 
       {/* Account Card Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-        {accounts.map(a => {
+        {visibleAccounts.map(a => {
           const count = accountCounts[a.id] ?? 0
           const total = accountSecurities.filter(as => as.account_id === a.id).length
           const aVal = accountValues[a.id] ?? 0

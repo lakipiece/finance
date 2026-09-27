@@ -182,6 +182,13 @@ export async function refreshAllPrices(): Promise<{
     LEFT JOIN option_list ac ON s.asset_class_id = ac.id
     LEFT JOIN option_list co ON s.country_id     = co.id
     LEFT JOIN option_list cu ON s.currency_id    = cu.id
+    -- 보관 종목은 매일 수집하지 않는다. 단 최신 스냅샷에 아직 보유 중이면 계속 (평가가 멈추지 않게)
+    WHERE s.archived_at IS NULL
+       OR EXISTS (
+         SELECT 1 FROM holdings h
+         WHERE h.security_id = s.id AND h.quantity > 0
+           AND h.snapshot_id = (SELECT id FROM snapshots ORDER BY date DESC LIMIT 1)
+       )
   `
 
   if (!securities || securities.length === 0) return { saved: 0, failed: [], results: {}, backfilled: 0, backfillTickers: [] }

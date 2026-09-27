@@ -28,6 +28,8 @@ export async function fetchAccounts(): Promise<Account[]> {
   const data = await sql<Account[]>`
     SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
            a.type_id, a.currency_id,
+           -- 편집 폼 초기값 — 빠지면 저장 시 배당 세율이 지워진다
+           a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
            t.value AS type, cu.value AS currency
     FROM accounts a
     LEFT JOIN option_list t  ON a.type_id    = t.id
@@ -41,7 +43,7 @@ export async function fetchSecurities(): Promise<Security[]> {
   const sql = getSql()
   const data = await sql<Security[]>`
     SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
-           s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
+           s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date, s.archived_at,
            s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
            ac.value AS asset_class, co.value AS country,
            se.value AS sector,      st.value AS etf_style, cu.value AS currency
@@ -70,7 +72,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     sql<{ id: number }[]>`SELECT id FROM snapshots ORDER BY date DESC LIMIT 1`,
     sql<Account[]>`
       SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
-             a.type_id, a.currency_id,
+             a.type_id, a.currency_id, a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
              t.value AS type, cu.value AS currency
       FROM accounts a
       LEFT JOIN option_list t  ON a.type_id    = t.id
@@ -78,7 +80,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     `,
     sql<Security[]>`
       SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
-             s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
+             s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date, s.archived_at,
              s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
              ac.value AS asset_class, co.value AS country,
              se.value AS sector,      st.value AS etf_style, cu.value AS currency,

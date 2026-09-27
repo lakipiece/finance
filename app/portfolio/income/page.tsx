@@ -6,8 +6,8 @@ import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 export const dynamic = 'force-dynamic'
 
 type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker' | 'owner'> }
-type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>
-type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>
+type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>
+type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at'>
 type AccountSecurity = { account_id: string; security_id: string }
 type IncomeTypeRow = { id: string; label: string; value: string; color_hex: string | null }
 
@@ -39,12 +39,12 @@ export default async function IncomePage() {
         ORDER BY d.paid_at DESC
       ` as unknown as Promise<DividendRow[]>,
       sql`
-        SELECT s.id, s.ticker, s.name, COALESCE(ol.value, 'KRW') AS currency
+        SELECT s.id, s.ticker, s.name, COALESCE(ol.value, 'KRW') AS currency, s.archived_at
         FROM securities s
         LEFT JOIN option_list ol ON s.currency_id = ol.id
         ORDER BY s.ticker
       ` as unknown as Promise<SecurityRow[]>,
-      sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate
+      sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate, archived_at
           FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
       sql`SELECT id, label, value, color_hex FROM option_list

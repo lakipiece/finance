@@ -29,8 +29,8 @@ type DividendRow = Dividend & {
 
 interface Props {
   dividends: DividendRow[]
-  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency'>[]
-  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate'>[]
+  securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>[]
+  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at'>[]
   accountSecurities: AccountSecurity[]
   incomeTypes: IncomeTypeOption[]
   positions: PositionLite[]
@@ -287,6 +287,10 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
     () => groupBySecurity(scopedDividends, positionByTicker).slice(0, 15),
     [scopedDividends, positionByTicker]
   )
+
+  // 신규 입력 선택지에서는 보관된 계좌·종목을 뺀다 (기존 기록 표시·필터에는 그대로)
+  const activeAccounts = useMemo(() => accounts.filter(a => !a.archived_at), [accounts])
+  const activeSecurities = useMemo(() => securities.filter(s => !s.archived_at), [securities])
 
   const owners = useMemo(() => {
     const s = new Set(accounts.map(a => a.owner ?? '').filter(Boolean))
@@ -589,9 +593,9 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
       <BulkDividendModal
         show={showModal ? !editTarget : false}
         onClose={() => setShowModal(false)}
-        accounts={accounts}
+        accounts={activeAccounts}
         accountSecurities={accountSecurities}
-        securities={securities}
+        securities={activeSecurities}
         owners={owners}
         palette={palette}
       />
