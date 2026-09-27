@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { badge, btn, color as tone } from '@/lib/styles'
+import { DIVIDEND_COLOR } from '@/lib/palettes'
 import DateInput from '@/components/ui/DateInput'
 import PageHeader from '@/components/ui/PageHeader'
 import { snapshotMetrics } from '@/lib/portfolio/metrics'
@@ -270,7 +271,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     </span>
                   ) : <span />}
                   {monthDividend > 0 ? (
-                    <span className="text-ink-4 tabular-nums" title="이 달에 받은 배당·분배금">
+                    <span className="font-medium tabular-nums" style={{ color: DIVIDEND_COLOR }} title="이 달에 받은 배당·분배금">
                       월배당 {fmtKrw(monthDividend)}
                     </span>
                   ) : null}

@@ -23,6 +23,8 @@ export const F = {
   // 보라 — 수입 전용 (의미색 income과 같은 계열). 차트 계열 순서에는 넣지 않는다
   violet:    '#5B3FA0',
   plum:      '#390069', // 입력 화면 요약 카드 그라데이션 끝 (지출 네이비 → 수입 플럼)
+  // 라벤더 — 수입 보라보다 밝은 톤. 배당 표시·옵션 색 선택지용 (차트 계열 순서에는 넣지 않는다)
+  lavender:  '#8467C0',
 } as const
 
 export const DEFAULT_PALETTE: Palette = {
@@ -92,11 +94,12 @@ export function chartSeriesColor(i: number): string {
   return cycle === 0 ? base : lighten(base, Math.min(cycle * 0.18, 0.54))
 }
 
-// 옵션 항목용 30색 — 1행은 F 기본 순서(자동 배정 순서), 2행 진하게, 3행 연하게
+// 옵션 항목용 33색 — 1행은 F 기본 순서(자동 배정 순서) + 라벤더, 2행 진하게, 3행 연하게
+const OPTION_BASE: string[] = [...CHART_SERIES, F.lavender]
 export const OPTION_COLORS: string[] = [
-  ...CHART_SERIES,
-  ...CHART_SERIES.map(c => deepen(c, 0.28)),
-  ...CHART_SERIES.map(c => lighten(c, 0.5)),
+  ...OPTION_BASE,
+  ...OPTION_BASE.map(c => deepen(c, 0.28)),
+  ...OPTION_BASE.map(c => lighten(c, 0.5)),
 ]
 
 // ─── 데이터 색 — 컴포넌트에 raw hex를 두지 않도록 이름 붙여 모은다 ────────────
@@ -107,6 +110,8 @@ export const INCOME_CATEGORY_COLORS: Record<string, string> = {
   '급여': F.denim,
   '기타': F.pistachio,
 }
+/** 포트폴리오 배당 금액 (수입 보라와 구분되는 라벤더) */
+export const DIVIDEND_COLOR = F.lavender
 /** 가계부 입력 — 요약 카드 그라데이션: 지출 네이비 → 수입 플럼 */
 export const EXPENSE_ACCENT = F.navy
 export const INCOME_ACCENT = F.plum

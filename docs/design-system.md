@@ -104,6 +104,7 @@
 | 연도 | `chartSeriesColor(latest - year)` — 최근 연도부터 팔레트 순서, 한 바퀴 뒤는 밝은 톤 (어두운 톤 금지) |
 | 입력 요약 카드 | 네이비 → 플럼 `#390069` 그라데이션 (`EXPENSE_ACCENT` → `INCOME_ACCENT`) |
 | 보라 | `F.violet` `#5B3FA0` — 수입 전용. 차트 계열 순서에는 넣지 않는다 |
+| 라벤더 | `F.lavender` `#8467C0` — 배당 금액(`DIVIDEND_COLOR`)·옵션 색 선택지. 차트 계열 순서에는 넣지 않는다 |
 | 계좌·종목 카드 | 왼쪽 6px 색 바 = 배지 색 (테두리 금지의 예외 — 분류 색 띠) |
 
 저장된 색(categories·members·payment_methods·option_list)은 `docs/sql/2026-09-27-palette-ocean-peach.sql`로 이전.

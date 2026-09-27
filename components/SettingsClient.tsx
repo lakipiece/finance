@@ -200,7 +200,7 @@ export default function SettingsClient({ initialYears }: Props) {
         <h3 className="text-body font-medium text-ink-3 mb-3">옵션 색상 팔레트</h3>
         <div className="bg-surface-card rounded-card p-[13px]">
           <p className="text-micro tracking-normal text-ink-4 mb-3">클릭하면 HEX 코드가 클립보드에 복사됩니다.</p>
-          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-1.5">
+          <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-11 gap-1.5">
             {OPTION_COLORS.map((c) => (
               <button
                 key={c}
