@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
+import { isForeignKeyViolation } from '@/lib/db-errors'
 
 const ACCOUNT_WITH_LABELS = `
   SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
@@ -69,6 +70,17 @@ export async function DELETE(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id 필수' }, { status: 400 })
   const sql = getSql()
-  await sql`DELETE FROM accounts WHERE id = ${id}`
+  try {
+    await sql`DELETE FROM accounts WHERE id = ${id}`
+  } catch (e) {
+    // 스냅샷 보유내역·배당·입출금 이력이 있으면 FK RESTRICT로 거부된다 (이력 보호)
+    if (isForeignKeyViolation(e)) {
+      return NextResponse.json(
+        { error: '스냅샷·배당·입출금 기록이 있는 계좌은 삭제할 수 없습니다. 기록을 먼저 정리하세요.' },
+        { status: 409 },
+      )
+    }
+    throw e
+  }
   return NextResponse.json({ ok: true })
 }

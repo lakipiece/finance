@@ -34,3 +34,9 @@ next-env.d.ts
 # superpowers
 .superpowers/
 .env*.local
+
+# 서버 로컬 전용 — 절대 커밋 금지
+google-credentials.json
+data/
+dump.sql
+*.bak-*

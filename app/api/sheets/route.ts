@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
   }
 
   const rows: RawExpenseRow[] = []
+  let skippedOtherYear = 0
   for (let i = 1; i < values.length; i++) {
     const row = values[i]
     if (!row || row.length < 5) continue
@@ -110,6 +111,12 @@ export async function POST(req: NextRequest) {
       // Fallback: try parsing col[0] as a standard date string
       const parsed = toDateString(rawDate)
       if (parsed) {
+        // 연도 경계를 넘는 시트(예: 2018 시트에 2019년 1~4월이 이어짐)는 다음 해 시트와
+        // 이중으로 들어간다 — 시트 연도와 날짜 연도가 다르면 건너뛰고 알린다.
+        if (parsed.slice(0, 4) !== String(yearNum)) {
+          skippedOtherYear++
+          continue
+        }
         monthNum = new Date(parsed).getMonth() + 1
         expenseDate = parsed
       }
@@ -140,7 +147,8 @@ export async function POST(req: NextRequest) {
     existingCount,
     sampleRows: rows.slice(0, 10),
     year: yearNum,
-    ...(rows.length === 0 && { rawSample: values.slice(0, 4) }),
+    skippedOtherYear,
+    ...(rows.length === 0 ? { rawSample: values.slice(0, 4) } : {}),
   }
 
   return NextResponse.json(response)

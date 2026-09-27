@@ -65,4 +65,6 @@ export interface ParsePreviewResponse {
   source?: 'excel' | 'googlesheet'
   source_url?: string
   rawSample?: string[][] // first 3 raw rows for debugging when totalCount is 0
+  /** 시트 연도와 날짜 연도가 달라 건너뛴 행 수 (연도 경계를 넘는 시트의 이중 계상 방지) */
+  skippedOtherYear?: number
 }

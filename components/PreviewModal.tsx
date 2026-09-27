@@ -77,8 +77,8 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
         </div>
 
         {/* Overwrite warning */}
-        {hasExisting && preview.totalCount > 0 && (
-          <div className="mx-6 mb-2 px-4 py-3 bg-warning/10 border rounded-field">
+        {hasExisting && preview.totalCount > 0 ? (
+          <div className="mx-6 mb-2 px-4 py-3 bg-warning/10 rounded-field">
             <p className="text-body font-medium text-warning">
               {preview.year}년 기존 데이터 {preview.existingCount.toLocaleString()}건이 있습니다.
             </p>
@@ -86,7 +86,17 @@ export default function PreviewModal({ preview, onConfirm, onCancel, loading }: 
               저장하면 기존 데이터가 모두 삭제되고 새 데이터 {preview.totalCount.toLocaleString()}건으로 교체됩니다.
             </p>
           </div>
-        )}
+        ) : null}
+
+        {/* 연도 경계를 넘는 시트: 다른 해 날짜는 그 해 시트에서 가져온다 */}
+        {preview.skippedOtherYear ? (
+          <div className="mx-6 mb-2 px-4 py-3 bg-surface-low rounded-field">
+            <p className="text-body text-ink-3">
+              {preview.year}년이 아닌 날짜 {preview.skippedOtherYear.toLocaleString()}건은 건너뛰었습니다.
+              해당 연도 시트에서 가져오세요 (이중 계상 방지).
+            </p>
+          </div>
+        ) : null}
 
         {/* Footer buttons */}
         <div className="p-6 border-t border-surface-low flex justify-end gap-3">
