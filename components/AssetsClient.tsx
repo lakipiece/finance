@@ -80,16 +80,14 @@ function KpiCard({ label, value, sub, color, tooltip }: {
         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
         <div className="relative group flex items-center gap-1 min-w-0">
           <p className="text-micro text-ink-5 uppercase truncate">{label}</p>
-          {tooltip && (
-            <>
+          {tooltip ? <>
               <svg className="w-3 h-3 text-ink-5 cursor-help" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div className="absolute bottom-full left-0 mb-1.5 hidden group-hover:block z-10 w-48 bg-action text-white text-meta rounded-btn px-2.5 py-1.5 shadow-card pointer-events-none">
                 {tooltip}
               </div>
-            </>
-          )}
+            </> : null}
         </div>
       </div>
       <p className="text-heading text-ink tabular-nums mt-1 truncate">{value}</p>
@@ -188,8 +186,7 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
         </div>
       </div>
 
-      {expanded && (
-        <div className="border-t border-surface-low px-[18px] py-[15px]">
+      {expanded ? <div className="border-t border-surface-low px-[18px] py-[15px]">
           {loadingVal ? (
             <div className="h-40 flex items-center justify-center text-body text-ink-5">로딩 중...</div>
           ) : chartData.length === 0 ? (
@@ -210,8 +207,7 @@ function AssetCard({ item, onEdit, onDelete, onValuation, palette }: {
               </LineChart>
             </ResponsiveContainer>
           )}
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }
@@ -286,7 +282,7 @@ function PensionSnapshotModal({ show, pensionId, pensionName, onClose, onSaved, 
             <input type="text" value={note} onChange={e => setNote(e.target.value)}
               placeholder="메모" className={field.input} />
           </div>
-          {error && <p className="text-body text-danger">{error}</p>}
+          {error ? <p className="text-body text-danger">{error}</p> : null}
         </div>
         <div className={modal.footer}>
           <button type="button" onClick={onClose} className={btn.secondary}>취소</button>
@@ -362,7 +358,7 @@ function PensionFormModal({ show, onClose, onSaved, palette, editItem }: {
             <input type="text" value={description} onChange={e => setDescription(e.target.value)}
               placeholder="설명 (선택)" className={field.input} />
           </div>
-          {error && <p className="text-body text-danger">{error}</p>}
+          {error ? <p className="text-body text-danger">{error}</p> : null}
         </div>
         <div className={modal.footer}>
           <button type="button" onClick={onClose} className={btn.secondary}>취소</button>
@@ -429,16 +425,14 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
               <span className={badge.base} style={{ backgroundColor: `${PENSION_COLOR}1a`, color: PENSION_COLOR }}>연금</span>
               <span className="text-subhead font-medium text-ink truncate">{item.name}</span>
             </div>
-            {item.description && <p className="text-body text-ink-4 mb-2">{item.description}</p>}
+            {item.description ? <p className="text-body text-ink-4 mb-2">{item.description}</p> : null}
             <div className="text-body text-ink-3">
               {item.current_amount != null
                 ? <span className="font-medium text-ink">{fmtAmt(item.current_amount)}</span>
                 : <span className="text-ink-5">스냅샷 없음</span>
               }
             </div>
-            {item.last_snapshot_date && (
-              <p className="text-micro tracking-normal text-ink-5 mt-1">마지막 기록일: {item.last_snapshot_date}</p>
-            )}
+            {item.last_snapshot_date ? <p className="text-micro tracking-normal text-ink-5 mt-1">마지막 기록일: {item.last_snapshot_date}</p> : null}
           </div>
           <svg className={`w-4 h-4 text-ink-5 flex-shrink-0 transition-transform mt-1 ${expanded ? 'rotate-180' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -463,16 +457,14 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
         </div>
       </div>
 
-      {expanded && (
-        <div className="border-t border-surface-low px-[18px] py-[15px]">
+      {expanded ? <div className="border-t border-surface-low px-[18px] py-[15px]">
           {loading ? (
             <div className="h-32 flex items-center justify-center text-body text-ink-5">로딩 중...</div>
           ) : snapshots && snapshots.length === 0 ? (
             <div className="h-24 flex items-center justify-center text-body text-ink-5">기록된 스냅샷이 없습니다</div>
           ) : (
             <>
-              {chartData.length >= 2 && (
-                <div className="mb-4">
+              {chartData.length >= 2 ? <div className="mb-4">
                   <ResponsiveContainer width="100%" height={140}>
                     <LineChart data={chartData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -487,14 +479,13 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
                         dot={{ r: 3, fill: PENSION_COLOR }} activeDot={{ r: 4 }} />
                     </LineChart>
                   </ResponsiveContainer>
-                </div>
-              )}
+                </div> : null}
               <div className="space-y-1">
                 {[...(snapshots ?? [])].sort((a, b) => b.snapshot_date.localeCompare(a.snapshot_date)).map(s => (
                   <div key={s.id} className="flex items-center justify-between text-body py-1.5 border-b border-surface-low last:border-0">
                     <span className="text-ink-4">{s.snapshot_date}</span>
                     <span className="font-medium text-ink">{fmtAmt(s.amount)}</span>
-                    {s.note && <span className="text-ink-5 truncate max-w-[120px]">{s.note}</span>}
+                    {s.note ? <span className="text-ink-5 truncate max-w-[120px]">{s.note}</span> : null}
                     <button onClick={() => handleDeleteSnapshot(s.id)}
                       className="text-ink-5 hover:text-danger transition-colors ml-2 opacity-0 group-hover:opacity-100">
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -506,8 +497,7 @@ function PensionCard({ item, onEdit, onDelete, onSnapshot, palette }: {
               </div>
             </>
           )}
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }
@@ -558,7 +548,7 @@ function FinancialSection() {
         <KpiCard label="투자원금" value={fmtAmt(snapshot.total_invested)} sub="누적 투자금" color={FINANCIAL_COLOR} />
         <KpiCard label="평가손익" value={gain != null ? `${gainSign}${fmtAmt(gain)}` : '-'} sub={gainPct != null ? `${gainSign}${gainPct.toFixed(1)}%` : '-'} color={gainColor} />
       </div>
-      {snapshot.memo && <p className="text-body text-ink-4">{snapshot.memo}</p>}
+      {snapshot.memo ? <p className="text-body text-ink-4">{snapshot.memo}</p> : null}
     </div>
   )
 }
@@ -651,18 +641,14 @@ export default function AssetsClient() {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* 페이지 헤더 */}
       <PageHeader title="자산" description="유형자산, 연금자산, 금융자산 현황">
-        {activeTab === 'tangible' && (
-          <button onClick={() => { setEditItem(null); setShowFormModal(true) }}
+        {activeTab === 'tangible' ? <button onClick={() => { setEditItem(null); setShowFormModal(true) }}
             className={btn.primary}>
             + 자산 추가
-          </button>
-        )}
-        {activeTab === 'pension' && (
-          <button onClick={() => { setEditPensionItem(null); setShowPensionForm(true) }}
+          </button> : null}
+        {activeTab === 'pension' ? <button onClick={() => { setEditPensionItem(null); setShowPensionForm(true) }}
             className={btn.primary}>
             + 연금 추가
-          </button>
-        )}
+          </button> : null}
       </PageHeader>
 
       {/* 좌 = 요약(KPI + 구성), 우 = 상세.
@@ -683,8 +669,7 @@ export default function AssetsClient() {
       </div>
 
       {/* 자산 구성 도넛 차트 */}
-      {grandTotal > 0 && (
-        <div className="bg-surface-card rounded-card shadow-card p-[13px]">
+      {grandTotal > 0 ? <div className="bg-surface-card rounded-card shadow-card p-[13px]">
           <p className="text-micro text-ink-5 uppercase mb-2">자산 구성</p>
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
@@ -711,8 +696,7 @@ export default function AssetsClient() {
               ))}
             </div>
           </div>
-        </div>
-      )}
+        </div> : null}
 
       </div>
 
@@ -744,8 +728,7 @@ export default function AssetsClient() {
       </div>
 
       {/* 탭 콘텐츠 */}
-      {activeTab === 'tangible' && (
-        tangibleItems.length === 0 ? (
+      {activeTab === 'tangible' ? tangibleItems.length === 0 ? (
           <div className="bg-surface-card rounded-card shadow-card px-[13px] py-16 text-center text-body text-ink-5">
             등록된 유형자산이 없습니다. 자산을 추가해보세요.
           </div>
@@ -760,11 +743,9 @@ export default function AssetsClient() {
               />
             ))}
           </div>
-        )
-      )}
+        ) : null}
 
-      {activeTab === 'pension' && (
-        pensionItems.length === 0 ? (
+      {activeTab === 'pension' ? pensionItems.length === 0 ? (
           <div className="bg-surface-card rounded-card shadow-card px-[13px] py-16 text-center text-body text-ink-5">
             등록된 연금자산이 없습니다. 연금을 추가해보세요.
           </div>
@@ -783,10 +764,9 @@ export default function AssetsClient() {
               />
             ))}
           </div>
-        )
-      )}
+        ) : null}
 
-      {activeTab === 'financial' && <FinancialSection />}
+      {activeTab === 'financial' ? <FinancialSection /> : null}
 
       </div>
       </div>
@@ -799,16 +779,14 @@ export default function AssetsClient() {
         palette={palette}
         editItem={editItem}
       />
-      {valTarget && (
-        <AssetValuationModal
+      {valTarget ? <AssetValuationModal
           show={showValModal}
           assetId={valTarget.id}
           assetName={valTarget.name}
           onClose={() => { setShowValModal(false); setValTarget(null) }}
           onSaved={loadTangible}
           palette={palette}
-        />
-      )}
+        /> : null}
       <PensionFormModal
         show={showPensionForm}
         onClose={() => { setShowPensionForm(false); setEditPensionItem(null) }}
@@ -816,16 +794,14 @@ export default function AssetsClient() {
         palette={palette}
         editItem={editPensionItem}
       />
-      {snapshotTarget && (
-        <PensionSnapshotModal
+      {snapshotTarget ? <PensionSnapshotModal
           show={showSnapshotModal}
           pensionId={snapshotTarget.id}
           pensionName={snapshotTarget.name}
           onClose={() => { setShowSnapshotModal(false); setSnapshotTarget(null) }}
           onSaved={loadPension}
           palette={palette}
-        />
-      )}
+        /> : null}
     </div>
   )
 }

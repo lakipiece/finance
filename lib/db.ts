@@ -1,7 +1,9 @@
 import 'server-only'
 import postgres from 'postgres'
 
-let _sql: ReturnType<typeof postgres> | undefined
+export type Sql = ReturnType<typeof postgres>
+
+let _sql: Sql | undefined
 
 function getClient() {
   if (!_sql) {

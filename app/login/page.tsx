@@ -92,9 +92,7 @@ export default function LoginPage() {
               />
             </div>
 
-            {error && (
-              <p className="text-body text-white bg-danger/40 rounded-btn px-3 py-2">{error}</p>
-            )}
+            {error ? <p className="text-body text-white bg-danger/40 rounded-btn px-3 py-2">{error}</p> : null}
 
             <button
               type="submit"

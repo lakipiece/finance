@@ -167,17 +167,13 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h3 className="text-heading font-bold text-ink shrink-0">배당·분배금 내역</h3>
         <div className="flex items-center gap-2">
-          {selectedMonth && (
-            <span className="text-meta px-2 py-0.5 rounded-full bg-loss/10 text-loss">
+          {selectedMonth ? <span className="text-meta px-2 py-0.5 rounded-full bg-loss/10 text-loss">
               {selectedMonth} 필터링중
-            </span>
-          )}
-          {selectedSecurity && (
-            <button onClick={onClearSecurity}
+            </span> : null}
+          {selectedSecurity ? <button onClick={onClearSecurity}
               className="text-meta px-2 py-0.5 rounded-full bg-income/10 text-income hover:bg-income/10 transition-colors">
               {selectedSecurity} ✕
-            </button>
-          )}
+            </button> : null}
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-ink-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
@@ -201,9 +197,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
 
       {/* 모바일 카드 뷰 */}
       <div className="md:hidden space-y-2">
-        {filtered.length === 0 && (
-          <p className="text-center text-ink-4 text-body py-8">내역이 없습니다</p>
-        )}
+        {filtered.length === 0 ? <p className="text-center text-ink-4 text-body py-8">내역이 없습니다</p> : null}
         {slice.map((d) => {
           const gross = toKrw(d)
           const tax = taxKrw(d)
@@ -227,15 +221,13 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                 <span className="tabular-nums">{fmtDate(d.paid_at)}</span>
                 <span className="text-ink-3">{d.account.broker} · {d.account.name}</span>
               </div>
-              {d.account.owner && (
-                <div className="mt-1">
+              {d.account.owner ? <div className="mt-1">
                   <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
                     style={{ backgroundColor: `${color}22`, color }}>{d.account.owner}</span>
-                </div>
-              )}
+                </div> : null}
               <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-surface-low text-micro tracking-normal text-ink-4 tabular-nums">
                 <span>배당금 {formatWonRound(gross)}</span>
-                {tax > 0 && <span>추정 세금 {formatWonRound(tax)}</span>}
+                {tax > 0 ? <span>추정 세금 {formatWonRound(tax)}</span> : null}
               </div>
               <div className="flex items-center gap-2 justify-end mt-2">
                 <button onClick={() => onEdit(d)} className={btn.icon} title="수정">
@@ -274,9 +266,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 && (
-              <tr><td colSpan={10} className="py-10 text-center text-ink-4 text-body font-medium">내역이 없습니다</td></tr>
-            )}
+            {filtered.length === 0 ? <tr><td colSpan={10} className="py-10 text-center text-ink-4 text-body font-medium">내역이 없습니다</td></tr> : null}
             {slice.map((d, i) => {
               const gross = toKrw(d)
               const tax = taxKrw(d)

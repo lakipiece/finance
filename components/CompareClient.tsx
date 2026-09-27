@@ -111,7 +111,7 @@ export default function CompareClient({ availableYears }: Props) {
                 <span className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ background: isSelected ? 'rgba(255,255,255,0.6)' : color }} />
                 {y.year}
-                {isLoading && <span className="opacity-70">...</span>}
+                {isLoading ? <span className="opacity-70">...</span> : null}
               </button>
             )
           })}
@@ -119,8 +119,7 @@ export default function CompareClient({ availableYears }: Props) {
       </div>
 
       {/* Category filter */}
-      {selectedYears.length > 0 && (
-        <div className="px-1 flex items-center gap-1.5 flex-wrap">
+      {selectedYears.length > 0 ? <div className="px-1 flex items-center gap-1.5 flex-wrap">
           <button onClick={() => setCumulative(prev => !prev)}
             className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${cumulative ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
             {cumulative ? '누적 보기' : '월별 보기'}
@@ -164,8 +163,7 @@ export default function CompareClient({ availableYears }: Props) {
               {cat}
             </button>
           ))}
-        </div>
-      )}
+        </div> : null}
 
       {selectedYears.length === 0 ? (
         <div className="bg-surface-card rounded-card shadow-card p-16 text-center">

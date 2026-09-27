@@ -84,8 +84,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
         style={{ backgroundColor: color }}
         onClick={handleOpen}
       />
-      {open && (
-        <div
+      {open ? <div
           ref={dropdownRef}
           className="fixed z-[9999] bg-surface-card rounded-field p-2.5 shadow-dialog"
           style={{ top: pos.top, left: pos.left }}
@@ -101,13 +100,11 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
                   borderColor: color === c ? '#1e293b' : 'transparent',
                 }}
               >
-                {copied === c && (
-                  <span className="absolute inset-0 flex items-center justify-center">
+                {copied === c ? <span className="absolute inset-0 flex items-center justify-center">
                     <svg className="w-3 h-3 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                  </span>
-                )}
+                  </span> : null}
               </button>
             ))}
           </div>
@@ -135,8 +132,7 @@ function ColorPicker({ color, onChange }: { color: string; onChange: (c: string)
             />
             <span className="text-micro tracking-normal text-ink-5">클릭→복사</span>
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }
@@ -254,9 +250,7 @@ function OptionTypeCard({
                 onDelete={(id) => onDelete(typeKey, id)}
               />
             ))}
-            {items.length === 0 && (
-              <p className="text-body text-ink-5 py-2">항목 없음</p>
-            )}
+            {items.length === 0 ? <p className="text-body text-ink-5 py-2">항목 없음</p> : null}
           </div>
         </SortableContext>
       </DndContext>

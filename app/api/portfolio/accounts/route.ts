@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSql } from '@/lib/db'
+import { getSql, type Sql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { isForeignKeyViolation } from '@/lib/db-errors'
 
-const ACCOUNT_WITH_LABELS = `
+// SELECT 공통부 — 문자열을 그대로 끼워 넣지 않고 프래그먼트로 합성한다
+const accountWithLabels = (sql: Sql) => sql`
   SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
          a.type_id, a.currency_id,
          a.dividend_eligible, a.dividend_tax_rate,
@@ -18,7 +19,7 @@ const ACCOUNT_WITH_LABELS = `
 
 export async function GET() {
   const sql = getSql()
-  const data = await sql`${sql.unsafe(ACCOUNT_WITH_LABELS)} ORDER BY a.sort_order ASC, a.created_at ASC`
+  const data = await sql`${accountWithLabels(sql)} ORDER BY a.sort_order ASC, a.created_at ASC`
   return NextResponse.json(data)
 }
 
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     RETURNING id
   `
   if (!row) return NextResponse.json({ error: '생성 실패' }, { status: 500 })
-  const [full] = await sql`${sql.unsafe(ACCOUNT_WITH_LABELS)} WHERE a.id = ${row.id}`
+  const [full] = await sql`${accountWithLabels(sql)} WHERE a.id = ${row.id}`
   return NextResponse.json(full, { status: 201 })
 }
 
@@ -59,7 +60,7 @@ export async function PATCH(req: NextRequest) {
   const setClauses = fields.reduce((a, b) => sql`${a}, ${b}`)
   await sql`UPDATE accounts SET ${setClauses} WHERE id = ${id}`
 
-  const [full] = await sql`${sql.unsafe(ACCOUNT_WITH_LABELS)} WHERE a.id = ${id}`
+  const [full] = await sql`${accountWithLabels(sql)} WHERE a.id = ${id}`
   return NextResponse.json(full)
 }
 

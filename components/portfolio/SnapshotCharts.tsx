@@ -540,24 +540,20 @@ function StackedBreakdownCard({
           <h3 className="text-subhead font-medium text-ink">{title}</h3>
           {description ? <p className="text-micro tracking-normal text-ink-4 mt-0.5">{description}</p> : null}
         </div>
-        {enableTopNControl && threshold === undefined && (
-          <div className="flex items-center gap-1.5 shrink-0">
+        {enableTopNControl && threshold === undefined ? <div className="flex items-center gap-1.5 shrink-0">
             <span className="text-micro tracking-normal text-ink-4">Top</span>
             <input type="range" min={3} max={12} value={n}
               onChange={e => setN(Number(e.target.value))}
               className="w-20 accent-ink-4 bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
             <span className="text-micro tracking-normal tabular-nums text-ink-3 w-4">{n}</span>
-          </div>
-        )}
-        {threshold !== undefined && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          </div> : null}
+        {threshold !== undefined ? <div className="flex items-center gap-1.5 shrink-0">
             <span className="text-micro tracking-normal text-ink-4">임계치</span>
             <input type="range" min={1} max={15} step={1} value={thr}
               onChange={e => setThr(Number(e.target.value))}
               className="w-20 accent-ink-4 bg-surface-low rounded-field border-0 focus:outline-none focus:bg-surface-card focus:shadow-focus placeholder:text-ink-5 transition-colors" />
             <span className="text-micro tracking-normal tabular-nums text-ink-3 w-7">{thr}%</span>
-          </div>
-        )}
+          </div> : null}
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data} margin={{ left: 0, right: 8 }}>
@@ -764,8 +760,7 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
       {/* 기간 필터 — 연도 + 월초/월말 (스냅샷 목록과 동일한 기준) */}
       <YearFilterRow years={years} year={year} onYear={setYear} view={view} onView={setView} count={points.length} />
 
-      {needsBackfill && (
-        <div className="bg-warning/10 border rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+      {needsBackfill ? <div className="bg-warning/10 border rounded-field px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <p className="text-body text-warning">
             자산군·태그 분해 데이터가 비어 있습니다. 한 번 새로고침이 필요합니다.
           </p>
@@ -773,8 +768,7 @@ export default function SnapshotCharts({ points: allPoints, cashflowEvents = [],
             className="text-body px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 transition-colors">
             {refreshing ? '계산 중...' : '값 새로고침'}
           </button>
-        </div>
-      )}
+        </div> : null}
 
       {/* KPI 카드 4개 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">

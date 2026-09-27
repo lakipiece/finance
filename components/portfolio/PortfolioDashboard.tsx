@@ -87,10 +87,8 @@ function SectionHeader({
   return (
     <button onClick={onToggle} className="flex items-center gap-1.5 group">
       <span className="text-subhead font-medium text-ink-3 group-hover:text-ink transition-colors">{label}</span>
-      {badge !== undefined && badge > 0 && (
-        <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full text-white tabular-nums"
-          style={{ backgroundColor: palette.colors[0] }}>{badge}</span>
-      )}
+      {badge !== undefined && badge > 0 ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full text-white tabular-nums"
+          style={{ backgroundColor: palette.colors[0] }}>{badge}</span> : null}
       <svg
         className={`w-3 h-3 text-ink-4 group-hover:text-ink-2 transition-all ${open ? '' : '-rotate-90'}`}
         fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
@@ -334,10 +332,8 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
       {/* 페이지 헤더 + 툴바 */}
       <PageHeader title="포트폴리오" description="전체 보유 현황 및 수익률">
-        {refreshMsg && <span className="text-micro tracking-normal text-ink-4">{refreshMsg}</span>}
-        {lastUpdated && (
-          <span className="text-micro tracking-normal text-ink-5 tabular-nums">{lastUpdated}</span>
-        )}
+        {refreshMsg ? <span className="text-micro tracking-normal text-ink-4">{refreshMsg}</span> : null}
+        {lastUpdated ? <span className="text-micro tracking-normal text-ink-5 tabular-nums">{lastUpdated}</span> : null}
         <button onClick={handleRefresh} disabled={refreshing}
           className="text-ink-5 hover:text-ink-3 disabled:opacity-40 transition-colors"
           title={refreshing ? '수집 중...' : '가격 새로고침'}>
@@ -365,8 +361,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             badge={selectedAccountIds.size}
           />
         </div>
-        {showAccounts && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2">
+        {showAccounts ? <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-2">
             <button
               onClick={selectAll}
               title={`${summary.positions.length}종목`}
@@ -406,13 +401,9 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       isSelected ? 'bg-surface-low' : 'bg-surface-card border-surface-low'
                     }`}
                     style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
-                    {isSelected && (
-                      <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-surface-low" />
-                    )}
+                    {isSelected ? <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-surface-low" /> : null}
                     <div className="flex items-center gap-1.5">
-                      {typeColor && (
-                        <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} />
-                      )}
+                      {typeColor ? <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} /> : null}
                       <p className={`text-body font-medium truncate leading-none ${isSelected ? 'text-ink' : 'text-ink'}`}>
                         {g.name}
                       </p>
@@ -439,8 +430,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                   </button>
                 )
               })}
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* 섹터 섹션 */}
@@ -453,8 +443,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             badge={selectedSectors.size}
           />
         </div>
-        {showSectors && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+        {showSectors ? <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => setSelectedSectors(new Set())}
               className={`text-body px-2.5 py-1 rounded-full border transition-colors ${
@@ -477,15 +466,12 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                       : 'bg-surface-card border-surface-low text-ink-3'
                   }`}
                   style={isSelected ? { borderColor: palette.colors[0] } : undefined}>
-                  {color && (
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                  )}
+                  {color ? <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} /> : null}
                   {s}
                 </button>
               )
             })}
-          </div>
-        )}
+          </div> : null}
       </div>
 
       {/* 태그 섹션 */}
@@ -498,8 +484,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             badge={selectedTags.size}
           />
         </div>
-        {showTags && (
-          allTags.length > 0 ? (
+        {showTags ? allTags.length > 0 ? (
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 onClick={() => setSelectedTags(new Set())}
@@ -529,8 +514,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             </div>
           ) : (
             <p className="text-body text-ink-4">등록된 태그가 없습니다.</p>
-          )
-        )}
+          ) : null}
       </div>
 
       {/* 차트 섹션 */}
@@ -542,13 +526,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             onToggle={() => setShowCharts(v => !v)}
           />
         </div>
-        {showCharts && (
-          <AllocationCharts
+        {showCharts ? <AllocationCharts
             allPositions={summary.positions}
             positions={chartPositions}
             sectorColors={sectorColors}
-          />
-        )}
+          /> : null}
       </div>
 
       {/* 종목 섹션 */}
@@ -572,30 +554,25 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
               placeholder="종목명/티커 검색"
               className="text-body pl-8 pr-8 py-1 rounded-full bg-surface-card text-ink-2 placeholder:text-ink-5 focus:outline-none transition-colors w-44 border-0 focus:bg-surface-card focus:shadow-focus"
             />
-            {searchQuery && (
-              <button
+            {searchQuery ? <button
                 onClick={() => setSearchQuery('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3"
                 title="검색 초기화">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
-            )}
+              </button> : null}
           </div>
         </div>
-        {showPositions && (
-          <PositionCards
+        {showPositions ? <PositionCards
             positions={searchedPositions}
             totalValue={visibleTotal}
             sectorColors={sectorColors}
             onEdit={sec => setEditingSecurity(sec as Security)}
-          />
-        )}
+          /> : null}
       </div>
 
-      {editingSecurity && (
-        <SecurityFormModal
+      {editingSecurity ? <SecurityFormModal
           security={editingSecurity}
           options={options}
           onSave={() => {
@@ -604,14 +581,11 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
             router.refresh()
           }}
           onClose={() => setEditingSecurity(null)}
-        />
-      )}
+        /> : null}
 
-      {toastMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-action text-white text-body px-4 py-2 rounded-full shadow-card pointer-events-none">
+      {toastMsg ? <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-action text-white text-body px-4 py-2 rounded-full shadow-card pointer-events-none">
           {toastMsg}
-        </div>
-      )}
+        </div> : null}
 
     </div>
   )

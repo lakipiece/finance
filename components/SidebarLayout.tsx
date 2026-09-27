@@ -36,12 +36,10 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       </div>
 
       {/* 모바일 오버레이 */}
-      {open && (
-        <div
+      {open ? <div
           className="modal-scrim fixed inset-0 z-40 md:hidden"
           onClick={() => setOpen(false)}
-        />
-      )}
+        /> : null}
 
       {/* 모바일 사이드바 — 슬라이드 */}
       <div

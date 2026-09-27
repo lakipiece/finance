@@ -373,8 +373,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
               환율 기본값 {exchangeRate.toLocaleString()}원
             </span>
           ) : null}
-          {totalValue > 0 && (
-            <div className="text-left sm:text-right leading-tight min-w-0">
+          {totalValue > 0 ? <div className="text-left sm:text-right leading-tight min-w-0">
               <p className="text-micro tracking-normal text-ink-4 tabular-nums"
                 title={totalMetrics.hasLedger ? '투자원금 (누적입금, 미기록 계좌는 평균매수금액)' : '평균매수금액 합계'}>
                 투자원금 {Math.round(totalMetrics.basis).toLocaleString()}원
@@ -386,8 +385,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 수익 {totalMetrics.profit >= 0 ? '+' : ''}{Math.round(totalMetrics.profit).toLocaleString()}원
                 {totalMetrics.rate != null ? ` (${totalMetrics.rate >= 0 ? '+' : ''}${(totalMetrics.rate * 100).toFixed(1)}%)` : ''}
               </p>
-            </div>
-          )}
+            </div> : null}
           <button onClick={handleSave} disabled={saving}
             className="shrink-0 bg-action text-white px-4 py-2 rounded-btn text-body font-bold hover:opacity-90 disabled:opacity-60 transition-opacity">
             {saving ? '저장 중...' : '저장'}
@@ -413,12 +411,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 {/* 이름 + 뱃지 */}
                 <div className="flex items-start justify-between gap-1 mb-0.5">
                   <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{a.name}</p>
-                  {a.type && typeColor && (
-                    <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                  {a.type && typeColor ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                       style={{ backgroundColor: typeColor + '20', color: typeColor }}>
                       {a.type}
-                    </span>
-                  )}
+                    </span> : null}
                 </div>
                 <p className="text-body text-ink-4">{a.broker}</p>
                 {/* 하단: 종목수 + 투자원금/평가금액/수익 */}
@@ -458,7 +454,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
       </div>
 
       {/* Account Modal */}
-      {modalAccountId && createPortal(
+      {modalAccountId ? createPortal(
         <div className="modal-scrim fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="bg-surface-card rounded-dialog w-full max-w-5xl flex flex-col shadow-dialog overflow-hidden max-h-[calc(100dvh-2rem)]"
             onClick={e => e.stopPropagation()}>
@@ -466,9 +462,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             <div className="flex items-start justify-between gap-3 px-[18px] py-[15px] shrink-0">
               <div className="min-w-0 flex-1">
                 <p className="font-bold text-ink text-heading leading-tight">{modalAccount?.name}</p>
-                {modalAccount?.broker && (
-                  <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-micro tracking-normal text-ink-4 bg-surface-low">{modalAccount.broker}</span>
-                )}
+                {modalAccount?.broker ? <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-micro tracking-normal text-ink-4 bg-surface-low">{modalAccount.broker}</span> : null}
                 {modalAccountValue > 0 ? (() => {
                   const id = modalAccountId ?? ''
                   const cf = cfAt[id]
@@ -502,8 +496,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                 })() : null}
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {msg && <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span>}
-                {isDirty && !msg && <span className="text-body text-warning">미저장</span>}
+                {msg ? <span className={`text-body ${msg.includes('실패') ? 'text-gain' : 'text-income'}`}>{msg}</span> : null}
+                {isDirty && !msg ? <span className="text-body text-warning">미저장</span> : null}
                 <button onClick={handleModalSave} disabled={saving} tabIndex={saveButtonTabIndex}
                   className="shrink-0 bg-action text-white px-3 py-1.5 rounded-btn text-body font-bold hover:opacity-90 disabled:opacity-60 transition-opacity">
                   {saving ? '저장 중...' : '저장'}
@@ -622,10 +616,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
 
       {/* Dirty Alert */}
-      {showDirtyAlert && createPortal(
+      {showDirtyAlert ? createPortal(
         <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
           <div className="bg-surface-card rounded-dialog p-[18px] shadow-dialog max-w-sm w-full">
             <p className="text-heading text-ink">저장하지 않은 변경사항</p>
@@ -643,7 +637,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
     </div>
   )
 }

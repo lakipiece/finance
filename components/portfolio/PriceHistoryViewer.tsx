@@ -103,11 +103,9 @@ export default function PriceHistoryViewer({ securities, selectedTicker, history
                 <td className="px-2 py-[5px] text-right text-ink-4">{r.currency}</td>
               </tr>
             ))}
-            {rows.length === 0 && (
-              <tr>
+            {rows.length === 0 ? <tr>
                 <td colSpan={3} className="px-2 py-6 text-center text-ink-4">데이터 없음</td>
-              </tr>
-            )}
+              </tr> : null}
           </tbody>
         </table>
       </div>

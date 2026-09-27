@@ -88,6 +88,8 @@ function generateShades(hex: string, count: number): string[] {
   })
 }
 
+const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
+
 export default function DrilldownPanel({
   monthData, monthlyList, selectedMonth,
   onClose, onMonthSelect,
@@ -109,7 +111,6 @@ export default function DrilldownPanel({
     return (monthData[c as keyof MonthlyData] as number) > 0
   })
 
-  const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월']
 
   // Top details from API response
   const topDetails = useMemo(() => {
@@ -331,17 +332,14 @@ export default function DrilldownPanel({
             >
               {cumulative ? '누적' : '월별'}
             </button>
-            {selectedMonth && (
-              <button
+            {selectedMonth ? <button
                 onClick={() => onMonthSelect?.(selectedMonth)}
                 className="text-body font-medium"
                 style={{ color: '#0d1c2e' }}
               >
                 월 필터 해제
-              </button>
-            )}
-            {onClose && (
-              <button
+              </button> : null}
+            {onClose ? <button
                 onClick={onClose}
                 className="text-ink-5 hover:text-ink-3 transition-colors p-1 rounded-btn hover:bg-surface-low"
                 aria-label="닫기"
@@ -349,8 +347,7 @@ export default function DrilldownPanel({
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
-            )}
+              </button> : null}
           </div>
         </div>
         {isCategory && catDetailsLoading ? (
@@ -404,7 +401,7 @@ export default function DrilldownPanel({
                     formatter={(value: number, name: string) => [formatWonFull(value), name]}
                     contentStyle={{ borderRadius: 11, border: 'none', boxShadow: '0 4px 32px 0 rgba(13,28,46,.06)', fontSize: 12 }}
                   />
-                  {lineKeys.length > 1 && <Legend wrapperStyle={{ fontSize: 11 }} />}
+                  {lineKeys.length > 1 ? <Legend wrapperStyle={{ fontSize: 11 }} /> : null}
                   {lineKeys.map(key => (
                     <Line key={key} type="monotone" dataKey={key} stroke={lineColors[key] ?? '#6B8CAE'}
                       strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 4 }} />
@@ -476,8 +473,7 @@ export default function DrilldownPanel({
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {/* 수입 Bars — 전체 수입 선택 시에만 표시 */}
-              {drilldownType === 'income' && (
-                <>
+              {drilldownType === 'income' ? <>
                   <Bar
                     dataKey="수입_급여"
                     stackId="income"
@@ -502,8 +498,7 @@ export default function DrilldownPanel({
                       <Cell key={i} opacity={!selectedMonth || selectedMonth === i + 1 ? 1 : 0.3} />
                     ))}
                   </Bar>
-                </>
-              )}
+                </> : null}
               {/* 지출 Bars */}
               {activeCategories.map((cat, idx) => (
                 <Bar
@@ -527,8 +522,7 @@ export default function DrilldownPanel({
       </div>
 
       {/* Drilldown type toggle */}
-      {!isCategory && selectedMonth && (
-        <div className="flex gap-1 mb-4">
+      {!isCategory && selectedMonth ? <div className="flex gap-1 mb-4">
           {(['income', 'expense'] as const).map(t => (
             <button
               key={t}
@@ -541,12 +535,10 @@ export default function DrilldownPanel({
               {t === 'income' ? '수입' : '지출'}
             </button>
           ))}
-        </div>
-      )}
+        </div> : null}
 
       {/* Category summary (no category selected) */}
-      {!isCategory && (
-        <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2">
+      {!isCategory ? <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2">
           {displayCategories.map(cat => {
             const amount = getAmount(cat)
             const pct = displayTotal > 0 ? Math.round(amount / displayTotal * 100) : 0
@@ -575,12 +567,10 @@ export default function DrilldownPanel({
               </div>
             )
           })}
-        </div>
-      )}
+        </div> : null}
 
       {/* Detail summary (category selected) */}
-      {isCategory && (
-        <div className="mb-5">
+      {isCategory ? <div className="mb-5">
           <h3 className="text-subhead font-medium mb-2" style={{ color: '#0d1c2e' }}>{selectedCat} 항목별 집계</h3>
           {catDetailsLoading ? (
             <div className="space-y-2">
@@ -626,8 +616,7 @@ export default function DrilldownPanel({
               )}
             </div>
           )}
-        </div>
-      )}
+        </div> : null}
     </div>
 
     {/* Table: income or expense */}
@@ -713,9 +702,7 @@ function ExpenseTableCard({
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <h3 className="text-heading font-bold text-ink">
           {selectedTrendDetail ? `${selectedCat} > ${selectedTrendDetail} 내역` : isCategory ? `${selectedCat} 내역` : '지출 내역'}
-          {(selectedCat || selectedTrendDetail) && (
-            <button onClick={onReset} className="ml-2 text-body text-ink-4 hover:text-ink-2 font-normal">전체보기</button>
-          )}
+          {(selectedCat || selectedTrendDetail) ? <button onClick={onReset} className="ml-2 text-body text-ink-4 hover:text-ink-2 font-normal">전체보기</button> : null}
         </h3>
         <input
           type="text"

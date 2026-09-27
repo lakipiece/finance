@@ -109,12 +109,10 @@ export default function IncomeTableCard({
                     </div>
                     <span className="font-medium text-ink text-subhead">{formatWonFull(item.amount)}</span>
                   </div>
-                  {item.memo && <p className="text-micro tracking-normal text-ink-4 mb-1 break-words">{item.memo}</p>}
+                  {item.memo ? <p className="text-micro tracking-normal text-ink-4 mb-1 break-words">{item.memo}</p> : null}
                   <div className="flex items-center justify-between text-body text-ink-4">
                     <span className="tabular-nums">{formatDate(item.income_date)}</span>
-                    {item.member && (
-                      <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span>
-                    )}
+                    {item.member ? <span className={`text-micro tracking-normal font-bold px-1.5 py-0.5 rounded ${item.member === 'L' ? 'bg-surface-low text-ink-2' : 'bg-surface-low text-ink-2'}`}>{item.member}</span> : null}
                   </div>
                 </div>
               )

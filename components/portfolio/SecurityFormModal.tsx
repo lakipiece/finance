@@ -98,7 +98,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
       <div className={modalStyles.container} onClick={e => e.stopPropagation()}>
         <div className={modalStyles.header}>
           <div className="flex items-center gap-2">
-            {isEdit && <span className="bg-surface-low text-ink-2 text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span>}
+            {isEdit ? <span className="bg-surface-low text-ink-2 text-micro tracking-normal font-bold px-1.5 py-0.5 rounded font-mono">{security!.ticker}</span> : null}
             <h3 className="text-subhead font-medium text-ink">{isEdit ? '종목 수정' : '종목 추가'}</h3>
           </div>
           <button onClick={onClose} className={modalStyles.close}>
@@ -109,11 +109,9 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
         </div>
         <div className={modalStyles.body}>
           <div className="grid grid-cols-2 gap-2">
-            {!isEdit && (
-              <div className="col-span-2"><label className={field.labelSm}>티커 *</label>
+            {!isEdit ? <div className="col-span-2"><label className={field.labelSm}>티커 *</label>
                 <input value={form.ticker} onChange={e => setForm(p => ({ ...p, ticker: e.target.value.toUpperCase() }))}
-                  className={field.input} placeholder="SCHD" /></div>
-            )}
+                  className={field.input} placeholder="SCHD" /></div> : null}
             <div className="col-span-2"><label className={field.labelSm}>종목명 *</label>
               <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} className={field.input}
                 placeholder="슈왑 배당 ETF" /></div>
@@ -185,7 +183,7 @@ export default function SecurityFormModal({ security, onSave, onClose, options }
               />
             </div>
           </div>
-          {err && <p className="text-body text-gain">{err}</p>}
+          {err ? <p className="text-body text-gain">{err}</p> : null}
         </div>
         <div className={modalStyles.footer}>
           <button onClick={onClose} className={btn.secondary}>취소</button>

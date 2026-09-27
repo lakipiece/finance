@@ -1,0 +1,7 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "react/jsx-no-leaked-render": ["error", { "validStrategies": ["ternary"] }]
+  },
+  "ignorePatterns": ["docs/**", "scripts/**", "tests/stubs/**"]
+}

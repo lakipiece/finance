@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { CATEGORIES, INCOME_CATEGORIES, INCOME_COLORS, formatWonFull, formatDate } from '@/lib/utils'
+import { evaluateArithmetic } from '@/lib/formula'
 import CategoryBadge from '@/components/ui/CategoryBadge'
 import { useKeepOpen } from '@/lib/useKeepOpen'
 import { useEntryFormKeys } from '@/lib/useEntryFormKeys'
@@ -61,12 +62,8 @@ function isFormula(v: string) {
 function evalFormula(expr: string): number | null {
   const clean = expr.replace(/^=/, '').replace(/,/g, '').trim()
   if (!clean) return null
-  if (!/^[\d\s+\-*/().]+$/.test(clean)) return null
-  try {
-    // eslint-disable-next-line no-new-func
-    const result = new Function(`"use strict"; return (${clean})`)()
-    return typeof result === 'number' && isFinite(result) && result > 0 ? Math.round(result) : null
-  } catch { return null }
+  const result = evaluateArithmetic(clean)
+  return result !== null && result > 0 ? Math.round(result) : null
 }
 
 /* ── Auto-resize textarea ── */
@@ -492,11 +489,9 @@ function ModalShell({ onClose, title, onDelete, children }: {
         <div className="flex items-center justify-between px-[18px] py-[15px] shrink-0">
           <h3 className="text-heading text-ink">{title}</h3>
           <div className="flex items-center gap-1">
-            {onDelete && (
-              <button onClick={onDelete} title="삭제" className="p-1.5 rounded-btn text-ink-5 hover:text-danger hover:bg-danger/10 transition-all">
+            {onDelete ? <button onClick={onDelete} title="삭제" className="p-1.5 rounded-btn text-ink-5 hover:text-danger hover:bg-danger/10 transition-all">
                 <TrashIcon />
-              </button>
-            )}
+              </button> : null}
             <button onClick={onClose} className="p-1.5 rounded-btn text-ink-5 hover:text-ink-2 hover:bg-surface-low transition-all">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -599,14 +594,10 @@ function ExpenseEditModal({ record, onClose, onSaved, onDelete }: {
               className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
             <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
-          {isFormula(amount) && expenseEditFormulaResult !== null && (
-            <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
+          {isFormula(amount) && expenseEditFormulaResult !== null ? <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
               = {expenseEditFormulaResult.toLocaleString('ko-KR')}원
-            </span>
-          )}
-          {isFormula(amount) && expenseEditFormulaResult === null && (
-            <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
-          )}
+            </span> : null}
+          {isFormula(amount) && expenseEditFormulaResult === null ? <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span> : null}
         </div>
         {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex justify-end gap-2 pt-1">
@@ -840,14 +831,10 @@ function ExpenseCreateModal({ onClose, onSaved }: { onClose: () => void; onSaved
               className="flex-1 min-w-0 bg-transparent border-0 p-0 text-right text-heading sm:text-[20px] font-bold tracking-[-0.015em] tabular-nums text-ink placeholder:text-ink-5/50 placeholder:font-normal focus:outline-none" />
             <span className="text-meta sm:text-subhead font-bold text-ink-3 shrink-0">원</span>
           </div>
-          {isFormula(amount) && createFormulaResult !== null && (
-            <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
+          {isFormula(amount) && createFormulaResult !== null ? <span className="text-micro tracking-normal text-right tabular-nums block text-ink-3 mt-0.5">
               = {createFormulaResult.toLocaleString('ko-KR')}원
-            </span>
-          )}
-          {isFormula(amount) && createFormulaResult === null && (
-            <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span>
-          )}
+            </span> : null}
+          {isFormula(amount) && createFormulaResult === null ? <span className="text-micro tracking-normal text-right block text-danger mt-0.5">수식 오류</span> : null}
         </div>
         {err ? <p className="text-body text-danger">{err}</p> : null}
         <div className="flex items-center justify-between gap-3 flex-wrap pt-1">
@@ -1004,15 +991,13 @@ function CategoryBreakdown({ category, items, color, activeItem, onItemClick }: 
           안 그러면 필터를 걸 때마다 아래 내용이 몇 px씩 밀린다 */}
       <div className="flex items-center gap-2 mb-3 min-h-[22px]">
         <p className="text-meta font-medium text-ink-3">{category} 항목별 집계</p>
-        {activeItem && (
-          <button onClick={() => onItemClick(activeItem)}
+        {activeItem ? <button onClick={() => onItemClick(activeItem)}
             className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-card text-ink-3 hover:text-ink transition-colors">
             {activeItem}
             <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
-        )}
+          </button> : null}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-1.5">
         {items.map((item, idx) => {
@@ -1076,17 +1061,13 @@ function RecordCard({ record, onClick }: { record: AnyRecord; onClick: () => voi
         </span>
       </div>
       <p className="text-body text-ink font-medium truncate mb-1">{label}</p>
-      {record.memo && (
-        <p className="text-micro tracking-normal text-ink-4 truncate mb-1">{record.memo}</p>
-      )}
+      {record.memo ? <p className="text-micro tracking-normal text-ink-4 truncate mb-1">{record.memo}</p> : null}
       <div className="flex items-center justify-between">
         <span className="text-micro tracking-normal text-ink-4 tabular-nums">{formatDate(record.date)}</span>
         <div className="flex items-center gap-1.5">
-          {isExpense && record.method && <span className="text-micro tracking-normal text-ink-4">{record.method}</span>}
-          {record.member && memberColor && (
-            <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: `${memberColor}22`, color: memberColor }}>{record.member}</span>
-          )}
+          {isExpense && record.method ? <span className="text-micro tracking-normal text-ink-4">{record.method}</span> : null}
+          {record.member && memberColor ? <span className="text-micro tracking-normal font-bold px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: `${memberColor}22`, color: memberColor }}>{record.member}</span> : null}
         </div>
       </div>
     </button>
@@ -1373,14 +1354,12 @@ export default function InputPage() {
               onKeyDown={e => { if (viewAllPeriod && e.key === 'Enter') { e.preventDefault(); handleSearch() } }}
               className="pl-9 pr-9 rounded-field bg-surface-low py-[9px] text-subhead text-ink placeholder:text-ink-5 focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors w-48 border-0"
             />
-            {searchQuery && (
-              <button onClick={clearSearch}
+            {searchQuery ? <button onClick={clearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3 transition-colors">
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
-            )}
+              </button> : null}
           </div>
           {viewAllPeriod ? (
             <button onClick={handleSearch}
@@ -1457,15 +1436,13 @@ export default function InputPage() {
         </div>
 
         {/* Category breakdown panel */}
-        {categoryFilter && breakdown.length > 0 && (
-          <CategoryBreakdown
+        {categoryFilter && breakdown.length > 0 ? <CategoryBreakdown
             category={categoryFilter}
             items={breakdown}
             color={catColors[categoryFilter] ?? INCOME_COLORS[categoryFilter]}
             activeItem={detailFilter}
             onItemClick={name => setDetailFilter(prev => prev === name ? null : name)}
-          />
-        )}
+          /> : null}
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
@@ -1480,31 +1457,21 @@ export default function InputPage() {
                 <RecordCard key={`${r.type}-${r.id}`} record={r} onClick={() => setEditRecord(r)} />
               ))}
             </div>
-            {filteredRecords.length === 0 && (
-              <p className="text-body text-ink-4 py-8 text-center">
+            {filteredRecords.length === 0 ? <p className="text-body text-ink-4 py-8 text-center">
                 {viewAllPeriod
                   ? (committedQuery ? '검색 결과가 없습니다.' : '검색어를 입력하고 검색 버튼을 누르세요.')
                   : searchQuery ? '검색 결과가 없습니다.' : viewMonth ? `${viewMonth}월 내역이 없습니다.` : '내역이 없습니다.'}
-              </p>
-            )}
+              </p> : null}
           </>
         )}
       </div>
 
-      {editRecord?.type === 'expense' && (
-        <ExpenseEditModal record={editRecord} onClose={() => setEditRecord(null)}
-          onSaved={handleSaved} onDelete={handleDelete} />
-      )}
-      {editRecord?.type === 'income' && (
-        <IncomeEditModal record={editRecord} onClose={() => setEditRecord(null)}
-          onSaved={handleSaved} onDelete={handleDelete} />
-      )}
-      {createType === 'expense' && (
-        <ExpenseCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} />
-      )}
-      {createType === 'income' && (
-        <IncomeCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} />
-      )}
+      {editRecord?.type === 'expense' ? <ExpenseEditModal record={editRecord} onClose={() => setEditRecord(null)}
+          onSaved={handleSaved} onDelete={handleDelete} /> : null}
+      {editRecord?.type === 'income' ? <IncomeEditModal record={editRecord} onClose={() => setEditRecord(null)}
+          onSaved={handleSaved} onDelete={handleDelete} /> : null}
+      {createType === 'expense' ? <ExpenseCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} /> : null}
+      {createType === 'income' ? <IncomeCreateModal onClose={() => setCreateType(null)} onSaved={handleSaved} /> : null}
     </div>
     </FormCtx.Provider>
   )

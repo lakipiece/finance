@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSql } from '@/lib/db'
+import { getSql, type Sql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { isForeignKeyViolation } from '@/lib/db-errors'
 
-const SECURITY_WITH_LABELS = `
+// SELECT 공통부 — 문자열을 그대로 끼워 넣지 않고 프래그먼트로 합성한다
+const securityWithLabels = (sql: Sql) => sql`
   SELECT s.id, s.ticker, s.name, s.style, s.url, s.memo, s.created_at,
          s.fixed_price, s.annual_rate, s.accrual_start, s.maturity_date,
          s.asset_class_id, s.country_id, s.sector_id, s.style_id, s.currency_id,
@@ -29,7 +30,7 @@ const SECURITY_WITH_LABELS = `
 
 export async function GET() {
   const sql = getSql()
-  const data = await sql`${sql.unsafe(SECURITY_WITH_LABELS)} ORDER BY s.ticker`
+  const data = await sql`${securityWithLabels(sql)} ORDER BY s.ticker`
   return NextResponse.json(data)
 }
 
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     RETURNING id
   `
   if (!row) return NextResponse.json({ error: '생성 실패' }, { status: 500 })
-  const [full] = await sql`${sql.unsafe(SECURITY_WITH_LABELS)} WHERE s.id = ${row.id}`
+  const [full] = await sql`${securityWithLabels(sql)} WHERE s.id = ${row.id}`
   return NextResponse.json(full, { status: 201 })
 }
 
@@ -85,7 +86,7 @@ export async function PATCH(req: NextRequest) {
   const setClauses = fields.reduce((a, b) => sql`${a}, ${b}`)
   await sql`UPDATE securities SET ${setClauses} WHERE id = ${id}`
 
-  const [full] = await sql`${sql.unsafe(SECURITY_WITH_LABELS)} WHERE s.id = ${id}`
+  const [full] = await sql`${securityWithLabels(sql)} WHERE s.id = ${id}`
   return NextResponse.json(full)
 }
 

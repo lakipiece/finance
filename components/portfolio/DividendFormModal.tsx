@@ -192,8 +192,7 @@ export default function DividendFormModal({
         <form id="dividend-form" onSubmit={handleSubmit} className={modal.body}>
 
           {/* 사용자 선택 */}
-          {owners.length > 0 && (
-            <div>
+          {owners.length > 0 ? <div>
               <p className={field.label}>계좌 사용자</p>
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
@@ -211,8 +210,7 @@ export default function DividendFormModal({
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* 인컴 종류 */}
           {incomeTypes.length > 0 ? (
@@ -266,8 +264,7 @@ export default function DividendFormModal({
                   className={field.input}
                   autoComplete="off"
                 />
-                {secDropOpen && filteredModalSecurities.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-48 overflow-y-auto">
+                {secDropOpen && filteredModalSecurities.length > 0 ? <div className="absolute top-full left-0 right-0 z-50 bg-surface-card rounded-btn shadow-card mt-0.5 max-h-48 overflow-y-auto">
                     {filteredModalSecurities.map(s => (
                       <button
                         key={s.id}
@@ -279,8 +276,7 @@ export default function DividendFormModal({
                         <span className="text-ink-3 truncate">{s.name}</span>
                       </button>
                     ))}
-                  </div>
-                )}
+                  </div> : null}
               </div>
             )}
           </div>
@@ -329,11 +325,9 @@ export default function DividendFormModal({
           </div>
 
           {/* USD 환산 미리보기 */}
-          {form.currency === 'USD' && form.amount && form.exchange_rate && (
-            <p className="text-body text-ink-4 -mt-2">
+          {form.currency === 'USD' && form.amount && form.exchange_rate ? <p className="text-body text-ink-4 -mt-2">
               ≈ {Math.round(parseNum(form.amount) * parseNum(form.exchange_rate)).toLocaleString()}원
-            </p>
-          )}
+            </p> : null}
 
           {/* 세금 */}
           <div>

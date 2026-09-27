@@ -28,7 +28,7 @@ function RefreshValuesButton() {
         <p className="text-micro tracking-normal text-ink-4 mt-0.5">현재가 기준으로 모든 스냅샷의 total_market_value를 재계산합니다</p>
       </div>
       <div className="flex items-center gap-2">
-        {done && <span className="text-micro tracking-normal text-income">완료</span>}
+        {done ? <span className="text-micro tracking-normal text-income">완료</span> : null}
         <button
           onClick={handle}
           disabled={refreshing}
@@ -72,8 +72,7 @@ export default function SettingsClient({ initialYears }: Props) {
         </div>
 
         {/* 저장된 데이터 */}
-        {imp.years.length > 0 && (
-          <div className="bg-surface-card rounded-card p-[13px] mb-4">
+        {imp.years.length > 0 ? <div className="bg-surface-card rounded-card p-[13px] mb-4">
             <p className="text-body font-medium text-ink-2 mb-3">저장된 데이터</p>
             <div className="flex gap-2 flex-wrap">
               {imp.years.map((y) => {
@@ -94,15 +93,12 @@ export default function SettingsClient({ initialYears }: Props) {
                         {isSheets ? 'Sheets' : 'Excel'}
                       </span>
                     </div>
-                    {isSyncing && (
-                      <p className="text-micro tracking-normal text-ink-4 mt-1">동기화 중...</p>
-                    )}
+                    {isSyncing ? <p className="text-micro tracking-normal text-ink-4 mt-1">동기화 중...</p> : null}
                   </div>
                 )
               })}
             </div>
-          </div>
-        )}
+          </div> : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Google Sheets */}
@@ -145,7 +141,7 @@ export default function SettingsClient({ initialYears }: Props) {
               >
                 {imp.sheetsLoading ? '가져오는 중...' : '데이터 가져오기'}
               </button>
-              {imp.sheetsError && <p className="text-body text-danger">{imp.sheetsError}</p>}
+              {imp.sheetsError ? <p className="text-body text-danger">{imp.sheetsError}</p> : null}
             </div>
           </div>
 
@@ -186,7 +182,7 @@ export default function SettingsClient({ initialYears }: Props) {
                 if (file) imp.handleFileUpload(file)
               }}
             />
-            {imp.uploadError && <p className="text-body text-danger mt-2">{imp.uploadError}</p>}
+            {imp.uploadError ? <p className="text-body text-danger mt-2">{imp.uploadError}</p> : null}
           </div>
         </div>
       </div>
@@ -223,14 +219,12 @@ export default function SettingsClient({ initialYears }: Props) {
         </div>
       </div>
 
-      {imp.preview && (
-        <PreviewModal
+      {imp.preview ? <PreviewModal
           preview={imp.preview}
           onConfirm={imp.handleConfirmSave}
           onCancel={() => imp.setPreview(null)}
           loading={imp.saving}
-        />
-      )}
+        /> : null}
     </div>
   )
 }

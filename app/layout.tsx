@@ -32,7 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <head>
-        {/* Pretendard 자체 호스팅 — 한글 unicode-range 동적 서브셋, 400/500/700 */}
+        {/* Pretendard 자체 호스팅 — 한글 unicode-range 동적 서브셋, 400/500/700.
+            next/font는 동적 서브셋 CSS를 지원하지 않아 정적 CSS를 직접 링크한다. */}
+        {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link rel="stylesheet" href="/fonts/pretendard.css" />
       </head>
       <body className="bg-surface text-ink">

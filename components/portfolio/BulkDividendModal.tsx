@@ -158,8 +158,7 @@ export default function BulkDividendModal({
         <form id="bulk-dividend-form" onSubmit={handleSubmit} className={modal.body}>
 
           {/* 사용자 선택 */}
-          {owners.length > 0 && (
-            <div>
+          {owners.length > 0 ? <div>
               <p className={field.label}>사용자</p>
               <div className="flex flex-wrap gap-1.5">
                 <button type="button"
@@ -183,19 +182,16 @@ export default function BulkDividendModal({
                   )
                 })}
               </div>
-            </div>
-          )}
+            </div> : null}
 
           {/* 계좌 선택 */}
           <div>
             <p className={field.label}>계좌</p>
             <Select value={accountId} onChange={setAccountId} placeholder="계좌 선택"
               options={modalAccounts.map(a => ({ value: a.id, label: `${a.broker} ${a.name}` }))} />
-            {selectedAccount && (
-              <p className="text-micro tracking-normal text-ink-4 mt-0.5">
+            {selectedAccount ? <p className="text-micro tracking-normal text-ink-4 mt-0.5">
                 기본 세율: {selectedAccount.dividend_tax_rate ?? 15.4}%
-              </p>
-            )}
+              </p> : null}
           </div>
 
           {/* 수령일 */}
@@ -220,23 +216,18 @@ export default function BulkDividendModal({
           </div>
 
           {/* 환율 (USD 선택 시) */}
-          {currency === 'USD' && (
-            <div>
+          {currency === 'USD' ? <div>
               <p className={field.label}>환율 (₩/USD)</p>
               <input type="text" inputMode="decimal" required
                 placeholder="0"
                 value={exchangeRate}
                 onChange={e => setExchangeRate(fmtNumber(e.target.value.replace(/,/g, '')))}
                 className={`${field.input} text-right`} />
-            </div>
-          )}
+            </div> : null}
 
           {/* 종목 카드 리스트 */}
-          {accountId && rows.length === 0 && (
-            <p className="text-body text-ink-4 text-center py-4">연결된 종목이 없습니다</p>
-          )}
-          {rows.length > 0 && (
-            <div className="space-y-2">
+          {accountId && rows.length === 0 ? <p className="text-body text-ink-4 text-center py-4">연결된 종목이 없습니다</p> : null}
+          {rows.length > 0 ? <div className="space-y-2">
               <p className={field.label}>종목별 수령액 입력 (금액 0인 항목은 저장 안 됨)</p>
               {rows.map((row, idx) => {
                 const sec = securities.find(s => s.id === row.security_id)
@@ -275,8 +266,7 @@ export default function BulkDividendModal({
                   </div>
                 )
               })}
-            </div>
-          )}
+            </div> : null}
 
         </form>
 

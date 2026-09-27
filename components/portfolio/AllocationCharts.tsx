@@ -93,11 +93,9 @@ function StackBar({
               style={{ width: `${seg.pct}%`, backgroundColor: seg.color, minWidth: seg.pct > 0.5 ? 2 : 0 }}
               className="relative flex items-center overflow-hidden"
             >
-              {seg.pct >= 8 && (
-                <span className="text-micro tracking-normal text-white font-medium px-1 truncate leading-none select-none">
+              {seg.pct >= 8 ? <span className="text-micro tracking-normal text-white font-medium px-1 truncate leading-none select-none">
                   {seg.pct.toFixed(0)}%
-                </span>
-              )}
+                </span> : null}
             </div>
           ))}
         </div>
@@ -111,7 +109,7 @@ function StackBar({
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      {isExpanded && <DetailPanel row={row} />}
+      {isExpanded ? <DetailPanel row={row} /> : null}
     </div>
   )
 }
@@ -177,15 +175,11 @@ export default function AllocationCharts({ allPositions, positions, sectorColors
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-subhead font-medium text-ink">자산 구성</h3>
         <div className="flex items-center gap-2">
-          {isFiltered && (
-            <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-3 tabular-nums font-medium">
+          {isFiltered ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-3 tabular-nums font-medium">
               {selectedPct.toFixed(1)}%
-            </span>
-          )}
+            </span> : null}
           <span className="text-body tabular-nums text-ink font-bold">{fmtKRW(filteredTotal)}</span>
-          {isFiltered && (
-            <span className="text-micro tracking-normal tabular-nums text-ink-5">/ {fmtKRW(allTotal)}</span>
-          )}
+          {isFiltered ? <span className="text-micro tracking-normal tabular-nums text-ink-5">/ {fmtKRW(allTotal)}</span> : null}
         </div>
       </div>
       <div className="space-y-3">

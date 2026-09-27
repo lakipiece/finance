@@ -60,38 +60,30 @@ export default function HistoricalPriceFetcher() {
           className="text-white px-4 py-1.5 rounded-btn text-body hover:opacity-90 transition-opacity flex items-center gap-1.5"
           style={{ backgroundColor: '#1A237E' }}
         >
-          {loading && (
-            <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+          {loading ? <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-            </svg>
-          )}
+            </svg> : null}
           {loading ? '수집 중...' : '가격 수집'}
         </button>
       </div>
 
-      {error && (
-        <p className="text-body text-gain">{error}</p>
-      )}
+      {error ? <p className="text-body text-gain">{error}</p> : null}
 
-      {result && (
-        <div className="text-body text-ink-3 space-y-1">
+      {result ? <div className="text-body text-ink-3 space-y-1">
           <p>
             <span className="text-income font-medium">{result.saved.toLocaleString()}건</span> 저장 완료
             {' · '}종목 {result.tickers.length}개
           </p>
-          {result.failed.length > 0 && (
-            <details className="mt-1">
+          {result.failed.length > 0 ? <details className="mt-1">
               <summary className="text-gain cursor-pointer">실패 {result.failed.length}건</summary>
               <ul className="mt-1 space-y-0.5 pl-2">
                 {result.failed.map((f, i) => (
                   <li key={i} className="text-gain">{f}</li>
                 ))}
               </ul>
-            </details>
-          )}
-        </div>
-      )}
+            </details> : null}
+        </div> : null}
     </div>
   )
 }

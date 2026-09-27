@@ -165,16 +165,14 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
                   placeholder="메모" className={`${field.inputOnLow} text-body`} />
               </div>
               <div className="flex gap-1.5 pb-0.5">
-                {editingId && (
-                  <button type="button" onClick={resetForm} className={btn.secondary}>취소</button>
-                )}
+                {editingId ? <button type="button" onClick={resetForm} className={btn.secondary}>취소</button> : null}
                 <button type="button" onClick={handleSubmit} disabled={saving} className={btn.primary}
                   style={{ backgroundColor: palette.colors[0] }}>
                   {saving ? '…' : editingId ? '수정' : '추가'}
                 </button>
               </div>
             </div>
-            {error && <p className="text-body text-danger mt-1">{error}</p>}
+            {error ? <p className="text-body text-danger mt-1">{error}</p> : null}
           </div>
 
           {/* 기록 내역 */}
@@ -194,7 +192,7 @@ export default function AssetValuationModal({ show, assetId, assetName, onClose,
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-meta text-ink-4 tabular-nums shrink-0">{v.val_date}</span>
                       <span className="text-body font-bold text-ink tabular-nums">{fmtAmt(v.amount)}</span>
-                      {v.note && <span className="text-meta text-ink-4 truncate">{v.note}</span>}
+                      {v.note ? <span className="text-meta text-ink-4 truncate">{v.note}</span> : null}
                     </div>
                     <div className="flex items-center gap-0.5 shrink-0">
                       <button onClick={() => startEdit(v)} title="수정"

@@ -470,8 +470,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           </div>
         </div>
 
-        {tab === 'month' && monthData.length > 0 && (
-          <ResponsiveContainer width="100%" height={180}>
+        {tab === 'month' && monthData.length > 0 ? <ResponsiveContainer width="100%" height={180}>
             <BarChart data={monthData} barGap={2} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
               onClick={(data) => {
                 const label = data?.activeLabel as string | undefined
@@ -484,11 +483,9 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <Bar dataKey="amount" maxBarSize={32}
                 fill={palette.colors[0]} style={{ cursor: 'pointer' }} />
             </BarChart>
-          </ResponsiveContainer>
-        )}
+          </ResponsiveContainer> : null}
 
-        {tab === 'account' && (
-          <ResponsiveContainer width="100%" height={220}>
+        {tab === 'account' ? <ResponsiveContainer width="100%" height={220}>
             <BarChart data={accountData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
@@ -497,11 +494,9 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
               <Tooltip content={<DividendTooltip color={palette.colors[0]} />} cursor={{ fill: '#f1f3f7' }} />
               <Bar dataKey="amount" maxBarSize={18} fill={palette.colors[0]} />
             </BarChart>
-          </ResponsiveContainer>
-        )}
+          </ResponsiveContainer> : null}
 
-        {tab === 'security' && (
-          <ResponsiveContainer width="100%" height={Math.max(220, securityData.length * 24 + 20)}>
+        {tab === 'security' ? <ResponsiveContainer width="100%" height={Math.max(220, securityData.length * 24 + 20)}>
             <BarChart data={securityData} layout="vertical"
               margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
               style={{ cursor: 'pointer' }}
@@ -517,12 +512,11 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
                 fill={palette.colors[0]}
                 label={false} />
             </BarChart>
-          </ResponsiveContainer>
-        )}
+          </ResponsiveContainer> : null}
       </div>
 
       {/* 도넛 드릴다운 */}
-      {selectedMonth && (() => {
+      {selectedMonth ? (() => {
         const breakdown = monthTickerMap[selectedMonth] ?? {}
         const entries = Object.entries(breakdown).sort((a, b) => b[1] - a[1])
         const total = entries.reduce((s, [, v]) => s + v, 0)
@@ -564,7 +558,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
             </div>
           </div>
         )
-      })()}
+      })() : null}
 
       {/* 배당 테이블 */}
       <DividendTable
@@ -580,7 +574,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
       {/* 수정 모달 (단건) */}
       <DividendFormModal
-        show={showModal && !!editTarget}
+        show={showModal ? !!editTarget : false}
         onClose={() => setShowModal(false)}
         editTarget={editTarget}
         accounts={accounts}
@@ -593,7 +587,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
 
       {/* 추가 모달 (일괄) */}
       <BulkDividendModal
-        show={showModal && !editTarget}
+        show={showModal ? !editTarget : false}
         onClose={() => setShowModal(false)}
         accounts={accounts}
         accountSecurities={accountSecurities}

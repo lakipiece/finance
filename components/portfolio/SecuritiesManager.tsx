@@ -85,13 +85,10 @@ function HoldingCard({
     >
       <p className="text-micro text-ink-5 uppercase">{label}</p>
       <p className={`text-heading tabular-nums leading-tight mt-1 truncate ${valueColor ?? 'text-ink'}`}>{value}</p>
-      {sub && (
-        <p className={`text-micro tracking-normal mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
+      {sub ? <p className={`text-micro tracking-normal mt-0.5 tabular-nums font-medium ${sub.positive === true ? 'text-income' : sub.positive === false ? 'text-gain' : 'text-ink-4'}`}>
           {sub.text}
-        </p>
-      )}
-      {hovered && hoverLines && hoverLines.length > 0 && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-10 bg-action text-white rounded-btn px-3 py-2 shadow-dialog whitespace-nowrap min-w-max">
+        </p> : null}
+      {hovered && hoverLines && hoverLines.length > 0 ? <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-10 bg-action text-white rounded-btn px-3 py-2 shadow-dialog whitespace-nowrap min-w-max">
           {hoverLines.map((l, i) => (
             <div key={i} className="flex items-center justify-between gap-4 text-micro tracking-normal">
               <span className="text-ink-5">{l.left}</span>
@@ -99,8 +96,7 @@ function HoldingCard({
             </div>
           ))}
           <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-action" />
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }
@@ -225,9 +221,9 @@ function PriceHistoryModal({
                   {security.ticker}
                 </span>
               )}
-              {security.asset_class && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.asset_class}</span>}
-              {security.country    && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.country}</span>}
-              {security.sector     && <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.sector}</span>}
+              {security.asset_class ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.asset_class}</span> : null}
+              {security.country ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.country}</span> : null}
+              {security.sector ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full bg-surface-low text-ink-2">{security.sector}</span> : null}
               <span className="text-micro tracking-normal text-ink-5 ml-0.5">{security.currency}</span>
             </div>
             {/* Name */}
@@ -235,14 +231,11 @@ function PriceHistoryModal({
           </div>
 
           {/* 증감율(좌) + 가격(우, hover→날짜 툴팁) */}
-          {latestPrice && (
-            <div className="ml-4 shrink-0">
+          {latestPrice ? <div className="ml-4 shrink-0">
               <div className="flex items-baseline gap-1.5 justify-end">
-                {latestPrice.change_pct != null && (
-                  <span className={`text-micro tracking-normal font-medium ${latestPrice.change_pct > 0 ? 'text-gain' : latestPrice.change_pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                {latestPrice.change_pct != null ? <span className={`text-micro tracking-normal font-medium ${latestPrice.change_pct > 0 ? 'text-gain' : latestPrice.change_pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                     {latestPrice.change_pct > 0 ? '+' : ''}{latestPrice.change_pct.toFixed(2)}%
-                  </span>
-                )}
+                  </span> : null}
                 <div className="relative group cursor-default">
                   <p className="text-display text-ink tabular-nums">
                     {isUSD ? `$${latestPrice.price.toFixed(2)}` : `${latestPrice.price.toLocaleString()}원`}
@@ -252,13 +245,11 @@ function PriceHistoryModal({
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            </div> : null}
         </div>
 
         {/* ── Holdings — 2행 × 3카드 ── */}
-        {holdings.length > 0 && (
-          <div className="mx-[18px] mb-4 space-y-2 shrink-0">
+        {holdings.length > 0 ? <div className="mx-[18px] mb-4 space-y-2 shrink-0">
             {/* 1행: 총수량, 평균매수가, 투자원금 */}
             <div className="grid grid-cols-3 gap-2">
               <HoldingCard
@@ -307,8 +298,7 @@ function PriceHistoryModal({
                 valueColor={pnlColor(returnPct)}
               />
             </div>
-          </div>
-        )}
+          </div> : null}
 
         {/* ── Chart ── */}
         <div className="mx-[18px] mb-3 rounded-card bg-surface-low p-[13px] shrink-0">
@@ -317,13 +307,11 @@ function PriceHistoryModal({
               가격 이력 {chartData.length > 0 ? `(${chartData.length}일)` : ''}
             </p>
             {/* MA 범례 */}
-            {chartData.length >= 5 && (
-              <div className="flex items-center gap-2">
-                {chartData.length >= 5  && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span>}
-                {chartData.length >= 20 && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span>}
-                {chartData.length >= 60 && <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span>}
-              </div>
-            )}
+            {chartData.length >= 5 ? <div className="flex items-center gap-2">
+                {chartData.length >= 5 ? <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-orange-400 rounded" />MA5</span> : null}
+                {chartData.length >= 20 ? <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-violet-400 rounded" />MA20</span> : null}
+                {chartData.length >= 60 ? <span className="flex items-center gap-1 text-micro tracking-normal text-ink-4"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded" />MA60</span> : null}
+              </div> : null}
           </div>
           {chartData.length >= 2 ? (
             <ResponsiveContainer width="100%" height={160}>
@@ -358,14 +346,12 @@ function PriceHistoryModal({
                 <Line type="monotone" dataKey="ma20" stroke="#a78bfa" dot={false} strokeWidth={1} connectNulls={false} />
                 <Line type="monotone" dataKey="ma60" stroke="#38bdf8" dot={false} strokeWidth={1} connectNulls={false} />
                 {/* 최저/최고 기준점 */}
-                {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx && (
-                  <>
+                {minIdx >= 0 && maxIdx >= 0 && minIdx !== maxIdx ? <>
                     <ReferenceDot x={chartData[minIdx].date} y={chartData[minIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
                       label={{ value: fmtChartPrice(chartData[minIdx].price), position: 'bottom', fontSize: 10, fill: '#8794a8' }} />
                     <ReferenceDot x={chartData[maxIdx].date} y={chartData[maxIdx].price} r={3} fill={hex} stroke="white" strokeWidth={1.5}
                       label={{ value: fmtChartPrice(chartData[maxIdx].price), position: 'top', fontSize: 10, fill: '#8794a8' }} />
-                  </>
-                )}
+                  </> : null}
               </LineChart>
             </ResponsiveContainer>
           ) : chartData.length === 1 ? (
@@ -376,8 +362,7 @@ function PriceHistoryModal({
         </div>
 
         {/* ── Table ── */}
-        {tableRows.length > 0 && (
-          <div className="overflow-y-auto mx-[18px] mb-5 shrink-1">
+        {tableRows.length > 0 ? <div className="overflow-y-auto mx-[18px] mb-5 shrink-1">
             <table className="w-full">
               <thead className="sticky top-0 bg-surface-card">
                 <tr className="border-b border-surface-low">
@@ -404,8 +389,7 @@ function PriceHistoryModal({
                 })}
               </tbody>
             </table>
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   )
@@ -552,11 +536,9 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {msg && (
-        <div className={`px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+      {msg ? <div className={`px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
-        </div>
-      )}
+        </div> : null}
 
       {/* 페이지 헤더 */}
       <PageHeader title="종목 관리" description="보유 종목 등록 및 가격 이력 관리">
@@ -574,11 +556,9 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
           <input value={secSearch} onChange={e => setSecSearch(e.target.value)}
             placeholder="티커 또는 종목명 검색"
             className="w-full pl-9 pr-9 py-[9px] text-subhead rounded-field bg-surface-low focus:outline-none focus:bg-surface-card focus:shadow-focus transition-colors placeholder:text-ink-5 border-0" />
-          {secSearch && (
-            <button onClick={() => setSecSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
+          {secSearch ? <button onClick={() => setSecSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-5 hover:text-ink-3">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
-          )}
+            </button> : null}
         </div>
         <Select value={secFilter.asset_class} onChange={v => setSecFilter(p => ({ ...p, asset_class: v }))}
           className="w-40"
@@ -602,12 +582,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             { value: 'ticker', label: '티커순' },
             { value: 'name', label: '이름순' },
           ]} />
-        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) && (
-          <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
+        {(secSearch || secFilter.asset_class || secFilter.country || secFilter.sector || secFilter.currency || secFilter.style) ? <button onClick={() => { setSecSearch(''); setSecFilter({ country: '', currency: '', asset_class: '', sector: '', style: '' }) }}
             className="text-micro tracking-normal text-ink-4 hover:text-ink-2 rounded-btn px-2 py-1.5 hover:bg-surface-low transition-colors whitespace-nowrap">
             필터 초기화
-          </button>
-        )}
+          </button> : null}
         <span className="text-micro tracking-normal text-ink-4 ml-auto">{filteredSecurities.length}개</span>
       </div>
 
@@ -671,16 +649,12 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                         <span className={`text-body font-medium font-sans ${priceColor} cursor-default`} title={lp.date}>
                           {lp.currency === 'KRW' ? `${lp.price.toLocaleString()}원` : `$${lp.price.toFixed(2)}`}
                         </span>
-                        {pct != null && (
-                          <div className={`text-micro tracking-normal font-sans ${pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
+                        {pct != null ? <div className={`text-micro tracking-normal font-sans ${pct > 0 ? 'text-gain' : pct < 0 ? 'text-loss' : 'text-ink-4'}`}>
                             {pct > 0 ? '+' : ''}{pct.toFixed(2)}%
-                          </div>
-                        )}
-                        {(priceHistory[s.ticker]?.length ?? 0) >= 2 && (
-                          <div className="mt-0.5 flex justify-end">
+                          </div> : null}
+                        {(priceHistory[s.ticker]?.length ?? 0) >= 2 ? <div className="mt-0.5 flex justify-end">
                             <Sparkline data={priceHistory[s.ticker]} />
-                          </div>
-                        )}
+                          </div> : null}
                       </>
                     )
                   })() : <span className="text-micro tracking-normal text-ink-5">-</span>}
@@ -688,32 +662,24 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
               </div>
               {/* Row 3: tags + action icons */}
               <div className="flex items-center gap-0.5 flex-wrap" onClick={e => e.stopPropagation()}>
-                {s.asset_class && (
-                  <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
+                {s.asset_class ? <button onClick={() => setSecFilter(p => ({ ...p, asset_class: p.asset_class === s.asset_class ? '' : (s.asset_class ?? '') }))}
                     className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.asset_class}
-                  </button>
-                )}
-                {s.country && (
-                  <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
+                  </button> : null}
+                {s.country ? <button onClick={() => setSecFilter(p => ({ ...p, country: p.country === s.country ? '' : (s.country ?? '') }))}
                     className="text-micro tracking-normal px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ backgroundColor: hex + '20', color: hex }}>
                     {s.country}
-                  </button>
-                )}
-                {s.etf_style && (
-                  <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
+                  </button> : null}
+                {s.etf_style ? <button onClick={() => setSecFilter(p => ({ ...p, style: p.style === s.etf_style ? '' : (s.etf_style ?? '') }))}
                     className="text-micro tracking-normal text-ink-3 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.etf_style}
-                  </button>
-                )}
-                {s.sector && (
-                  <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
+                  </button> : null}
+                {s.sector ? <button onClick={() => setSecFilter(p => ({ ...p, sector: p.sector === s.sector ? '' : (s.sector ?? '') }))}
                     className="text-micro tracking-normal text-ink-4 bg-surface-low px-1 py-0.5 rounded cursor-pointer hover:opacity-75 transition-opacity">
                     {s.sector}
-                  </button>
-                )}
+                  </button> : null}
                 <div className="ml-auto flex gap-0.5 items-center opacity-0 group-hover:opacity-100 transition-opacity">
                   {s.ticker !== 'USD' && s.fixed_price == null ? (
                     <button onClick={() => fetchHistory(s.ticker)} disabled={fetchingHist === s.ticker} title="과거 데이터 수집 (90일)"
@@ -775,7 +741,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
       </div>
 
       {/* Price History modal */}
-      {historyModalSecurity && (() => {
+      {historyModalSecurity ? (() => {
         const s = historyModalSecurity
         const lp = latestPrices[s.ticker]
         const { hex: modalHex } = cardColors(options, s.country, s.asset_class)
@@ -802,11 +768,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             onClose={() => setHistoryModalSecurity(null)}
           />
         )
-      })()}
+      })() : null}
 
       {/* Add / Edit modal */}
-      {(showAddModal || editModalSecurity !== null) && (
-        <SecurityFormModal
+      {(showAddModal || editModalSecurity !== null) ? <SecurityFormModal
           security={editModalSecurity}
           options={options}
           onSave={saved => {
@@ -821,8 +786,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
             setShowAddModal(false)
           }}
           onClose={() => { setEditModalSecurity(null); setShowAddModal(false) }}
-        />
-      )}
+        /> : null}
     </div>
   )
 }

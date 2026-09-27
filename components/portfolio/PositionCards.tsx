@@ -40,21 +40,15 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
                 style={{ backgroundColor: sectorColor }}>
                 {p.security.ticker}
               </span>
-              {p.security.sector && (
-                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-3">
+              {p.security.sector ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-3">
                   {p.security.sector}
-                </span>
-              )}
-              {p.security.asset_class && (
-                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
+                </span> : null}
+              {p.security.asset_class ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
                   {p.security.asset_class}
-                </span>
-              )}
-              {p.security.country && (
-                <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
+                </span> : null}
+              {p.security.country ? <span className="text-micro tracking-normal px-2 py-0.5 rounded-full text-ink-4">
                   {p.security.country}
-                </span>
-              )}
+                </span> : null}
             </div>
             <button onClick={onClose} className="text-ink-5 hover:text-ink-3 p-1 rounded hover:bg-surface-low transition-colors shrink-0">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,16 +58,14 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
           </div>
           <div className="mt-2 flex items-center gap-2">
             <p className="text-subhead font-bold text-ink leading-snug flex-1">{p.security.name}</p>
-            {onEdit && (
-              <button
+            {onEdit ? <button
                 onClick={() => onEdit(p.security)}
                 title="종목 수정"
                 className="shrink-0 text-ink-5 hover:text-ink-3 p-1 rounded hover:bg-surface-low transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-              </button>
-            )}
+              </button> : null}
           </div>
         </div>
 
@@ -95,9 +87,7 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
             <p className="text-micro tracking-normal text-ink-4 mb-1">현재가</p>
             <p className="text-subhead font-bold text-ink tabular-nums">
               {fmt(p.current_price)}원
-              {p.current_price_usd != null && (
-                <span className="text-micro tracking-normal text-ink-4 block">${Number(p.current_price_usd).toFixed(2)}</span>
-              )}
+              {p.current_price_usd != null ? <span className="text-micro tracking-normal text-ink-4 block">${Number(p.current_price_usd).toFixed(2)}</span> : null}
             </p>
           </div>
           <div className="bg-surface-low rounded-field p-3">
@@ -114,8 +104,7 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
         </div>
 
         {/* 연결 계좌 */}
-        {p.accounts.length > 0 && (
-          <div className="px-[18px] pb-5 border-t border-surface-low pt-3">
+        {p.accounts.length > 0 ? <div className="px-[18px] pb-5 border-t border-surface-low pt-3">
             <p className="text-micro tracking-normal text-ink-4 mb-2">연결 계좌</p>
             <div className="space-y-1.5">
               {p.accounts.map(a => {
@@ -132,14 +121,11 @@ function PositionModal({ position: p, totalValue, onClose, onEdit, sectorColors 
                 )
               })}
             </div>
-            {p.total_dividends > 0 && (
-              <div className="flex items-center justify-between mt-3 pt-2 border-t border-surface-low">
+            {p.total_dividends > 0 ? <div className="flex items-center justify-between mt-3 pt-2 border-t border-surface-low">
                 <span className="text-micro tracking-normal text-ink-4">수령 배당금</span>
                 <span className="text-body font-medium text-ink-2 tabular-nums">{fmt(p.total_dividends)}원</span>
-              </div>
-            )}
-          </div>
-        )}
+              </div> : null}
+          </div> : null}
 
       </div>
     </div>
@@ -260,15 +246,13 @@ export default function PositionCards({ positions, totalValue, sectorColors = {}
         })}
       </div>
 
-      {modal && (
-        <PositionModal
+      {modal ? <PositionModal
           position={modal}
           totalValue={totalValue}
           sectorColors={sectorColors}
           onEdit={onEdit ? (sec) => { setModal(null); onEdit(sec) } : undefined}
           onClose={() => setModal(null)}
-        />
-      )}
+        /> : null}
     </>
   )
 }

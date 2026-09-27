@@ -281,7 +281,7 @@ export default function DateInput({ value, onChange, className = '', placeholder
           </svg>
         </button>
       </div>
-      {open && typeof document !== 'undefined' && createPortal(calendar, document.body)}
+      {open && typeof document !== 'undefined' ? createPortal(calendar, document.body) : null}
     </>
   )
 }

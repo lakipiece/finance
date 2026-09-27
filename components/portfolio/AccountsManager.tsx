@@ -58,15 +58,13 @@ function SortableAccountCard({
           {/* 이름 + 뱃지 */}
           <div className="flex items-start justify-between gap-1 mb-0.5">
             <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{account.name}</p>
-            {account.type && (
-              <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
+            {account.type ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                 style={{ backgroundColor: typeColor + '20', color: typeColor }}>
                 {account.type}
-              </span>
-            )}
+              </span> : null}
           </div>
           <p className="text-body text-ink-4">{account.broker}</p>
-          {account.owner && <p className="text-body text-ink-5 mt-0.5">{account.owner}</p>}
+          {account.owner ? <p className="text-body text-ink-5 mt-0.5">{account.owner}</p> : null}
           {/* 하단: 종목수(좌) + 편집/삭제 hover(우) */}
           <div className="flex items-center justify-between mt-auto pt-2">
             <p className="text-body text-ink-4">
@@ -142,13 +140,14 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     })
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!modalLinkAccountId) return
     const current = new Set(links.filter(l => l.account_id === modalLinkAccountId).map(l => l.security_id))
     setPendingIds(current)
     setLinkSearch('')
     setModalTab('securities')
+  // 모달을 열 때만 초기화한다 — links가 바뀔 때마다 편집 중인 선택을 덮어쓰면 안 됨
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalLinkAccountId])
 
   const isDirty = useMemo(() => {
@@ -254,11 +253,9 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {msg && (
-        <div className={`mb-4 px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
+      {msg ? <div className={`mb-4 px-4 py-2 rounded-btn text-subhead ${msg.ok ? 'bg-income/10 border text-income' : 'bg-gain/10 border text-gain'}`}>
           {msg.text}
-        </div>
-      )}
+        </div> : null}
 
       <PageHeader title="계좌 관리" description="연결 계좌 및 종목 배분 관리" />
 
@@ -296,7 +293,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
       </DndContext>
 
       {/* Link Modal */}
-      {modalLinkAccountId && createPortal(
+      {modalLinkAccountId ? createPortal(
         <div className={modal.overlayTop}>
           <div className="bg-surface-card rounded-dialog w-full max-w-3xl flex flex-col shadow-dialog overflow-hidden h-[min(calc(100dvh-2rem),720px)]"
             onClick={e => e.stopPropagation()}>
@@ -308,7 +305,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
               <div className="flex items-center gap-2">
                 {modalTab === 'securities' ? (
                   <>
-                    {isDirty && <span className="text-micro tracking-normal text-warning bg-warning/10 px-2 py-0.5 rounded-full">미저장</span>}
+                    {isDirty ? <span className="text-micro tracking-normal text-warning bg-warning/10 px-2 py-0.5 rounded-full">미저장</span> : null}
                     <button onClick={saveLinks} disabled={!isDirty || savingLinks}
                       className={btn.primary}>
                       {savingLinks ? '저장 중...' : '저장하기'}
@@ -383,14 +380,12 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                         : { backgroundColor: '#f1f5f9', color: '#475569' }}
                     >{s.ticker}</span>
                     <span className="text-body text-ink flex-1 min-w-0 truncate">{s.name}</span>
-                    {s.country && (
-                      <span
+                    {s.country ? <span
                         className={`${badge.sm} shrink-0`}
                         style={countryColor
                           ? { backgroundColor: countryColor + '18', color: countryColor }
                           : { backgroundColor: '#f1f5f9', color: '#8794a8' }}
-                      >{s.country}</span>
-                    )}
+                      >{s.country}</span> : null}
                     <span
                       className="text-micro tracking-normal shrink-0 font-medium"
                       style={currencyColor ? { color: currencyColor } : { color: '#a8b3c4' }}
@@ -398,19 +393,17 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   </label>
                 )
               })}
-              {filteredLinkSecurities.length === 0 && (
-                <p className="text-body text-ink-4 text-center py-8">검색 결과가 없습니다</p>
-              )}
+              {filteredLinkSecurities.length === 0 ? <p className="text-body text-ink-4 text-center py-8">검색 결과가 없습니다</p> : null}
             </div>
             </>
             )}
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
 
       {/* Dirty Alert */}
-      {showDirtyAlert && createPortal(
+      {showDirtyAlert ? createPortal(
         <div className="modal-scrim fixed inset-0 z-[10000] flex items-center justify-center p-4">
           <div className="bg-surface-card rounded-dialog p-[18px] shadow-dialog max-w-sm w-full">
             <p className="text-subhead font-medium text-ink">저장하지 않은 변경사항</p>
@@ -428,10 +421,10 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
 
       {/* Add Account Modal */}
-      {showAddModal && createPortal(
+      {showAddModal ? createPortal(
         <div className={modal.overlayTop}>
           <div className="bg-surface-card rounded-card p-[13px] w-full max-w-sm shadow-dialog"
             onClick={e => e.stopPropagation()}>
@@ -476,10 +469,10 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
 
       {/* Edit Account Modal */}
-      {editingAccountId && createPortal(
+      {editingAccountId ? createPortal(
         <div className={modal.overlayTop}>
           <div className="bg-surface-card rounded-card p-[13px] w-full max-w-sm shadow-dialog"
             onClick={e => e.stopPropagation()}>
@@ -524,7 +517,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
           </div>
         </div>,
         document.body
-      )}
+      ) : null}
     </div>
   )
 }
