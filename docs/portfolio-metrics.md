@@ -90,7 +90,7 @@
 
 | 모듈 | 책임 |
 |------|------|
-| [`lib/portfolio/valuation.ts`](../lib/portfolio/valuation.ts) | **가격·환산**: 환율 fallback, KRW 판정, 가격 키 조회, KST 거래일 |
+| [`lib/portfolio/valuation.ts`](../lib/portfolio/valuation.ts) | **가격·환산**: 환율 fallback, KRW 판정, 가격 키 조회, KST 거래일, 고정단가·미수이자(`resolvePrice`), 원가(`costKrw`) |
 | [`lib/portfolio/metrics.ts`](../lib/portfolio/metrics.ts) | **수익 지표**: 하이브리드 기준 결정·합산, 누적 입출금 |
 
 ---
@@ -129,8 +129,11 @@ KPI 카드 구성 (대시보드, 원장 있을 때):
 ### 알려진 한계
 - 종목 단위 실현손익 분해는 불가 (계좌 단위까지). 거래 원장이 없는 스냅샷 모델의 트레이드오프.
 - 원장 미기록 계좌의 "수익"은 여전히 미실현 평가손익이다 (매매차익 미포착).
-- USD 종목의 평균매수금액은 조회 시점 환율로 환산되므로 환율에 따라 변동한다.
-  (수익금액은 원장 기준이라 이 문제가 없음 — 원장 기록을 넓힐수록 정확해진다)
+- USD 종목의 평균매수금액은 **평균 매입환율(`holdings.avg_fx_rate`)을 입력하면 그 환율로 고정**된다.
+  미입력 행은 평가 시점 환율로 환산되어 환율에 따라 변동한다 (스냅샷 편집기의 USD 종목 카드에서 입력).
+  수익금액은 원장 기준이라 이 문제가 없다.
+- 스냅샷 날짜 이전 시세가 없는 종목은 원가로 임시 평가(손익 0)하고 `snapshots.unpriced_tickers`에 남긴다.
+  미래 가격으로 과거를 평가하지 않는다 — 설정 › 과거 가격 수집으로 채운 뒤 값 갱신.
 
 ---
 
@@ -145,6 +148,14 @@ KPI 카드 구성 (대시보드, 원장 있을 때):
 | `docs/sql/2026-08-14-cleanup-unused.sql` | 미사용 테이블 4개 DROP + 고아 holdings 정리 |
 | `docs/sql/2026-08-15-snapshot-account-breakdown.sql` | 계좌별 분해값 컬럼 |
 | `docs/sql/2026-08-15-drop-transfer-types.sql` | 이체 유형 제거 (입금/출금/기초잔액 3종으로 단순화) |
+| `docs/sql/2026-09-27-securities-fixed-price.sql` | 고정단가 (티커 없는 종목) |
+| `docs/sql/2026-09-27-income-type.sql` | 인컴 종류 배당/이자/분배금 |
+| `docs/sql/2026-09-27-securities-accrual.sql` | 미수이자 (연이율·기산일·만기일) |
+| `docs/sql/2026-09-27-fk-restrict.sql` | 종목·계좌 삭제 시 이력 연쇄 삭제 방지 |
+| `docs/sql/2026-09-27-krw-cash-fixed-price.sql` | 원화 현금 고정단가 + 현금성 ETF 1원 가격 정리 |
+| `docs/sql/2026-09-27-valuation-accuracy.sql` | 평균 매입환율 · 미평가 종목 기록 |
+| `docs/sql/2026-09-27-incomes-check.sql` | 수입 카테고리 CHECK 2종 |
+| `docs/sql/2026-09-27-expenses-2018-dedup.sql` | ⚠ 수동 — 2018 시트의 2019년분 이중 기록 415건 삭제 |
 
 ### 주요 커밋
 | 커밋 | 내용 |

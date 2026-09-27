@@ -13,6 +13,8 @@
   - 디자인 기준: **[docs/design-system.md](docs/design-system.md)** — 새 컴포넌트 전에 반드시 확인
   - 토큰은 `tailwind.config.ts`에 정의 (`surface-*`, `ink-*`, `income`/`warning`/`action`/`gain`/`loss`/`danger`)
   - 테두리 금지 · 크기 7단(`display`~`micro`)만 · 네이티브 `<select>`·`type="date"` 금지
+- **색상 상수**: raw hex 금지. 토큰은 `import { color as tone } from '@/lib/styles'`(지역 변수 `color`와 충돌 방지),
+  데이터 색(카테고리·자산·이동평균선 등)은 `lib/palettes.ts`의 이름 있는 상수, 로고·그라데이션은 `brand`
 - **차트**: Recharts (BarChart stacked, LineChart, ComposedChart)
 - **아이콘**: 인라인 SVG (외부 아이콘 라이브러리 미사용)
 - **DnD**: `@dnd-kit/core`, `@dnd-kit/sortable`
@@ -63,7 +65,23 @@ ssh ubuntu 'docker exec -i finance-db-1 psql -U finance -d finance < ~/finance/d
 ssh ubuntu 'docker exec -it finance-db-1 psql -U finance -d finance'
 ```
 
+## 검증
+
+```bash
+npm test          # vitest — 평가 규칙·수익 지표·수식 계산기 (tests/)
+npm run lint      # ESLint — && 조건부 렌더링은 에러 (react/jsx-no-leaked-render)
+npm run build     # 타입 체크 + 린트 포함
+```
+
+평가 로직(`lib/portfolio/valuation.ts`, `metrics.ts`)을 고치면 `tests/`에 케이스를 먼저 추가한다.
+
 ## 코딩 패턴
+
+### 평가 규칙 (단일 진입점)
+- 단가: `resolvePrice(priceMap, sec, ctx)` — 고정단가 > 시세, ctx가 있으면 미수이자
+- 원가: `costKrw({ avgPrice, quantity, isKrw, fxRate, avgFxRate })` — 매입환율 있으면 고정
+- KRW 판정: `isKrwSecurity`. 가격 조회 키: `priceLookupKeys`
+- 스냅샷 날짜 이전 가격만 쓴다 (미래 가격 fallback 금지)
 
 ### React
 - ternary (`? ... : null`) 사용, `&&` 조건부 렌더링 금지
@@ -75,7 +93,8 @@ ssh ubuntu 'docker exec -it finance-db-1 psql -U finance -d finance'
 - `ON CONFLICT ... DO UPDATE` for upsert
 - 트랜잭션: `sql.begin(async sql => { ... })`
 - RLS 사용 안 함 (일반 PostgreSQL, `anon` role 없음)
-- 마이그레이션 파일: `docs/sql/YYYY-MM-DD-<name>.sql`
+- 마이그레이션 파일: `docs/sql/YYYY-MM-DD-<name>.sql` — 적용 후 `scripts/dump-schema.sh`로 `docs/schema.sql` 갱신
+- FK: 이력 테이블(holdings·dividends·account_cashflows)은 종목·계좌에 `ON DELETE RESTRICT`. 삭제 API는 `isForeignKeyViolation`으로 409
 
 ### 환경 변수 (.env.local)
 - `DATABASE_URL` — `postgresql://finance:${DB_PASSWORD}@db:5432/finance`

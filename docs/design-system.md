@@ -32,7 +32,9 @@
 ## 1. 토큰
 
 토큰은 `tailwind.config.ts`에 정의되고 `lib/styles.ts`가 조합해 쓴다.
-컴포넌트에 raw hex를 쓰지 않는다. SVG·Recharts처럼 클래스를 못 쓰는 곳은 `lib/styles.ts`의 `color` 상수를 참조한다.
+컴포넌트에 raw hex를 쓰지 않는다. SVG·Recharts처럼 클래스를 못 쓰는 곳은 `lib/styles.ts`의 `color` 상수를 참조한다
+(`import { color as tone }` — 컴포넌트 안의 `color` 지역 변수와 겹치지 않게 별칭을 쓴다).
+토큰에 없는 데이터 색(카테고리 폴백·자산 종류·이동평균선 등)은 `lib/palettes.ts`에 이름을 붙여 둔다.
 
 ### 표면 램프 — 전면 중성 (D-00)
 

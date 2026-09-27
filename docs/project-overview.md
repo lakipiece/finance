@@ -20,6 +20,16 @@
 > - 입출금 입력은 계좌 모달의 탭(종목 연결|입출금)으로 통합, 스냅샷 목록은 월별 그루핑+필터(목록↔차트 연동)
 > - `snapshots.account_breakdown`(jsonb) 추가 — 값 갱신 시 계좌별 {평가액, 매수원가} 저장
 
+> **2026-09-27 — 전체 재점검 후 개선** (라이브 DB·서버·코드 실측, 처리 현황은 [8.0](#80-처리-현황-2026-09-27-재점검))
+> - **신규**: 고정단가(`securities.fixed_price`) · 인컴 종류(배당/이자/분배금) · 미수이자(`annual_rate`/`accrual_start`/`maturity_date`) · 평균 매입환율(`holdings.avg_fx_rate`)
+> - **데이터 버그**: 현금성 ETF(497880)가 '현금 자산군=1원' 규칙에 걸려 5개월간 가격이 멈춰 있던 것 수정 ·
+>   2018 시트의 2019년 1~4월분 이중 가져오기(415건) 원인 수정 + 정리 SQL
+> - **보호**: 종목·계좌 삭제 시 이력 연쇄 삭제(CASCADE) → RESTRICT
+> - **정확성**: 미래 가격 fallback 제거 + 미평가 종목 노출 · 내보내기(4번째 평가 복사본)를 `valuation.ts`로 통합 ·
+>   스냅샷 저장을 한 트랜잭션으로(부분 저장·수량 0 미반영 버그 수정)
+> - **품질**: vitest(28) · ESLint(`&&` 렌더링 168곳 자동 수정) · `new Function`/`sql.unsafe` 제거
+> - **디자인**: raw hex 229곳 → 토큰·팔레트 상수 · 컨테이너 테두리 제거 · 미니차트 손익색을 한국식으로 · 입력 페이지 분리
+
 ---
 
 ## 0. 한눈에 보기
@@ -337,7 +347,7 @@ POST /api/portfolio/prices/refresh   (cron: 매일 00시·12시, Bearer CRON_SEC
 * 조회 측(`getPrices`)은 **Yahoo를 호출하지 않고 `price_history`만 읽는다**. 즉 화면의 "현재가"는 마지막 수집 시점 종가다.
 * 개별 새로고침(`/prices/refresh/ticker`)은 전달받은 ticker를 검증 없이 `price_history`에 저장하고, 날짜는 UTC 기준 오늘을 쓴다(일괄 수집의 KST 거래일 로직과 불일치).
 
-### 5.8 평가·원금·수익 계산이 **3벌** 있다 ⚠
+### 5.8 평가·원금·수익 계산이 **3벌** 있다 ⚠ → ✅ `valuation.ts`로 통합 (08-14, 내보내기는 09-27)
 
 같은 개념을 세 곳에서 각각 구현하고 있고, 세부 규칙이 서로 다르다.
 
@@ -381,6 +391,40 @@ POST /api/portfolio/prices/refresh   (cron: 매일 00시·12시, Bearer CRON_SEC
 ---
 
 ## 8. 개선점
+
+### 8.0 처리 현황 (2026-09-27 재점검)
+
+8.1~8.6은 2026-08-14 작성 당시의 목록이다. 아래는 각 항목의 현재 상태.
+
+| # | 항목 | 상태 |
+|---|------|------|
+| 1 | USD 원가가 조회 시점 환율로 변동 | ✅ `holdings.avg_fx_rate` 입력 시 매입환율로 고정 (`costKrw`). 미입력 행은 기존처럼 폴백 |
+| 2 | 가격 없으면 avg_price로 조용히 대체 | ✅ 원가로 임시 평가하되 `snapshots.unpriced_tickers`에 기록 → 목록·편집기에 "미평가 N종목" |
+| 3 | 미래 가격 fallback | ✅ 제거 (refresh-values · prices-at · export). 원화 현금은 고정단가 1원으로 대체 |
+| 4·5·6·8 | 환율 상수·KRW 판정·평가 3벌·UTC 날짜 | ✅ 08-14 `valuation.ts` 통합 + 09-27 내보내기(4번째 복사본)까지 통합 |
+| 7 | breakdown을 %로만 저장 | 🔶 `account_breakdown`은 절대금액. 섹터·자산군·태그는 여전히 %(0.01% 정밀도) |
+| 9 | snapshot_id NULL holdings | ✅ 0행 (08-14 정리) |
+| 10 | 미사용 테이블 | ✅ DROP 완료 |
+| 11 | target_allocations 0행 | ✅ 현재 5행 사용 중 |
+| 12 | `securities.style` ↔ `style_id` 중복 | ❌ **중복 아님** — `style`(투자 성향: 성장·인컴…)과 `style_id`(ETF 유형: 단일종목·커버드콜…)는 다른 차원. 63행 모두 값이 다름. 단, `style`은 UI에서 편집·표시되지 않음 |
+| 13 | accounts.currency_id 항상 KRW | ⏸ 유지 (27계좌 모두 KRW, 실사용 요구 없음) |
+| 14 | incomes CHECK 4종 vs 실사용 2종 | ✅ `2026-09-27-incomes-check.sql` |
+| 15 | schema.sql 불일치 | ✅ `scripts/dump-schema.sh`로 재생성 (마이그레이션 적용 후 실행) |
+| 16 | 인덱스 | ✅ 08-14 적용 |
+| 17 | price_history 전량 로드 | ✅ 종목 관리: 최신가 + 180일 / 이력 뷰어: 선택 종목만 |
+| 18 | 스냅샷 저장 행당 POST | ✅ `/holdings/bulk` 한 트랜잭션 |
+| 19 | refresh-values N+1 | ✅ 08-14 |
+| 20 | 인컴 페이지가 포트폴리오 요약 전체 계산 | ⏸ 유지 — 투자금·평가금이 곧 평가 로직이라 별도 쿼리로 떼면 규칙이 다시 두 벌이 된다 |
+| 21 | 존재하지 않는 캐시 키 무효화 | ✅ 08-14 |
+| 22 | 비밀번호 평문 | ✅ 라이브 bcrypt, 평문 분기 제거 |
+| 23 | 읽기 API 라우트 레벨 인증 | 🔶 미들웨어 의존 유지. 데이터 내보내기(export)만 라우트 인증 추가 |
+| 24 | 개별 가격 새로고침 티커 검증 | ✅ 08-14 |
+| 25 | `new Function` 수식 | ✅ `lib/formula.ts` 파서 + 테스트 |
+| 26 | `sql.unsafe` | ✅ 프래그먼트로 교체 |
+| 8.5 | 죽은 코드 | ✅ 08-14 + 미사용 `sql-helpers.ts`, 리다이렉트 전용 페이지 7개 → `next.config` |
+| 8.6 | `&&` 렌더링 | ✅ ESLint `react/jsx-no-leaked-render`로 강제 (168곳 수정) |
+| 8.6 | 큰 파일 | 🔶 `app/input/page.tsx` 분리 완료. `SnapshotCharts.tsx`(1,044줄)는 차트 세트가 한 덩어리라 유지 |
+| 신규 | 컨테이너 TZ(UTC) | ⏸ 유지 — 날짜는 `kstToday`/`kstTradingDate`로 명시 계산 |
 
 ### 8.1 P0 — 수치 정확성 (지금 화면의 숫자가 틀릴 수 있는 것들)
 
