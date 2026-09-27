@@ -20,10 +20,10 @@ function toNum(v: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const id = parseInt(params.id)
+  const id = parseInt((await params).id)
   if (!id) return NextResponse.json({ error: 'invalid id' }, { status: 400 })
   try {
     const body = await req.json()
@@ -60,10 +60,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const id = parseInt(params.id)
+  const id = parseInt((await params).id)
   if (!id) return NextResponse.json({ error: 'invalid id' }, { status: 400 })
   try {
     const sql = getSql()

@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -26,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           tax = ${Number(tax) || 0},
           memo = ${memo ?? null},
           income_type_id = ${income_type_id ?? null}
-      WHERE id = ${params.id}
+      WHERE id = ${id}
       RETURNING *
     `
     if (!row) return NextResponse.json({ error: '없는 항목' }, { status: 404 })
@@ -37,13 +38,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
     const sql = getSql()
-    await sql`DELETE FROM dividends WHERE id = ${params.id}`
+    await sql`DELETE FROM dividends WHERE id = ${id}`
     return NextResponse.json({ ok: true })
   } catch (e: any) {
     console.error('[dividends DELETE]', e?.message ?? e)

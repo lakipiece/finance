@@ -26,7 +26,8 @@ type CashflowRow = {
   opening: number
 }
 
-export default async function SnapshotChartsPage({ searchParams }: { searchParams: { view?: string } }) {
+export default async function SnapshotChartsPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const { view: viewParam } = await searchParams
   const sql = getSql()
   const [raw, cashflowRows] = await Promise.all([
     sql<SnapshotRow[]>`
@@ -69,7 +70,6 @@ export default async function SnapshotChartsPage({ searchParams }: { searchParam
     opening: Number(r.opening),
   }))
 
-  const viewParam = searchParams.view
   const initialView: SnapshotViewMode =
     viewParam === 'first' || viewParam === 'all' || viewParam === 'last' ? viewParam : 'last'
 

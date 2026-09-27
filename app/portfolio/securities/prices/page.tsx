@@ -6,10 +6,11 @@ import PriceHistoryViewer from '@/components/portfolio/PriceHistoryViewer'
 export const dynamic = 'force-dynamic'
 
 // 가격 이력 전량을 내려보내던 것을 선택한 종목 1개만 읽도록 (?ticker=)
-export default async function PriceHistoryPage({ searchParams }: { searchParams: { ticker?: string } }) {
+export default async function PriceHistoryPage({ searchParams }: { searchParams: Promise<{ ticker?: string }> }) {
+  const { ticker } = await searchParams
   const sql = getSql()
   const securities = await fetchSecurities()
-  const selected = securities.find(s => s.ticker === searchParams.ticker) ?? securities[0] ?? null
+  const selected = securities.find(s => s.ticker === ticker) ?? securities[0] ?? null
 
   const history = selected
     ? (await sql<{ date: unknown; price: number; currency: string }[]>`

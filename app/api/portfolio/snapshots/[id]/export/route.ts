@@ -35,14 +35,15 @@ function csvField(v: string | number | null | undefined): string {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const sql = getSql()
 
   const snapRows = await sql<{ date: unknown }[]>`
-    SELECT date FROM snapshots WHERE id = ${params.id}
+    SELECT date FROM snapshots WHERE id = ${id}
   `
   if (snapRows.length === 0) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -68,7 +69,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       SELECT security_id, array_agg(tag ORDER BY tag) AS tags
       FROM security_tags GROUP BY security_id
     ) tg ON tg.security_id = s.id
-    WHERE h.snapshot_id = ${params.id} AND h.quantity > 0
+    WHERE h.snapshot_id = ${id} AND h.quantity > 0
     ORDER BY a.owner NULLS LAST, a.name, s.ticker
   `
 

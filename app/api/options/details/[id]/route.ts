@@ -3,7 +3,8 @@ import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { invalidateCache } from '@/lib/cache'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
@@ -11,17 +12,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const [row] = await sql`
     UPDATE detail_options SET name = ${name}, category = ${category ?? ''}, color = ${color ?? '#a8b3c4'},
     order_idx = COALESCE(${order_idx ?? null}::int, order_idx)
-    WHERE id = ${params.id} RETURNING *`
+    WHERE id = ${id} RETURNING *`
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   invalidateCache()
   return NextResponse.json(row)
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
-  await sql`DELETE FROM detail_options WHERE id = ${params.id}`
+  await sql`DELETE FROM detail_options WHERE id = ${id}`
   invalidateCache()
   return NextResponse.json({ ok: true })
 }

@@ -2,20 +2,22 @@ import { NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
   const { name, color, order_idx } = await req.json()
-  const [row] = await sql`UPDATE payment_methods SET name = ${name}, color = ${color ?? '#a8b3c4'}, order_idx = COALESCE(${order_idx ?? null}::int, order_idx) WHERE id = ${params.id} RETURNING *`
+  const [row] = await sql`UPDATE payment_methods SET name = ${name}, color = ${color ?? '#a8b3c4'}, order_idx = COALESCE(${order_idx ?? null}::int, order_idx) WHERE id = ${id} RETURNING *`
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(row)
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const sql = getSql()
-  await sql`DELETE FROM payment_methods WHERE id = ${params.id}`
+  await sql`DELETE FROM payment_methods WHERE id = ${id}`
   return NextResponse.json({ ok: true })
 }

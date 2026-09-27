@@ -10,23 +10,25 @@ import {
 const NOT_FOUND = () => NextResponse.json({ error: '스냅샷을 찾을 수 없습니다.' }, { status: 404 })
 
 // 목록 — 원문(html)은 빼고 메타만
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const denied = await requireSession()
   if (denied) return denied
-  if (!isUuid(params.id)) return NOT_FOUND()
+  if (!isUuid(id)) return NOT_FOUND()
   const sql = getSql()
   const rows = await sql`
     SELECT id, title, filename, size, created_at
-    FROM snapshot_reports WHERE snapshot_id = ${params.id}
+    FROM snapshot_reports WHERE snapshot_id = ${id}
     ORDER BY created_at DESC
   `
   return NextResponse.json(rows)
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const denied = await requireSession()
   if (denied) return denied
-  if (!isUuid(params.id)) return NOT_FOUND()
+  if (!isUuid(id)) return NOT_FOUND()
 
   const form = await req.formData()
   const file = form.get('file')
@@ -43,12 +45,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (error) return NextResponse.json({ error }, { status: 400 })
 
   const sql = getSql()
-  const [snap] = await sql`SELECT id FROM snapshots WHERE id = ${params.id}`
+  const [snap] = await sql`SELECT id FROM snapshots WHERE id = ${id}`
   if (!snap) return NOT_FOUND()
 
   const [row] = await sql`
     INSERT INTO snapshot_reports (snapshot_id, title, filename, html, size)
-    VALUES (${params.id}, ${extractReportTitle(text, file.name)}, ${file.name}, ${text}, ${file.size})
+    VALUES (${id}, ${extractReportTitle(text, file.name)}, ${file.name}, ${text}, ${file.size})
     RETURNING id, title, filename, size, created_at
   `
   return NextResponse.json(row, { status: 201 })
