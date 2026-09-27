@@ -1,5 +1,5 @@
 -- Finance 운영 DB 스키마 (pg_dump --schema-only)
--- 생성: 2026-09-27 18:28 · scripts/dump-schema.sh
+-- 생성: 2026-09-27 18:33 · scripts/dump-schema.sh
 
 --
 -- PostgreSQL database dump
@@ -534,6 +534,21 @@ CREATE TABLE public.security_tags (
 
 
 --
+-- Name: snapshot_reports; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.snapshot_reports (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    snapshot_id uuid NOT NULL,
+    title text NOT NULL,
+    filename text NOT NULL,
+    html text NOT NULL,
+    size integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: snapshots; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -908,6 +923,14 @@ ALTER TABLE ONLY public.security_tags
 
 
 --
+-- Name: snapshot_reports snapshot_reports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshot_reports
+    ADD CONSTRAINT snapshot_reports_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: snapshots snapshots_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1030,6 +1053,13 @@ CREATE INDEX idx_incomes_year_month ON public.incomes USING btree (year, month);
 --
 
 CREATE INDEX idx_price_history_ticker_date_desc ON public.price_history USING btree (ticker, date DESC);
+
+
+--
+-- Name: idx_snapshot_reports_snapshot; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_snapshot_reports_snapshot ON public.snapshot_reports USING btree (snapshot_id, created_at DESC);
 
 
 --
@@ -1182,6 +1212,14 @@ ALTER TABLE ONLY public.securities
 
 ALTER TABLE ONLY public.security_tags
     ADD CONSTRAINT security_tags_security_id_fkey FOREIGN KEY (security_id) REFERENCES public.securities(id) ON DELETE CASCADE;
+
+
+--
+-- Name: snapshot_reports snapshot_reports_snapshot_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.snapshot_reports
+    ADD CONSTRAINT snapshot_reports_snapshot_id_fkey FOREIGN KEY (snapshot_id) REFERENCES public.snapshots(id) ON DELETE CASCADE;
 
 
 --
