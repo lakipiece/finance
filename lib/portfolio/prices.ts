@@ -89,28 +89,33 @@ async function upsertPriceRows(rows: PriceRow[], withMeta: boolean) {
 
 async function fetchYahooPrices(yahooTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
   const saved: PriceRow[] = []
-  const failed: string[] = []
+  const errors: Record<string, string> = {}
 
-  await Promise.allSettled(
-    yahooTickers.map(async (yahooTicker) => {
-      try {
-        const quote = await yahooFinance.quote(yahooTicker)
-        const price = (quote as any).regularMarketPrice ?? 0
-        const currency = (quote as any).currency ?? 'USD'
-        const changePct = (quote as any).regularMarketChangePercent ?? null
-        const exchange = (quote as any).exchange ?? null
-        if (price > 0) {
-          saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct, exchange })
-        } else {
-          failed.push(`${yahooTicker}: price=0`)
-        }
-      } catch (err: unknown) {
-        failed.push(`${yahooTicker}: ${err instanceof Error ? err.message : String(err)}`)
+  async function fetchOne(yahooTicker: string) {
+    try {
+      const quote = await yahooFinance.quote(yahooTicker)
+      const price = (quote as any).regularMarketPrice ?? 0
+      const currency = (quote as any).currency ?? 'USD'
+      const changePct = (quote as any).regularMarketChangePercent ?? null
+      const exchange = (quote as any).exchange ?? null
+      if (price > 0) {
+        saved.push({ ticker: yahooTicker, date: today, price, currency, change_pct: changePct, exchange })
+        delete errors[yahooTicker]
+      } else {
+        errors[yahooTicker] = 'price=0'
       }
-    })
-  )
+    } catch (err: unknown) {
+      errors[yahooTicker] = err instanceof Error ? err.message : String(err)
+    }
+  }
 
-  return { saved, failed }
+  await Promise.allSettled(yahooTickers.map(fetchOne))
+
+  // 동시 요청 중 일시적 'fetch failed'가 드물게 난다(컨테이너 기동 직후 등) — 실패분만 한 번 순차 재시도
+  const retry = Object.keys(errors)
+  for (const t of retry) await fetchOne(t)
+
+  return { saved, failed: Object.entries(errors).map(([t, msg]) => `${t}: ${msg}`) }
 }
 
 async function fetchCoinGeckoPrices(coinTickers: string[], today: string): Promise<{ saved: PriceRow[]; failed: string[] }> {
