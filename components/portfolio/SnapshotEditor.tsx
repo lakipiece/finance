@@ -269,7 +269,13 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         }),
       })
       if (!res.ok) throw new Error('holdings save failed')
-      setMsg('저장 완료')
+      // 목록·차트가 쓰는 저장값(총평가액·원가·계좌별 분해)을 이 스냅샷만 다시 계산
+      const refreshRes = await fetch('/api/portfolio/snapshots/refresh-values', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ snapshot_id: snapshot.id }),
+      }).catch(() => null)
+      setMsg(refreshRes?.ok ? '저장 완료' : '저장 완료 · 목록 값 갱신 실패')
       setIsDirty(false)
       router.refresh()
       return true

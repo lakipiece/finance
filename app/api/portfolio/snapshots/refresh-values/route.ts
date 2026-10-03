@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getSql } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import {
@@ -11,14 +11,20 @@ import { fetchInterestPayments, lastInterestMap } from '@/lib/portfolio/interest
 // 모든 스냅샷의 총평가액·투자원금·비중(breakdown)을 재계산한다.
 // 가격: 스냅샷 날짜 이전 최신만 쓴다 (미래 가격으로 과거를 평가하지 않는다).
 // 가격이 없으면 평균단가로 임시 평가하되 snapshots.unpriced_tickers에 남겨 화면에 노출한다.
-export async function POST() {
+// body.snapshot_id가 있으면 그 스냅샷만 (스냅샷 편집 저장 직후 호출).
+export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const body = await req.json().catch(() => ({})) as { snapshot_id?: string }
+  const onlyId = typeof body.snapshot_id === 'string' ? body.snapshot_id : null
 
   const sql = getSql()
   const [snapshots, securities] = await Promise.all([
     sql<{ id: string; date: unknown }[]>`
-      SELECT id, date FROM snapshots ORDER BY date DESC
+      SELECT id, date FROM snapshots
+      ${onlyId ? sql`WHERE id = ${onlyId}` : sql``}
+      ORDER BY date DESC
     `,
     sql<{
       id: string; ticker: string; currency: string; country: string | null

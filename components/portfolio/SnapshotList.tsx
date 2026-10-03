@@ -242,11 +242,12 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                     <p className="text-subhead text-ink-5">—</p>
                   )}
                   {inv != null ? (
-                    <p className="text-micro tracking-normal text-ink-4 tabular-nums" title="평균매수금액">{fmtKrw(inv)}</p>
+                    <p className="text-micro tracking-normal text-ink-4 tabular-nums" title="평균매수금액 합계">매수원가 {fmtKrw(inv)}</p>
                   ) : null}
                   {pnl != null ? (
                     <p className={`text-body font-medium tabular-nums ${pnl >= 0 ? 'text-gain' : 'text-loss'}`}
-                      title="평가손익 (평가액 − 평균매수금액)">
+                      title="평가손익 = 평가액 − 매수원가 (증권사 앱 기준)">
+                      <span className="text-micro tracking-normal font-normal mr-1 opacity-80">평가손익</span>
                       {pnl >= 0 ? '+' : ''}{fmtKrw(pnl)}
                       {pnlPct != null ? (
                         <span className="text-micro tracking-normal ml-0.5 opacity-80">
@@ -263,7 +264,7 @@ export default function SnapshotList({ snapshots: initSnapshots, sectorColors = 
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-surface-low text-meta">
                   {profit != null ? (
                     <span className={`font-medium tabular-nums ${profit >= 0 ? 'text-gain' : 'text-loss'}`}
-                      title="수익금액 = 평가액 + 누적출금 − 누적입금">
+                      title="수익 = 평가액 + 누적출금 − 누적입금 (입출금 기록 없는 계좌는 매수원가 기준) — 스냅샷 편집 화면의 수익과 같은 값">
                       수익 {profit >= 0 ? '+' : ''}{fmtKrw(profit)}
                       {profitRate != null ? (
                         <span className="text-micro tracking-normal ml-0.5 opacity-80">({profitRate >= 0 ? '+' : ''}{(profitRate * 100).toFixed(1)}%)</span>
