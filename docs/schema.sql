@@ -1,5 +1,5 @@
 -- Finance 운영 DB 스키마 (pg_dump --schema-only)
--- 생성: 2026-09-27 18:33 · scripts/dump-schema.sh
+-- 생성: 2026-10-03 21:53 · scripts/dump-schema.sh
 
 --
 -- PostgreSQL database dump
@@ -82,7 +82,8 @@ CREATE TABLE public.accounts (
     currency_id uuid,
     dividend_eligible boolean DEFAULT true NOT NULL,
     dividend_tax_rate numeric(5,2),
-    archived_at timestamp with time zone
+    archived_at timestamp with time zone,
+    memo text
 );
 
 
@@ -91,6 +92,13 @@ CREATE TABLE public.accounts (
 --
 
 COMMENT ON COLUMN public.accounts.archived_at IS '보관 시각 — NULL이 아니면 관리 목록·선택지에서 숨김 (이력·평가에는 유지)';
+
+
+--
+-- Name: COLUMN accounts.memo; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.accounts.memo IS '계좌 메모 (자유 텍스트) — 화면 곳곳에서 계좌명 툴팁으로 표시';
 
 
 --
@@ -566,6 +574,27 @@ CREATE TABLE public.snapshots (
     account_breakdown jsonb DEFAULT '{}'::jsonb NOT NULL,
     unpriced_tickers text[] DEFAULT '{}'::text[] NOT NULL
 );
+
+
+--
+-- Name: COLUMN snapshots.sector_breakdown; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.snapshots.sector_breakdown IS '섹터별 평가액 (KRW) — 비중은 화면에서 계산';
+
+
+--
+-- Name: COLUMN snapshots.asset_class_breakdown; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.snapshots.asset_class_breakdown IS '자산군별 평가액 (KRW) — 비중은 화면에서 계산';
+
+
+--
+-- Name: COLUMN snapshots.tag_breakdown; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN public.snapshots.tag_breakdown IS '태그별 평가액 (KRW, 태그 중복 가능) — 비중은 화면에서 계산';
 
 
 --

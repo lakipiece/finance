@@ -10,6 +10,7 @@ import { hybridTotals } from '@/lib/portfolio/metrics'
 import AllocationCharts from './AllocationCharts'
 import PositionCards from './PositionCards'
 import SecurityFormModal, { type OptionItem } from './SecurityFormModal'
+import MemoTip from '@/components/ui/MemoTip'
 
 interface Props {
   summary: PortfolioSummary
@@ -130,10 +131,10 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
 
   const accountGroups = useMemo(() =>
     summary.positions.reduce<Record<string, {
-      name: string; type: string | null; value: number; pnl: number; invested: number; count: number
+      name: string; memo: string | null; type: string | null; value: number; pnl: number; invested: number; count: number
     }>>((acc, p) => {
       const id = p.account.id
-      if (!acc[id]) acc[id] = { name: p.account.name, type: p.account.type, value: 0, pnl: 0, invested: 0, count: 0 }
+      if (!acc[id]) acc[id] = { name: p.account.name, memo: p.account.memo ?? null, type: p.account.type, value: 0, pnl: 0, invested: 0, count: 0 }
       acc[id].value += p.market_value
       acc[id].pnl += p.unrealized_pnl
       acc[id].invested += p.total_invested
@@ -405,7 +406,7 @@ export default function PortfolioDashboard({ summary, accountTypeColors = {}, se
                     <div className="flex items-center gap-1.5">
                       {typeColor ? <span className="w-2 h-2 rounded-full shrink-0 self-center" style={{ backgroundColor: typeColor }} /> : null}
                       <p className={`text-body font-medium truncate leading-none ${isSelected ? 'text-ink' : 'text-ink'}`}>
-                        {g.name}
+                        <MemoTip memo={g.memo}>{g.name}</MemoTip>
                       </p>
                     </div>
                     <div className={`border-t mt-1.5 mb-1.5 ${isSelected ? 'border-surface-low' : 'border-surface-low'}`} />

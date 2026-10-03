@@ -5,6 +5,7 @@ import type { PortfolioSummary, TargetAllocation, PortfolioPosition } from '@/li
 import { createPortal } from 'react-dom'
 import { btn, modal } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import MemoTip from '@/components/ui/MemoTip'
 
 interface Props {
   summary: PortfolioSummary
@@ -219,7 +220,7 @@ function PositionDetail({ items, onClose }: { items: PortfolioPosition[]; onClos
             <div className="rounded-card bg-surface-low px-[13px] py-1">
               {items.map((p, i) => (
                 <div key={i} className="flex items-baseline justify-between gap-2 py-[5px] border-b border-surface-container last:border-0">
-                  <span className="text-body text-ink-2 truncate">{p.account.name}</span>
+                  <MemoTip memo={p.account.memo} className="text-body text-ink-2 truncate">{p.account.name}</MemoTip>
                   <span className="text-body font-medium text-ink tabular-nums shrink-0">
                     {p.quantity.toLocaleString()} · {won(p.market_value)}
                   </span>

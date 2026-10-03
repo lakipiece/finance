@@ -25,7 +25,7 @@ export default async function SnapshotEditPage({ params }: { params: Promise<{ i
     sql`SELECT * FROM holdings WHERE snapshot_id = ${id}` as unknown as Promise<HoldingRow[]>,
     sql`
       SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
-             a.type_id, a.currency_id, a.archived_at,
+             a.type_id, a.currency_id, a.archived_at, a.memo,
              t.value AS type, cu.value AS currency
       FROM accounts a
       LEFT JOIN option_list t  ON a.type_id    = t.id

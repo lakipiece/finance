@@ -5,9 +5,9 @@ import type { Dividend, Security, Account } from '@/lib/portfolio/types'
 
 export const dynamic = 'force-dynamic'
 
-type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker' | 'owner'> }
+type DividendRow = Dividend & { security: Pick<Security, 'ticker' | 'name' | 'currency'>; account: Pick<Account, 'name' | 'broker' | 'owner' | 'memo'> }
 type SecurityRow = Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>
-type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at'>
+type AccountRow = Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at' | 'memo'>
 type AccountSecurity = { account_id: string; security_id: string }
 type IncomeTypeRow = { id: string; label: string; value: string; color_hex: string | null }
 
@@ -30,7 +30,7 @@ export default async function IncomePage() {
             THEN json_build_object('ticker', '(계좌)', 'name', a.name, 'currency', 'KRW')
             ELSE json_build_object('ticker', s.ticker, 'name', s.name, 'currency', COALESCE(ol.value, 'KRW'))
           END AS security,
-          json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner) AS account
+          json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner, 'memo', a.memo) AS account
         FROM dividends d
         LEFT JOIN securities s ON s.id = d.security_id
         LEFT JOIN option_list ol ON s.currency_id = ol.id
@@ -44,7 +44,7 @@ export default async function IncomePage() {
         LEFT JOIN option_list ol ON s.currency_id = ol.id
         ORDER BY s.ticker
       ` as unknown as Promise<SecurityRow[]>,
-      sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate, archived_at
+      sql`SELECT id, name, broker, owner, dividend_eligible, dividend_tax_rate, archived_at, memo
           FROM accounts ORDER BY name` as unknown as Promise<AccountRow[]>,
       sql`SELECT account_id, security_id FROM account_securities` as unknown as Promise<AccountSecurity[]>,
       sql`SELECT id, label, value, color_hex FROM option_list

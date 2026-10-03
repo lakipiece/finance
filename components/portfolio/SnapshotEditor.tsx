@@ -8,6 +8,7 @@ import type { Snapshot, Account, Security } from '@/lib/portfolio/types'
 import DateInput from '@/components/ui/DateInput'
 import { costKrw, isKrwSecurity } from '@/lib/portfolio/valuation'
 import { tintBadgeStyle } from '@/lib/palettes'
+import MemoTip from '@/components/ui/MemoTip'
 
 interface HoldingRow {
   id?: string
@@ -457,7 +458,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
               <div onClick={() => setModalAccountId(a.id)} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
                 {/* 이름 + 뱃지 */}
                 <div className="flex items-start justify-between gap-1 mb-0.5">
-                  <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{a.name}</p>
+                  <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0"><MemoTip memo={a.memo}>{a.name}</MemoTip></p>
                   {a.type && typeColor ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                       style={tintBadgeStyle(typeColor)}>
                       {a.type}
@@ -508,7 +509,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
             {/* Modal Header */}
             <div className="flex items-start justify-between gap-3 px-[18px] py-[15px] shrink-0">
               <div className="min-w-0 flex-1">
-                <p className="font-bold text-ink text-heading leading-tight">{modalAccount?.name}</p>
+                <p className="font-bold text-ink text-heading leading-tight"><MemoTip memo={modalAccount?.memo}>{modalAccount?.name}</MemoTip></p>
                 {modalAccount?.broker ? <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded text-micro tracking-normal text-ink-4 bg-surface-low">{modalAccount.broker}</span> : null}
                 {modalAccountValue > 0 ? (() => {
                   const id = modalAccountId ?? ''

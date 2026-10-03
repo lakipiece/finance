@@ -11,6 +11,8 @@ export interface Account {
   dividend_tax_rate: number | null
   /** 보관 시각 — 있으면 관리 목록·선택지에서 숨김 (이력·평가에는 유지) */
   archived_at?: string | null
+  /** 계좌 메모 — 계좌명 툴팁으로 표시 */
+  memo?: string | null
   // resolved via JOIN from option_list
   type: string | null
   currency: string

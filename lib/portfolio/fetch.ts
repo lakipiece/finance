@@ -29,7 +29,7 @@ export async function fetchAccounts(): Promise<Account[]> {
     SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
            a.type_id, a.currency_id,
            -- 편집 폼 초기값 — 빠지면 저장 시 배당 세율이 지워진다
-           a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
+           a.dividend_eligible, a.dividend_tax_rate, a.archived_at, a.memo,
            t.value AS type, cu.value AS currency
     FROM accounts a
     LEFT JOIN option_list t  ON a.type_id    = t.id
@@ -72,7 +72,7 @@ export async function fetchPortfolioSummary(): Promise<PortfolioSummary> {
     sql<{ id: number }[]>`SELECT id FROM snapshots ORDER BY date DESC LIMIT 1`,
     sql<Account[]>`
       SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
-             a.type_id, a.currency_id, a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
+             a.type_id, a.currency_id, a.dividend_eligible, a.dividend_tax_rate, a.archived_at, a.memo,
              t.value AS type, cu.value AS currency
       FROM accounts a
       LEFT JOIN option_list t  ON a.type_id    = t.id

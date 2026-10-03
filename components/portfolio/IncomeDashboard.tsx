@@ -17,6 +17,7 @@ import BulkDividendModal from './BulkDividendModal'
 import YearMonthPicker from '@/components/ui/YearMonthPicker'
 import PageHeader from '@/components/ui/PageHeader'
 import { btn, color as tone, brand } from '@/lib/styles'
+import MemoTip from '@/components/ui/MemoTip'
 
 interface AccountSecurity { account_id: string; security_id: string }
 interface MemberOpt { code: string; color: string }
@@ -24,13 +25,13 @@ interface PositionLite { ticker: string; account_id: string; owner: string | nul
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
-  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate'>
+  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate' | 'memo'>
 }
 
 interface Props {
   dividends: DividendRow[]
   securities: Pick<Security, 'id' | 'ticker' | 'name' | 'currency' | 'archived_at'>[]
-  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at'>[]
+  accounts: Pick<Account, 'id' | 'name' | 'broker' | 'owner' | 'dividend_eligible' | 'dividend_tax_rate' | 'archived_at' | 'memo'>[]
   accountSecurities: AccountSecurity[]
   incomeTypes: IncomeTypeOption[]
   positions: PositionLite[]
@@ -422,7 +423,7 @@ export default function IncomeDashboard({ dividends, securities, accounts, accou
           return (
             <button key={a.id} type="button" onClick={() => selectAccount(String(a.id))}
               className={`px-2.5 py-1 rounded-full text-meta font-medium transition-colors ${active ? 'bg-action text-white' : 'bg-surface-low text-ink-3 hover:bg-surface-high'}`}>
-              {a.broker} · {a.name}
+              <MemoTip memo={a.memo}>{a.broker} · {a.name}</MemoTip>
             </button>
           )
         }) : <span className="text-meta text-ink-5">없음</span>}

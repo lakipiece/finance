@@ -13,7 +13,7 @@ export async function GET() {
     SELECT d.*,
       it.value AS income_type,
       json_build_object('ticker', s.ticker, 'name', s.name, 'currency', s.currency) as security,
-      json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner, 'dividend_tax_rate', a.dividend_tax_rate) as account
+      json_build_object('name', a.name, 'broker', a.broker, 'owner', a.owner, 'dividend_tax_rate', a.dividend_tax_rate, 'memo', a.memo) as account
     FROM dividends d
     LEFT JOIN securities s ON s.id = d.security_id
     LEFT JOIN option_list it ON d.income_type_id = it.id

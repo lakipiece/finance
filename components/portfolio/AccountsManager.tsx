@@ -14,6 +14,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { Account, Security } from '@/lib/portfolio/types'
 import { btn, field, badge, modal, color as tone } from '@/lib/styles'
 import PageHeader from '@/components/ui/PageHeader'
+import MemoTip from '@/components/ui/MemoTip'
 import CashflowPanel from './CashflowPanel'
 import Select from '@/components/ui/Select'
 import { tintBadgeStyle } from '@/lib/palettes'
@@ -58,7 +59,7 @@ function SortableAccountCard({
         <div onClick={onCardClick} className="flex-1 p-3 cursor-pointer flex flex-col min-w-0">
           {/* 이름 + 뱃지 */}
           <div className="flex items-start justify-between gap-1 mb-0.5">
-            <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0">{account.name}</p>
+            <p className="text-subhead font-bold text-ink leading-tight flex-1 min-w-0"><MemoTip memo={account.memo}>{account.name}</MemoTip></p>
             {account.type ? <span className="text-micro tracking-normal px-1.5 py-0.5 rounded-full font-medium shrink-0"
                 style={tintBadgeStyle(typeColor)}>
                 {account.type}
@@ -110,6 +111,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     name: '', broker: '', owner: '', type_id: '',
     dividend_eligible: true,
     dividend_tax_rate: '' as string,
+    memo: '',
   })
 
   // 모달 열릴 때 최신 계좌유형 옵션 로드
@@ -214,6 +216,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
     try {
       const payload = {
         ...accountForm,
+        memo: accountForm.memo.trim() || null,
         dividend_tax_rate: accountForm.dividend_tax_rate.trim() === ''
           ? null
           : Number(accountForm.dividend_tax_rate),
@@ -293,6 +296,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   name: a.name, broker: a.broker, owner: a.owner ?? '', type_id: a.type_id ?? '',
                   dividend_eligible: a.dividend_eligible ?? true,
                   dividend_tax_rate: a.dividend_tax_rate != null ? String(a.dividend_tax_rate) : '',
+                  memo: a.memo ?? '',
                 }) }}
                 onArchive={() => setAccountArchived(a.id, true)}
                 onDelete={() => deleteAccount(a.id)}
@@ -302,7 +306,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <button
               onClick={() => { setShowAddModal(true); setAccountForm({
                 name: '', broker: '', owner: '', type_id: '',
-                dividend_eligible: true, dividend_tax_rate: '',
+                dividend_eligible: true, dividend_tax_rate: '', memo: '',
               }) }}
               className="bg-surface-low hover:bg-surface-container rounded-card flex flex-col items-center justify-center text-ink-4 hover:text-ink-2 transition-colors min-h-[110px]">
               <svg className="w-4 h-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -325,7 +329,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               {archivedAccounts.map(a => (
                 <div key={a.id} className="bg-surface-low rounded-card p-3 flex flex-col gap-1 min-w-0">
-                  <p className="text-subhead font-medium text-ink-3 truncate">{a.name}</p>
+                  <p className="text-subhead font-medium text-ink-3 truncate"><MemoTip memo={a.memo}>{a.name}</MemoTip></p>
                   <p className="text-body text-ink-4 truncate">{a.broker}</p>
                   <button type="button" onClick={() => setAccountArchived(a.id, false)}
                     className="self-start mt-1 text-meta font-medium text-action hover:underline underline-offset-2">
@@ -345,7 +349,7 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
             onClick={e => e.stopPropagation()}>
             <div className={modal.header}>
               <div>
-                <h3 className="font-medium text-ink">{modalAccount?.name}</h3>
+                <h3 className="font-medium text-ink"><MemoTip memo={modalAccount?.memo}>{modalAccount?.name}</MemoTip></h3>
                 <p className="text-body text-ink-4 mt-0.5">{modalAccount?.broker}{modalAccount?.type ? ` · ${modalAccount.type}` : ''}</p>
               </div>
               <div className="flex items-center gap-2">
@@ -507,6 +511,13 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   placeholder="15.40"
                   className={field.input} />
               </div>
+              <div>
+                <label className={field.label}>메모</label>
+                <textarea value={accountForm.memo} rows={3}
+                  onChange={e => setAccountForm(p => ({ ...p, memo: e.target.value }))}
+                  placeholder="계좌명에 마우스를 올리면 보여요"
+                  className={`${field.input} resize-none`} />
+              </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={saveAccount} className={btn.primary}>추가</button>
                 <button onClick={() => setShowAddModal(false)} className={btn.secondary}>취소</button>
@@ -554,6 +565,13 @@ export default function AccountsManager({ accounts: initAccounts, securities, ac
                   onChange={e => setAccountForm(p => ({ ...p, dividend_tax_rate: e.target.value }))}
                   placeholder="15.40"
                   className={field.input} />
+              </div>
+              <div>
+                <label className={field.label}>메모</label>
+                <textarea value={accountForm.memo} rows={3}
+                  onChange={e => setAccountForm(p => ({ ...p, memo: e.target.value }))}
+                  placeholder="계좌명에 마우스를 올리면 보여요"
+                  className={`${field.input} resize-none`} />
               </div>
               <div className="flex gap-2 pt-1">
                 <button onClick={saveAccount} className={btn.primary}>수정</button>

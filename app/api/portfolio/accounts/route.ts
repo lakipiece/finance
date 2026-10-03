@@ -10,7 +10,7 @@ import { requireSession } from '@/lib/auth-guard'
 const accountWithLabels = (sql: Sql) => sql`
   SELECT a.id, a.name, a.broker, a.owner, a.created_at, a.sort_order,
          a.type_id, a.currency_id,
-         a.dividend_eligible, a.dividend_tax_rate, a.archived_at,
+         a.dividend_eligible, a.dividend_tax_rate, a.archived_at, a.memo,
          t.value  AS type,
          cu.value AS currency
   FROM accounts a
@@ -30,15 +30,15 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { name, broker, owner, type_id, dividend_eligible = true, dividend_tax_rate = null } = await req.json()
+  const { name, broker, owner, type_id, dividend_eligible = true, dividend_tax_rate = null, memo = null } = await req.json()
   const sql = getSql()
 
   const [row] = await sql`
-    INSERT INTO accounts (name, broker, owner, type_id, currency_id, dividend_eligible, dividend_tax_rate)
+    INSERT INTO accounts (name, broker, owner, type_id, currency_id, dividend_eligible, dividend_tax_rate, memo)
     VALUES (
       ${name}, ${broker}, ${owner ?? null}, ${type_id ?? null},
       (SELECT id FROM option_list WHERE type = 'currency' AND value = 'KRW' LIMIT 1),
-      ${dividend_eligible}, ${dividend_tax_rate}
+      ${dividend_eligible}, ${dividend_tax_rate}, ${memo?.trim() || null}
     )
     RETURNING id
   `
@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...updates } = await req.json()
   const sql = getSql()
 
-  const allowed = ['name', 'broker', 'owner', 'type_id', 'currency_id', 'dividend_eligible', 'dividend_tax_rate', 'archived_at']
+  const allowed = ['name', 'broker', 'owner', 'type_id', 'currency_id', 'dividend_eligible', 'dividend_tax_rate', 'archived_at', 'memo']
   const fields = Object.entries(updates)
     .filter(([k]) => allowed.includes(k))
     .map(([k, v]) => sql`${sql(k)} = ${v as string}`)

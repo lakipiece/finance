@@ -8,10 +8,11 @@ import { createPortal } from 'react-dom'
 import { btn, tbl, modal, color as tone } from '@/lib/styles'
 import { DIVIDEND_COLOR } from '@/lib/palettes'
 import MemberBadge from '@/components/ui/MemberBadge'
+import MemoTip from '@/components/ui/MemoTip'
 
 type DividendRow = Dividend & {
   security: Pick<Security, 'ticker' | 'name' | 'currency'>
-  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate'>
+  account: Pick<Account, 'name' | 'broker' | 'owner' | 'dividend_tax_rate' | 'memo'>
 }
 
 /** 배당은 기본값이라 표시하지 않고, 이자·분배금만 뱃지로 구분한다 */
@@ -206,7 +207,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
               </div>
               <div className="flex items-center justify-between text-body text-ink-4">
                 <span className="tabular-nums">{fmtDate(d.paid_at)}</span>
-                <span className="text-ink-3">{d.account.broker} · {d.account.name}</span>
+                <MemoTip memo={d.account.memo} className="text-ink-3">{d.account.broker} · {d.account.name}</MemoTip>
               </div>
               {d.account.owner ? <div className="mt-1"><MemberBadge member={d.account.owner} /></div> : null}
               <div className="flex justify-between items-center mt-1.5 pt-1.5 border-t border-surface-low text-micro tracking-normal text-ink-4 tabular-nums">
@@ -271,7 +272,7 @@ export default function DividendTable({ dividends, selectedMonth, selectedSecuri
                     <span className="inline-block px-1.5 py-0.5 rounded-full text-micro tracking-normal font-medium bg-surface-low text-ink-2">
                       {d.account.broker}
                     </span>
-                    <span className="ml-1.5 text-micro tracking-normal text-ink-4">{d.account.name}</span>
+                    <MemoTip memo={d.account.memo} className="ml-1.5 text-micro tracking-normal text-ink-4">{d.account.name}</MemoTip>
                   </td>
                   <td className="py-[5px] px-2"><MemberBadge member={d.account.owner} /></td>
                   <td className={`${tbl.tdRight} font-bold whitespace-nowrap`} style={{ color: DIVIDEND_COLOR }}>{formatWonRound(gross)}</td>
