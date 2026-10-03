@@ -466,8 +466,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
     } catch (e: unknown) { notify(e instanceof Error ? e.message : '오류', false) }
   }
 
-  async function syncTicker(rawTicker: string) {
-    const yahooTicker = toYahooTicker(rawTicker)
+  async function syncTicker(rawTicker: string, country?: string | null) {
+    const yahooTicker = toYahooTicker(rawTicker, country)
     setSyncing(rawTicker)
     try {
       const res = await fetch('/api/portfolio/prices/refresh/ticker', {
@@ -476,6 +476,8 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
         body: JSON.stringify({ ticker: yahooTicker }),
       })
       setSyncMsg(prev => ({ ...prev, [rawTicker]: res.ok ? '✓' : '✗' }))
+      // 저장된 가격은 서버 컴포넌트가 읽는다 — 다시 불러와야 카드에 반영된다
+      if (res.ok) router.refresh()
     } catch {
       setSyncMsg(prev => ({ ...prev, [rawTicker]: '✗' }))
     } finally {
@@ -508,8 +510,10 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
   async function handleRefreshAll() {
     setRefreshingAll(true)
     try {
-      await fetch('/api/portfolio/prices/refresh', { method: 'POST' })
+      const res = await fetch('/api/portfolio/prices/refresh', { method: 'POST' })
+      if (!res.ok) throw new Error()
       notify('전체 가격 업데이트 완료')
+      router.refresh()
     } catch {
       notify('전체 가격 업데이트 실패', false)
     } finally {
@@ -723,7 +727,7 @@ export default function SecuritiesManager({ securities: initSecurities, latestPr
                       )}
                     </button>
                   ) : null}
-                  <button onClick={() => syncTicker(s.ticker)} disabled={syncing === s.ticker} title="가격 업데이트"
+                  <button onClick={() => syncTicker(s.ticker, s.country)} disabled={syncing === s.ticker} title="가격 업데이트"
                     className="p-0.5 rounded hover:bg-surface-low text-ink-5 hover:text-ink-3 transition-colors disabled:opacity-40">
                     {syncing === s.ticker ? (
                       <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
