@@ -17,7 +17,37 @@ interface HoldingRow {
   avg_price: number | null
   /** USD 종목 평균 매입환율 — 있으면 원가를 이 환율로 고정 */
   avg_fx_rate: number | null
+  /** 화면 전용 — 원화 평균매수단가. 입력하면 avg_fx_rate = KRW / 외화 단가로 계산 (저장 안 함) */
+  avg_price_krw?: number | null
+  /** 매입환율을 원화 단가에서 계산했는지 — 외화 단가가 바뀌면 환율을 다시 계산한다 */
+  fx_from_krw?: boolean
   orphaned?: boolean
+}
+
+type RowField = 'quantity' | 'avg_price' | 'avg_fx_rate' | 'avg_price_krw'
+
+const roundTo = (v: number, digits: number) => Math.round(v * 10 ** digits) / 10 ** digits
+
+/** 저장된 외화 단가·매입환율에서 원화 단가를 역산 */
+function krwPriceOf(avgPrice: number | null, avgFxRate: number | null): number | null {
+  return avgPrice != null && avgFxRate != null ? roundTo(avgPrice * avgFxRate, 2) : null
+}
+
+/** 한 칸을 고치면 원화 단가 ↔ 매입환율을 맞춘다 (외화 단가 × 매입환율 = 원화 단가) */
+function applyRowField(r: HoldingRow, field: RowField, value: number | null): HoldingRow {
+  if (field === 'quantity') return { ...r, quantity: value ?? 0 }
+  if (field === 'avg_price_krw') {
+    const fx = value != null && r.avg_price ? roundTo(value / r.avg_price, 4) : null
+    return { ...r, avg_price_krw: value, avg_fx_rate: fx, fx_from_krw: value != null }
+  }
+  if (field === 'avg_fx_rate') {
+    return { ...r, avg_fx_rate: value, avg_price_krw: krwPriceOf(r.avg_price, value), fx_from_krw: false }
+  }
+  // avg_price — 원화 단가를 입력했으면 환율을, 환율을 입력했으면 원화 단가를 다시 계산
+  if (r.fx_from_krw && r.avg_price_krw != null) {
+    return { ...r, avg_price: value, avg_fx_rate: value ? roundTo(r.avg_price_krw / value, 4) : null }
+  }
+  return { ...r, avg_price: value, avg_price_krw: krwPriceOf(value, r.avg_fx_rate) }
 }
 
 interface AccountSecurity { account_id: string; security_id: string }
@@ -118,6 +148,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         quantity: existing ? Number(existing.quantity) : 0,
         avg_price: existing?.avg_price != null ? Number(existing.avg_price) : null,
         avg_fx_rate: existing?.avg_fx_rate != null ? Number(existing.avg_fx_rate) : null,
+        avg_price_krw: existing?.avg_price != null && existing.avg_fx_rate != null
+          ? krwPriceOf(Number(existing.avg_price), Number(existing.avg_fx_rate)) : null,
         id: existing?.id,
         orphaned: false,
       }
@@ -132,6 +164,8 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
         quantity: Number(h.quantity),
         avg_price: h.avg_price != null ? Number(h.avg_price) : null,
         avg_fx_rate: h.avg_fx_rate != null ? Number(h.avg_fx_rate) : null,
+        avg_price_krw: h.avg_price != null && h.avg_fx_rate != null
+          ? krwPriceOf(Number(h.avg_price), Number(h.avg_fx_rate)) : null,
         id: h.id,
         orphaned: true,
       }))
@@ -151,7 +185,7 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     [rows, modalAccountId, secMap, secPrices]
   )
 
-  const lastTabIndex = selectedRows.length * 3
+  const lastTabIndex = selectedRows.length * 4
   const saveButtonTabIndex = lastTabIndex + 1
 
   const fetchPrices = useCallback(async (date: string) => {
@@ -177,10 +211,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
 
-  function updateRow(account_id: string, security_id: string, field: 'quantity' | 'avg_price' | 'avg_fx_rate', value: number | null) {
+  function updateRow(account_id: string, security_id: string, field: RowField, value: number | null) {
     setRows(prev => prev.map(r =>
       r.account_id === account_id && r.security_id === security_id
-        ? { ...r, [field]: field === 'quantity' ? (value ?? 0) : value }
+        ? applyRowField(r, field, value)
         : r
     ))
     setIsDirty(true)
@@ -542,9 +576,10 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                     const marketPrice = secPrices[row.security_id] ?? 0
                     const marketValue = currentRow.quantity > 0 && marketPrice > 0
                       ? currentRow.quantity * marketPrice : null
-                    const qtyTabIdx = idx * 3 + 1
-                    const avgTabIdx = idx * 3 + 2
-                    const fxTabIdx = idx * 3 + 3
+                    const qtyTabIdx = idx * 4 + 1
+                    const avgTabIdx = idx * 4 + 2
+                    const krwTabIdx = idx * 4 + 3
+                    const fxTabIdx = idx * 4 + 4
 
                     return (
                       <div key={`${row.account_id}__${row.security_id}`}
@@ -593,10 +628,21 @@ export default function SnapshotEditor({ snapshot, holdings, accounts, securitie
                               placeholder="0" tabIndex={avgTabIdx} className={inputCls} />
                           </div>
                           {!isKrw ? (
-                            <div className="col-span-2">
+                            <div>
                               <p className="text-micro tracking-normal text-ink-4 mb-0.5"
-                                title="입력하면 평균매수금액을 이 환율로 고정합니다. 비우면 스냅샷 날짜 환율로 환산">
-                                평균 매입환율(KRW/{currency}) · 비우면 {Math.round(exchangeRate).toLocaleString()}원 적용
+                                title="원화 평균매수단가를 입력하면 매입환율을 자동 계산합니다">
+                                평균매수단가(KRW)
+                              </p>
+                              <NumInput value={currentRow.avg_price_krw ?? null}
+                                onChange={v => updateRow(row.account_id, row.security_id, 'avg_price_krw', v)}
+                                placeholder="0" tabIndex={krwTabIdx} className={inputCls} />
+                            </div>
+                          ) : null}
+                          {!isKrw ? (
+                            <div>
+                              <p className="text-micro tracking-normal text-ink-4 mb-0.5 truncate"
+                                title={`입력하면 평균매수금액을 이 환율로 고정합니다. 비우면 스냅샷 날짜 환율(${Math.round(exchangeRate).toLocaleString()}원)로 환산`}>
+                                매입환율(KRW/{currency}) · 비우면 {Math.round(exchangeRate).toLocaleString()}
                               </p>
                               <NumInput value={currentRow.avg_fx_rate}
                                 onChange={v => updateRow(row.account_id, row.security_id, 'avg_fx_rate', v)}
